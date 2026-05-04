@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     });
     if (authError || !authData.user) return NextResponse.json({ erro: authError?.message || 'Falha ao criar usuário' }, { status: 400 });
 
-    const { error: alunoError } = await supabase.from('alunos').insert({
+    const { error: alunoError } = await (supabase.from('alunos') as any).insert({
       user_id: authData.user.id, nome: dados.nome, whatsapp: dados.whatsapp,
       email: dados.email, indicador_id: dados.indicadorId, status: 'ativo',
     });

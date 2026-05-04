@@ -6,7 +6,7 @@ export default async function AlunoIndexPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
   const adminClient = createServiceRoleClient();
-  const { data: aluno } = await adminClient.from('alunos').select('whatsapp').eq('user_id', user.id).maybeSingle();
+  const { data: aluno } = await (adminClient.from('alunos') as any).select('whatsapp').eq('user_id', user.id).maybeSingle() as { data: { whatsapp: string } | null };
   if (!aluno) {
     return (
       <div style={{ padding: 40, textAlign: 'center' }}>
