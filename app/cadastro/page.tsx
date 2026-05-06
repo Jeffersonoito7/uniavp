@@ -56,7 +56,7 @@ export default function CadastroPage() {
         <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <img src="/logo.png" alt="Auto Vale Prevenções" style={{ height: 72, objectFit: 'contain', marginBottom: 16, display: 'block' }}
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-          <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 20, fontWeight: 900, letterSpacing: 3, margin: 0, textTransform: 'uppercase', color: '#fff' }}>
+          <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: 20, fontWeight: 900, letterSpacing: 3, margin: 0, textTransform: 'uppercase', color: '#fff' }}>
             UNIVERSIDADE AVP
           </h1>
           <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 6, letterSpacing: 1 }}>
