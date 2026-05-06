@@ -27,12 +27,18 @@ const formVazio = {
   correta: 'A',
 };
 
+const modalIAVazio = { tema: '', contexto: '', quantidade: '3' };
+
 export default function QuestoesCliente({ aulaId, questoesIniciais }: { aulaId: string; questoesIniciais: Questao[] }) {
   const [questoes, setQuestoes] = useState(questoesIniciais);
   const [formAberto, setFormAberto] = useState(false);
   const [form, setForm] = useState(formVazio);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
+  const [modalIA, setModalIA] = useState(false);
+  const [formIA, setFormIA] = useState(modalIAVazio);
+  const [gerandoIA, setGerandoIA] = useState(false);
+  const [erroIA, setErroIA] = useState('');
 
   async function recarregar() {
     const res = await fetch(`/api/admin/questoes?aula_id=${aulaId}`);
@@ -98,14 +104,119 @@ export default function QuestoesCliente({ aulaId, questoesIniciais }: { aulaId: 
     await recarregar();
   }
 
+  async function gerarComIA() {
+    if (!formIA.tema.trim()) { setErroIA('Informe o tema da aula'); return; }
+    setGerandoIA(true);
+    setErroIA('');
+    try {
+      const res = await fetch('/api/admin/gerar-questoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          aula_id: aulaId,
+          tema: formIA.tema,
+          contexto: formIA.contexto,
+          quantidade: Number(formIA.quantidade) || 3,
+        }),
+      });
+      const dados = await res.json();
+      if (!res.ok) throw new Error(dados.erro || 'Erro ao gerar questões');
+      setModalIA(false);
+      setFormIA(modalIAVazio);
+      await recarregar();
+    } catch (err: any) {
+      setErroIA(err.message);
+    } finally {
+      setGerandoIA(false);
+    }
+  }
+
   return (
     <div>
-      <button
-        onClick={() => setFormAberto(v => !v)}
-        style={{ padding: '10px 20px', background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 14, marginBottom: 24 }}
-      >
-        {formAberto ? '− Fechar formulário' : '+ Nova Questão'}
-      </button>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
+        <button
+          onClick={() => setFormAberto(v => !v)}
+          style={{ padding: '10px 20px', background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 14 }}
+        >
+          {formAberto ? '− Fechar formulário' : '+ Nova Questão'}
+        </button>
+        <button
+          onClick={() => { setModalIA(true); setErroIA(''); }}
+          style={{ padding: '10px 20px', border: '1px solid var(--avp-border)', borderRadius: 8, background: 'transparent', color: 'var(--avp-text)', fontSize: 14, cursor: 'pointer' }}
+        >
+          ✨ Gerar com IA
+        </button>
+      </div>
+
+      {modalIA && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: 20,
+        }}>
+          <div style={{
+            background: 'var(--avp-card)', border: '1px solid var(--avp-border)',
+            borderRadius: 16, padding: 32, width: '100%', maxWidth: 480,
+          }}>
+            <h3 style={{ fontFamily: 'Inter', fontSize: 20, letterSpacing: 2, marginBottom: 20, margin: '0 0 20px' }}>
+              ✨ Gerar Questões com IA
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1.5, color: 'var(--avp-text-dim)', marginBottom: 6, fontWeight: 600 }}>
+                  Tema da aula *
+                </label>
+                <input
+                  value={formIA.tema}
+                  onChange={e => setFormIA(f => ({ ...f, tema: e.target.value }))}
+                  placeholder="Ex: Proteção veicular, cobertura contra roubo..."
+                  style={inputStyle}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1.5, color: 'var(--avp-text-dim)', marginBottom: 6, fontWeight: 600 }}>
+                  Contexto / conteúdo
+                </label>
+                <textarea
+                  value={formIA.contexto}
+                  onChange={e => setFormIA(f => ({ ...f, contexto: e.target.value }))}
+                  placeholder="Cole aqui o conteúdo da aula ou informações relevantes..."
+                  style={{ ...inputStyle, minHeight: 100, resize: 'vertical' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1.5, color: 'var(--avp-text-dim)', marginBottom: 6, fontWeight: 600 }}>
+                  Quantidade (1-10)
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={formIA.quantidade}
+                  onChange={e => setFormIA(f => ({ ...f, quantidade: e.target.value }))}
+                  style={{ ...inputStyle, maxWidth: 100 }}
+                />
+              </div>
+              {erroIA && <p style={{ color: 'var(--avp-danger)', fontSize: 13 }}>{erroIA}</p>}
+            </div>
+            <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+              <button
+                onClick={() => { setModalIA(false); setErroIA(''); }}
+                style={{ padding: '10px 20px', background: 'var(--avp-border)', color: 'var(--avp-text)', border: 'none', borderRadius: 8, fontSize: 14, cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={gerarComIA}
+                disabled={gerandoIA}
+                style={{ padding: '10px 20px', background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 14, opacity: gerandoIA ? 0.6 : 1, cursor: 'pointer' }}
+              >
+                {gerandoIA ? 'Gerando...' : 'Gerar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {formAberto && (
         <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24, marginBottom: 24 }}>

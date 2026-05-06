@@ -1,8 +1,8 @@
 {
-  "name": "uni-avp",
+  "name": "auto-base-brasil",
   "version": "1.0.0",
   "private": true,
-  "description": "Universidade Auto Vale Prevenções",
+  "description": "Auto Base Brasil",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -11,12 +11,14 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.95.0",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.105.1",
     "lucide-react": "^0.451.0",
     "next": "14.2.15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "xlsx": "^0.18.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {

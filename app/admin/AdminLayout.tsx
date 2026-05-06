@@ -6,6 +6,7 @@ const navItems = [
   { label: 'Dashboard', href: '/admin', key: 'dashboard' },
   { label: 'Módulos', href: '/admin/modulos', key: 'modulos' },
   { label: 'Consultores', href: '/admin/consultores', key: 'consultores' },
+  { label: 'Ranking', href: '/admin/ranking', key: 'ranking' },
   { label: 'Administradores', href: '/admin/admins', key: 'admins' },
 ];
 

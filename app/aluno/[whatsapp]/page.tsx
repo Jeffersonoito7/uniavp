@@ -98,6 +98,24 @@ export default async function AlunoPorWhatsAppPage({ params }: { params: Promise
       ) : (
         <CarrosselModulos modulos={modulos} whatsapp={whatsapp} />
       )}
+
+      {aluno.status === 'concluido' && (
+        <div style={{ padding: '0 5% 48px', textAlign: 'center' }}>
+          <a
+            href={`/api/certificado/${aluno.id}`}
+            target="_blank"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '12px 24px',
+              background: 'var(--grad-brand)', color: '#fff',
+              borderRadius: 10, fontWeight: 700,
+              fontSize: 14, textDecoration: 'none', marginTop: 24,
+            }}
+          >
+            🎓 Baixar Certificado
+          </a>
+        </div>
+      )}
     </div>
   );
 }

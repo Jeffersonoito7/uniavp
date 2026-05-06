@@ -71,6 +71,10 @@ export default function ConsultoresCliente({ consultores: inicial, appUrl }: { c
           style={{ padding: '10px 20px', border: '1px solid var(--avp-border)', borderRadius: 8, background: 'transparent', color: copiado === 'cadastro' ? 'var(--avp-green)' : 'var(--avp-text)', fontSize: 14, cursor: 'pointer' }}>
           {copiado === 'cadastro' ? '✓ Link copiado!' : '🔗 Copiar link de cadastro'}
         </button>
+        <a href="/api/admin/relatorio"
+          style={{ padding: '10px 20px', border: '1px solid var(--avp-border)', borderRadius: 8, background: 'transparent', color: 'var(--avp-text)', fontSize: 14, textDecoration: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>
+          📊 Exportar XLS
+        </a>
       </div>
 
       {mostrarForm && (
