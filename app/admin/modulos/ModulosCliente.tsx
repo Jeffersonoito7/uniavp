@@ -13,7 +13,7 @@ interface Modulo {
 export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: Modulo[] }) {
   const [modulos, setModulos] = useState(modulosIniciais);
   const [modalAberto, setModalAberto] = useState(false);
-  const [form, setForm] = useState({ titulo: '', descricao: '', ordem: '' });
+  const [form, setForm] = useState({ titulo: '', descricao: '' });
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
 
@@ -36,7 +36,7 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
     setSalvando(false);
     if (res.ok) {
       setModalAberto(false);
-      setForm({ titulo: '', descricao: '', ordem: '' });
+      setForm({ titulo: '', descricao: '' });
       await recarregar();
     } else {
       const d = await res.json();
@@ -99,13 +99,6 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
                 placeholder="Descrição (opcional)"
                 value={form.descricao}
                 onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
-                style={inputStyle}
-              />
-              <input
-                placeholder="Ordem (ex: 1)"
-                type="number"
-                value={form.ordem}
-                onChange={e => setForm(f => ({ ...f, ordem: e.target.value }))}
                 style={inputStyle}
               />
               {erro && <p style={{ color: 'var(--avp-danger)', fontSize: 13 }}>{erro}</p>}
