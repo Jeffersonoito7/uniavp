@@ -31,7 +31,7 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
     const res = await fetch('/api/admin/modulos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ titulo: form.titulo, descricao: form.descricao, ordem: Number(form.ordem) || proximaOrdem }),
+      body: JSON.stringify({ titulo: form.titulo, descricao: form.descricao, ordem: proximaOrdem }),
     });
     setSalvando(false);
     if (res.ok) {
