@@ -1,0 +1,1 @@
+ALTER TABLE aulas ADD COLUMN IF NOT EXISTS validade_meses INTEGER;

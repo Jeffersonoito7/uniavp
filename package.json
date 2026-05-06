@@ -1,8 +1,8 @@
 {
-  "name": "auto-base-brasil",
+  "name": "uni-avp",
   "version": "1.0.0",
   "private": true,
-  "description": "Auto Base Brasil",
+  "description": "Universidade Auto Vale Prevenções",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

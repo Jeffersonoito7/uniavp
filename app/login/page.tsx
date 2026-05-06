@@ -1,0 +1,89 @@
+'use client'
+import { useState } from 'react'
+import { createBrowserClient } from '@supabase/ssr'
+
+export default function LoginAVPPage() {
+  const [form, setForm] = useState({ email: '', password: '' })
+  const [loading, setLoading] = useState(false)
+  const [erro, setErro] = useState('')
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setErro('')
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    const { data, error } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password })
+    if (error || !data.user) {
+      setErro('E-mail ou senha incorretos.')
+      setLoading(false)
+      return
+    }
+    const { data: aluno } = await supabase.from('alunos').select('whatsapp').eq('user_id', data.user.id).maybeSingle()
+    if (aluno?.whatsapp) {
+      window.location.href = `/aluno/${aluno.whatsapp}`
+      return
+    }
+    const { data: admin } = await supabase.from('admins').select('id').eq('user_id', data.user.id).eq('ativo', true).maybeSingle()
+    if (admin) {
+      window.location.href = '/admin'
+      return
+    }
+    setErro('Usuário sem perfil cadastrado.')
+    setLoading(false)
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--avp-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ width: 400, maxWidth: '95vw' }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>🎓</div>
+          <h1 style={{ fontSize: 28, fontWeight: 800, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 6 }}>
+            Uni AVP
+          </h1>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>Acesse sua conta para continuar</p>
+        </div>
+        <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32 }}>
+          {erro && (
+            <div style={{ background: '#e6394620', border: '1px solid var(--avp-danger)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-danger)', fontSize: 14, marginBottom: 16 }}>
+              {erro}
+            </div>
+          )}
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 6, fontWeight: 500 }}>E-mail</label>
+              <input
+                type="email"
+                placeholder="seu@email.com"
+                value={form.email}
+                onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
+                required
+                style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '12px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 6, fontWeight: 500 }}>Senha</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={form.password}
+                onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
+                required
+                style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '12px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{ background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 8, padding: '13px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginTop: 4, opacity: loading ? 0.7 : 1 }}
+            >
+              {loading ? 'Entrando...' : 'Entrar'}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}
