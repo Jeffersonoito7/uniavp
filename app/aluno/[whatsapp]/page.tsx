@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server';
 import CarrosselModulos from './CarrosselModulos';
+import ThemeToggle from '@/app/components/ThemeToggle';
 import type { Aluno, TrilhaItem } from '@/lib/database.types';
 
 export default async function AlunoPorWhatsAppPage({ params }: { params: Promise<{ whatsapp: string }> }) {
@@ -45,6 +46,9 @@ export default async function AlunoPorWhatsAppPage({ params }: { params: Promise
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)' }}>
+      <div style={{ position: 'fixed', top: 12, right: 12, zIndex: 100 }}>
+        <ThemeToggle />
+      </div>
       <div style={{
         padding: '48px 5% 40px',
         background: 'linear-gradient(180deg, rgba(51,54,135,0.18) 0%, transparent 100%)',

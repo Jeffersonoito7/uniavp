@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import ThemeToggle from '@/app/components/ThemeToggle';
 
 const navItems = [
   { label: 'Dashboard', href: '/admin', key: 'dashboard' },
@@ -8,6 +9,7 @@ const navItems = [
   { label: 'Consultores', href: '/admin/consultores', key: 'consultores' },
   { label: 'Ranking', href: '/admin/ranking', key: 'ranking' },
   { label: 'Administradores', href: '/admin/admins', key: 'admins' },
+  { label: 'Configurações', href: '/admin/configuracoes', key: 'configuracoes' },
 ];
 
 export default function AdminLayout({ children, paginaAtiva }: { children: React.ReactNode; paginaAtiva: string }) {
@@ -53,7 +55,10 @@ export default function AdminLayout({ children, paginaAtiva }: { children: React
           })}
         </div>
       </nav>
-      <main style={{ flex: 1, padding: '40px 5%', overflowY: 'auto' }}>
+      <main style={{ flex: 1, padding: '40px 5%', overflowY: 'auto', position: 'relative' }}>
+        <div style={{ position: 'fixed', top: 12, right: 12, zIndex: 100 }}>
+          <ThemeToggle />
+        </div>
         {children}
       </main>
     </div>

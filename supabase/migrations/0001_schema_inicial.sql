@@ -241,3 +241,14 @@ INSERT INTO modulos (ordem, titulo, descricao, publicado) VALUES
   (1, 'Boas-vindas & Cultura AVP', 'História, valores e código de conduta da Auto Vale Prevenções.', TRUE),
   (2, 'Abertura e Gestão de Sinistros', 'Fluxo completo de atendimento ao associado.', TRUE),
   (3, 'Vendas, Pós-Venda e Retenção', 'Técnicas comerciais consultivas.', TRUE);
+
+-- Inserir configurações white-label padrão
+-- INSERT INTO configuracoes (chave, valor, descricao) VALUES
+--   ('site_nome', '"Universidade AVP"', 'Nome da plataforma'),
+--   ('site_slogan', '"Plataforma de Formação de Consultores"', 'Slogan'),
+--   ('site_logo_url', '""', 'URL da logo (vazio = usar /logo.png)'),
+--   ('site_cor_primaria', '"#333687"', 'Cor primária (hex)'),
+--   ('site_cor_secundaria', '"#02A153"', 'Cor secundária (hex)'),
+--   ('site_whatsapp_suporte', '""', 'WhatsApp do suporte'),
+--   ('planos_ativo', 'false', 'Habilitar página de planos públicos')
+-- ON CONFLICT (chave) DO NOTHING;

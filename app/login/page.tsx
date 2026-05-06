@@ -2,6 +2,7 @@
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase-client';
+import ThemeToggle from '@/app/components/ThemeToggle';
 
 function LoginForm() {
   const router = useRouter();
@@ -52,6 +53,9 @@ export default function LoginPage() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
       background: 'radial-gradient(ellipse at 20% 0%, rgba(51,54,135,0.35) 0%, transparent 50%), radial-gradient(ellipse at 80% 100%, rgba(2,161,83,0.25) 0%, transparent 50%), var(--avp-black)' }}>
+      <div style={{ position: 'fixed', top: 12, right: 12, zIndex: 100 }}>
+        <ThemeToggle />
+      </div>
       <div style={{ width: '100%', maxWidth: 460, background: 'rgba(24,27,36,0.7)', backdropFilter: 'blur(24px)',
         border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: 40, boxShadow: '0 30px 80px rgba(0,0,0,0.6)' }}>
         <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -66,6 +70,9 @@ export default function LoginPage() {
         </Suspense>
         <div style={{ marginTop: 24, textAlign: 'center', fontSize: 12, color: 'var(--avp-text-dim)' }}>
           Não tem cadastro? <a href="/cadastro" style={{ color: 'var(--avp-green-bright)' }}>Solicite acesso</a>
+        </div>
+        <div style={{ marginTop: 8, textAlign: 'center', fontSize: 12, color: 'var(--avp-text-dim)' }}>
+          Quer para sua empresa? <a href="/planos" style={{ color: 'var(--avp-green-bright)' }}>Ver planos</a>
         </div>
       </div>
     </div>
