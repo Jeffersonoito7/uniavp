@@ -27,10 +27,11 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
     if (!form.titulo.trim()) { setErro('Título obrigatório'); return; }
     setSalvando(true);
     setErro('');
+    const proximaOrdem = modulos.length > 0 ? Math.max(...modulos.map(m => m.ordem)) + 1 : 1;
     const res = await fetch('/api/admin/modulos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ titulo: form.titulo, descricao: form.descricao, ordem: Number(form.ordem) || 1 }),
+      body: JSON.stringify({ titulo: form.titulo, descricao: form.descricao, ordem: Number(form.ordem) || proximaOrdem }),
     });
     setSalvando(false);
     if (res.ok) {
