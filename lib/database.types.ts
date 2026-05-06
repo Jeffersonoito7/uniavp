@@ -11,6 +11,7 @@ export interface Aluno {
   indicador_id: string | null;
   status: 'ativo' | 'pausado' | 'concluido' | 'desligado';
   data_conclusao: string | null; whatsapp_validado: boolean;
+  foto_url: string | null; bio: string | null;
   created_at: string; updated_at: string;
 }
 

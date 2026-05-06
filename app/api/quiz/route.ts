@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { enviarWhatsApp } from '@/lib/whatsapp'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -126,7 +127,57 @@ export async function POST(req: NextRequest) {
         if (medalhaGraduado) {
           await (adminClient.from('aluno_medalhas') as any).upsert({ aluno_id: aluno.id, medalha_id: medalhaGraduado.id }, { onConflict: 'aluno_id,medalha_id' })
         }
+        await (adminClient.from('alunos') as any)
+          .update({ status: 'concluido' })
+          .eq('id', aluno.id)
       }
+    }
+
+    const { data: alunoComGestor } = await (adminClient.from('alunos') as any)
+      .select('nome, gestor_nome, gestor_whatsapp, status')
+      .eq('id', aluno.id)
+      .maybeSingle()
+
+    const { data: aulaAtual } = await (adminClient.from('aulas') as any)
+      .select('modulo_id, modulos(titulo, ordem)')
+      .eq('id', aula_id)
+      .maybeSingle()
+
+    if (aulaAtual && alunoComGestor?.gestor_whatsapp) {
+      const { data: todasAulasModulo } = await (adminClient.from('aulas') as any)
+        .select('id')
+        .eq('modulo_id', aulaAtual.modulo_id)
+        .eq('publicado', true)
+
+      if (todasAulasModulo) {
+        const { data: progressoModulo } = await (adminClient.from('progresso') as any)
+          .select('aula_id')
+          .eq('aluno_id', aluno.id)
+          .eq('aprovado', true)
+          .in('aula_id', todasAulasModulo.map((a: any) => a.id))
+
+        const idsConcluidosModulo = [...new Set((progressoModulo ?? []).map((p: any) => p.aula_id))]
+        const moduloConcluido = idsConcluidosModulo.length === todasAulasModulo.length
+
+        if (moduloConcluido) {
+          await enviarWhatsApp(
+            alunoComGestor.gestor_whatsapp,
+            `📚 Olá ${alunoComGestor.gestor_nome || 'Gestor'}! Seu consultor *${alunoComGestor.nome}* concluiu o *Módulo ${aulaAtual.modulos?.ordem}: ${aulaAtual.modulos?.titulo}* na Universidade AVP! 🎉`
+          )
+        }
+      }
+    }
+
+    const { data: alunoAtualizado } = await (adminClient.from('alunos') as any)
+      .select('status, gestor_nome, gestor_whatsapp, nome')
+      .eq('id', aluno.id)
+      .maybeSingle()
+
+    if (alunoAtualizado?.status === 'concluido' && alunoAtualizado?.gestor_whatsapp) {
+      await enviarWhatsApp(
+        alunoAtualizado.gestor_whatsapp,
+        `🏆 PARABÉNS, ${alunoAtualizado.gestor_nome || 'Gestor'}!\n\nSeu consultor *${alunoAtualizado.nome}* concluiu 100% da formação na *Universidade Auto Vale Prevenções* e está pronto para ser um Consultor AVP de sucesso! 🎓✨\n\nAcesse a plataforma para ver o certificado: ${process.env.NEXT_PUBLIC_APP_URL}/aluno/${aluno.id}`
+      )
     }
   }
 

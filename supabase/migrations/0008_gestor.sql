@@ -1,0 +1,2 @@
+ALTER TABLE alunos ADD COLUMN IF NOT EXISTS gestor_nome TEXT;
+ALTER TABLE alunos ADD COLUMN IF NOT EXISTS gestor_whatsapp TEXT;

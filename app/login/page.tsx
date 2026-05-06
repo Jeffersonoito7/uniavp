@@ -44,6 +44,11 @@ export default function LoginAVPPage() {
             Uni AVP
           </h1>
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>Acesse sua conta para continuar</p>
+          <p style={{ marginTop: 8, fontSize: 13 }}>
+            <a href="/captacao" style={{ color: 'var(--avp-green)' }}>Sou consultor</a>
+            {' · '}
+            <a href="/planos" style={{ color: 'var(--avp-text-dim)' }}>Para empresas</a>
+          </p>
         </div>
         <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32 }}>
           {erro && (

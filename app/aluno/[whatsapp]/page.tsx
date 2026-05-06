@@ -93,6 +93,9 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
           <Link href={`/aluno/${params.whatsapp}/loja`} style={{ color: 'var(--avp-text-dim)', fontSize: 14, textDecoration: 'none', fontWeight: 500 }}>
             Loja
           </Link>
+          <a href={`/aluno/${params.whatsapp}/perfil`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none' }}>
+            👤 Meu Perfil
+          </a>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14 }}>
               {aluno.nome.charAt(0).toUpperCase()}
