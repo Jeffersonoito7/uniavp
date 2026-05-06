@@ -65,9 +65,9 @@ export default function CadastroPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '32px 16px' }}>
       <div style={{ width: 440, maxWidth: '100%' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <img src="/logo.png" alt="Logo AVP" style={{ height: 56, marginBottom: 12 }} />
-          <h1 style={{ fontSize: 26, fontWeight: 800, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 6 }}>
+        <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <img src="/logo.png" alt="Logo AVP" style={{ height: 72, objectFit: 'contain', marginBottom: 14, display: 'block' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          <h1 style={{ fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>
             UNIVERSIDADE AVP
           </h1>
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Crie sua conta para iniciar a formação</p>
