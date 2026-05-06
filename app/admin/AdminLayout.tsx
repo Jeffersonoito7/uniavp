@@ -22,8 +22,8 @@ export default function AdminLayout({ children, paginaAtiva }: { children: React
         flexDirection: 'column',
       }}>
         <div style={{ padding: '0 20px 32px' }}>
-          <p style={{ fontFamily: 'Inter', fontSize: 18, letterSpacing: 2, margin: 0 }}>
-            <span className="text-gradient">Uni AVP</span>
+          <p style={{ fontSize: 18, letterSpacing: 2, margin: 0, fontWeight: 800, color: '#fff' }}>
+            UNIVERSIDADE AVP
           </p>
           <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '4px 0 0', textTransform: 'uppercase', letterSpacing: 1 }}>Admin</p>
         </div>
