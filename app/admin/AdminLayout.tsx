@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import EventosWidget from '@/app/components/EventosWidget'
+import LogoutButton from '@/app/components/LogoutButton'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -57,8 +58,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             )
           })}
         </nav>
-        <div style={{ padding: '12px 16px', borderTop: '1px solid var(--avp-border)' }}>
+        <div style={{ padding: '12px 16px', borderTop: '1px solid var(--avp-border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <EventosWidget />
+          <LogoutButton style={{ width: '100%' }} />
         </div>
       </aside>
       <main style={{ flex: 1, padding: 32, overflow: 'auto' }}>

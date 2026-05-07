@@ -3,6 +3,7 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import Link from 'next/link'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import EventosWidget from '@/app/components/EventosWidget'
+import LogoutButton from '@/app/components/LogoutButton'
 
 type TrilhaItem = {
   modulo_id: string
@@ -103,6 +104,7 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
             👤 Meu Perfil
           </a>
           <ThemeToggle />
+          <LogoutButton />
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14 }}>
               {aluno.nome.charAt(0).toUpperCase()}
