@@ -79,6 +79,9 @@ export default function LoginAVPPage() {
                 style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '12px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
               />
             </div>
+            <div style={{ textAlign: 'right', marginTop: -8 }}>
+              <a href="/recuperar-senha" style={{ color: 'var(--avp-text-dim)', fontSize: 12, textDecoration: 'none' }}>Esqueci minha senha</a>
+            </div>
             <button
               type="submit"
               disabled={loading}
