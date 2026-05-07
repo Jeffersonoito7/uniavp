@@ -23,6 +23,7 @@ export async function middleware(request: NextRequest) {
 
   const isPublic = path === '/' || path.startsWith('/login') || path.startsWith('/cadastro')
     || path.startsWith('/captacao') || path.startsWith('/recuperar-senha') || path.startsWith('/redefinir-senha')
+    || path.startsWith('/super/login')
     || path.startsWith('/api/cadastro') || path.startsWith('/_next') || path.startsWith('/favicon')
     || /\.(png|jpg|jpeg|gif|svg|ico|webp)$/.test(path);
 
@@ -32,6 +33,10 @@ export async function middleware(request: NextRequest) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', path);
     return NextResponse.redirect(loginUrl);
+  }
+
+  if (!user && path.startsWith('/super')) {
+    return NextResponse.redirect(new URL('/super/login', request.url));
   }
 
   // verificação de admin feita diretamente na página /admin
