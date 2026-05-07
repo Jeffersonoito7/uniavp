@@ -11,6 +11,7 @@ export default function SuperLoginPage() {
   const [showReset, setShowReset] = useState(false)
   const [resetEmail, setResetEmail] = useState('')
   const [resetLoading, setResetLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   function getSupabase() {
     return createBrowserClient(
@@ -50,16 +51,16 @@ export default function SuperLoginPage() {
   }
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', background: '#08090d', border: '1px solid #252836',
+    flex: 1, background: '#08090d', border: '1px solid #252836',
     borderRadius: 8, padding: '12px 14px', color: '#f0f1f5', fontSize: 14,
-    outline: 'none', boxSizing: 'border-box',
+    outline: 'none', boxSizing: 'border-box', width: '100%',
   }
 
   return (
     <div style={{ minHeight: '100vh', background: '#08090d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ width: 400, maxWidth: '95vw' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <Image src="/logo.png" alt="Oito7 Digital" width={180} height={60} style={{ objectFit: 'contain', marginBottom: 16 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
+          <Image src="/logo.png" alt="Oito7 Digital" width={200} height={70} style={{ objectFit: 'contain', marginBottom: 12 }} />
           <p style={{ color: '#8a8fa3', fontSize: 14 }}>Painel Master — Gestão de Clientes</p>
         </div>
 
@@ -83,7 +84,23 @@ export default function SuperLoginPage() {
               </div>
               <div>
                 <label style={{ display: 'block', color: '#8a8fa3', fontSize: 13, marginBottom: 6, fontWeight: 500 }}>Senha</label>
-                <input type="password" value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))} required style={inputStyle} />
+                <div style={{ display: 'flex', alignItems: 'center', background: '#08090d', border: '1px solid #252836', borderRadius: 8, overflow: 'hidden' }}>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
+                    required
+                    style={{ ...inputStyle, border: 'none', borderRadius: 0 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(p => !p)}
+                    style={{ background: 'none', border: 'none', color: '#8a8fa3', cursor: 'pointer', padding: '0 14px', fontSize: 18, flexShrink: 0 }}
+                    title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  >
+                    {showPassword ? '🙈' : '👁️'}
+                  </button>
+                </div>
               </div>
               <button type="submit" disabled={loading}
                 style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', border: 'none', borderRadius: 8, padding: '13px', fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
