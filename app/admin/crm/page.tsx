@@ -50,12 +50,12 @@ export default async function CRMPage() {
   }
 
   // Métricas por aluno
-  const nuncaIniciou = allAlunos.filter(a => !progressoMap[a.id] || progressoMap[a.id].size === 0).length
-  const formados = allAlunos.filter(a => totalAulas > 0 && (progressoMap[a.id]?.size ?? 0) >= totalAulas).length
+  const nuncaIniciou = allAlunos.filter((a: any) => !progressoMap[a.id] || progressoMap[a.id].size === 0).length
+  const formados = allAlunos.filter((a: any) => totalAulas > 0 && (progressoMap[a.id]?.size ?? 0) >= totalAulas).length
   const emAndamento = allAlunos.length - nuncaIniciou - formados
 
   // Por status
-  const porStatus = allAlunos.reduce((acc: Record<string, number>, a) => {
+  const porStatus = allAlunos.reduce((acc: Record<string, number>, a: any) => {
     acc[a.status] = (acc[a.status] || 0) + 1; return acc
   }, {})
 
