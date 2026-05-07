@@ -78,8 +78,8 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {modulos.sort((a, b) => a.ordem - b.ordem).map(m => (
-          <Link key={m.id} href={`/admin/modulos/${m.id}`} style={{ textDecoration: 'none' }}>
-            <div style={{ ...cardStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+          <div key={m.id} style={{ ...cardStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Link href={`/admin/modulos/${m.id}`} style={{ textDecoration: 'none', flex: 1 }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                   <span style={{ background: 'var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>Módulo {m.ordem}</span>
@@ -87,11 +87,22 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
                 </div>
                 {m.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>{m.descricao}</p>}
               </div>
-              <span style={{ color: m.publicado ? 'var(--avp-green)' : 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>
-                {m.publicado ? 'Publicado' : 'Rascunho'}
-              </span>
-            </div>
-          </Link>
+            </Link>
+            <button
+              onClick={async () => {
+                const res = await fetch('/api/admin/modulos', {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ id: m.id, publicado: !m.publicado }),
+                })
+                const data = await res.json()
+                if (data.modulo) setModulos(prev => prev.map(mod => mod.id === m.id ? { ...mod, publicado: !mod.publicado } : mod))
+              }}
+              style={{ background: m.publicado ? 'var(--avp-border)' : 'var(--avp-green)', color: m.publicado ? 'var(--avp-text-dim)' : '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600, flexShrink: 0, marginLeft: 16 }}
+            >
+              {m.publicado ? 'Despublicar' : 'Publicar'}
+            </button>
+          </div>
         ))}
         {modulos.length === 0 && !criando && (
           <div style={{ textAlign: 'center', padding: 60, color: 'var(--avp-text-dim)' }}>Nenhum módulo cadastrado.</div>

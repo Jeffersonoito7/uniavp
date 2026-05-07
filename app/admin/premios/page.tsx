@@ -9,7 +9,7 @@ export default async function PremiosPage() {
   if (!user) redirect('/login')
   const adminClient = createServiceRoleClient()
   const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (!adminRecord) redirect('/aluno')
+  if (!adminRecord) redirect('/login')
 
   const { data: premios } = await (adminClient.from('premios') as any).select('*').order('created_at', { ascending: false })
   const { data: resgates } = await (adminClient.from('resgates') as any)

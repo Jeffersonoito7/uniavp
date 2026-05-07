@@ -8,5 +8,9 @@ export default async function HomePage() {
   const adminClient = createServiceRoleClient();
   const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user!.id).eq('ativo', true).maybeSingle();
   if (adminRecord) redirect('/admin');
-  redirect('/aluno');
+  const { data: gestor } = await (adminClient.from('gestores') as any).select('id').eq('user_id', user!.id).eq('ativo', true).maybeSingle();
+  if (gestor) redirect('/gestor');
+  const { data: aluno } = await (adminClient.from('alunos') as any).select('whatsapp').eq('user_id', user!.id).maybeSingle();
+  if (aluno?.whatsapp) redirect(`/aluno/${aluno.whatsapp}`);
+  redirect('/login');
 }

@@ -10,7 +10,7 @@ export default async function ModuloDetalhePage({ params }: { params: { id: stri
   if (!user) redirect('/login')
   const adminClient = createServiceRoleClient()
   const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (!adminRecord) redirect('/aluno')
+  if (!adminRecord) redirect('/login')
 
   const { data: modulo } = await (adminClient.from('modulos') as any).select('*').eq('id', params.id).single()
   if (!modulo) redirect('/admin/modulos')

@@ -22,6 +22,7 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   const isPublic = path === '/' || path.startsWith('/login') || path.startsWith('/cadastro')
+    || path.startsWith('/captacao') || path.startsWith('/recuperar-senha') || path.startsWith('/redefinir-senha')
     || path.startsWith('/api/cadastro') || path.startsWith('/_next') || path.startsWith('/favicon')
     || /\.(png|jpg|jpeg|gif|svg|ico|webp)$/.test(path);
 

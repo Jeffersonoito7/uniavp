@@ -78,12 +78,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const { count: totalAprovadas } = await (adminClient.from('progresso') as any)
-      .select('id', { count: 'exact', head: true })
+    const { data: progressoAprovado } = await (adminClient.from('progresso') as any)
+      .select('aula_id')
       .eq('aluno_id', aluno.id)
       .eq('aprovado', true)
+    const totalAulasAprovadas = new Set((progressoAprovado ?? []).map((p: { aula_id: string }) => p.aula_id)).size
 
-    if (totalAprovadas === 1) {
+    if (totalAulasAprovadas === 1) {
       const { data: medalhaPrimeira } = await (adminClient.from('medalhas_config') as any).select('id').eq('tipo', 'primeira_aula').maybeSingle()
       if (medalhaPrimeira) {
         await (adminClient.from('aluno_medalhas') as any).upsert({ aluno_id: aluno.id, medalha_id: medalhaPrimeira.id }, { onConflict: 'aluno_id,medalha_id' })
@@ -97,13 +98,14 @@ export async function POST(req: NextRequest) {
 
     if (aulasDoModulo) {
       const idsModulo = aulasDoModulo.map((a: { id: string }) => a.id)
-      const { count: aprovadas } = await (adminClient.from('progresso') as any)
-        .select('id', { count: 'exact', head: true })
+      const { data: progressoModuloRows } = await (adminClient.from('progresso') as any)
+        .select('aula_id')
         .eq('aluno_id', aluno.id)
         .eq('aprovado', true)
         .in('aula_id', idsModulo)
 
-      if (aprovadas === idsModulo.length) {
+      const aulasAprovadas = new Set((progressoModuloRows ?? []).map((p: { aula_id: string }) => p.aula_id)).size
+      if (aulasAprovadas === idsModulo.length) {
         const { data: medalhaModulo } = await (adminClient.from('medalhas_config') as any).select('id').eq('tipo', 'modulo_concluido').maybeSingle()
         if (medalhaModulo) {
           await (adminClient.from('aluno_medalhas') as any).upsert({ aluno_id: aluno.id, medalha_id: medalhaModulo.id }, { onConflict: 'aluno_id,medalha_id' })
@@ -116,11 +118,12 @@ export async function POST(req: NextRequest) {
       .eq('publicado', true)
     if (todasAulas) {
       const todosIds = todasAulas.map((a: { id: string }) => a.id)
-      const { count: totalAprovTotal } = await (adminClient.from('progresso') as any)
-        .select('id', { count: 'exact', head: true })
+      const { data: todasAprovRows } = await (adminClient.from('progresso') as any)
+        .select('aula_id')
         .eq('aluno_id', aluno.id)
         .eq('aprovado', true)
         .in('aula_id', todosIds)
+      const totalAprovTotal = new Set((todasAprovRows ?? []).map((p: { aula_id: string }) => p.aula_id)).size
       if (totalAprovTotal === todosIds.length) {
         await (adminClient.from('aluno_pontos') as any).insert({ aluno_id: aluno.id, quantidade: 50, motivo: 'Bônus conclusão geral da trilha' })
         const { data: medalhaGraduado } = await (adminClient.from('medalhas_config') as any).select('id').eq('tipo', 'conclusao_geral').maybeSingle()
@@ -139,7 +142,7 @@ export async function POST(req: NextRequest) {
       .maybeSingle()
 
     const { data: aulaAtual } = await (adminClient.from('aulas') as any)
-      .select('modulo_id, modulos(titulo, ordem)')
+      .select('modulo_id, modulo:modulos(titulo, ordem)')
       .eq('id', aula_id)
       .maybeSingle()
 
@@ -162,21 +165,21 @@ export async function POST(req: NextRequest) {
         if (moduloConcluido) {
           await enviarWhatsApp(
             alunoComGestor.gestor_whatsapp,
-            `📚 Olá ${alunoComGestor.gestor_nome || 'Gestor'}! Seu consultor *${alunoComGestor.nome}* concluiu o *Módulo ${aulaAtual.modulos?.ordem}: ${aulaAtual.modulos?.titulo}* na Universidade AVP! 🎉`
+            `📚 Olá ${alunoComGestor.gestor_nome || 'Gestor'}! Seu consultor *${alunoComGestor.nome}* concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}* na Universidade AVP! 🎉`
           )
         }
       }
     }
 
     const { data: alunoAtualizado } = await (adminClient.from('alunos') as any)
-      .select('status, gestor_nome, gestor_whatsapp, nome')
+      .select('status, gestor_nome, gestor_whatsapp, nome, whatsapp')
       .eq('id', aluno.id)
       .maybeSingle()
 
     if (alunoAtualizado?.status === 'concluido' && alunoAtualizado?.gestor_whatsapp) {
       await enviarWhatsApp(
         alunoAtualizado.gestor_whatsapp,
-        `🏆 PARABÉNS, ${alunoAtualizado.gestor_nome || 'Gestor'}!\n\nSeu consultor *${alunoAtualizado.nome}* concluiu 100% da formação na *Universidade Auto Vale Prevenções* e está pronto para ser um Consultor AVP de sucesso! 🎓✨\n\nAcesse a plataforma para ver o certificado: ${process.env.NEXT_PUBLIC_APP_URL}/aluno/${aluno.id}`
+        `🏆 PARABÉNS, ${alunoAtualizado.gestor_nome || 'Gestor'}!\n\nSeu consultor *${alunoAtualizado.nome}* concluiu 100% da formação na *Universidade Auto Vale Prevenções* e está pronto para ser um Consultor AVP de sucesso! 🎓✨\n\nAcesse a plataforma para ver o progresso: ${process.env.NEXT_PUBLIC_APP_URL}/aluno/${alunoAtualizado.whatsapp}`
       )
     }
   }

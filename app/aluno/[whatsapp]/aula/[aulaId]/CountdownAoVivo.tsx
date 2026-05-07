@@ -16,7 +16,6 @@ export default function CountdownAoVivo({ aoVivoData, aoVivoLink, plataforma }: 
 
   if (!mounted) return null
 
-  const agora = Date.now()
   const target = new Date(aoVivoData).getTime()
   const TRINTA_MIN = 30 * 60 * 1000
 

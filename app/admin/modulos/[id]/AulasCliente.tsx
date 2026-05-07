@@ -165,9 +165,20 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                 <span>Espera: {aula.espera_horas}h</span>
               </div>
             </div>
-            <span style={{ color: aula.publicado ? 'var(--avp-green)' : 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600 }}>
-              {aula.publicado ? 'Publicada' : 'Rascunho'}
-            </span>
+            <button
+              onClick={async () => {
+                const res = await fetch(`/api/admin/modulos/${moduloId}/aulas`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ id: aula.id, publicado: !aula.publicado }),
+                })
+                const data = await res.json()
+                if (data.aula) setAulas(prev => prev.map(a => a.id === aula.id ? { ...a, publicado: !a.publicado } : a))
+              }}
+              style={{ background: aula.publicado ? 'var(--avp-border)' : 'var(--avp-green)', color: aula.publicado ? 'var(--avp-text-dim)' : '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+            >
+              {aula.publicado ? 'Despublicar' : 'Publicar'}
+            </button>
           </div>
         ))}
         {aulas.length === 0 && !criando && (

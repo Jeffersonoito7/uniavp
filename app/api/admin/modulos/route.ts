@@ -35,3 +35,37 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ modulo })
 }
+
+export async function PUT(req: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+
+  const adminClient = createServiceRoleClient()
+  const { data: adminRecord } = await (adminClient.from('admins') as any)
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('ativo', true)
+    .maybeSingle()
+  if (!adminRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+
+  const body = await req.json()
+  const { id, ...updates } = body
+  if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
+
+  const camposPermitidos = ['titulo', 'descricao', 'publicado', 'ordem']
+  const atualizacoes: Record<string, unknown> = {}
+  for (const campo of camposPermitidos) {
+    if (campo in updates) atualizacoes[campo] = updates[campo]
+  }
+
+  const { data: modulo, error } = await (adminClient.from('modulos') as any)
+    .update(atualizacoes)
+    .eq('id', id)
+    .select('*')
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  return NextResponse.json({ modulo })
+}

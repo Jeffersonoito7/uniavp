@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import * as XLSX from 'xlsx'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import { redirect } from 'next/navigation'
 
 export async function GET() {
   const supabase = await createClient()

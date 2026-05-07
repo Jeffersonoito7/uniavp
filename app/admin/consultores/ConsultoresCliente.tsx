@@ -89,7 +89,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
                 </div>
                 <div>
                   <label style={labelStyle}>WhatsApp *</label>
-                  <input style={inputStyle} value={form.whatsapp} onChange={e => setForm(p => ({ ...p, whatsapp: e.target.value }))} required placeholder="5511999999999" />
+                  <input style={inputStyle} value={form.whatsapp} onChange={e => setForm(p => ({ ...p, whatsapp: e.target.value.replace(/\D/g, '') }))} required placeholder="5511999999999" />
                 </div>
                 <div>
                   <label style={labelStyle}>E-mail *</label>

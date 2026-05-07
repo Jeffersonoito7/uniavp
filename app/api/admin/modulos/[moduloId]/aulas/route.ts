@@ -43,3 +43,37 @@ export async function POST(req: NextRequest, { params }: { params: { moduloId: s
 
   return NextResponse.json({ aula })
 }
+
+export async function PUT(req: NextRequest, { params }: { params: { moduloId: string } }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+
+  const adminClient = createServiceRoleClient()
+  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  if (!adminRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+
+  const body = await req.json()
+  const { id, ...updates } = body
+  if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
+
+  const camposPermitidos = ['titulo', 'descricao', 'youtube_video_id', 'duracao_minutos', 'quiz_qtd_questoes',
+    'quiz_aprovacao_minima', 'espera_horas', 'publicado', 'ao_vivo_link', 'ao_vivo_data',
+    'ao_vivo_plataforma', 'validade_meses', 'ordem']
+
+  const atualizacoes: Record<string, unknown> = {}
+  for (const campo of camposPermitidos) {
+    if (campo in updates) atualizacoes[campo] = updates[campo]
+  }
+
+  const { data: aula, error } = await (adminClient.from('aulas') as any)
+    .update(atualizacoes)
+    .eq('id', id)
+    .eq('modulo_id', params.moduloId)
+    .select('*')
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  return NextResponse.json({ aula })
+}

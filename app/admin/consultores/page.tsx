@@ -9,7 +9,7 @@ export default async function ConsultoresPage() {
   if (!user) redirect('/login')
   const adminClient = createServiceRoleClient()
   const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (!adminRecord) redirect('/aluno')
+  if (!adminRecord) redirect('/login')
 
   const { data: consultores } = await (adminClient.from('alunos') as any)
     .select('id, nome, whatsapp, email, status, created_at, indicador:indicadores(nome)')
