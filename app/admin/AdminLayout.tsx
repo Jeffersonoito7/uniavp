@@ -5,6 +5,7 @@ import {
   LayoutDashboard, BookOpen, Users, ShieldCheck,
   Trophy, Settings, Gift, UserCog
 } from 'lucide-react'
+import ThemeToggle from '@/app/components/ThemeToggle'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -22,11 +23,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
       <aside style={{ width: 220, background: 'var(--avp-card)', borderRight: '1px solid var(--avp-border)', display: 'flex', flexDirection: 'column', padding: '24px 0' }}>
-        <div style={{ padding: '0 20px 24px', borderBottom: '1px solid var(--avp-border)' }}>
-          <span style={{ fontWeight: 800, fontSize: 18, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            Uni AVP
-          </span>
-          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 2 }}>Painel Admin</p>
+        <div style={{ padding: '0 20px 24px', borderBottom: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <span style={{ fontWeight: 800, fontSize: 18, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              Uni AVP
+            </span>
+            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 2 }}>Painel Admin</p>
+          </div>
+          <ThemeToggle />
         </div>
         <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
           {navItems.map(({ href, label, icon: Icon }) => {

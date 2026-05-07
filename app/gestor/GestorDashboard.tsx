@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import ThemeToggle from '@/app/components/ThemeToggle'
 
 type Consultor = {
   id: string
@@ -107,8 +108,9 @@ export default function GestorDashboard({
             UNIVERSIDADE AVP
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Olá, <strong style={{ color: 'var(--avp-text)' }}>{gestor.nome}</strong></span>
+          <ThemeToggle />
           <button onClick={sair} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 14 }}>
             Sair
           </button>

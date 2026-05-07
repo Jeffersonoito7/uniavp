@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import Link from 'next/link'
+import ThemeToggle from '@/app/components/ThemeToggle'
 
 type TrilhaItem = {
   modulo_id: string
@@ -96,6 +97,7 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
           <a href={`/aluno/${params.whatsapp}/perfil`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none' }}>
             👤 Meu Perfil
           </a>
+          <ThemeToggle />
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14 }}>
               {aluno.nome.charAt(0).toUpperCase()}

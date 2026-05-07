@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import ThemeToggle from '@/app/components/ThemeToggle'
 
 export default function LoginAVPPage() {
   const [form, setForm] = useState({ email: '', password: '' })
@@ -35,7 +36,8 @@ export default function LoginAVPPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--avp-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--avp-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', position: 'relative' }}>
+      <div style={{ position: 'absolute', top: 16, right: 16 }}><ThemeToggle /></div>
       <div style={{ width: 400, maxWidth: '95vw' }}>
         <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <img src="/logo.png" alt="Logo AVP" style={{ height: 72, objectFit: 'contain', marginBottom: 14, display: 'block' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
