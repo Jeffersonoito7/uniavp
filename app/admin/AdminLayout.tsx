@@ -3,13 +3,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, BookOpen, Users, ShieldCheck,
-  Trophy, Settings, Gift
+  Trophy, Settings, Gift, UserCog
 } from 'lucide-react'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/modulos', label: 'Módulos', icon: BookOpen },
   { href: '/admin/consultores', label: 'Consultores', icon: Users },
+  { href: '/admin/gestores', label: 'Gestores', icon: UserCog },
   { href: '/admin/admins', label: 'Admins', icon: ShieldCheck },
   { href: '/admin/ranking', label: 'Ranking', icon: Trophy },
   { href: '/admin/premios', label: 'Prêmios', icon: Gift },

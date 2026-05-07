@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
 
   if (isPublic) return response;
 
-  if (!user && (path.startsWith('/aluno') || path.startsWith('/admin'))) {
+  if (!user && (path.startsWith('/aluno') || path.startsWith('/admin') || path.startsWith('/gestor'))) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', path);
     return NextResponse.redirect(loginUrl);

@@ -21,16 +21,15 @@ export default function LoginAVPPage() {
       setLoading(false)
       return
     }
-    const { data: aluno } = await supabase.from('alunos').select('whatsapp').eq('user_id', data.user.id).maybeSingle()
-    if (aluno?.whatsapp) {
-      window.location.href = `/aluno/${aluno.whatsapp}`
-      return
-    }
-    const { data: admin } = await supabase.from('admins').select('id').eq('user_id', data.user.id).eq('ativo', true).maybeSingle()
-    if (admin) {
-      window.location.href = '/admin'
-      return
-    }
+    const { data: adminData } = await supabase.from('admins').select('role').eq('user_id', data.user.id).eq('ativo', true).maybeSingle()
+    if (adminData) { window.location.href = '/admin'; return }
+
+    const { data: gestorData } = await supabase.from('gestores').select('id').eq('user_id', data.user.id).eq('ativo', true).maybeSingle()
+    if (gestorData) { window.location.href = '/gestor'; return }
+
+    const { data: alunoData } = await supabase.from('alunos').select('whatsapp').eq('user_id', data.user.id).maybeSingle()
+    if (alunoData?.whatsapp) { window.location.href = `/aluno/${alunoData.whatsapp}`; return }
+
     setErro('Usuário sem perfil cadastrado.')
     setLoading(false)
   }
