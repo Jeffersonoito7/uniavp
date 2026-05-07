@@ -1,12 +1,11 @@
 {
   "name": "Universidade AVP",
   "short_name": "Uni AVP",
-  "description": "Plataforma de formação da Auto Vale Prevenções",
+  "description": "A Única e Mais Completa Plataforma de Formação de Consultores do País",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#08090d",
   "theme_color": "#333687",
-  "orientation": "portrait",
   "icons": [
     { "src": "/logo.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/logo.png", "sizes": "512x512", "type": "image/png" }
