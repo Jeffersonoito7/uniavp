@@ -35,5 +35,6 @@ export async function PUT(req: NextRequest) {
       .eq('id', t.id)
   }
 
+
   return NextResponse.json({ ok: true })
 }
