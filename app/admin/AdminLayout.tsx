@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, BookOpen, Users, ShieldCheck,
-  Trophy, Settings, Gift, UserCog, BarChart3, Calendar, Palette
+  Trophy, Settings, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper
 } from 'lucide-react'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import EventosWidget from '@/app/components/EventosWidget'
@@ -18,6 +18,7 @@ const navItems = [
   { href: '/admin/admins', label: 'Admins', icon: ShieldCheck },
   { href: '/admin/ranking', label: 'Ranking', icon: Trophy },
   { href: '/admin/premios', label: 'Prêmios', icon: Gift },
+  { href: '/admin/noticias', label: 'Notícias', icon: Newspaper },
   { href: '/admin/eventos', label: 'Eventos', icon: Calendar },
   { href: '/admin/artes', label: 'Artes', icon: Palette },
   { href: '/admin/configuracoes', label: 'Configurações', icon: Settings },
