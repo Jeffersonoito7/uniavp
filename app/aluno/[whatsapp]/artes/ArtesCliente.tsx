@@ -7,7 +7,8 @@ type Template = {
   foto_redondo: boolean;
 }
 
-const CANVAS_SIZE = 1080
+const CANVAS_W = 1920
+const CANVAS_H = 1080
 
 function carregarImagem(src: string, crossOrigin?: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -44,17 +45,17 @@ export default function ArtesCliente({ templates, nomeAluno }: { templates: Temp
     setGerando(true); setErro(''); setPronto(false)
     const canvas = canvasRef.current!
     const ctx = canvas.getContext('2d')!
-    canvas.width = CANVAS_SIZE
-    canvas.height = CANVAS_SIZE
+    canvas.width = CANVAS_W
+    canvas.height = CANVAS_H
 
     try {
       const foto = await carregarImagem(fotoLocal)
-      const fotoX = Math.round(CANVAS_SIZE * templateSelecionado.foto_x / 100)
-      const fotoY = Math.round(CANVAS_SIZE * templateSelecionado.foto_y / 100)
-      const fotoW = Math.round(CANVAS_SIZE * templateSelecionado.foto_largura / 100)
-      const fotoH = Math.round(CANVAS_SIZE * templateSelecionado.foto_altura / 100)
+      const fotoX = Math.round(CANVAS_W * templateSelecionado.foto_x / 100)
+      const fotoY = Math.round(CANVAS_H * templateSelecionado.foto_y / 100)
+      const fotoW = Math.round(CANVAS_W * templateSelecionado.foto_largura / 100)
+      const fotoH = Math.round(CANVAS_H * templateSelecionado.foto_altura / 100)
 
-      ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+      ctx.clearRect(0, 0, CANVAS_W, CANVAS_W)
 
       // Desenha a foto do consultor na posição configurada
       ctx.save()
@@ -63,6 +64,7 @@ export default function ArtesCliente({ templates, nomeAluno }: { templates: Temp
         const rx = fotoX + fotoW / 2; const ry = fotoY + fotoH / 2
         const r = Math.min(fotoW, fotoH) / 2
         ctx.arc(rx, ry, r, 0, Math.PI * 2)
+
         ctx.clip()
       } else {
         ctx.rect(fotoX, fotoY, fotoW, fotoH)
@@ -78,12 +80,12 @@ export default function ArtesCliente({ templates, nomeAluno }: { templates: Temp
       // Tenta desenhar o template PNG por cima (transparência preservada)
       try {
         const template = await carregarImagem(templateSelecionado.arte_url, 'anonymous')
-        ctx.drawImage(template, 0, 0, CANVAS_SIZE, CANVAS_SIZE)
+        ctx.drawImage(template, 0, 0, CANVAS_W, CANVAS_H)
       } catch {
         // Se CORS bloquear, tenta sem crossOrigin (não permitirá download mas mostra preview)
         try {
           const template = await carregarImagem(templateSelecionado.arte_url)
-          ctx.drawImage(template, 0, 0, CANVAS_SIZE, CANVAS_SIZE)
+          ctx.drawImage(template, 0, 0, CANVAS_W, CANVAS_H)
         } catch {
           setErro('Não foi possível carregar a arte. Verifique se a URL é pública.')
         }
@@ -191,7 +193,7 @@ export default function ArtesCliente({ templates, nomeAluno }: { templates: Temp
                 border: '1px solid var(--avp-border)',
                 display: 'block',
                 background: pronto ? 'transparent' : 'var(--avp-black)',
-                aspectRatio: '1 / 1',
+                aspectRatio: '16 / 9',
               }}
             />
             {!pronto && (
