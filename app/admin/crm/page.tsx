@@ -197,7 +197,7 @@ export default async function CRMPage() {
               </tr>
             </thead>
             <tbody>
-              {allAlunos.map(a => {
+              {allAlunos.map((a: any) => {
                 const concluidas = progressoMap[a.id]?.size ?? 0
                 const pct = totalAulas > 0 ? Math.round(concluidas / totalAulas * 100) : 0
                 const pontos = pontosMap[a.id] ?? 0
