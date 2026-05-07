@@ -3,18 +3,22 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, BookOpen, Users, ShieldCheck,
-  Trophy, Settings, Gift, UserCog
+  Trophy, Settings, Gift, UserCog, BarChart3, Calendar, Palette
 } from 'lucide-react'
 import ThemeToggle from '@/app/components/ThemeToggle'
+import EventosWidget from '@/app/components/EventosWidget'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/crm', label: 'CRM', icon: BarChart3 },
   { href: '/admin/modulos', label: 'Módulos', icon: BookOpen },
   { href: '/admin/consultores', label: 'Consultores', icon: Users },
   { href: '/admin/gestores', label: 'Gestores', icon: UserCog },
   { href: '/admin/admins', label: 'Admins', icon: ShieldCheck },
   { href: '/admin/ranking', label: 'Ranking', icon: Trophy },
   { href: '/admin/premios', label: 'Prêmios', icon: Gift },
+  { href: '/admin/eventos', label: 'Eventos', icon: Calendar },
+  { href: '/admin/artes', label: 'Artes', icon: Palette },
   { href: '/admin/configuracoes', label: 'Configurações', icon: Settings },
 ]
 
@@ -53,6 +57,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             )
           })}
         </nav>
+        <div style={{ padding: '12px 16px', borderTop: '1px solid var(--avp-border)' }}>
+          <EventosWidget />
+        </div>
       </aside>
       <main style={{ flex: 1, padding: 32, overflow: 'auto' }}>
         {children}
