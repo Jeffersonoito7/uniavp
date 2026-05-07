@@ -1,8 +1,8 @@
 {
-  "name": "uni-avp",
+  "name": "oito7-plataforma",
   "version": "1.0.0",
   "private": true,
-  "description": "Universidade Auto Vale Prevenções",
+  "description": "Plataforma de Treinamento Oito7 Digital",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

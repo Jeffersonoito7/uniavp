@@ -1,11 +1,11 @@
 {
-  "name": "Universidade AVP",
-  "short_name": "Uni AVP",
-  "description": "A Única e Mais Completa Plataforma de Formação de Consultores do País",
+  "name": "Oito7 Digital — Plataforma de Treinamento",
+  "short_name": "Oito7 Uni",
+  "description": "Plataforma de formação e treinamento corporativo",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#08090d",
-  "theme_color": "#333687",
+  "theme_color": "#6366f1",
   "icons": [
     { "src": "/logo.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/logo.png", "sizes": "512x512", "type": "image/png" }

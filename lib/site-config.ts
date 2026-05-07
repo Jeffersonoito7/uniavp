@@ -30,14 +30,14 @@ export async function getSiteConfig(): Promise<SiteConfig> {
   }
 
   return {
-    nome: map['site_nome'] || 'Universidade AVP',
-    slogan: map['site_slogan'] || 'A Única e Mais Completa Plataforma de Formação de Consultores do País',
+    nome: map['site_nome'] || 'Universidade Oito7',
+    slogan: map['site_slogan'] || 'Plataforma de Formação e Treinamento Corporativo',
     logoUrl: map['site_logo_url'] || '/logo.png',
     logoMenuUrl: map['logo_menu_url'] || map['site_logo_url'] || '/logo.png',
     logoPaginaUrl: map['logo_pagina_url'] || map['site_logo_url'] || '/logo.png',
     logoFaviconUrl: map['logo_favicon_url'] || map['site_logo_url'] || '/logo.png',
-    corPrimaria: map['site_cor_primaria'] || '#333687',
-    corSecundaria: map['site_cor_secundaria'] || '#02A153',
+    corPrimaria: map['site_cor_primaria'] || '#6366f1',
+    corSecundaria: map['site_cor_secundaria'] || '#8b5cf6',
     whatsappSuporte: map['site_whatsapp_suporte'] || '',
     planosAtivo: map['planos_ativo'] === 'true',
   }
