@@ -24,6 +24,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const [corSecundaria, setCorSecundaria] = useState(getValor('site_cor_secundaria') || '#02A153')
   const [whatsapp, setWhatsapp] = useState(getValor('whatsapp_suporte'))
   const [planosAtivo, setPlanosAtivo] = useState(getValor('planos_ativo') === 'true')
+  const [dominio, setDominio] = useState(getValor('dominio_customizado'))
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
   const [uploading, setUploading] = useState<string | null>(null)
@@ -74,6 +75,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       { chave: 'site_cor_secundaria', valor: corSecundaria },
       { chave: 'whatsapp_suporte', valor: whatsapp },
       { chave: 'planos_ativo', valor: String(planosAtivo) },
+      { chave: 'dominio_customizado', valor: dominio },
     ]
     const res = await fetch('/api/admin/configuracoes', {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
@@ -156,6 +158,54 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Domínio personalizado */}
+      <div style={sectionStyle}>
+        <p style={{ fontWeight: 700, fontSize: 15 }}>🌐 Domínio personalizado</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
+          Configure o domínio da sua empresa para acessar a plataforma (ex: <strong>universidade.suaempresa.com.br</strong>).
+        </p>
+        <div>
+          <label style={labelStyle}>Seu domínio</label>
+          <input
+            style={{ ...inputStyle, width: '100%' }}
+            value={dominio}
+            onChange={e => setDominio(e.target.value.trim())}
+            placeholder="Ex: universidade.suaempresa.com.br"
+          />
+        </div>
+        {dominio && (
+          <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '16px 18px' }}>
+            <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>📋 Instruções para ativar o domínio:</p>
+            <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 12 }}>
+              No painel DNS do seu domínio (Cloudflare, Registro.br, etc), adicione este registro:
+            </p>
+            <div style={{ background: 'var(--avp-card)', borderRadius: 8, padding: '12px 14px', fontFamily: 'monospace', fontSize: 13, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'flex', gap: 16 }}>
+                <span style={{ color: 'var(--avp-text-dim)', minWidth: 70 }}>Tipo:</span>
+                <span style={{ color: 'var(--avp-green)', fontWeight: 700 }}>CNAME</span>
+              </div>
+              <div style={{ display: 'flex', gap: 16 }}>
+                <span style={{ color: 'var(--avp-text-dim)', minWidth: 70 }}>Nome:</span>
+                <span style={{ color: 'var(--avp-text)', fontWeight: 700 }}>
+                  {dominio.includes('.') ? dominio.split('.')[0] : dominio}
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 16 }}>
+                <span style={{ color: 'var(--avp-text-dim)', minWidth: 70 }}>Destino:</span>
+                <span style={{ color: 'var(--avp-text)', fontWeight: 700 }}>universidade.oito7digital.com.br</span>
+              </div>
+              <div style={{ display: 'flex', gap: 16 }}>
+                <span style={{ color: 'var(--avp-text-dim)', minWidth: 70 }}>Proxy:</span>
+                <span style={{ color: 'var(--avp-text-dim)' }}>Desligado (nuvem cinza)</span>
+              </div>
+            </div>
+            <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 10 }}>
+              ⚠️ Após salvar e configurar o DNS, avise a equipe Oito7 Digital para ativar o domínio no servidor. Pode levar até 24h para propagar.
+            </p>
+          </div>
+        )}
       </div>
 
       <div style={sectionStyle}>
