@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json()
   const { data, error } = await (adminClient.from('clientes') as any)
-    .insert({ nome: body.nome, dominio: body.dominio || '', plano: body.plano || 'basico', contato_nome: body.contato_nome || '', contato_whatsapp: body.contato_whatsapp || '', contato_email: body.contato_email || '', observacoes: body.observacoes || '' })
+    .insert({ nome: body.nome, dominio: body.dominio || '', contato_nome: body.contato_nome || '', contato_whatsapp: body.contato_whatsapp || '', contato_email: body.contato_email || '', observacoes: body.observacoes || '', gestor_ativo: body.gestor_ativo || false, limite_consultores: body.limite_consultores || 30 })
     .select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)

@@ -2,18 +2,15 @@
 import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 
-type Cliente = { id: string; nome: string; dominio: string; plano: string; ativo: boolean; contato_nome: string; contato_whatsapp: string; contato_email: string; observacoes: string; created_at: string }
+type Cliente = { id: string; nome: string; dominio: string; ativo: boolean; contato_nome: string; contato_whatsapp: string; contato_email: string; observacoes: string; created_at: string; gestor_ativo: boolean; limite_consultores: number }
 type Stats = { totalAlunos: number; totalGestores: number; totalAdmins: number; totalModulos: number; totalAulas: number }
-
-const PLANOS = ['basico', 'profissional', 'premium']
-const PLANO_CORES: Record<string, string> = { basico: '#8a8fa3', profissional: '#6366f1', premium: '#f59e0b' }
 
 export default function SuperDashboard({ nome, clientes: inicial, stats, recentesAlunos }: {
   nome: string; clientes: Cliente[]; stats: Stats; recentesAlunos: { nome: string; created_at: string; status: string }[]
 }) {
   const [clientes, setClientes] = useState<Cliente[]>(inicial)
   const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo'>('dashboard')
-  const [form, setForm] = useState({ nome: '', dominio: '', plano: 'basico', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '' })
+  const [form, setForm] = useState({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 })
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
   const [editando, setEditando] = useState<Cliente | null>(null)
@@ -36,7 +33,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
       const data = await res.json()
       if (editando) setClientes(prev => prev.map(c => c.id === editando.id ? data : c))
       else setClientes(prev => [...prev, data])
-      setForm({ nome: '', dominio: '', plano: 'basico', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '' })
+      setForm({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 })
       setEditando(null)
       setAba('clientes')
       setMsg('Cliente salvo!')
@@ -50,7 +47,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
   }
 
   function iniciarEdicao(c: Cliente) {
-    setForm({ nome: c.nome, dominio: c.dominio, plano: c.plano, contato_nome: c.contato_nome, contato_whatsapp: c.contato_whatsapp, contato_email: c.contato_email, observacoes: c.observacoes })
+    setForm({ nome: c.nome, dominio: c.dominio, contato_nome: c.contato_nome, contato_whatsapp: c.contato_whatsapp, contato_email: c.contato_email, observacoes: c.observacoes, gestor_ativo: c.gestor_ativo, limite_consultores: c.limite_consultores || 30 })
     setEditando(c)
     setAba('novo')
   }
@@ -173,8 +170,12 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                         <p style={{ fontWeight: 700, fontSize: 16 }}>{c.nome}</p>
-                        <span style={{ background: (PLANO_CORES[c.plano] || '#8a8fa3') + '25', color: PLANO_CORES[c.plano] || '#8a8fa3', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700, textTransform: 'capitalize' }}>
-                          {c.plano}
+                        <span style={{ background: '#6366f125', color: '#6366f1', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>
+                          Completo
+                        </span>
+                        {c.gestor_ativo && <span style={{ background: '#f59e0b25', color: '#f59e0b', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>+ Gestor R$97/mês</span>}
+                        <span style={{ background: '#02A15325', color: '#02A153', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>
+                          Até {c.limite_consultores || 30} consultores
                         </span>
                       </div>
                       <div style={{ display: 'flex', gap: 20, fontSize: 13, color: '#8a8fa3', flexWrap: 'wrap' }}>
@@ -204,13 +205,16 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
             <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>{editando ? 'Editar Cliente' : 'Novo Cliente'}</h1>
             <p style={{ color: '#8a8fa3', fontSize: 14, marginBottom: 28 }}>Cadastre uma empresa que vai usar a plataforma</p>
             <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div><label style={labelStyle}>Nome da empresa *</label><input style={inputStyle} value={form.nome} onChange={e => setForm(p => ({ ...p, nome: e.target.value }))} placeholder="Ex: Empresa XYZ — Uni XYZ" /></div>
-              <div><label style={labelStyle}>Domínio</label><input style={inputStyle} value={form.dominio} onChange={e => setForm(p => ({ ...p, dominio: e.target.value }))} placeholder="Ex: uni.empresa.com.br" /></div>
-              <div>
-                <label style={labelStyle}>Plano</label>
-                <select style={{ ...inputStyle }} value={form.plano} onChange={e => setForm(p => ({ ...p, plano: e.target.value }))}>
-                  {PLANOS.map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
-                </select>
+              <div><label style={labelStyle}>Nome da empresa *</label><input style={inputStyle} value={form.nome} onChange={e => setForm(p => ({ ...p, nome: e.target.value }))} placeholder="Ex: Auto Vale Prevenções — Uni AVP" /></div>
+              <div><label style={labelStyle}>Domínio personalizado</label><input style={inputStyle} value={form.dominio} onChange={e => setForm(p => ({ ...p, dominio: e.target.value }))} placeholder="Ex: uni.empresa.com.br" /></div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div><label style={labelStyle}>Limite de consultores</label><input type="number" style={inputStyle} value={form.limite_consultores} onChange={e => setForm(p => ({ ...p, limite_consultores: parseInt(e.target.value) || 30 })} min={1} /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 0' }}>
+                    <input type="checkbox" checked={form.gestor_ativo} onChange={e => setForm(p => ({ ...p, gestor_ativo: e.target.checked }))} style={{ width: 18, height: 18, accentColor: '#f59e0b' }} />
+                    <span style={{ color: '#f0f1f5', fontSize: 14, fontWeight: 600 }}>Painel do Gestor <span style={{ color: '#f59e0b' }}>R$97/mês</span></span>
+                  </label>
+                </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div><label style={labelStyle}>Nome do contato</label><input style={inputStyle} value={form.contato_nome} onChange={e => setForm(p => ({ ...p, contato_nome: e.target.value }))} /></div>
