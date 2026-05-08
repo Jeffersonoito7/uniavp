@@ -34,7 +34,7 @@ const CONFIG_MASTER: SiteConfig = {
 
 export async function getSiteConfig(): Promise<SiteConfig> {
   // Detecta o domínio atual
-  const headersList = await headers()
+  const headersList = headers()
   const host = headersList.get('host') || ''
   const dominio = host.replace(/:\d+$/, '') // remove porta se houver
 
