@@ -5,11 +5,14 @@ import { createBrowserClient } from '@supabase/ssr'
 type Cliente = { id: string; nome: string; dominio: string; ativo: boolean; contato_nome: string; contato_whatsapp: string; contato_email: string; observacoes: string; created_at: string; gestor_ativo: boolean; limite_consultores: number }
 type Stats = { totalAlunos: number; totalGestores: number; totalAdmins: number; totalModulos: number; totalAulas: number }
 
+const BASE_URL = 'https://universidade.oito7digital.com.br'
+
 export default function SuperDashboard({ nome, clientes: inicial, stats, recentesAlunos }: {
   nome: string; clientes: Cliente[]; stats: Stats; recentesAlunos: { nome: string; created_at: string; status: string }[]
 }) {
   const [clientes, setClientes] = useState<Cliente[]>(inicial)
-  const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo'>('dashboard')
+  const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar'>('dashboard')
+  const [whatsappTeste, setWhatsappTeste] = useState('')
   const [form, setForm] = useState({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 })
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
@@ -69,8 +72,9 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
             { id: 'dashboard', label: '📊 Dashboard' },
             { id: 'clientes', label: '🏢 Clientes' },
             { id: 'novo', label: '+ Novo Cliente' },
+            { id: 'testar', label: '🧪 Testar' },
           ] as const).map(item => (
-            <button key={item.id} onClick={() => { setAba(item.id); if (item.id !== 'novo') { setEditando(null); setForm({ nome: '', dominio: '', plano: 'basico', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '' }) } }}
+            <button key={item.id} onClick={() => { setAba(item.id as any); if (item.id !== 'novo') { setEditando(null); setForm({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 }) } }}
               style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, fontSize: 14, fontWeight: 500, color: aba === item.id ? '#f0f1f5' : '#8a8fa3', background: aba === item.id ? '#252836' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
               {item.label}
             </button>
@@ -148,6 +152,80 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {aba === 'testar' && (
+          <div>
+            <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Testar Plataforma</h1>
+            <p style={{ color: '#8a8fa3', fontSize: 14, marginBottom: 28 }}>Acesse cada painel para testar antes de liberar atualizações</p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 28 }}>
+              {[
+                {
+                  icon: '🛡️',
+                  titulo: 'Painel Admin',
+                  desc: 'Gerencia módulos, consultores, CRM, configurações e relatórios da empresa cliente.',
+                  cor: '#6366f1',
+                  link: `${BASE_URL}/admin`,
+                  label: 'Abrir Painel Admin',
+                },
+                {
+                  icon: '🧑‍💼',
+                  titulo: 'Painel Gestor',
+                  desc: 'Acompanha progresso dos consultores da sua equipe e cria eventos.',
+                  cor: '#f59e0b',
+                  link: `${BASE_URL}/gestor`,
+                  label: 'Abrir Painel Gestor',
+                },
+              ].map(p => (
+                <div key={p.titulo} style={{ background: '#181b24', border: `1px solid ${p.cor}40`, borderRadius: 12, padding: 24 }}>
+                  <div style={{ fontSize: 36, marginBottom: 12 }}>{p.icon}</div>
+                  <p style={{ fontWeight: 700, fontSize: 16, color: p.cor, marginBottom: 8 }}>{p.titulo}</p>
+                  <p style={{ color: '#8a8fa3', fontSize: 13, marginBottom: 16, lineHeight: 1.5 }}>{p.desc}</p>
+                  <a href={p.link} target="_blank" rel="noreferrer"
+                    style={{ display: 'inline-block', background: p.cor, color: '#fff', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
+                    {p.label} ↗
+                  </a>
+                </div>
+              ))}
+            </div>
+
+            {/* Painel Consultor — precisa do WhatsApp */}
+            <div style={{ background: '#181b24', border: '1px solid #02A15340', borderRadius: 12, padding: 24 }}>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>👤</div>
+              <p style={{ fontWeight: 700, fontSize: 16, color: '#02A153', marginBottom: 8 }}>Painel Consultor</p>
+              <p style={{ color: '#8a8fa3', fontSize: 13, marginBottom: 16, lineHeight: 1.5 }}>
+                O consultor acessa via WhatsApp cadastrado. Digite o número para abrir o painel de teste.
+              </p>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <input
+                  placeholder="WhatsApp do consultor (ex: 11999999999)"
+                  value={whatsappTeste}
+                  onChange={e => setWhatsappTeste(e.target.value.replace(/\D/g, ''))}
+                  style={{ flex: 1, background: '#08090d', border: '1px solid #252836', borderRadius: 8, padding: '10px 14px', color: '#f0f1f5', fontSize: 14, outline: 'none' }}
+                />
+                <a
+                  href={whatsappTeste ? `${BASE_URL}/aluno/${whatsappTeste}` : '#'}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={e => { if (!whatsappTeste) e.preventDefault() }}
+                  style={{ background: whatsappTeste ? '#02A153' : '#252836', color: '#fff', borderRadius: 8, padding: '10px 18px', fontWeight: 700, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap', cursor: whatsappTeste ? 'pointer' : 'not-allowed', opacity: whatsappTeste ? 1 : 0.5 }}>
+                  Abrir Painel ↗
+                </a>
+              </div>
+            </div>
+
+            {/* Página de captação */}
+            <div style={{ background: '#181b24', border: '1px solid #33368740', borderRadius: 12, padding: 24, marginTop: 20 }}>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>🌐</div>
+              <p style={{ fontWeight: 700, fontSize: 16, color: '#6366f1', marginBottom: 8 }}>Página de Captação</p>
+              <p style={{ color: '#8a8fa3', fontSize: 13, marginBottom: 16 }}>Página pública de cadastro de novos consultores.</p>
+              <a href={`${BASE_URL}/captacao`} target="_blank" rel="noreferrer"
+                style={{ display: 'inline-block', background: '#6366f1', color: '#fff', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
+                Abrir Captação ↗
+              </a>
             </div>
           </div>
         )}
