@@ -163,10 +163,23 @@ export async function POST(req: NextRequest) {
         const moduloConcluido = idsConcluidosModulo.length === todasAulasModulo.length
 
         if (moduloConcluido) {
-          await enviarWhatsApp(
-            alunoComGestor.gestor_whatsapp,
-            `📚 Olá ${alunoComGestor.gestor_nome || 'Gestor'}! Seu consultor *${alunoComGestor.nome}* concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}* na Universidade AVP! 🎉`
-          )
+          // Notifica gestor
+          if (alunoComGestor?.gestor_whatsapp) {
+            await enviarWhatsApp(
+              alunoComGestor.gestor_whatsapp,
+              `📚 Olá ${alunoComGestor.gestor_nome || 'Gestor'}! Seu consultor *${alunoComGestor.nome}* concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}* na Universidade AVP! 🎉`
+            )
+          }
+          // Notifica o próprio consultor com link para gerar arte comemorativa
+          const { data: alunoInfo } = await (adminClient.from('alunos') as any)
+            .select('whatsapp, nome').eq('id', aluno.id).maybeSingle()
+          if (alunoInfo?.whatsapp) {
+            const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://universidade.oito7digital.com.br'
+            await enviarWhatsApp(
+              alunoInfo.whatsapp,
+              `🎉 Parabéns, *${alunoInfo.nome}*!\n\nVocê concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🏆\n\nCrie sua arte comemorativa e compartilhe com sua rede:\n👉 ${appUrl}/aluno/${alunoInfo.whatsapp}/artes`
+            )
+          }
         }
       }
     }
@@ -176,11 +189,22 @@ export async function POST(req: NextRequest) {
       .eq('id', aluno.id)
       .maybeSingle()
 
-    if (alunoAtualizado?.status === 'concluido' && alunoAtualizado?.gestor_whatsapp) {
-      await enviarWhatsApp(
-        alunoAtualizado.gestor_whatsapp,
-        `🏆 PARABÉNS, ${alunoAtualizado.gestor_nome || 'Gestor'}!\n\nSeu consultor *${alunoAtualizado.nome}* concluiu 100% da formação na *Universidade Auto Vale Prevenções* e está pronto para ser um Consultor AVP de sucesso! 🎓✨\n\nAcesse a plataforma para ver o progresso: ${process.env.NEXT_PUBLIC_APP_URL}/aluno/${alunoAtualizado.whatsapp}`
-      )
+    if (alunoAtualizado?.status === 'concluido') {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://universidade.oito7digital.com.br'
+      // Notifica gestor
+      if (alunoAtualizado?.gestor_whatsapp) {
+        await enviarWhatsApp(
+          alunoAtualizado.gestor_whatsapp,
+          `🏆 PARABÉNS, ${alunoAtualizado.gestor_nome || 'Gestor'}!\n\nSeu consultor *${alunoAtualizado.nome}* concluiu 100% da formação e está pronto para ser um Consultor de sucesso! 🎓✨\n\nVer progresso: ${appUrl}/aluno/${alunoAtualizado.whatsapp}`
+        )
+      }
+      // Notifica o próprio consultor com link para arte de formatura
+      if (alunoAtualizado?.whatsapp) {
+        await enviarWhatsApp(
+          alunoAtualizado.whatsapp,
+          `🎓 *PARABÉNS, ${alunoAtualizado.nome}!*\n\nVocê concluiu 100% da formação! É um momento para celebrar! 🏆✨\n\nCrie sua arte de formatura e compartilhe com sua rede:\n👉 ${appUrl}/aluno/${alunoAtualizado.whatsapp}/artes\n\nBem-vindo ao time de consultores formados! 🚀`
+        )
+      }
     }
   }
 
