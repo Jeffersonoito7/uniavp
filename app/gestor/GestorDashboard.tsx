@@ -35,10 +35,12 @@ export default function GestorDashboard({
   gestor,
   consultores,
   progressoMap,
+  whatsappWidget,
 }: {
   gestor: Gestor
   consultores: Consultor[]
   progressoMap: Record<string, number>
+  whatsappWidget?: React.ReactNode
 }) {
   const [linkCopiado, setLinkCopiado] = useState(false)
   const [consultorSelecionado, setConsultorSelecionado] = useState<Consultor | null>(null)
@@ -49,7 +51,7 @@ export default function GestorDashboard({
   const [eventoForm, setEventoForm] = useState({ titulo: '', descricao: '', cidade: '', data_hora: '', notificar: true })
   const [salvandoEvento, setSalvandoEvento] = useState(false)
   const [msgEvento, setMsgEvento] = useState('')
-  const [abaGestor, setAbaGestor] = useState<'consultores' | 'eventos'>('consultores')
+  const [abaGestor, setAbaGestor] = useState<'consultores' | 'eventos' | 'config'>('consultores')
 
   const totalConsultores = consultores.length
   const emAndamento = consultores.filter(c => c.status === 'ativo' && progressoMap[c.id] > 0).length
@@ -188,7 +190,7 @@ export default function GestorDashboard({
 
         {/* Abas */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-          {[{ id: 'consultores', label: '👥 Consultores' }, { id: 'eventos', label: '🗓️ Eventos' }].map(aba => (
+          {[{ id: 'consultores', label: '👥 Consultores' }, { id: 'eventos', label: '🗓️ Eventos' }, { id: 'config', label: '⚙️ Configurações' }].map(aba => (
             <button key={aba.id} onClick={() => { setAbaGestor(aba.id as any); if (aba.id === 'eventos' && eventos.length === 0) carregarEventos() }}
               style={{ background: abaGestor === aba.id ? 'var(--avp-blue)' : 'var(--avp-card)', color: abaGestor === aba.id ? '#fff' : 'var(--avp-text-dim)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '8px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>
               {aba.label}
@@ -250,6 +252,13 @@ export default function GestorDashboard({
                 <button onClick={() => removerEvento(ev.id)} style={{ background: 'var(--avp-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Remover</button>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Aba Config */}
+        {abaGestor === 'config' && (
+          <div style={{ maxWidth: 500 }}>
+            {whatsappWidget}
           </div>
         )}
 

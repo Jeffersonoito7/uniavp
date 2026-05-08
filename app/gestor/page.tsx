@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import GestorDashboard from './GestorDashboard'
+import WhatsAppConectar from '@/app/components/WhatsAppConectar'
 
 export default async function GestorPage() {
   const supabase = await createClient()
@@ -40,6 +41,7 @@ export default async function GestorPage() {
       gestor={gestor}
       consultores={consultores ?? []}
       progressoMap={progressoMap}
+      whatsappWidget={<WhatsAppConectar />}
     />
   )
 }

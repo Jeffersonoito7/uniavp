@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import AdminLayout from '../AdminLayout'
 import ConfiguracoesCliente from './ConfiguracoesCliente'
+import WhatsAppConectar from '@/app/components/WhatsAppConectar'
 
 export default async function ConfiguracoesPage() {
   const supabase = await createClient()
@@ -20,6 +21,9 @@ export default async function ConfiguracoesPage() {
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Configurações da plataforma Uni AVP</p>
       </div>
       <ConfiguracoesCliente configs={configs ?? []} />
+      <div style={{ marginTop: 24 }}>
+        <WhatsAppConectar />
+      </div>
     </AdminLayout>
   )
 }
