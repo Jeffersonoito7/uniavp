@@ -34,9 +34,24 @@ export default function CaptacaoPage() {
   const lbl: React.CSSProperties = { display: 'block', color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }
 
   const depoimentos = [
-    { nome: 'Carlos Mendes', cargo: 'Consultor AVP — Petrolina', texto: 'Em 3 semanas me formei e já fechei meus primeiros contratos. A plataforma é incrível!', emoji: '⭐⭐⭐⭐⭐' },
-    { nome: 'Ana Paula Silva', cargo: 'Consultora AVP — Juazeiro', texto: 'O treinamento me deu toda a base que precisava. Hoje sou referência na minha região.', emoji: '⭐⭐⭐⭐⭐' },
-    { nome: 'Marcos Oliveira', cargo: 'Consultor Sênior AVP', texto: 'Nunca imaginei crescer tão rápido. A Uni AVP mudou minha vida profissional!', emoji: '⭐⭐⭐⭐⭐' },
+    {
+      nome: 'Cassio Greg',
+      cargo: 'Consultor AVP',
+      texto: 'Essa UniAVP não só me fez entender o quão potencial eu tenho. Mas também aprendi a influenciar positivamente outras pessoas a irem para o próximo nível! Eu já quero as próximas UniAVP!!!',
+      emoji: '⭐⭐⭐⭐⭐',
+    },
+    {
+      nome: 'Josadak Everton',
+      cargo: 'Consultor AVP',
+      texto: 'Posso falar com sinceridade: a UNIAVP tem mudado minha mentalidade. Profissionalismo, abordagem e liderança… Hoje eu conto os dias para estar nas reuniões. A Universidade AVP veio para separar quem realmente quer crescer… de quem só quer brincar.',
+      emoji: '⭐⭐⭐⭐⭐',
+    },
+    {
+      nome: 'Alisson Silva',
+      cargo: 'Consultor AVP',
+      texto: 'Essa Uniavp fez eu acreditar muito mais no meu potencial. Nos mostrou que experiência juntada com técnica alavanca muito mais o resultado. No dia após nosso retorno já conquistei um iPhone 17 Pro e uma Carta de Crédito para minha casa dos sonhos! Estou na terra prometida. 🚀',
+      emoji: '⭐⭐⭐⭐⭐',
+    },
   ]
 
   const numeros = [
