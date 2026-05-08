@@ -52,6 +52,12 @@ export default function CaptacaoPage() {
       texto: 'Essa Uniavp fez eu acreditar muito mais no meu potencial. Nos mostrou que experiência juntada com técnica alavanca muito mais o resultado. No dia após nosso retorno já conquistei um iPhone 17 Pro e uma Carta de Crédito para minha casa dos sonhos! Estou na terra prometida. 🚀',
       emoji: '⭐⭐⭐⭐⭐',
     },
+    {
+      nome: 'Thallis Guttemberg',
+      cargo: 'Consultor AVP',
+      texto: 'Depois da UNIAVP tomei a decisão de fazer Autovale de forma profissional. O que antes era dúvida hoje se tornou certeza.',
+      emoji: '⭐⭐⭐⭐⭐',
+    },
   ]
 
   const numeros = [
