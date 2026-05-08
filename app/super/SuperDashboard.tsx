@@ -157,76 +157,80 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
         )}
 
         {aba === 'testar' && (
-          <div>
-            <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Testar Plataforma</h1>
-            <p style={{ color: '#8a8fa3', fontSize: 14, marginBottom: 28 }}>Acesse cada painel para testar antes de liberar atualizações</p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 28 }}>
-              {[
-                {
-                  icon: '🛡️',
-                  titulo: 'Painel Admin',
-                  desc: 'Gerencia módulos, consultores, CRM, configurações e relatórios da empresa cliente.',
-                  cor: '#6366f1',
-                  link: `${BASE_URL}/admin`,
-                  label: 'Abrir Painel Admin',
-                },
-                {
-                  icon: '🧑‍💼',
-                  titulo: 'Painel Gestor',
-                  desc: 'Acompanha progresso dos consultores da sua equipe e cria eventos.',
-                  cor: '#f59e0b',
-                  link: `${BASE_URL}/gestor`,
-                  label: 'Abrir Painel Gestor',
-                },
-              ].map(p => (
-                <div key={p.titulo} style={{ background: '#181b24', border: `1px solid ${p.cor}40`, borderRadius: 12, padding: 24 }}>
-                  <div style={{ fontSize: 36, marginBottom: 12 }}>{p.icon}</div>
-                  <p style={{ fontWeight: 700, fontSize: 16, color: p.cor, marginBottom: 8 }}>{p.titulo}</p>
-                  <p style={{ color: '#8a8fa3', fontSize: 13, marginBottom: 16, lineHeight: 1.5 }}>{p.desc}</p>
-                  <a href={p.link} target="_blank" rel="noreferrer"
-                    style={{ display: 'inline-block', background: p.cor, color: '#fff', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
-                    {p.label} ↗
-                  </a>
-                </div>
-              ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div>
+              <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>🧪 Testar Plataforma</h1>
+              <p style={{ color: '#8a8fa3', fontSize: 14 }}>Acesse cada painel para testar antes de liberar atualizações</p>
             </div>
 
-            {/* Painel Consultor — precisa do WhatsApp */}
+            {/* Links rápidos — todos os painéis */}
+            <div style={{ background: '#181b24', border: '1px solid #252836', borderRadius: 12, padding: 24 }}>
+              <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Links Rápidos — Domínio Principal</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                {[
+                  { icon: '🛡️', label: 'Admin', link: `${BASE_URL}/admin`, cor: '#6366f1' },
+                  { icon: '🧑‍💼', label: 'Gestor', link: `${BASE_URL}/gestor`, cor: '#f59e0b' },
+                  { icon: '🌐', label: 'Captação', link: `${BASE_URL}/captacao`, cor: '#02A153' },
+                  { icon: '🔑', label: 'Login', link: `${BASE_URL}/login`, cor: '#8a8fa3' },
+                ].map(p => (
+                  <a key={p.label} href={p.link} target="_blank" rel="noreferrer"
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, background: p.cor + '15', border: `1px solid ${p.cor}40`, borderRadius: 10, padding: '16px 12px', textDecoration: 'none', cursor: 'pointer' }}>
+                    <span style={{ fontSize: 28 }}>{p.icon}</span>
+                    <span style={{ color: p.cor, fontWeight: 700, fontSize: 13 }}>{p.label}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Painel Consultor */}
             <div style={{ background: '#181b24', border: '1px solid #02A15340', borderRadius: 12, padding: 24 }}>
-              <div style={{ fontSize: 36, marginBottom: 12 }}>👤</div>
-              <p style={{ fontWeight: 700, fontSize: 16, color: '#02A153', marginBottom: 8 }}>Painel Consultor</p>
-              <p style={{ color: '#8a8fa3', fontSize: 13, marginBottom: 16, lineHeight: 1.5 }}>
-                O consultor acessa via WhatsApp cadastrado. Digite o número para abrir o painel de teste.
-              </p>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 8 }}>👤 Painel Consultor</p>
+              <p style={{ color: '#8a8fa3', fontSize: 13, marginBottom: 12 }}>Digite o WhatsApp do consultor para abrir o painel dele.</p>
+              <div style={{ display: 'flex', gap: 10 }}>
                 <input
-                  placeholder="WhatsApp do consultor (ex: 11999999999)"
+                  placeholder="WhatsApp (ex: 11999999999)"
                   value={whatsappTeste}
                   onChange={e => setWhatsappTeste(e.target.value.replace(/\D/g, ''))}
                   style={{ flex: 1, background: '#08090d', border: '1px solid #252836', borderRadius: 8, padding: '10px 14px', color: '#f0f1f5', fontSize: 14, outline: 'none' }}
                 />
-                <a
-                  href={whatsappTeste ? `${BASE_URL}/aluno/${whatsappTeste}` : '#'}
-                  target="_blank"
-                  rel="noreferrer"
+                <a href={whatsappTeste ? `${BASE_URL}/aluno/${whatsappTeste}` : '#'} target="_blank" rel="noreferrer"
                   onClick={e => { if (!whatsappTeste) e.preventDefault() }}
-                  style={{ background: whatsappTeste ? '#02A153' : '#252836', color: '#fff', borderRadius: 8, padding: '10px 18px', fontWeight: 700, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap', cursor: whatsappTeste ? 'pointer' : 'not-allowed', opacity: whatsappTeste ? 1 : 0.5 }}>
-                  Abrir Painel ↗
+                  style={{ background: whatsappTeste ? '#02A153' : '#252836', color: '#fff', borderRadius: 8, padding: '10px 18px', fontWeight: 700, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap', opacity: whatsappTeste ? 1 : 0.5 }}>
+                  Abrir Consultor ↗
                 </a>
               </div>
             </div>
 
-            {/* Página de captação */}
-            <div style={{ background: '#181b24', border: '1px solid #33368740', borderRadius: 12, padding: 24, marginTop: 20 }}>
-              <div style={{ fontSize: 36, marginBottom: 12 }}>🌐</div>
-              <p style={{ fontWeight: 700, fontSize: 16, color: '#6366f1', marginBottom: 8 }}>Página de Captação</p>
-              <p style={{ color: '#8a8fa3', fontSize: 13, marginBottom: 16 }}>Página pública de cadastro de novos consultores.</p>
-              <a href={`${BASE_URL}/captacao`} target="_blank" rel="noreferrer"
-                style={{ display: 'inline-block', background: '#6366f1', color: '#fff', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
-                Abrir Captação ↗
-              </a>
-            </div>
+            {/* Por cliente */}
+            {clientes.filter(c => c.ativo).length > 0 && (
+              <div style={{ background: '#181b24', border: '1px solid #252836', borderRadius: 12, padding: 24 }}>
+                <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>🏢 Testar por Empresa Cliente</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {clientes.filter(c => c.ativo).map(c => {
+                    const url = c.dominio ? `https://${c.dominio}` : BASE_URL
+                    return (
+                      <div key={c.id} style={{ background: '#08090d', borderRadius: 10, padding: '14px 16px' }}>
+                        <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}>{c.nome}</p>
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                          {[
+                            { label: '🛡️ Admin', link: `${url}/admin` },
+                            { label: '🧑‍💼 Gestor', link: `${url}/gestor` },
+                            { label: '🌐 Captação', link: `${url}/captacao` },
+                            { label: '🔑 Login', link: `${url}/login` },
+                          ].map(btn => (
+                            <a key={btn.label} href={btn.link} target="_blank" rel="noreferrer"
+                              style={{ background: '#252836', color: '#f0f1f5', borderRadius: 6, padding: '6px 12px', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+                              {btn.label} ↗
+                            </a>
+                          ))}
+                        </div>
+                        {c.dominio && <p style={{ fontSize: 11, color: '#8a8fa3', marginTop: 8 }}>🌐 {c.dominio}</p>}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
