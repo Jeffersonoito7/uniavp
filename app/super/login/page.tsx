@@ -60,7 +60,7 @@ export default function SuperLoginPage() {
     <div style={{ minHeight: '100vh', background: '#08090d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ width: 400, maxWidth: '95vw' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
-          <Image src="/oito7-logo.png" alt="Oito7 Digital" width={240} height={80} style={{ objectFit: 'contain', marginBottom: 4 }} />
+          <Image src="/oito7-logo.png" alt="Oito7 Digital" width={240} height={80} style={{ objectFit: 'contain', marginBottom: 4, filter: 'brightness(0) invert(1)' }} />
           <p style={{ color: '#8a8fa3', fontSize: 14 }}>Painel Master — Gestão de Clientes</p>
         </div>
 

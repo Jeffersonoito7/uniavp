@@ -61,7 +61,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
       {/* Sidebar */}
       <aside style={{ width: 220, background: '#181b24', borderRight: '1px solid #252836', display: 'flex', flexDirection: 'column', padding: '24px 0' }}>
         <div style={{ padding: '0 16px 20px', borderBottom: '1px solid #252836' }}>
-          <img src="/oito7-logo.png" alt="Oito7 Digital" style={{ width: '100%', maxHeight: 48, objectFit: 'contain', marginBottom: 4 }} />
+          <img src="/oito7-logo.png" alt="Oito7 Digital" style={{ width: '100%', maxHeight: 48, objectFit: 'contain', marginBottom: 4, filter: 'brightness(0) invert(1)' }} />
           <p style={{ fontSize: 11, color: '#8a8fa3', textAlign: 'center' }}>Painel Master</p>
         </div>
         <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 4, overflowY: 'auto' }}>
