@@ -5,6 +5,8 @@ import ThemeToggle from '@/app/components/ThemeToggle'
 import EventosWidget from '@/app/components/EventosWidget'
 import MuralNoticias from '@/app/components/MuralNoticias'
 
+type Evento = { id: string; titulo: string; descricao: string; cidade: string; data_hora: string }
+
 type Consultor = {
   id: string
   nome: string
@@ -42,6 +44,12 @@ export default function GestorDashboard({
   const [consultorSelecionado, setConsultorSelecionado] = useState<Consultor | null>(null)
   const [modulos, setModulos] = useState<Modulo[]>([])
   const [carregandoModulos, setCarregandoModulos] = useState(false)
+  const [showEvento, setShowEvento] = useState(false)
+  const [eventos, setEventos] = useState<Evento[]>([])
+  const [eventoForm, setEventoForm] = useState({ titulo: '', descricao: '', cidade: '', data_hora: '', notificar: true })
+  const [salvandoEvento, setSalvandoEvento] = useState(false)
+  const [msgEvento, setMsgEvento] = useState('')
+  const [abaGestor, setAbaGestor] = useState<'consultores' | 'eventos'>('consultores')
 
   const totalConsultores = consultores.length
   const emAndamento = consultores.filter(c => c.status === 'ativo' && progressoMap[c.id] > 0).length
@@ -80,6 +88,39 @@ export default function GestorDashboard({
   function fecharModal() {
     setConsultorSelecionado(null)
     setModulos([])
+  }
+
+  async function carregarEventos() {
+    const res = await fetch('/api/gestor/eventos')
+    const data = await res.json()
+    setEventos(data)
+  }
+
+  async function salvarEvento(e: React.FormEvent) {
+    e.preventDefault()
+    setSalvandoEvento(true)
+    setMsgEvento('')
+    const res = await fetch('/api/gestor/eventos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(eventoForm),
+    })
+    const data = await res.json()
+    if (data.id) {
+      setEventos(prev => [...prev, data])
+      setEventoForm({ titulo: '', descricao: '', cidade: '', data_hora: '', notificar: true })
+      setShowEvento(false)
+      setMsgEvento('Evento criado com sucesso!')
+    } else {
+      setMsgEvento('Erro ao criar evento.')
+    }
+    setSalvandoEvento(false)
+    setTimeout(() => setMsgEvento(''), 3000)
+  }
+
+  async function removerEvento(id: string) {
+    await fetch('/api/gestor/eventos', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    setEventos(prev => prev.filter(ev => ev.id !== id))
   }
 
   const badgeStatus: Record<string, { label: string; color: string; bg: string }> = {
@@ -145,16 +186,75 @@ export default function GestorDashboard({
           ))}
         </div>
 
-        <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'flex-end' }}>
-          <button
-            onClick={copiarLink}
-            style={{ background: linkCopiado ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer', fontSize: 14, transition: 'background 0.2s' }}
-          >
-            {linkCopiado ? 'Link copiado!' : 'Cadastrar novo consultor'}
-          </button>
+        {/* Abas */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          {[{ id: 'consultores', label: '👥 Consultores' }, { id: 'eventos', label: '🗓️ Eventos' }].map(aba => (
+            <button key={aba.id} onClick={() => { setAbaGestor(aba.id as any); if (aba.id === 'eventos' && eventos.length === 0) carregarEventos() }}
+              style={{ background: abaGestor === aba.id ? 'var(--avp-blue)' : 'var(--avp-card)', color: abaGestor === aba.id ? '#fff' : 'var(--avp-text-dim)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '8px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>
+              {aba.label}
+            </button>
+          ))}
+          <div style={{ flex: 1 }} />
+          {abaGestor === 'consultores' && (
+            <button onClick={copiarLink} style={{ background: linkCopiado ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>
+              {linkCopiado ? 'Link copiado!' : 'Cadastrar novo consultor'}
+            </button>
+          )}
+          {abaGestor === 'eventos' && (
+            <button onClick={() => setShowEvento(s => !s)} style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>
+              {showEvento ? 'Cancelar' : '+ Novo Evento'}
+            </button>
+          )}
         </div>
 
-        <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden' }}>
+        {msgEvento && <div style={{ padding: '10px 16px', background: msgEvento.includes('sucesso') ? '#02A15320' : '#e6394620', border: `1px solid ${msgEvento.includes('sucesso') ? 'var(--avp-green)' : 'var(--avp-danger)'}`, borderRadius: 8, color: msgEvento.includes('sucesso') ? 'var(--avp-green)' : 'var(--avp-danger)', fontSize: 14, marginBottom: 16 }}>{msgEvento}</div>}
+
+
+        {/* Aba Eventos */}
+        {abaGestor === 'eventos' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {showEvento && (
+              <form onSubmit={salvarEvento} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <h3 style={{ fontWeight: 700, fontSize: 16 }}>Novo Evento</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  <div><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Título *</label>
+                    <input required value={eventoForm.titulo} onChange={e => setEventoForm(p => ({ ...p, titulo: e.target.value }))} style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} /></div>
+                  <div><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Cidade</label>
+                    <input value={eventoForm.cidade} onChange={e => setEventoForm(p => ({ ...p, cidade: e.target.value }))} style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} /></div>
+                  <div><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Data e Hora *</label>
+                    <input required type="datetime-local" value={eventoForm.data_hora} onChange={e => setEventoForm(p => ({ ...p, data_hora: e.target.value }))} style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} /></div>
+                  <div><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Descrição</label>
+                    <input value={eventoForm.descricao} onChange={e => setEventoForm(p => ({ ...p, descricao: e.target.value }))} style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} /></div>
+                </div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={eventoForm.notificar} onChange={e => setEventoForm(p => ({ ...p, notificar: e.target.checked }))} style={{ width: 16, height: 16, accentColor: 'var(--avp-green)' }} />
+                  <span style={{ fontSize: 14, color: 'var(--avp-text)' }}>Notificar meus consultores via WhatsApp</span>
+                </label>
+                <button type="submit" disabled={salvandoEvento} style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 700, cursor: 'pointer', fontSize: 14, alignSelf: 'flex-start', opacity: salvandoEvento ? 0.7 : 1 }}>
+                  {salvandoEvento ? 'Salvando...' : 'Criar Evento'}
+                </button>
+              </form>
+            )}
+            {eventos.length === 0 && !showEvento && (
+              <div style={{ textAlign: 'center', padding: 48, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', borderRadius: 12, border: '1px solid var(--avp-border)' }}>Nenhum evento criado ainda.</div>
+            )}
+            {eventos.map(ev => (
+              <div key={ev.id} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <p style={{ fontWeight: 700, fontSize: 15 }}>{ev.titulo}</p>
+                  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 2 }}>
+                    📅 {new Date(ev.data_hora).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    {ev.cidade && ` · 📍 ${ev.cidade}`}
+                  </p>
+                </div>
+                <button onClick={() => removerEvento(ev.id)} style={{ background: 'var(--avp-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Remover</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Aba Consultores */}
+        {abaGestor === 'consultores' && <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
@@ -194,7 +294,7 @@ export default function GestorDashboard({
               </tbody>
             </table>
           </div>
-        </div>
+        </div>}
       </main>
 
       {consultorSelecionado && (
