@@ -130,8 +130,8 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                       <p style={{ fontWeight: 600, fontSize: 14 }}>{c.nome}</p>
                       {c.dominio && <p style={{ fontSize: 12, color: '#8a8fa3' }}>{c.dominio}</p>}
                     </div>
-                    <span style={{ background: (PLANO_CORES[c.plano] || '#8a8fa3') + '25', color: PLANO_CORES[c.plano] || '#8a8fa3', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700, textTransform: 'capitalize' }}>
-                      {c.plano}
+                    <span style={{ background: '#6366f125', color: '#6366f1', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>
+                      Completo
                     </span>
                   </div>
                 ))}
