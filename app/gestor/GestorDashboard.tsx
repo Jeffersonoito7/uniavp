@@ -127,11 +127,16 @@ export default function GestorDashboard({
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Acompanhe o progresso dos seus consultores</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 28 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
+          <div style={{ background: 'var(--avp-card)', border: `1px solid ${totalConsultores >= 30 ? 'var(--avp-danger)' : 'var(--avp-border)'}`, borderRadius: 12, padding: 24 }}>
+            <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 8 }}>Consultores</p>
+            <p style={{ fontSize: 36, fontWeight: 800, color: totalConsultores >= 30 ? 'var(--avp-danger)' : 'var(--avp-text)' }}>{totalConsultores}<span style={{ fontSize: 16, color: 'var(--avp-text-dim)', fontWeight: 400 }}>/30</span></p>
+            {totalConsultores >= 30 && <p style={{ fontSize: 11, color: 'var(--avp-danger)', marginTop: 4, fontWeight: 600 }}>Limite atingido</p>}
+          </div>
           {[
-            { label: 'Total de consultores', value: totalConsultores },
             { label: 'Em andamento', value: emAndamento },
             { label: 'Concluídos', value: concluidos },
+            { label: 'Vagas restantes', value: Math.max(0, 30 - totalConsultores) },
           ].map(stat => (
             <div key={stat.label} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24 }}>
               <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 8 }}>{stat.label}</p>
