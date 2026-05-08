@@ -1,7 +1,6 @@
 'use client'
 import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import Image from 'next/image'
 
 export default function SuperLoginPage() {
   const [form, setForm] = useState({ email: '', password: '' })
@@ -60,7 +59,10 @@ export default function SuperLoginPage() {
     <div style={{ minHeight: '100vh', background: '#08090d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ width: 400, maxWidth: '95vw' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
-          <Image src="/logo.png" alt="Oito7 Digital" width={200} height={70} style={{ objectFit: 'contain', marginBottom: 12 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+            <span style={{ fontSize: 42 }}>🚀</span>
+            <span style={{ fontSize: 28, fontWeight: 900, color: '#02A153', letterSpacing: 1 }}>OITO7DIGITAL</span>
+          </div>
           <p style={{ color: '#8a8fa3', fontSize: 14 }}>Painel Master — Gestão de Clientes</p>
         </div>
 
