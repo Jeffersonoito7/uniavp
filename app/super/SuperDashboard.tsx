@@ -63,12 +63,11 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
     <div style={{ minHeight: '100vh', background: '#08090d', color: '#f0f1f5', fontFamily: 'Inter, sans-serif', display: 'flex' }}>
       {/* Sidebar */}
       <aside style={{ width: 220, background: '#181b24', borderRight: '1px solid #252836', display: 'flex', flexDirection: 'column', padding: '24px 0' }}>
-        <div style={{ padding: '0 20px 24px', borderBottom: '1px solid #252836' }}>
-          <div style={{ fontSize: 22, marginBottom: 4 }}>⚡</div>
-          <p style={{ fontWeight: 800, fontSize: 16, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Oito7 Digital</p>
-          <p style={{ fontSize: 11, color: '#8a8fa3', marginTop: 2 }}>Painel Master</p>
+        <div style={{ padding: '0 16px 20px', borderBottom: '1px solid #252836' }}>
+          <img src="/oito7-logo.png" alt="Oito7 Digital" style={{ width: '100%', maxHeight: 48, objectFit: 'contain', marginBottom: 4 }} />
+          <p style={{ fontSize: 11, color: '#8a8fa3', textAlign: 'center' }}>Painel Master</p>
         </div>
-        <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 4, overflowY: 'auto' }}>
           {([
             { id: 'dashboard', label: '📊 Dashboard' },
             { id: 'clientes', label: '🏢 Clientes' },
@@ -79,11 +78,17 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
               {item.label}
             </button>
           ))}
-          <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #252836' }}>
-            <a href="/admin" target="_blank" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, fontSize: 14, fontWeight: 500, color: '#8a8fa3', textDecoration: 'none' }}>
-              🎓 Acessar Uni AVP
-            </a>
-          </div>
+          {clientes.filter(c => c.ativo).length > 0 && (
+            <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #252836' }}>
+              <p style={{ fontSize: 11, color: '#8a8fa3', fontWeight: 700, padding: '0 12px', marginBottom: 6, letterSpacing: 1 }}>PAINÉIS DOS CLIENTES</p>
+              {clientes.filter(c => c.ativo).map(c => (
+                <a key={c.id} href="/admin" target="_blank"
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, fontSize: 13, fontWeight: 500, color: '#8a8fa3', textDecoration: 'none' }}>
+                  🎓 {c.nome.split('—')[0].trim()}
+                </a>
+              ))}
+            </div>
+          )}
         </nav>
         <div style={{ padding: '12px 16px', borderTop: '1px solid #252836' }}>
           <p style={{ fontSize: 12, color: '#8a8fa3', marginBottom: 8 }}>Logado como <strong style={{ color: '#f0f1f5' }}>{nome}</strong></p>
