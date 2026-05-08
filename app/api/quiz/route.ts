@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import { enviarWhatsApp } from '@/lib/whatsapp'
+import { enviarWhatsApp, getInstanciaGestorPorNome } from '@/lib/whatsapp'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -163,11 +163,13 @@ export async function POST(req: NextRequest) {
         const moduloConcluido = idsConcluidosModulo.length === todasAulasModulo.length
 
         if (moduloConcluido) {
-          // Notifica gestor
+          // Notifica gestor usando instância dele
           if (alunoComGestor?.gestor_whatsapp) {
+            const instanciaGestor = await getInstanciaGestorPorNome(alunoComGestor.gestor_nome, adminClient)
             await enviarWhatsApp(
               alunoComGestor.gestor_whatsapp,
-              `📚 Olá ${alunoComGestor.gestor_nome || 'Gestor'}! Seu consultor *${alunoComGestor.nome}* concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}* na Universidade AVP! 🎉`
+              `📚 Olá ${alunoComGestor.gestor_nome || 'Gestor'}! Seu consultor *${alunoComGestor.nome}* concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🎉`,
+              instanciaGestor
             )
           }
           // Notifica o próprio consultor com link para gerar arte comemorativa
@@ -191,18 +193,23 @@ export async function POST(req: NextRequest) {
 
     if (alunoAtualizado?.status === 'concluido') {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://universidade.oito7digital.com.br'
-      // Notifica gestor
+      const instanciaGestor = alunoAtualizado?.gestor_nome
+        ? await getInstanciaGestorPorNome(alunoAtualizado.gestor_nome, adminClient)
+        : null
+      // Notifica gestor usando instância dele
       if (alunoAtualizado?.gestor_whatsapp) {
         await enviarWhatsApp(
           alunoAtualizado.gestor_whatsapp,
-          `🏆 PARABÉNS, ${alunoAtualizado.gestor_nome || 'Gestor'}!\n\nSeu consultor *${alunoAtualizado.nome}* concluiu 100% da formação e está pronto para ser um Consultor de sucesso! 🎓✨\n\nVer progresso: ${appUrl}/aluno/${alunoAtualizado.whatsapp}`
+          `🏆 PARABÉNS, ${alunoAtualizado.gestor_nome || 'Gestor'}!\n\nSeu consultor *${alunoAtualizado.nome}* concluiu 100% da formação! 🎓✨\n\nVer progresso: ${appUrl}/aluno/${alunoAtualizado.whatsapp}`,
+          instanciaGestor
         )
       }
-      // Notifica o próprio consultor com link para arte de formatura
+      // Notifica o próprio consultor
       if (alunoAtualizado?.whatsapp) {
         await enviarWhatsApp(
           alunoAtualizado.whatsapp,
-          `🎓 *PARABÉNS, ${alunoAtualizado.nome}!*\n\nVocê concluiu 100% da formação! É um momento para celebrar! 🏆✨\n\nCrie sua arte de formatura e compartilhe com sua rede:\n👉 ${appUrl}/aluno/${alunoAtualizado.whatsapp}/artes\n\nBem-vindo ao time de consultores formados! 🚀`
+          `🎓 *PARABÉNS, ${alunoAtualizado.nome}!*\n\nVocê concluiu 100% da formação! 🏆✨\n\nCrie sua arte de formatura:\n👉 ${appUrl}/aluno/${alunoAtualizado.whatsapp}/artes`,
+          instanciaGestor
         )
       }
     }
