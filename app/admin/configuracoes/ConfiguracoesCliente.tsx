@@ -218,7 +218,6 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
             )
           })}
         </div>
-        </div>
 
         {/* Mobile */}
         <div style={{ background: 'var(--avp-black)', borderRadius: 8, padding: '10px 14px', marginTop: 8, marginBottom: 4 }}>
