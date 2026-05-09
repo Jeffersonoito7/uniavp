@@ -44,13 +44,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div style={{ padding: '0 20px 24px', borderBottom: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             {siteLogoUrl && !isDominioMaster ? (
-              <img src={siteLogoUrl} alt={siteNome} style={{ maxHeight: 36, maxWidth: 160, objectFit: 'contain', display: 'block' }}
-                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-            ) : (
-              <span style={{ fontWeight: 800, fontSize: 18, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                {siteNome || 'Admin'}
-              </span>
-            )}
+              <img
+                src={siteLogoUrl}
+                alt={siteNome}
+                style={{ maxHeight: 36, maxWidth: 160, objectFit: 'contain', display: 'block' }}
+                onError={e => {
+                  const img = e.target as HTMLImageElement
+                  img.style.display = 'none'
+                  const span = img.nextElementSibling as HTMLElement
+                  if (span) span.style.display = 'block'
+                }}
+              />
+            ) : null}
+            <span style={{
+              fontWeight: 800, fontSize: 18, background: 'var(--grad-brand)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              display: (siteLogoUrl && !isDominioMaster) ? 'none' : 'block'
+            }}>
+              {siteNome || 'Admin'}
+            </span>
             <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 2 }}>Painel Admin</p>
           </div>
           <ThemeToggle />
