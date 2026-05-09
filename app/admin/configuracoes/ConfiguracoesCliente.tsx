@@ -11,8 +11,10 @@ function supabase() {
   )
 }
 
+function parseVal(v: string) { try { return JSON.parse(v) } catch { return v } }
+
 export default function ConfiguracoesCliente({ configs }: { configs: Config[] }) {
-  const getValor = (chave: string) => configs.find(c => c.chave === chave)?.valor ?? ''
+  const getValor = (chave: string) => { const v = configs.find(c => c.chave === chave)?.valor ?? ''; return parseVal(v) }
 
   const [nome, setNome] = useState(getValor('site_nome'))
   const [slogan, setSlogan] = useState(getValor('site_slogan'))
@@ -23,8 +25,14 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const [corPrimaria, setCorPrimaria] = useState(getValor('site_cor_primaria') || '#333687')
   const [corSecundaria, setCorSecundaria] = useState(getValor('site_cor_secundaria') || '#02A153')
   const [whatsapp, setWhatsapp] = useState(getValor('whatsapp_suporte'))
-  const [planosAtivo, setPlanosAtivo] = useState(getValor('planos_ativo') === 'true')
+  const [planosAtivo, setPlanosAtivo] = useState(getValor('planos_ativo') === 'true' || getValor('planos_ativo') === true)
   const [dominio, setDominio] = useState(getValor('dominio_customizado'))
+  // Certificado
+  const [certUrl, setCertUrl] = useState(getValor('certificado_template_url'))
+  const [certNomeX, setCertNomeX] = useState(getValor('certificado_nome_x') || '50')
+  const [certNomeY, setCertNomeY] = useState(getValor('certificado_nome_y') || '62')
+  const [certNomeTamanho, setCertNomeTamanho] = useState(getValor('certificado_nome_tamanho') || '72')
+  const [certNomeCor, setCertNomeCor] = useState(getValor('certificado_nome_cor') || '#1a1a2e')
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
   const [uploading, setUploading] = useState<string | null>(null)
@@ -34,6 +42,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
     logoMenuUrl: useRef<HTMLInputElement>(null),
     logoPaginaUrl: useRef<HTMLInputElement>(null),
     logoFaviconUrl: useRef<HTMLInputElement>(null),
+    certUrl: useRef<HTMLInputElement>(null),
   }
 
   const setters: Record<string, (v: string) => void> = {
@@ -41,6 +50,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
     logoMenuUrl: setLogoMenuUrl,
     logoPaginaUrl: setLogoPaginaUrl,
     logoFaviconUrl: setLogoFaviconUrl,
+    certUrl: setCertUrl,
   }
 
   async function uploadLogo(campo: string, file: File) {
@@ -76,6 +86,11 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       { chave: 'whatsapp_suporte', valor: whatsapp },
       { chave: 'planos_ativo', valor: String(planosAtivo) },
       { chave: 'dominio_customizado', valor: dominio },
+      { chave: 'certificado_template_url', valor: certUrl },
+      { chave: 'certificado_nome_x', valor: certNomeX },
+      { chave: 'certificado_nome_y', valor: certNomeY },
+      { chave: 'certificado_nome_tamanho', valor: certNomeTamanho },
+      { chave: 'certificado_nome_cor', valor: certNomeCor },
     ]
     const res = await fetch('/api/admin/configuracoes', {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
@@ -244,6 +259,58 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
           <input type="checkbox" id="planosAtivo" checked={planosAtivo} onChange={e => setPlanosAtivo(e.target.checked)}
             style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--avp-green)' }} />
           <label htmlFor="planosAtivo" style={{ ...labelStyle, marginBottom: 0, cursor: 'pointer' }}>Página de planos ativa</label>
+        </div>
+      </div>
+
+      {/* CERTIFICADO */}
+      <div style={{ ...sectionStyle, border: '2px dashed var(--avp-border)' }}>
+        <p style={{ fontWeight: 800, fontSize: 16 }}>🎓 Certificado de Conclusão</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
+          O aluno recebe um popup com o certificado gerado automaticamente ao concluir 100% da formação. Use PNG em alta resolução (mínimo 2480×1748px — A4 paisagem) com o espaço do nome em branco.
+        </p>
+
+        {/* Upload template */}
+        <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 16 }}>
+          <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>Template do certificado (PNG)</p>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input style={{ ...inputStyle, flex: 1 }} value={certUrl} onChange={e => setCertUrl(e.target.value)} placeholder="Cole a URL ou use o botão de upload" />
+            <input type="file" accept="image/png,image/jpeg" style={{ display: 'none' }} ref={refs.certUrl}
+              onChange={e => { const f = e.target.files?.[0]; if (f) uploadLogo('certUrl', f); e.target.value = '' }}
+            />
+            <button onClick={() => refs.certUrl?.current?.click()} disabled={uploading === 'certUrl'}
+              style={{ background: uploading === 'certUrl' ? 'var(--avp-border)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 14px', cursor: uploading === 'certUrl' ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' }}>
+              {uploading === 'certUrl' ? '⏳' : '📤 Subir'}
+            </button>
+          </div>
+          {certUrl && (
+            <img src={certUrl} alt="Template certificado" style={{ marginTop: 12, width: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: 8, border: '1px solid var(--avp-border)' }}
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+          )}
+        </div>
+
+        {/* Posição do nome */}
+        <div>
+          <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>Posição do nome do aluno</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+            {[
+              { label: 'X (%)', value: certNomeX, set: setCertNomeX },
+              { label: 'Y (%)', value: certNomeY, set: setCertNomeY },
+              { label: 'Tamanho (px)', value: certNomeTamanho, set: setCertNomeTamanho },
+              { label: 'Cor', value: certNomeCor, set: setCertNomeCor },
+            ].map(({ label, value, set }) => (
+              <div key={label}>
+                <label style={labelStyle}>{label}</label>
+                {label === 'Cor'
+                  ? <div style={{ display: 'flex', gap: 6 }}>
+                      <input type="color" value={value} onChange={e => set(e.target.value)} style={{ width: 38, height: 38, border: 'none', borderRadius: 6, cursor: 'pointer', padding: 2, background: 'transparent' }} />
+                      <input style={inputStyle} value={value} onChange={e => set(e.target.value)} />
+                    </div>
+                  : <input type="number" style={inputStyle} value={value} onChange={e => set(e.target.value)} />
+                }
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 8 }}>X e Y são % da largura/altura do certificado. O nome é centralizado horizontalmente no ponto X.</p>
         </div>
       </div>
 

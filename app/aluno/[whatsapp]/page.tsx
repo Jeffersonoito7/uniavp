@@ -6,6 +6,7 @@ import ThemeToggle from '@/app/components/ThemeToggle'
 import EventosWidget from '@/app/components/EventosWidget'
 import MuralNoticias from '@/app/components/MuralNoticias'
 import LogoutButton from '@/app/components/LogoutButton'
+import CertificadoWrapper from '@/app/components/CertificadoWrapper'
 
 type TrilhaItem = {
   modulo_id: string
@@ -41,6 +42,13 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
     .select('id, nome, whatsapp, status')
     .eq('user_id', user.id)
     .maybeSingle()
+
+  // Configs do certificado
+  const { data: certConfigs } = await (adminClient.from('configuracoes') as any)
+    .select('chave, valor')
+    .in('chave', ['certificado_template_url', 'certificado_nome_x', 'certificado_nome_y', 'certificado_nome_tamanho', 'certificado_nome_cor'])
+  const certMap: Record<string, string> = {}
+  for (const r of certConfigs ?? []) { try { certMap[r.chave] = JSON.parse(r.valor) } catch { certMap[r.chave] = r.valor } }
   if (!aluno) redirect('/login')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
@@ -208,5 +216,15 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
         )}
       </div>
     </div>
+    {aluno.status === 'concluido' && certMap['certificado_template_url'] && (
+      <CertificadoWrapper
+        nomeAluno={aluno.nome}
+        templateUrl={certMap['certificado_template_url']}
+        nomeX={Number(certMap['certificado_nome_x'] || 50)}
+        nomeY={Number(certMap['certificado_nome_y'] || 62)}
+        nomeTamanho={Number(certMap['certificado_nome_tamanho'] || 72)}
+        nomeCor={certMap['certificado_nome_cor'] || '#1a1a2e'}
+      />
+    )}
   )
 }
