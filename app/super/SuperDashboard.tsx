@@ -16,6 +16,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
   const [cobrancaClienteId, setCobrancaClienteId] = useState<string | null>(null)
   const [gerandoPix, setGerandoPix] = useState<string | null>(null)
   const [cobrancaMsg, setCobrancaMsg] = useState('')
+  const [registrandoWebhook, setRegistrandoWebhook] = useState(false)
   const [whatsappTeste, setWhatsappTeste] = useState('')
   const [form, setForm] = useState({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 })
   const [salvando, setSalvando] = useState(false)
@@ -419,9 +420,23 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
         )}
         {aba === 'cobranca' && (
           <div>
-            <div style={{ marginBottom: 28 }}>
-              <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>💰 Cobranças</h1>
-              <p style={{ color: '#8a8fa3', fontSize: 14 }}>Gerencie mensalidades e acesso dos clientes</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
+              <div>
+                <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>💰 Cobranças</h1>
+                <p style={{ color: '#8a8fa3', fontSize: 14 }}>Gerencie mensalidades e acesso dos clientes</p>
+              </div>
+              <button
+                disabled={registrandoWebhook}
+                onClick={async () => {
+                  setRegistrandoWebhook(true); setCobrancaMsg('')
+                  const res = await fetch('/api/super/webhook-efi', { method: 'POST' })
+                  const data = await res.json()
+                  setRegistrandoWebhook(false)
+                  setCobrancaMsg(res.ok ? `✅ Webhook Efí registrado: ${data.webhookUrl}` : `Erro webhook: ${data.error}`)
+                }}
+                style={{ background: '#252836', border: '1px solid #374151', color: '#8a8fa3', borderRadius: 8, padding: '9px 16px', cursor: registrandoWebhook ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 600, opacity: registrandoWebhook ? 0.6 : 1 }}>
+                {registrandoWebhook ? '⏳ Registrando...' : '⚙️ Registrar Webhook Efí'}
+              </button>
             </div>
             {cobrancaMsg && (
               <div style={{ background: cobrancaMsg.includes('Erro') ? '#e6394620' : '#02A15320', border: `1px solid ${cobrancaMsg.includes('Erro') ? '#e63946' : '#02A153'}`, borderRadius: 8, padding: '12px 16px', color: cobrancaMsg.includes('Erro') ? '#e63946' : '#02A153', fontSize: 14, marginBottom: 20 }}>
