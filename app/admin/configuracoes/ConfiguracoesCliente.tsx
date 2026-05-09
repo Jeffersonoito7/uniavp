@@ -8,9 +8,9 @@ function LogoCard({ label, campo, value, desc, rec, fileRef, uploading, onUpload
   fileRef: React.RefObject<HTMLInputElement>; uploading: string
   onUpload: (campo: string, file: File) => void
 }) {
-  // Só mostra preview se for base64 — URLs http do banco antigo são ignoradas
-  const isBase64 = value?.startsWith('data:')
-  const temImagem = isBase64
+  // Mostra preview só para base64 ou blob URL (locais) — ignora URLs http antigas
+  const isLocal = value?.startsWith('data:') || value?.startsWith('blob:')
+  const temImagem = isLocal
 
   return (
     <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -24,7 +24,7 @@ function LogoCard({ label, campo, value, desc, rec, fileRef, uploading, onUpload
           <img src={value} alt={label} style={{ maxHeight: 74, maxWidth: '100%', objectFit: 'contain' }} />
         ) : (
           <span style={{ color: 'var(--avp-text-dim)', fontSize: 12, textAlign: 'center' }}>
-            {value && !isBase64 ? '📤 Suba a imagem novamente' : `Nenhuma imagem · ideal: ${rec}`}
+            {value && !isLocal ? '📤 Suba a imagem novamente' : `Nenhuma imagem · ideal: ${rec}`}
           </span>
         )}
       </div>
@@ -137,15 +137,17 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       return
     }
 
-    // Certificado: base64
+    // Certificado: blob URL para preview imediato (não bota base64 gigante no state)
+    // depois lê como base64 para salvar no banco
+    const blobUrl = URL.createObjectURL(file)
+    setCertUrl(blobUrl)
+    setMsg('⏳ Lendo arquivo...')
+
     const certReader = new FileReader()
     certReader.onload = async ev => {
       const base64 = ev.target?.result as string
-      // Sempre mostra o preview, independente do tamanho
-      setters[campo]?.(base64)
-
       if (file.size > 8 * 1024 * 1024) {
-        setMsg('⚠️ Arquivo grande (' + (file.size / 1024 / 1024).toFixed(1) + 'MB). Preview OK, mas otimize o PNG para salvar.')
+        setMsg(`⚠️ Arquivo muito grande (${(file.size / 1024 / 1024).toFixed(1)}MB). Otimize o PNG para menos de 8MB.`)
         setUploading('')
         return
       }
@@ -155,7 +157,12 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify([{ chave: 'certificado_template_url', valor: base64 }]),
         })
-        setMsg(res.ok ? '✅ Template do certificado salvo!' : '❌ Erro ao salvar — arquivo muito grande, otimize o PNG.')
+        if (res.ok) {
+          setCertUrl(base64) // troca blob por base64 persistido
+          setMsg('✅ Template do certificado salvo!')
+        } else {
+          setMsg('❌ Erro ao salvar — arquivo muito grande, otimize o PNG.')
+        }
       } catch (e: any) {
         setMsg(`❌ Erro: ${e.message}`)
       }

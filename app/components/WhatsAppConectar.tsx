@@ -12,7 +12,8 @@ export default function WhatsAppConectar() {
   const verificarStatus = useCallback(async () => {
     const res = await fetch('/api/whatsapp/status')
     const data = await res.json()
-    setStatus(data)
+    // Preserva o qrcode se ainda estiver aguardando conexão
+    setStatus(prev => (prev?.qrcode && !data.conectado) ? { ...data, qrcode: prev.qrcode } : data)
     return data
   }, [])
 
