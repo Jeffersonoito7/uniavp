@@ -204,11 +204,12 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
                 <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 14 }}>{g.email}</td>
                 <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 14 }}>{g.whatsapp}</td>
                 <td style={{ padding: '14px 16px' }}>
-                  <LinkCopiavel
-                    label=""
-                    url={typeof window !== 'undefined' ? `${window.location.origin}/g/${g.whatsapp}` : `/g/${g.whatsapp}`}
-                    desc=""
-                  />
+                  <button onClick={() => {
+                    const url = `${window.location.origin}/g/${g.whatsapp}`
+                    navigator.clipboard.writeText(url)
+                  }} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    Copiar link
+                  </button>
                 </td>
                 <td style={{ padding: '14px 16px' }}>
                   <span style={{ color: g.ativo ? 'var(--avp-green)' : '#f59e0b', fontSize: 13, fontWeight: 600 }}>
