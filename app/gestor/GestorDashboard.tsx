@@ -67,7 +67,7 @@ export default function GestorDashboard({
   }
 
   function copiarLink() {
-    const url = `${window.location.origin}/captacao`
+    const url = `${window.location.origin}/g/${gestor.whatsapp}`
     navigator.clipboard.writeText(url)
     setLinkCopiado(true)
     setTimeout(() => setLinkCopiado(false), 2000)
