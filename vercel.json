@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/inatividade",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/cobranca",
+      "schedule": "0 8 * * *"
     }
   ]
 }

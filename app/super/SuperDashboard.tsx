@@ -11,8 +11,11 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
   nome: string; clientes: Cliente[]; stats: Stats; recentesAlunos: { nome: string; created_at: string; status: string }[]
 }) {
   const [clientes, setClientes] = useState<Cliente[]>(inicial)
-  const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar'>('dashboard')
+  const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca'>('dashboard')
   const [tipoNovo, setTipoNovo] = useState<'' | 'empresa' | 'gestor' | 'consultor'>('')
+  const [cobrancaClienteId, setCobrancaClienteId] = useState<string | null>(null)
+  const [gerandoPix, setGerandoPix] = useState<string | null>(null)
+  const [cobrancaMsg, setCobrancaMsg] = useState('')
   const [whatsappTeste, setWhatsappTeste] = useState('')
   const [form, setForm] = useState({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 })
   const [salvando, setSalvando] = useState(false)
@@ -82,6 +85,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
             { id: 'clientes', label: '🏢 Clientes' },
             { id: 'novo', label: '+ Novo Cliente' },
             { id: 'testar', label: '🧪 Testar' },
+            { id: 'cobranca', label: '💰 Cobranças' },
           ] as const).map(item => (
             <button key={item.id} onClick={() => { setAba(item.id as any); if (item.id !== 'novo') { setEditando(null); setTipoNovo(''); setForm({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 }) } }}
               style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, fontSize: 14, fontWeight: 500, color: aba === item.id ? '#f0f1f5' : '#8a8fa3', background: aba === item.id ? '#252836' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
@@ -411,6 +415,91 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                 </div>
               </div>
             )}
+          </div>
+        )}
+        {aba === 'cobranca' && (
+          <div>
+            <div style={{ marginBottom: 28 }}>
+              <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>💰 Cobranças</h1>
+              <p style={{ color: '#8a8fa3', fontSize: 14 }}>Gerencie mensalidades e acesso dos clientes</p>
+            </div>
+            {cobrancaMsg && (
+              <div style={{ background: cobrancaMsg.includes('Erro') ? '#e6394620' : '#02A15320', border: `1px solid ${cobrancaMsg.includes('Erro') ? '#e63946' : '#02A153'}`, borderRadius: 8, padding: '12px 16px', color: cobrancaMsg.includes('Erro') ? '#e63946' : '#02A153', fontSize: 14, marginBottom: 20 }}>
+                {cobrancaMsg}
+              </div>
+            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {clientes.map(c => {
+                const statusColor: Record<string, string> = { em_dia: '#02A153', pendente: '#f59e0b', suspenso: '#e63946', atrasado: '#e63946' }
+                const statusLabel: Record<string, string> = { em_dia: '✅ Em dia', pendente: '⏳ Pendente', suspenso: '🔴 Suspenso', atrasado: '⚠️ Atrasado' }
+                const st = (c as any).status_pagamento || 'em_dia'
+                return (
+                  <div key={c.id} style={{ ...cardStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                        <p style={{ fontWeight: 700, fontSize: 15 }}>{c.nome}</p>
+                        <span style={{ background: (statusColor[st] || '#8a8fa3') + '20', color: statusColor[st] || '#8a8fa3', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>
+                          {statusLabel[st] || st}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 16, fontSize: 13, color: '#8a8fa3', flexWrap: 'wrap' }}>
+                        <span>💵 R$ {Number((c as any).mensalidade || 0).toFixed(2).replace('.', ',')}/mês</span>
+                        <span>📅 Vence dia {(c as any).vencimento_dia || 10}</span>
+                        {(c as any).ultimo_pagamento && <span>✅ Último: {new Date((c as any).ultimo_pagamento + 'T12:00:00').toLocaleDateString('pt-BR')}</span>}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      {/* Campo mensalidade inline */}
+                      <input
+                        type="number" placeholder="R$ mensalidade" min={0} step={0.01}
+                        defaultValue={(c as any).mensalidade || ''}
+                        onBlur={async e => {
+                          const val = parseFloat(e.target.value)
+                          if (!isNaN(val)) {
+                            await fetch('/api/super/clientes', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: c.id, mensalidade: val }) })
+                            setClientes(prev => prev.map(x => x.id === c.id ? { ...x, ...{ mensalidade: val } as any } : x))
+                          }
+                        }}
+                        style={{ width: 120, background: '#08090d', border: '1px solid #252836', borderRadius: 6, padding: '7px 10px', color: '#f0f1f5', fontSize: 13, outline: 'none' }}
+                      />
+                      <button
+                        disabled={gerandoPix === c.id}
+                        onClick={async () => {
+                          setGerandoPix(c.id); setCobrancaMsg('')
+                          const res = await fetch('/api/super/cobranca', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cliente_id: c.id }) })
+                          const data = await res.json()
+                          setGerandoPix(null)
+                          setCobrancaMsg(res.ok ? `PIX gerado e enviado para ${c.nome}!` : `Erro: ${data.error}`)
+                        }}
+                        style={{ background: '#6366f120', border: '1px solid #6366f140', color: '#6366f1', borderRadius: 8, padding: '8px 14px', cursor: gerandoPix === c.id ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', opacity: gerandoPix === c.id ? 0.6 : 1 }}>
+                        {gerandoPix === c.id ? '⏳ Gerando...' : '📲 Gerar PIX'}
+                      </button>
+                      {st === 'suspenso' && (
+                        <button
+                          onClick={async () => {
+                            await fetch('/api/super/clientes', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: c.id, ativo: true, status_pagamento: 'em_dia' }) })
+                            setClientes(prev => prev.map(x => x.id === c.id ? { ...x, ativo: true, ...{ status_pagamento: 'em_dia' } as any } : x))
+                            setCobrancaMsg(`${c.nome} reativado manualmente.`)
+                          }}
+                          style={{ background: '#02A15320', border: 'none', color: '#02A153', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+                          Reativar
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+              {clientes.length === 0 && <p style={{ color: '#8a8fa3', fontSize: 13 }}>Nenhum cliente cadastrado.</p>}
+            </div>
+            <div style={{ marginTop: 24, padding: 16, background: '#181b24', borderRadius: 10, fontSize: 13, color: '#8a8fa3' }}>
+              <p style={{ fontWeight: 700, color: '#f0f1f5', marginBottom: 6 }}>Como funciona:</p>
+              <p>• Defina a mensalidade de cada cliente no campo ao lado e clique fora para salvar</p>
+              <p>• Clique em <strong style={{ color: '#f0f1f5' }}>Gerar PIX</strong> para criar a cobrança e enviar por WhatsApp automaticamente</p>
+              <p>• O sistema gera e envia cobranças automaticamente <strong style={{ color: '#f0f1f5' }}>5 dias antes do vencimento</strong></p>
+              <p>• Após <strong style={{ color: '#f0f1f5' }}>3 dias de atraso</strong> o acesso é suspenso automaticamente</p>
+              <p>• Quando o pagamento é confirmado, o acesso é reativado instantaneamente</p>
+              <p style={{ marginTop: 8, color: '#6366f1', fontWeight: 600 }}>⚙️ Registre o webhook da Efí em: <span style={{ fontFamily: 'monospace' }}>{process.env.NEXT_PUBLIC_APP_URL || 'https://universidade.oito7digital.com.br'}/api/webhooks/pix</span></p>
+            </div>
           </div>
         )}
       </main>
