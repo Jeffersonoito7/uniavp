@@ -66,16 +66,23 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
     setMsg('')
     const ext = file.name.split('.').pop() || 'png'
     const path = `logos/${campo}-${Date.now()}.${ext}`
-    const sb = supabase()
-    const { error } = await sb.storage.from('artes').upload(path, file, { upsert: true, contentType: file.type })
-    if (error) {
-      setMsg(`Erro no upload: ${error.message}. Verifique se o bucket "artes" existe e é público.`)
+
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('bucket', 'artes')
+    formData.append('path', path)
+
+    const res = await fetch('/api/admin/upload', { method: 'POST', body: formData })
+    const data = await res.json()
+
+    if (!res.ok || !data.url) {
+      setMsg(`Erro no upload: ${data.error || 'Tente novamente.'}`)
       setUploading(null)
       return
     }
-    const { data: { publicUrl } } = sb.storage.from('artes').getPublicUrl(path)
-    setters[campo]?.(publicUrl)
-    setMsg('Logo enviada! Clique em Salvar para confirmar.')
+
+    setters[campo]?.(data.url)
+    setMsg('✅ Logo enviada! Clique em Salvar para confirmar.')
     setUploading(null)
   }
 

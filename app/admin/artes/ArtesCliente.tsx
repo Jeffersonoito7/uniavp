@@ -33,18 +33,22 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
     const ext = file.name.split('.').pop() || 'png'
     const path = `artes/${templateId}-${Date.now()}.${ext}`
 
-    const sb = supabase()
-    const { error } = await sb.storage.from('artes').upload(path, file, { upsert: true, contentType: file.type })
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('bucket', 'artes')
+    formData.append('path', path)
 
-    if (error) {
-      setMsg(`Erro no upload: ${error.message}. Verifique se o bucket "artes" existe e é público.`)
+    const res = await fetch('/api/admin/upload', { method: 'POST', body: formData })
+    const data = await res.json()
+
+    if (!res.ok || !data.url) {
+      setMsg(`Erro no upload: ${data.error || 'Tente novamente.'}`)
       setUploading(null)
       return
     }
 
-    const { data: { publicUrl } } = sb.storage.from('artes').getPublicUrl(path)
-    atualizar(templateId, 'arte_url', publicUrl)
-    setMsg('Arte enviada com sucesso! Clique em Salvar para confirmar.')
+    atualizar(templateId, 'arte_url', data.url)
+    setMsg('✅ Arte enviada com sucesso! Clique em Salvar para confirmar.')
     setUploading(null)
   }
 
