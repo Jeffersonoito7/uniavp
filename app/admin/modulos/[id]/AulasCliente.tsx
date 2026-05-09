@@ -155,15 +155,80 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
   const [capaBase64, setCapaBase64] = useState<string | null>(null)
   const [uploadandoCapa, setUploadandoCapa] = useState(false)
   const capaFileRef = useRef<HTMLInputElement>(null)
+
+  // Edição de aula
+  const [editandoId, setEditandoId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState<{
+    titulo: string; youtube_video_id: string; duracao_minutos: string;
+    quiz_qtd_questoes: number; quiz_aprovacao_minima: number; espera_horas: number;
+    validade_meses: string; ao_vivo_link: string; ao_vivo_data: string; ao_vivo_plataforma: string;
+    capaPreview: string | null; capaBase64: string | null;
+  }>({ titulo: '', youtube_video_id: '', duracao_minutos: '', quiz_qtd_questoes: 5, quiz_aprovacao_minima: 80, espera_horas: 24, validade_meses: '', ao_vivo_link: '', ao_vivo_data: '', ao_vivo_plataforma: 'zoom', capaPreview: null, capaBase64: null })
+  const [salvandoEdit, setSalvandoEdit] = useState(false)
+  const editCapaRef = useRef<HTMLInputElement>(null)
+
   const [msg, setMsg] = useState('')
 
-  function selecionarCapa(file: File) {
+  function selecionarCapa(file: File, isEdit = false) {
     if (file.size > 3 * 1024 * 1024) { setMsg('Imagem muito grande. Use até 3MB.'); return }
     setUploadandoCapa(true)
-    setCapaPreview(URL.createObjectURL(file))
+    const blobUrl = URL.createObjectURL(file)
     const reader = new FileReader()
-    reader.onload = ev => { setCapaBase64(ev.target?.result as string); setUploadandoCapa(false) }
+    reader.onload = ev => {
+      const b64 = ev.target?.result as string
+      if (isEdit) setEditForm(p => ({ ...p, capaPreview: blobUrl, capaBase64: b64 }))
+      else { setCapaPreview(blobUrl); setCapaBase64(b64) }
+      setUploadandoCapa(false)
+    }
     reader.readAsDataURL(file)
+  }
+
+  function abrirEdicaoAula(aula: Aula) {
+    const temCapa = aula.capa_url?.startsWith('data:') || aula.capa_url?.startsWith('blob:')
+    setEditandoId(aula.id)
+    setEditForm({
+      titulo: aula.titulo, youtube_video_id: aula.youtube_video_id,
+      duracao_minutos: aula.duracao_minutos?.toString() ?? '',
+      quiz_qtd_questoes: aula.quiz_qtd_questoes, quiz_aprovacao_minima: aula.quiz_aprovacao_minima,
+      espera_horas: aula.espera_horas, validade_meses: aula.validade_meses?.toString() ?? '',
+      ao_vivo_link: aula.ao_vivo_link ?? '', ao_vivo_data: aula.ao_vivo_data ?? '',
+      ao_vivo_plataforma: aula.ao_vivo_plataforma ?? 'zoom',
+      capaPreview: temCapa ? aula.capa_url : null, capaBase64: temCapa ? aula.capa_url : null,
+    })
+  }
+
+  async function salvarEdicaoAula(id: string) {
+    setSalvandoEdit(true)
+    const res = await fetch(`/api/admin/modulos/${moduloId}/aulas`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id, titulo: editForm.titulo, youtube_video_id: editForm.youtube_video_id,
+        duracao_minutos: editForm.duracao_minutos ? parseInt(editForm.duracao_minutos) : null,
+        quiz_qtd_questoes: editForm.quiz_qtd_questoes, quiz_aprovacao_minima: editForm.quiz_aprovacao_minima,
+        espera_horas: editForm.espera_horas,
+        validade_meses: editForm.validade_meses ? parseInt(editForm.validade_meses) : null,
+        ao_vivo_link: editForm.ao_vivo_link || null, ao_vivo_data: editForm.ao_vivo_data || null,
+        ao_vivo_plataforma: editForm.ao_vivo_link ? editForm.ao_vivo_plataforma : null,
+        capa_url: editForm.capaBase64 || null,
+      }),
+    })
+    const data = await res.json()
+    if (data.aula) {
+      setAulas(prev => prev.map(a => a.id === id ? data.aula : a))
+      setEditandoId(null)
+      setMsg('Aula atualizada!')
+      setTimeout(() => setMsg(''), 3000)
+    }
+    setSalvandoEdit(false)
+  }
+
+  async function excluirAula(aula: Aula) {
+    if (!confirm(`Excluir a aula "${aula.titulo}"?`)) return
+    const res = await fetch('/api/admin/aulas', {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: aula.id }),
+    })
+    if (res.ok) setAulas(prev => prev.filter(a => a.id !== aula.id))
   }
 
   async function salvarAula(e: React.FormEvent) {
@@ -315,41 +380,96 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {aulas.sort((a, b) => a.ordem - b.ordem).map(aula => (
-          <div key={aula.id} style={cardStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                  <span style={{ background: 'var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>#{aula.ordem}</span>
-                  <h3 style={{ fontWeight: 700, fontSize: 15 }}>{aula.titulo}</h3>
-                  {aula.ao_vivo_link && <span style={{ background: '#33368720', color: '#6366f1', borderRadius: 20, padding: '2px 8px', fontSize: 11, fontWeight: 600 }}>AO VIVO</span>}
-                  {aula.validade_meses && <span style={{ background: '#f59e0b20', color: '#f59e0b', borderRadius: 20, padding: '2px 8px', fontSize: 11, fontWeight: 600 }}>Validade: {aula.validade_meses}m</span>}
+        {aulas.sort((a, b) => a.ordem - b.ordem).map(aula => {
+          const isEditing = editandoId === aula.id
+          const temCapa = aula.capa_url?.startsWith('data:') || aula.capa_url?.startsWith('blob:')
+          return (
+            <div key={aula.id} style={cardStyle}>
+              {isEditing ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--avp-text-dim)' }}>Editando Aula #{aula.ordem}</p>
+                    <button onClick={() => setEditandoId(null)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 20 }}>×</button>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div><label style={labelStyle}>Título *</label><input style={inputStyle} value={editForm.titulo} onChange={e => setEditForm(p => ({ ...p, titulo: e.target.value }))} /></div>
+                    <div><label style={labelStyle}>YouTube Video ID *</label><input style={inputStyle} value={editForm.youtube_video_id} onChange={e => setEditForm(p => ({ ...p, youtube_video_id: e.target.value }))} /></div>
+                    <div><label style={labelStyle}>Duração (min)</label><input type="number" style={inputStyle} value={editForm.duracao_minutos} onChange={e => setEditForm(p => ({ ...p, duracao_minutos: e.target.value }))} /></div>
+                    <div><label style={labelStyle}>Espera após aprovação (horas)</label><input type="number" style={inputStyle} value={editForm.espera_horas} onChange={e => setEditForm(p => ({ ...p, espera_horas: parseInt(e.target.value) }))} /></div>
+                    <div><label style={labelStyle}>Questões no quiz</label><input type="number" style={inputStyle} value={editForm.quiz_qtd_questoes} onChange={e => setEditForm(p => ({ ...p, quiz_qtd_questoes: parseInt(e.target.value) }))} min={1} max={20} /></div>
+                    <div><label style={labelStyle}>Aprovação mínima (%)</label><input type="number" style={inputStyle} value={editForm.quiz_aprovacao_minima} onChange={e => setEditForm(p => ({ ...p, quiz_aprovacao_minima: parseInt(e.target.value) }))} min={50} max={100} /></div>
+                    <div><label style={labelStyle}>Validade (meses)</label><input type="number" style={inputStyle} value={editForm.validade_meses} onChange={e => setEditForm(p => ({ ...p, validade_meses: e.target.value }))} min={0} placeholder="0 = sem validade" /></div>
+                  </div>
+                  <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 12 }}>
+                    <label style={{ ...labelStyle, marginBottom: 8 }}>Capa <span style={{ color: 'var(--avp-green)', fontSize: 11, fontWeight: 700 }}>📐 1380×1080px</span></label>
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                      <div onClick={() => editCapaRef.current?.click()} style={{ width: 110, height: 86, flexShrink: 0, borderRadius: 8, overflow: 'hidden', border: `2px dashed ${editForm.capaPreview ? 'var(--avp-green)' : 'var(--avp-border)'}`, background: 'var(--avp-black)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {editForm.capaPreview ? <img src={editForm.capaPreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 22, color: 'var(--avp-text-dim)' }}>🖼️</span>}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <input ref={editCapaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) selecionarCapa(f, true); e.target.value = '' }} />
+                        <button type="button" onClick={() => editCapaRef.current?.click()} style={{ background: editForm.capaPreview ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
+                          {editForm.capaPreview ? '🔄 Trocar' : '📤 Subir capa'}
+                        </button>
+                        {editForm.capaPreview && <button type="button" onClick={() => setEditForm(p => ({ ...p, capaPreview: null, capaBase64: null }))} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '5px 10px', cursor: 'pointer', fontSize: 11 }}>Remover</button>}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button onClick={() => salvarEdicaoAula(aula.id)} disabled={salvandoEdit}
+                      style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: salvandoEdit ? 0.7 : 1 }}>
+                      {salvandoEdit ? 'Salvando...' : '✓ Salvar'}
+                    </button>
+                    <button onClick={() => setEditandoId(null)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: 16, color: 'var(--avp-text-dim)', fontSize: 13 }}>
-                  <span>{aula.youtube_video_id}</span>
-                  {aula.duracao_minutos && <span>{aula.duracao_minutos} min</span>}
-                  <span>Quiz: {aula.quiz_qtd_questoes}q / {aula.quiz_aprovacao_minima}%</span>
-                  <span>Espera: {aula.espera_horas}h</span>
-                </div>
-              </div>
-              <button
-                onClick={async () => {
-                  const res = await fetch(`/api/admin/modulos/${moduloId}/aulas`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: aula.id, publicado: !aula.publicado }),
-                  })
-                  const data = await res.json()
-                  if (data.aula) setAulas(prev => prev.map(a => a.id === aula.id ? { ...a, publicado: !a.publicado } : a))
-                }}
-                style={{ background: aula.publicado ? 'var(--avp-border)' : 'var(--avp-green)', color: aula.publicado ? 'var(--avp-text-dim)' : '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600, flexShrink: 0 }}
-              >
-                {aula.publicado ? 'Despublicar' : 'Publicar'}
-              </button>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flex: 1 }}>
+                      {temCapa && <img src={aula.capa_url!} alt={aula.titulo} style={{ width: 72, height: 56, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }} />}
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                          <span style={{ background: 'var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>#{aula.ordem}</span>
+                          <h3 style={{ fontWeight: 700, fontSize: 15 }}>{aula.titulo}</h3>
+                          {aula.ao_vivo_link && <span style={{ background: '#33368720', color: '#6366f1', borderRadius: 20, padding: '2px 8px', fontSize: 11, fontWeight: 600 }}>AO VIVO</span>}
+                          {aula.validade_meses && <span style={{ background: '#f59e0b20', color: '#f59e0b', borderRadius: 20, padding: '2px 8px', fontSize: 11, fontWeight: 600 }}>Validade: {aula.validade_meses}m</span>}
+                        </div>
+                        <div style={{ display: 'flex', gap: 16, color: 'var(--avp-text-dim)', fontSize: 13 }}>
+                          <span>{aula.youtube_video_id}</span>
+                          {aula.duracao_minutos && <span>{aula.duracao_minutos} min</span>}
+                          <span>Quiz: {aula.quiz_qtd_questoes}q / {aula.quiz_aprovacao_minima}%</span>
+                          <span>Espera: {aula.espera_horas}h</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                      <button onClick={() => abrirEdicaoAula(aula)}
+                        style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                        Editar
+                      </button>
+                      <button onClick={async () => {
+                        const res = await fetch(`/api/admin/modulos/${moduloId}/aulas`, {
+                          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ id: aula.id, publicado: !aula.publicado }),
+                        })
+                        const data = await res.json()
+                        if (data.aula) setAulas(prev => prev.map(a => a.id === aula.id ? { ...a, publicado: !a.publicado } : a))
+                      }} style={{ background: aula.publicado ? 'var(--avp-border)' : 'var(--avp-green)', color: aula.publicado ? 'var(--avp-text-dim)' : '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                        {aula.publicado ? 'Despublicar' : 'Publicar'}
+                      </button>
+                      <button onClick={() => excluirAula(aula)}
+                        style={{ background: '#e6394615', border: '1px solid #e6394630', color: 'var(--avp-danger)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                        Excluir
+                      </button>
+                    </div>
+                  </div>
+                  <ArquivosAula aulaId={aula.id} />
+                </>
+              )}
             </div>
-            <ArquivosAula aulaId={aula.id} />
-          </div>
-        ))}
+          )
+        })}
         {aulas.length === 0 && !criando && (
           <div style={{ textAlign: 'center', padding: 40, color: 'var(--avp-text-dim)' }}>Nenhuma aula cadastrada ainda.</div>
         )}

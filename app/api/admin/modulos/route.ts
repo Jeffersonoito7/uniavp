@@ -69,3 +69,22 @@ export async function PUT(req: NextRequest) {
 
   return NextResponse.json({ modulo })
 }
+
+export async function DELETE(req: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+
+  const adminClient = createServiceRoleClient()
+  const { data: adminRecord } = await (adminClient.from('admins') as any)
+    .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  if (!adminRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+
+  const { id } = await req.json()
+  if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
+
+  const { error } = await (adminClient.from('modulos') as any).delete().eq('id', id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  return NextResponse.json({ ok: true })
+}
