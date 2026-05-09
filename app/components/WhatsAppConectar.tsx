@@ -21,17 +21,20 @@ export default function WhatsAppConectar() {
   }, [verificarStatus])
 
   // Polling quando QR Code está ativo — verifica conexão a cada 3s
+  // Não sobrescreve o qrcode para o QR não sumir durante a espera
   useEffect(() => {
     if (!polling) return
     const interval = setInterval(async () => {
-      const data = await verificarStatus()
+      const res = await fetch('/api/whatsapp/status')
+      const data = await res.json()
+      setStatus(prev => ({ ...prev, conectado: data.conectado, numero: data.numero, instancia: data.instancia }))
       if (data.conectado) {
         setPolling(false)
-        setMsg('WhatsApp conectado com sucesso!')
+        setMsg('✅ WhatsApp conectado com sucesso!')
       }
     }, 3000)
     return () => clearInterval(interval)
-  }, [polling, verificarStatus])
+  }, [polling])
 
   async function conectar() {
     setLoading(true)
