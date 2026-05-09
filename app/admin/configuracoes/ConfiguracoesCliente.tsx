@@ -122,23 +122,52 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 640 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 700 }}>
 
-      <div style={sectionStyle}>
-        <p style={{ fontWeight: 700, fontSize: 15 }}>Identidade</p>
-        <div><label style={labelStyle}>Nome do site</label><input style={{ ...inputStyle, width: '100%' }} value={nome} onChange={e => setNome(e.target.value)} /></div>
-        <div><label style={labelStyle}>Slogan</label><input style={{ ...inputStyle, width: '100%' }} value={slogan} onChange={e => setSlogan(e.target.value)} /></div>
+      {/* LOGO — destaque visual */}
+      <div style={{ ...sectionStyle, border: '2px dashed var(--avp-border)' }}>
+        <p style={{ fontWeight: 800, fontSize: 16 }}>🖼️ Logo da empresa</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          {[
+            { label: 'Logo principal', campo: 'logoUrl', value: logoUrl, setValue: setLogoUrl, desc: 'Usada em todo o sistema' },
+            { label: 'Logo do menu', campo: 'logoMenuUrl', value: logoMenuUrl, setValue: setLogoMenuUrl, desc: 'Cabeçalho do painel' },
+            { label: 'Logo da página de login', campo: 'logoPaginaUrl', value: logoPaginaUrl, setValue: setLogoPaginaUrl, desc: 'Login e captação' },
+            { label: 'Favicon', campo: 'logoFaviconUrl', value: logoFaviconUrl, setValue: setLogoFaviconUrl, desc: 'Ícone na aba do navegador' },
+          ].map(({ label, campo, value, setValue, desc }) => {
+            const ref = refs[campo as keyof typeof refs]
+            return (
+              <div key={campo} style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div>
+                  <p style={{ fontWeight: 700, fontSize: 13 }}>{label}</p>
+                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>{desc}</p>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 80, background: 'var(--avp-card)', borderRadius: 8, border: '1px solid var(--avp-border)', overflow: 'hidden' }}>
+                  {value
+                    ? <img src={value} alt={label} style={{ maxHeight: 70, maxWidth: '100%', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                    : <span style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Sem logo</span>
+                  }
+                </div>
+                <input type="file" accept="image/*" style={{ display: 'none' }} ref={ref}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadLogo(campo, f); e.target.value = '' }}
+                />
+                <button onClick={() => ref?.current?.click()} disabled={uploading === campo}
+                  style={{ background: uploading === campo ? 'var(--avp-border)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px', cursor: uploading === campo ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, width: '100%' }}>
+                  {uploading === campo ? '⏳ Enviando...' : '📤 Subir logo'}
+                </button>
+                {value && (
+                  <input style={{ ...inputStyle, fontSize: 11 }} value={value} onChange={e => setValue(e.target.value)} placeholder="URL da imagem" />
+                )}
+              </div>
+            )
+          })}
+        </div>
+        <p style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>💡 Recomendado: PNG com fundo transparente. Tamanho mínimo 200×60px.</p>
       </div>
 
       <div style={sectionStyle}>
-        <p style={{ fontWeight: 700, fontSize: 15 }}>Logos</p>
-        <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: -8 }}>
-          Use o botão <strong>📤 Subir</strong> para fazer upload direto, ou cole a URL. O bucket "artes" no Supabase Storage precisa estar público.
-        </p>
-        <LogoField label="Logo padrão (fallback geral)" campo="logoUrl" value={logoUrl} setValue={setLogoUrl} />
-        <LogoField label="Logo do menu / cabeçalho" campo="logoMenuUrl" value={logoMenuUrl} setValue={setLogoMenuUrl} />
-        <LogoField label="Logo das páginas (login, captação)" campo="logoPaginaUrl" value={logoPaginaUrl} setValue={setLogoPaginaUrl} />
-        <LogoField label="Logo do favicon (aba do navegador)" campo="logoFaviconUrl" value={logoFaviconUrl} setValue={setLogoFaviconUrl} />
+        <p style={{ fontWeight: 700, fontSize: 15 }}>🏷️ Identidade</p>
+        <div><label style={labelStyle}>Nome do site</label><input style={{ ...inputStyle, width: '100%' }} value={nome} onChange={e => setNome(e.target.value)} /></div>
+        <div><label style={labelStyle}>Slogan</label><input style={{ ...inputStyle, width: '100%' }} value={slogan} onChange={e => setSlogan(e.target.value)} /></div>
       </div>
 
       <div style={sectionStyle}>
