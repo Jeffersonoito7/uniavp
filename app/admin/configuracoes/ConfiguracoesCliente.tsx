@@ -33,6 +33,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const [certNomeY, setCertNomeY] = useState(getValor('certificado_nome_y') || '62')
   const [certNomeTamanho, setCertNomeTamanho] = useState(getValor('certificado_nome_tamanho') || '72')
   const [certNomeCor, setCertNomeCor] = useState(getValor('certificado_nome_cor') || '#1a1a2e')
+  const [logoMobileUrl, setLogoMobileUrl] = useState(getValor('logo_mobile_url'))
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
   const [uploading, setUploading] = useState<string | null>(null)
@@ -43,6 +44,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
     logoPaginaUrl: useRef<HTMLInputElement>(null),
     logoFaviconUrl: useRef<HTMLInputElement>(null),
     certUrl: useRef<HTMLInputElement>(null),
+    logoMobileUrl: useRef<HTMLInputElement>(null),
   }
 
   const setters: Record<string, (v: string) => void> = {
@@ -51,6 +53,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
     logoPaginaUrl: setLogoPaginaUrl,
     logoFaviconUrl: setLogoFaviconUrl,
     certUrl: setCertUrl,
+    logoMobileUrl: setLogoMobileUrl,
   }
 
   async function uploadLogo(campo: string, file: File) {
@@ -86,6 +89,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       { chave: 'whatsapp_suporte', valor: whatsapp },
       { chave: 'planos_ativo', valor: String(planosAtivo) },
       { chave: 'dominio_customizado', valor: dominio },
+      { chave: 'logo_mobile_url', valor: logoMobileUrl },
       { chave: 'certificado_template_url', valor: certUrl },
       { chave: 'certificado_nome_x', valor: certNomeX },
       { chave: 'certificado_nome_y', valor: certNomeY },
@@ -142,12 +146,17 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       {/* LOGO — destaque visual */}
       <div style={{ ...sectionStyle, border: '2px dashed var(--avp-border)' }}>
         <p style={{ fontWeight: 800, fontSize: 16 }}>🖼️ Logo da empresa</p>
+
+        {/* Web */}
+        <div style={{ background: 'var(--avp-black)', borderRadius: 8, padding: '10px 14px', marginBottom: 4 }}>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>🖥️ Versão Web (horizontal)</p>
+          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 2 }}>Logo em formato paisagem para desktop — use PNG com fundo transparente</p>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {[
-            { label: 'Logo principal', campo: 'logoUrl', value: logoUrl, setValue: setLogoUrl, desc: 'Usada em todo o sistema', rec: '400×120px', formato: 'PNG transparente' },
-            { label: 'Logo do menu', campo: 'logoMenuUrl', value: logoMenuUrl, setValue: setLogoMenuUrl, desc: 'Cabeçalho do painel', rec: '200×60px', formato: 'PNG transparente' },
-            { label: 'Logo da página de login', campo: 'logoPaginaUrl', value: logoPaginaUrl, setValue: setLogoPaginaUrl, desc: 'Login e captação', rec: '300×100px', formato: 'PNG transparente' },
-            { label: 'Favicon', campo: 'logoFaviconUrl', value: logoFaviconUrl, setValue: setLogoFaviconUrl, desc: 'Ícone na aba do navegador', rec: '64×64px', formato: 'PNG quadrado' },
+            { label: 'Logo principal', campo: 'logoUrl', value: logoUrl, setValue: setLogoUrl, desc: 'Fallback geral do sistema', rec: '400×120px', formato: 'PNG transparente' },
+            { label: 'Logo do menu lateral', campo: 'logoMenuUrl', value: logoMenuUrl, setValue: setLogoMenuUrl, desc: 'Sidebar do painel admin/gestor', rec: '200×56px', formato: 'PNG transparente' },
+            { label: 'Logo da página de login', campo: 'logoPaginaUrl', value: logoPaginaUrl, setValue: setLogoPaginaUrl, desc: 'Tela de login e captação', rec: '300×90px', formato: 'PNG transparente' },
           ].map(({ label, campo, value, setValue, desc, rec, formato }) => {
             const ref = refs[campo as keyof typeof refs]
             return (
@@ -209,7 +218,57 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
             )
           })}
         </div>
-        <p style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>💡 Recomendado: PNG com fundo transparente. Tamanho mínimo 200×60px.</p>
+        </div>
+
+        {/* Mobile */}
+        <div style={{ background: 'var(--avp-black)', borderRadius: 8, padding: '10px 14px', marginTop: 8, marginBottom: 4 }}>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>📱 Versão Mobile (ícone quadrado)</p>
+          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 2 }}>Logos quadradas para celular, aba do navegador e atalho de tela inicial</p>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          {[
+            { label: 'Ícone mobile / PWA', campo: 'logoMobileUrl', value: logoMobileUrl, setValue: setLogoMobileUrl, desc: 'Atalho de tela inicial e app mobile', rec: '512×512px', formato: 'PNG quadrado' },
+            { label: 'Favicon (aba do navegador)', campo: 'logoFaviconUrl', value: logoFaviconUrl, setValue: setLogoFaviconUrl, desc: 'Ícone na aba do navegador', rec: '64×64px', formato: 'PNG quadrado' },
+          ].map(({ label, campo, value, setValue, desc, rec, formato }) => {
+            const ref = refs[campo as keyof typeof refs]
+            return (
+              <div key={campo} style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div>
+                  <p style={{ fontWeight: 700, fontSize: 14 }}>{label}</p>
+                  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 2 }}>{desc}</p>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 6, background: 'rgba(2,161,83,0.12)', border: '1px solid rgba(2,161,83,0.3)', borderRadius: 6, padding: '3px 8px' }}>
+                    <span style={{ fontSize: 11, color: 'var(--avp-green)', fontWeight: 700 }}>📐 {rec}</span>
+                    <span style={{ fontSize: 10, color: 'var(--avp-text-dim)' }}>· {formato}</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100, background: 'var(--avp-card)', borderRadius: 8, border: `2px dashed ${value ? 'var(--avp-green)' : 'var(--avp-border)'}`, overflow: 'hidden', flexDirection: 'column', gap: 4, padding: 8 }}>
+                  {value ? (
+                    <>
+                      <img src={value} alt={label} style={{ maxHeight: 76, maxWidth: '100%', objectFit: 'contain' }}
+                        onLoad={e => { const img = e.target as HTMLImageElement; const span = img.parentElement?.querySelector('.dim-label') as HTMLElement; if (span) span.textContent = `${img.naturalWidth}×${img.naturalHeight}px` }}
+                        onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                      />
+                      <span className="dim-label" style={{ fontSize: 10, color: 'var(--avp-green)', fontWeight: 600, fontFamily: 'monospace' }}></span>
+                    </>
+                  ) : (
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 28, marginBottom: 4 }}>📱</div>
+                      <span style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>Nenhuma imagem</span><br />
+                      <span style={{ color: 'var(--avp-text-dim)', fontSize: 11 }}>Tamanho ideal: <strong style={{ color: 'var(--avp-text)' }}>{rec}</strong></span>
+                    </div>
+                  )}
+                </div>
+                <input type="file" accept="image/*" style={{ display: 'none' }} ref={ref}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) { const reader = new FileReader(); reader.onload = ev => setValue(ev.target?.result as string); reader.readAsDataURL(f); uploadLogo(campo, f) } e.target.value = '' }}
+                />
+                <button onClick={() => ref?.current?.click()} disabled={uploading === campo}
+                  style={{ background: uploading === campo ? 'var(--avp-border)' : value ? '#02A15390' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: uploading === campo ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, width: '100%' }}>
+                  {uploading === campo ? '⏳ Enviando...' : value ? '🔄 Trocar imagem' : '📤 Subir imagem'}
+                </button>
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       <div style={sectionStyle}>
