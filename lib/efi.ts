@@ -6,7 +6,8 @@ const BASE = process.env.EFI_SANDBOX === 'true'
   : 'https://pix.api.efipay.com.br'
 
 function getAgent() {
-  const pfx = Buffer.from(process.env.EFI_CERT_BASE64!, 'base64')
+  const certBase64 = process.env.EFI_CERT_BASE64!.replace(/\s/g, '')
+  const pfx = Buffer.from(certBase64, 'base64')
   const passphrase = process.env.EFI_CERT_PASSWORD || undefined
   return new https.Agent({ pfx, passphrase })
 }
