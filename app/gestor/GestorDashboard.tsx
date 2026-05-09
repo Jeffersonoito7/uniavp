@@ -53,9 +53,13 @@ export default function GestorDashboard({
   const [msgEvento, setMsgEvento] = useState('')
   const [abaGestor, setAbaGestor] = useState<'consultores' | 'eventos' | 'config'>('consultores')
 
-  const totalConsultores = consultores.length
-  const emAndamento = consultores.filter(c => c.status === 'ativo' && progressoMap[c.id] > 0).length
-  const concluidos = consultores.filter(c => c.status === 'concluido').length
+  const [listaConsultores, setListaConsultores] = useState(consultores)
+  const ativos = listaConsultores.filter(c => c.status !== 'concluido')
+  const totalConsultores = listaConsultores.length
+  const emAndamento = listaConsultores.filter(c => c.status === 'ativo' && progressoMap[c.id] > 0).length
+  const concluidos = listaConsultores.filter(c => c.status === 'concluido').length
+  const vagasUsadas = ativos.length
+  const vagasLivres = 50 - vagasUsadas
 
   async function sair() {
     const supabase = createBrowserClient(
@@ -71,6 +75,16 @@ export default function GestorDashboard({
     navigator.clipboard.writeText(url)
     setLinkCopiado(true)
     setTimeout(() => setLinkCopiado(false), 2000)
+  }
+
+  async function removerConsultor(c: Consultor) {
+    if (!confirm(`Remover ${c.nome} da sua equipe? O consultor perde a associação com você e libera uma vaga.`)) return
+    const res = await fetch('/api/gestor/consultor', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ alunoId: c.id }),
+    })
+    if (res.ok) setListaConsultores(prev => prev.filter(x => x.id !== c.id))
   }
 
   async function abrirConsultor(c: Consultor) {
@@ -171,15 +185,16 @@ export default function GestorDashboard({
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
-          <div style={{ background: 'var(--avp-card)', border: `1px solid ${totalConsultores >= 30 ? 'var(--avp-danger)' : 'var(--avp-border)'}`, borderRadius: 12, padding: 24 }}>
-            <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 8 }}>Consultores</p>
-            <p style={{ fontSize: 36, fontWeight: 800, color: totalConsultores >= 30 ? 'var(--avp-danger)' : 'var(--avp-text)' }}>{totalConsultores}<span style={{ fontSize: 16, color: 'var(--avp-text-dim)', fontWeight: 400 }}>/30</span></p>
-            {totalConsultores >= 30 && <p style={{ fontSize: 11, color: 'var(--avp-danger)', marginTop: 4, fontWeight: 600 }}>Limite atingido</p>}
+          <div style={{ background: 'var(--avp-card)', border: `1px solid ${vagasUsadas >= 50 ? 'var(--avp-danger)' : 'var(--avp-border)'}`, borderRadius: 12, padding: 24 }}>
+            <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 8 }}>Vagas usadas</p>
+            <p style={{ fontSize: 36, fontWeight: 800, color: vagasUsadas >= 50 ? 'var(--avp-danger)' : 'var(--avp-text)' }}>{vagasUsadas}<span style={{ fontSize: 16, color: 'var(--avp-text-dim)', fontWeight: 400 }}>/50</span></p>
+            {vagasUsadas >= 50 && <p style={{ fontSize: 11, color: 'var(--avp-danger)', marginTop: 4, fontWeight: 600 }}>Limite atingido</p>}
+            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>Concluídos não ocupam vaga</p>
           </div>
           {[
             { label: 'Em andamento', value: emAndamento },
             { label: 'Concluídos', value: concluidos },
-            { label: 'Vagas restantes', value: Math.max(0, 30 - totalConsultores) },
+            { label: 'Vagas livres', value: vagasLivres },
           ].map(stat => (
             <div key={stat.label} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24 }}>
               <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 8 }}>{stat.label}</p>
@@ -268,36 +283,38 @@ export default function GestorDashboard({
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--avp-border)' }}>
-                  {['Nome', 'WhatsApp', 'Progresso', 'Status', 'Cadastro'].map(h => (
+                  {['Nome', 'WhatsApp', 'Progresso', 'Status', 'Cadastro', ''].map(h => (
                     <th key={h} style={{ padding: '14px 16px', textAlign: 'left', color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {consultores.map(c => {
+                {listaConsultores.map(c => {
                   const pct = progressoMap[c.id] ?? 0
                   const badge = badgeStatus[c.status] ?? { label: c.status, color: 'var(--avp-text-dim)', bg: 'var(--avp-border)' }
                   return (
-                    <tr
-                      key={c.id}
-                      onClick={() => abrirConsultor(c)}
-                      style={{ borderBottom: '1px solid var(--avp-border)', cursor: 'pointer' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--avp-border)')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                    >
-                      <td style={{ padding: '14px 16px', fontWeight: 700, color: 'var(--avp-text)', fontSize: 14 }}>{c.nome}</td>
+                    <tr key={c.id} style={{ borderBottom: '1px solid var(--avp-border)' }}>
+                      <td onClick={() => abrirConsultor(c)} style={{ padding: '14px 16px', fontWeight: 700, color: 'var(--avp-text)', fontSize: 14, cursor: 'pointer' }}>{c.nome}</td>
                       <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 14 }}>{c.whatsapp}</td>
                       <td style={{ padding: '14px 16px', minWidth: 160 }}>{barraProgresso(pct)}</td>
                       <td style={{ padding: '14px 16px' }}>
                         <span style={{ background: badge.bg, color: badge.color, borderRadius: 20, padding: '3px 10px', fontSize: 12, fontWeight: 600 }}>{badge.label}</span>
                       </td>
                       <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 13 }}>{new Date(c.created_at).toLocaleDateString('pt-BR')}</td>
+                      <td style={{ padding: '14px 16px' }}>
+                        {c.status !== 'concluido' && (
+                          <button onClick={() => removerConsultor(c)}
+                            style={{ background: '#e6394615', border: '1px solid #e6394630', color: 'var(--avp-danger)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                            Remover
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   )
                 })}
-                {consultores.length === 0 && (
+                {listaConsultores.length === 0 && (
                   <tr>
-                    <td colSpan={5} style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Nenhum consultor vinculado ao seu perfil.</td>
+                    <td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Nenhum consultor vinculado ao seu perfil.</td>
                   </tr>
                 )}
               </tbody>

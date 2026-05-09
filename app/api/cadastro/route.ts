@@ -45,13 +45,14 @@ export async function POST(req: NextRequest) {
 
   const whatsappLimpo = whatsapp.replace(/\D/g, '')
 
-  // Verifica limite de consultores por gestor (50)
+  // Verifica limite de consultores por gestor (50) — concluídos não contam
   if (!isAdminRoute) {
     const { count } = await (adminClient.from('alunos') as any)
       .select('id', { count: 'exact', head: true })
       .eq('gestor_whatsapp', gestor_whatsapp.replace(/\D/g, ''))
+      .neq('status', 'concluido')
     if ((count ?? 0) >= 50) {
-      return NextResponse.json({ erro: 'Este gestor atingiu o limite de 50 consultores.' }, { status: 400 })
+      return NextResponse.json({ erro: 'Este gestor atingiu o limite de 50 consultores ativos.' }, { status: 400 })
     }
   }
   const emailLimpo = email.toLowerCase().trim()
