@@ -29,17 +29,28 @@ const navItems = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [siteNome, setSiteNome] = useState('')
+  const [siteLogoUrl, setSiteLogoUrl] = useState('')
+  const [isDominioMaster, setIsDominioMaster] = useState(false)
   useEffect(() => {
-    fetch('/api/site-config').then(r => r.json()).then(d => setSiteNome(d.nome)).catch(() => {})
+    fetch('/api/site-config').then(r => r.json()).then(d => {
+      setSiteNome(d.nome)
+      setSiteLogoUrl(d.logoUrl || '')
+      setIsDominioMaster(d.isDominioMaster)
+    }).catch(() => {})
   }, [])
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
       <aside style={{ width: 220, background: 'var(--avp-card)', borderRight: '1px solid var(--avp-border)', display: 'flex', flexDirection: 'column', padding: '24px 0' }}>
         <div style={{ padding: '0 20px 24px', borderBottom: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
-            <span style={{ fontWeight: 800, fontSize: 18, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              {siteNome || 'Admin'}
-            </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {siteLogoUrl && !isDominioMaster ? (
+              <img src={siteLogoUrl} alt={siteNome} style={{ maxHeight: 36, maxWidth: 160, objectFit: 'contain', display: 'block' }}
+                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            ) : (
+              <span style={{ fontWeight: 800, fontSize: 18, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                {siteNome || 'Admin'}
+              </span>
+            )}
             <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 2 }}>Painel Admin</p>
           </div>
           <ThemeToggle />
