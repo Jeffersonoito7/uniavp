@@ -138,23 +138,25 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       return
     }
 
-    // Certificado: base64 também (até 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setMsg('❌ Arquivo muito grande. Use um PNG de até 5MB.')
-      setUploading('')
-      return
-    }
+    // Certificado: base64
     const certReader = new FileReader()
     certReader.onload = async ev => {
       const base64 = ev.target?.result as string
+      // Sempre mostra o preview, independente do tamanho
       setters[campo]?.(base64)
+
+      if (file.size > 8 * 1024 * 1024) {
+        setMsg('⚠️ Arquivo grande (' + (file.size / 1024 / 1024).toFixed(1) + 'MB). Preview OK, mas otimize o PNG para salvar.')
+        setUploading('')
+        return
+      }
       try {
         const res = await fetch('/api/admin/configuracoes', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify([{ chave: 'certificado_template_url', valor: base64 }]),
         })
-        setMsg(res.ok ? '✅ Template do certificado salvo!' : '❌ Erro ao salvar.')
+        setMsg(res.ok ? '✅ Template do certificado salvo!' : '❌ Erro ao salvar — arquivo muito grande, otimize o PNG.')
       } catch (e: any) {
         setMsg(`❌ Erro: ${e.message}`)
       }
