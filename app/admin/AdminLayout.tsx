@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   LayoutDashboard, BookOpen, Users, ShieldCheck,
   Trophy, Settings, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper, Star
@@ -31,11 +31,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [siteNome, setSiteNome] = useState('')
   const [siteLogoUrl, setSiteLogoUrl] = useState('')
   const [isDominioMaster, setIsDominioMaster] = useState(false)
+  const [logoError, setLogoError] = useState(false)
   useEffect(() => {
     fetch('/api/site-config').then(r => r.json()).then(d => {
       setSiteNome(d.nome)
       setSiteLogoUrl(d.logoUrl || '')
       setIsDominioMaster(d.isDominioMaster)
+      setLogoError(false)
     }).catch(() => {})
   }, [])
   return (
@@ -43,26 +45,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside style={{ width: 220, background: 'var(--avp-card)', borderRight: '1px solid var(--avp-border)', display: 'flex', flexDirection: 'column', padding: '24px 0' }}>
         <div style={{ padding: '0 20px 24px', borderBottom: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            {siteLogoUrl && !isDominioMaster ? (
+            {siteLogoUrl && !isDominioMaster && !logoError ? (
               <img
                 src={siteLogoUrl}
                 alt={siteNome}
                 style={{ maxHeight: 36, maxWidth: 160, objectFit: 'contain', display: 'block' }}
-                onError={e => {
-                  const img = e.target as HTMLImageElement
-                  img.style.display = 'none'
-                  const span = img.nextElementSibling as HTMLElement
-                  if (span) span.style.display = 'block'
-                }}
+                onError={() => setLogoError(true)}
               />
-            ) : null}
-            <span style={{
-              fontWeight: 800, fontSize: 18, background: 'var(--grad-brand)',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              display: (siteLogoUrl && !isDominioMaster) ? 'none' : 'block'
-            }}>
-              {siteNome || 'Admin'}
-            </span>
+            ) : (
+              <span style={{
+                fontWeight: 800, fontSize: 18, background: 'var(--grad-brand)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                display: 'block'
+              }}>
+                {siteNome || 'Admin'}
+              </span>
+            )}
             <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 2 }}>Painel Admin</p>
           </div>
           <ThemeToggle />

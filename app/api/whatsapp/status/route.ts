@@ -25,7 +25,8 @@ export async function GET(req: NextRequest) {
       headers: { apikey: EVO_KEY }
     })
     const data = await res.json()
-    const conectado = data?.instance?.state === 'open'
+    const state: string = (data?.instance?.state || data?.state || '').toLowerCase()
+    const conectado = state === 'open'
 
     // Se conectado, pega o número do WhatsApp
     let numero = null
@@ -37,17 +38,7 @@ export async function GET(req: NextRequest) {
       numero = infoData?.[0]?.instance?.owner?.split('@')[0] || null
     }
 
-    // Se conectado e ainda tem QR pendente, pega novo QR
-    let qrcode = null
-    if (!conectado) {
-      const qrRes = await fetch(`${EVO_URL}/instance/connect/${instancia}`, {
-        headers: { apikey: EVO_KEY }
-      })
-      const qrData = await qrRes.json()
-      qrcode = qrData?.base64 || null
-    }
-
-    return NextResponse.json({ conectado, instancia, numero, qrcode })
+    return NextResponse.json({ conectado, instancia, numero, qrcode: null })
   } catch {
     return NextResponse.json({ conectado: false, instancia, qrcode: null })
   }
