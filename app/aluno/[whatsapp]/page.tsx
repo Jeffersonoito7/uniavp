@@ -94,6 +94,7 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
   }
 
   return (
+    <>
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
       <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontWeight: 800, fontSize: 20, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
@@ -226,5 +227,6 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
         nomeCor={certMap['certificado_nome_cor'] || '#1a1a2e'}
       />
     )}
+    </>
   )
 }
