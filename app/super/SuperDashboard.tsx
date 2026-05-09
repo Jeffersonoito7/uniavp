@@ -12,6 +12,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
 }) {
   const [clientes, setClientes] = useState<Cliente[]>(inicial)
   const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar'>('dashboard')
+  const [tipoNovo, setTipoNovo] = useState<'' | 'empresa' | 'gestor' | 'consultor'>('')
   const [whatsappTeste, setWhatsappTeste] = useState('')
   const [form, setForm] = useState({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 })
   const [salvando, setSalvando] = useState(false)
@@ -52,6 +53,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
   function iniciarEdicao(c: Cliente) {
     setForm({ nome: c.nome, dominio: c.dominio, contato_nome: c.contato_nome, contato_whatsapp: c.contato_whatsapp, contato_email: c.contato_email, observacoes: c.observacoes, gestor_ativo: c.gestor_ativo, limite_consultores: c.limite_consultores || 30 })
     setEditando(c)
+    setTipoNovo('empresa')
     setAba('novo')
   }
 
@@ -74,7 +76,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
             { id: 'novo', label: '+ Novo Cliente' },
             { id: 'testar', label: '🧪 Testar' },
           ] as const).map(item => (
-            <button key={item.id} onClick={() => { setAba(item.id as any); if (item.id !== 'novo') { setEditando(null); setForm({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 }) } }}
+            <button key={item.id} onClick={() => { setAba(item.id as any); if (item.id !== 'novo') { setEditando(null); setTipoNovo(''); setForm({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 }) } }}
               style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, fontSize: 14, fontWeight: 500, color: aba === item.id ? '#f0f1f5' : '#8a8fa3', background: aba === item.id ? '#252836' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
               {item.label}
             </button>
@@ -281,37 +283,116 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
         )}
 
         {aba === 'novo' && (
-          <div style={{ maxWidth: 600 }}>
-            <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>{editando ? 'Editar Cliente' : 'Novo Cliente'}</h1>
-            <p style={{ color: '#8a8fa3', fontSize: 14, marginBottom: 28 }}>Cadastre uma empresa que vai usar a plataforma</p>
-            <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div><label style={labelStyle}>Nome da empresa *</label><input style={inputStyle} value={form.nome} onChange={e => setForm(p => ({ ...p, nome: e.target.value }))} placeholder="Ex: Auto Vale Prevenções — Uni AVP" /></div>
-              <div><label style={labelStyle}>Domínio personalizado</label><input style={inputStyle} value={form.dominio} onChange={e => setForm(p => ({ ...p, dominio: e.target.value }))} placeholder="Ex: uni.empresa.com.br" /></div>
-              <div>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 0' }}>
-                  <input type="checkbox" checked={form.gestor_ativo} onChange={e => setForm(p => ({ ...p, gestor_ativo: e.target.checked }))} style={{ width: 18, height: 18, accentColor: '#f59e0b' }} />
-                  <span style={{ color: '#f0f1f5', fontSize: 14, fontWeight: 600 }}>Painel do Gestor <span style={{ color: '#f59e0b' }}>R$97/mês</span></span>
-                </label>
-                <p style={{ fontSize: 12, color: '#8a8fa3', marginTop: 2, marginLeft: 28 }}>Cada gestor gerencia até 30 consultores. Admin tem cadastros ilimitados.</p>
+          <div style={{ maxWidth: 620 }}>
+            <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>{editando ? 'Editar Cliente' : 'Cadastrar'}</h1>
+            <p style={{ color: '#8a8fa3', fontSize: 14, marginBottom: 28 }}>O que deseja cadastrar na plataforma?</p>
+
+            {/* Seleção de tipo — só aparece quando não está editando */}
+            {!editando && !tipoNovo && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 32 }}>
+                {[
+                  { tipo: 'empresa' as const, icon: '🏢', label: 'Empresa', desc: 'Nova empresa cliente da plataforma' },
+                  { tipo: 'gestor' as const, icon: '🧑‍💼', label: 'Gestor', desc: 'Gestor vinculado a uma empresa' },
+                  { tipo: 'consultor' as const, icon: '👤', label: 'Consultor', desc: 'Consultor de uma empresa cliente' },
+                ].map(({ tipo, icon, label, desc }) => (
+                  <button key={tipo} onClick={() => setTipoNovo(tipo)}
+                    style={{ background: '#181b24', border: '1px solid #252836', borderRadius: 14, padding: '28px 16px', cursor: 'pointer', textAlign: 'center', transition: 'border-color 0.2s' }}
+                    onMouseOver={e => (e.currentTarget.style.borderColor = '#6366f1')}
+                    onMouseOut={e => (e.currentTarget.style.borderColor = '#252836')}
+                  >
+                    <div style={{ fontSize: 40, marginBottom: 12 }}>{icon}</div>
+                    <p style={{ fontWeight: 800, fontSize: 16, color: '#f0f1f5', marginBottom: 6 }}>{label}</p>
+                    <p style={{ fontSize: 12, color: '#8a8fa3', lineHeight: 1.4 }}>{desc}</p>
+                  </button>
+                ))}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div><label style={labelStyle}>Nome do contato</label><input style={inputStyle} value={form.contato_nome} onChange={e => setForm(p => ({ ...p, contato_nome: e.target.value }))} /></div>
-                <div><label style={labelStyle}>WhatsApp</label><input style={inputStyle} value={form.contato_whatsapp} onChange={e => setForm(p => ({ ...p, contato_whatsapp: e.target.value }))} /></div>
+            )}
+
+            {/* Formulário Empresa */}
+            {(tipoNovo === 'empresa' || editando) && (
+              <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {!editando && (
+                  <button onClick={() => setTipoNovo('')} style={{ alignSelf: 'flex-start', background: 'none', border: 'none', color: '#8a8fa3', cursor: 'pointer', fontSize: 13, padding: 0, marginBottom: 4 }}>
+                    ← Voltar
+                  </button>
+                )}
+                <div><label style={labelStyle}>Nome da empresa *</label><input style={inputStyle} value={form.nome} onChange={e => setForm(p => ({ ...p, nome: e.target.value }))} placeholder="Ex: Auto Vale Prevenções — Uni AVP" /></div>
+                <div><label style={labelStyle}>Domínio personalizado</label><input style={inputStyle} value={form.dominio} onChange={e => setForm(p => ({ ...p, dominio: e.target.value }))} placeholder="Ex: uni.empresa.com.br" /></div>
+                <div style={{ background: '#08090d', borderRadius: 10, padding: 16 }}>
+                  <p style={{ fontSize: 13, color: '#8a8fa3', fontWeight: 700, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>Add-on</p>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={form.gestor_ativo} onChange={e => setForm(p => ({ ...p, gestor_ativo: e.target.checked }))} style={{ width: 18, height: 18, accentColor: '#f59e0b' }} />
+                    <div>
+                      <p style={{ color: '#f0f1f5', fontSize: 14, fontWeight: 700 }}>Painel do Gestor <span style={{ color: '#f59e0b' }}>R$97/mês</span></p>
+                      <p style={{ fontSize: 12, color: '#8a8fa3', marginTop: 2 }}>Cada gestor gerencia até 30 consultores</p>
+                    </div>
+                  </label>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div><label style={labelStyle}>Nome do contato</label><input style={inputStyle} value={form.contato_nome} onChange={e => setForm(p => ({ ...p, contato_nome: e.target.value }))} /></div>
+                  <div><label style={labelStyle}>WhatsApp</label><input style={inputStyle} value={form.contato_whatsapp} onChange={e => setForm(p => ({ ...p, contato_whatsapp: e.target.value }))} /></div>
+                </div>
+                <div><label style={labelStyle}>E-mail</label><input style={inputStyle} value={form.contato_email} onChange={e => setForm(p => ({ ...p, contato_email: e.target.value }))} /></div>
+                <div><label style={labelStyle}>Observações</label><textarea style={{ ...inputStyle, minHeight: 70, resize: 'vertical' } as React.CSSProperties} value={form.observacoes} onChange={e => setForm(p => ({ ...p, observacoes: e.target.value }))} /></div>
+                {msg && <p style={{ fontSize: 13, color: msg.includes('Erro') ? '#e63946' : '#02A153' }}>{msg}</p>}
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={salvarCliente} disabled={salvando}
+                    style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 24px', fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: salvando ? 0.7 : 1 }}>
+                    {salvando ? 'Salvando...' : editando ? 'Atualizar' : 'Cadastrar Empresa'}
+                  </button>
+                  <button onClick={() => { setAba('clientes'); setEditando(null); setTipoNovo('') }}
+                    style={{ background: 'none', border: '1px solid #252836', color: '#8a8fa3', borderRadius: 8, padding: '12px 20px', cursor: 'pointer', fontSize: 14 }}>
+                    Cancelar
+                  </button>
+                </div>
               </div>
-              <div><label style={labelStyle}>E-mail</label><input style={inputStyle} value={form.contato_email} onChange={e => setForm(p => ({ ...p, contato_email: e.target.value }))} /></div>
-              <div><label style={labelStyle}>Observações</label><textarea style={{ ...inputStyle, minHeight: 70, resize: 'vertical' } as React.CSSProperties} value={form.observacoes} onChange={e => setForm(p => ({ ...p, observacoes: e.target.value }))} /></div>
-              {msg && <p style={{ fontSize: 13, color: msg.includes('Erro') ? '#e63946' : '#02A153' }}>{msg}</p>}
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={salvarCliente} disabled={salvando}
-                  style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 24px', fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: salvando ? 0.7 : 1 }}>
-                  {salvando ? 'Salvando...' : editando ? 'Atualizar' : 'Cadastrar Cliente'}
+            )}
+
+            {/* Gestor — redireciona para o admin do cliente */}
+            {tipoNovo === 'gestor' && (
+              <div style={cardStyle}>
+                <button onClick={() => setTipoNovo('')} style={{ background: 'none', border: 'none', color: '#8a8fa3', cursor: 'pointer', fontSize: 13, padding: 0, marginBottom: 16 }}>
+                  ← Voltar
                 </button>
-                <button onClick={() => { setAba('clientes'); setEditando(null) }}
-                  style={{ background: 'none', border: '1px solid #252836', color: '#8a8fa3', borderRadius: 8, padding: '12px 20px', cursor: 'pointer', fontSize: 14 }}>
-                  Cancelar
-                </button>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>🧑‍💼</div>
+                <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Cadastrar Gestor</h2>
+                <p style={{ color: '#8a8fa3', fontSize: 14, marginBottom: 20 }}>Gestores são cadastrados pelo painel Admin de cada empresa cliente.</p>
+                <p style={{ fontSize: 13, color: '#8a8fa3', marginBottom: 16 }}>Acesse o painel Admin da empresa desejada:</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {clientes.filter(c => c.ativo).map(c => (
+                    <a key={c.id} href={`${c.dominio ? `https://${c.dominio}` : BASE_URL}/admin/gestores`} target="_blank" rel="noreferrer"
+                      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#08090d', borderRadius: 8, padding: '12px 16px', textDecoration: 'none', color: '#f0f1f5' }}>
+                      <span style={{ fontWeight: 600, fontSize: 14 }}>{c.nome}</span>
+                      <span style={{ fontSize: 12, color: '#6366f1', fontWeight: 700 }}>Abrir Admin ↗</span>
+                    </a>
+                  ))}
+                  {clientes.filter(c => c.ativo).length === 0 && <p style={{ color: '#8a8fa3', fontSize: 13 }}>Nenhuma empresa ativa cadastrada.</p>}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Consultor — redireciona para o admin do cliente */}
+            {tipoNovo === 'consultor' && (
+              <div style={cardStyle}>
+                <button onClick={() => setTipoNovo('')} style={{ background: 'none', border: 'none', color: '#8a8fa3', cursor: 'pointer', fontSize: 13, padding: 0, marginBottom: 16 }}>
+                  ← Voltar
+                </button>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>👤</div>
+                <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Cadastrar Consultor</h2>
+                <p style={{ color: '#8a8fa3', fontSize: 14, marginBottom: 20 }}>Consultores são cadastrados pelo painel Admin de cada empresa cliente.</p>
+                <p style={{ fontSize: 13, color: '#8a8fa3', marginBottom: 16 }}>Acesse o painel Admin da empresa desejada:</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {clientes.filter(c => c.ativo).map(c => (
+                    <a key={c.id} href={`${c.dominio ? `https://${c.dominio}` : BASE_URL}/admin/consultores`} target="_blank" rel="noreferrer"
+                      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#08090d', borderRadius: 8, padding: '12px 16px', textDecoration: 'none', color: '#f0f1f5' }}>
+                      <span style={{ fontWeight: 600, fontSize: 14 }}>{c.nome}</span>
+                      <span style={{ fontSize: 12, color: '#02A153', fontWeight: 700 }}>Abrir Admin ↗</span>
+                    </a>
+                  ))}
+                  {clientes.filter(c => c.ativo).length === 0 && <p style={{ color: '#8a8fa3', fontSize: 13 }}>Nenhuma empresa ativa cadastrada.</p>}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
