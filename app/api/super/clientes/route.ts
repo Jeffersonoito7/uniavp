@@ -34,3 +34,16 @@ export async function PUT(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
 }
+
+export async function DELETE(req: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+  const adminClient = createServiceRoleClient()
+  if (!await getSuperAdmin(user, adminClient)) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+
+  const { id } = await req.json()
+  const { error } = await (adminClient.from('clientes') as any).delete().eq('id', id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
+}

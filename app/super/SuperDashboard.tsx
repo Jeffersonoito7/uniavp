@@ -50,6 +50,13 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
     setClientes(prev => prev.map(x => x.id === c.id ? { ...x, ativo: !x.ativo } : x))
   }
 
+  async function excluirCliente(c: Cliente) {
+    if (!confirm(`Excluir "${c.nome}" permanentemente? Esta ação não pode ser desfeita.`)) return
+    const res = await fetch('/api/super/clientes', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: c.id }) })
+    if (res.ok) setClientes(prev => prev.filter(x => x.id !== c.id))
+    else alert('Erro ao excluir.')
+  }
+
   function iniciarEdicao(c: Cliente) {
     setForm({ nome: c.nome, dominio: c.dominio, contato_nome: c.contato_nome, contato_whatsapp: c.contato_whatsapp, contato_email: c.contato_email, observacoes: c.observacoes, gestor_ativo: c.gestor_ativo, limite_consultores: c.limite_consultores || 30 })
     setEditando(c)
@@ -273,6 +280,9 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                       <button onClick={() => iniciarEdicao(c)} style={{ background: '#252836', border: 'none', color: '#f0f1f5', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Editar</button>
                       <button onClick={() => toggleAtivo(c)} style={{ background: c.ativo ? '#f59e0b20' : '#02A15320', border: 'none', color: c.ativo ? '#f59e0b' : '#02A153', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
                         {c.ativo ? 'Suspender' : 'Reativar'}
+                      </button>
+                      <button onClick={() => excluirCliente(c)} style={{ background: '#e6394620', border: 'none', color: '#e63946', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                        Excluir
                       </button>
                     </div>
                   </div>
