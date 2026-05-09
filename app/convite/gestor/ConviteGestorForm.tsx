@@ -34,15 +34,16 @@ export default function ConviteGestorForm({ siteNome, logoUrl }: { siteNome: str
       <div style={{ width: '100%', maxWidth: 460 }}>
 
         {/* Logo e título */}
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          {logoUrl && (
-            <img src={logoUrl} alt={siteNome} className="logo-site" style={{ height: 64, objectFit: 'contain', marginBottom: 16 }}
+        <div style={{ textAlign: 'center', marginBottom: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          {logoUrl ? (
+            <img src={logoUrl} alt={siteNome} className="logo-site" style={{ height: 64, objectFit: 'contain', display: 'block', margin: '0 auto' }}
               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+          ) : (
+            <h1 style={{ fontSize: 26, fontWeight: 900, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
+              {siteNome}
+            </h1>
           )}
-          <h1 style={{ fontSize: 26, fontWeight: 900, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 8 }}>
-            {siteNome}
-          </h1>
-          <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>Cadastro de Gestor</p>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 15, margin: 0 }}>Cadastro de Gestor</p>
           <div style={{ marginTop: 12, background: '#f59e0b20', border: '1px solid #f59e0b50', borderRadius: 8, padding: '10px 16px', fontSize: 13, color: '#f59e0b' }}>
             Após o cadastro, aguarde a ativação pela empresa.
           </div>

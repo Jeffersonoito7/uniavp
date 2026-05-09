@@ -102,9 +102,14 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
     <>
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
       <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontWeight: 800, fontSize: 20, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          {siteConfig.nome}
-        </span>
+        {siteConfig.logoUrl && !siteConfig.logoUrl.startsWith('/') ? (
+          <img src={siteConfig.logoUrl} alt={siteConfig.nome} className="logo-site"
+            style={{ height: 36, objectFit: 'contain', display: 'block' }} />
+        ) : (
+          <span style={{ fontWeight: 800, fontSize: 20, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            {siteConfig.nome}
+          </span>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <Link href={`/aluno/${params.whatsapp}/forum`} style={{ color: 'var(--avp-text-dim)', fontSize: 14, textDecoration: 'none', fontWeight: 500 }}>
             Fórum

@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import SiteLogoHeader from '@/app/components/SiteLogoHeader'
 
 export default function CaptacaoPage() {
   const router = useRouter()
@@ -74,18 +75,12 @@ export default function CaptacaoPage() {
       <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '80px 24px 60px', background: 'radial-gradient(ellipse at 50% 0%, rgba(51,54,135,0.4) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(2,161,83,0.2) 0%, transparent 50%), var(--avp-black)', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(51,54,135,0.05) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(2,161,83,0.05) 0%, transparent 50%)' }} />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 800 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
-            <img src="/logo.png" className="logo-site" alt="Logo AVP" style={{ height: 90, objectFit: 'contain', marginBottom: 16 }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32, gap: 16 }}>
+            <SiteLogoHeader height={90} />
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(2,161,83,0.15)', border: '1px solid rgba(2,161,83,0.3)', borderRadius: 100, padding: '6px 18px', fontSize: 12, fontWeight: 700, color: 'var(--avp-green)', letterSpacing: 2, textTransform: 'uppercase' }}>
               🏆 A Única e Mais Completa do País
             </div>
           </div>
-
-          <h1 style={{ fontSize: 'clamp(2.2rem, 6vw, 4rem)', fontWeight: 900, lineHeight: 1.1, marginBottom: 12 }}>
-            <span style={{ background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Universidade Auto Vale Prevenções
-            </span>
-          </h1>
           <h2 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.6rem)', fontWeight: 400, color: 'var(--avp-text-dim)', marginBottom: 24, lineHeight: 1.5 }}>
             Forme-se consultor de sucesso e conquiste sua <strong style={{ color: 'var(--avp-text)' }}>independência financeira</strong>
           </h2>

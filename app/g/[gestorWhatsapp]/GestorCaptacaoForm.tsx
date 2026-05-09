@@ -48,8 +48,8 @@ export default function GestorCaptacaoForm({ gestor, siteNome, logoUrl }: { gest
       {/* HERO */}
       <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '80px 24px 60px', background: 'radial-gradient(ellipse at 50% 0%, rgba(51,54,135,0.4) 0%, transparent 60%), var(--avp-black)', position: 'relative' }}>
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 800 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
-            <img src={logoUrl} className="logo-site" alt="Logo" style={{ height: 80, objectFit: 'contain', marginBottom: 16 }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32, gap: 16 }}>
+            <img src={logoUrl} className="logo-site" alt="Logo" style={{ height: 80, objectFit: 'contain', display: 'block', margin: '0 auto' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(2,161,83,0.15)', border: '1px solid rgba(2,161,83,0.3)', borderRadius: 100, padding: '6px 18px', fontSize: 12, fontWeight: 700, color: 'var(--avp-green)', letterSpacing: 2, textTransform: 'uppercase' }}>
               🎯 Convite de {gestor.nome}
             </div>
@@ -57,7 +57,7 @@ export default function GestorCaptacaoForm({ gestor, siteNome, logoUrl }: { gest
 
           <h1 style={{ fontSize: 'clamp(2rem, 6vw, 3.6rem)', fontWeight: 900, lineHeight: 1.1, marginBottom: 16 }}>
             <span style={{ background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              {gestor.nome} te convidou para a {siteNome}
+              {gestor.nome} te convidou!
             </span>
           </h1>
           <h2 style={{ fontSize: 'clamp(1rem, 3vw, 1.5rem)', fontWeight: 400, color: 'var(--avp-text-dim)', marginBottom: 24, lineHeight: 1.5 }}>

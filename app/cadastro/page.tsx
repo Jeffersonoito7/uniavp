@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import SiteLogoHeader from '@/app/components/SiteLogoHeader'
 
 export default function CadastroPage() {
   const router = useRouter()
@@ -65,12 +66,9 @@ export default function CadastroPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '32px 16px' }}>
       <div style={{ width: 440, maxWidth: '100%' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <img src="/logo.png" className="logo-site" alt="Logo AVP" style={{ height: 72, objectFit: 'contain', marginBottom: 14, display: 'block' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-          <h1 style={{ fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>
-            UNIVERSIDADE AVP
-          </h1>
-          <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Crie sua conta para iniciar a formação</p>
+        <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+          <SiteLogoHeader height={72} />
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, margin: 0 }}>Crie sua conta para iniciar a formação</p>
         </div>
         <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32 }}>
           {erro && (
