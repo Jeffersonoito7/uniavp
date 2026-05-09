@@ -138,34 +138,30 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       return
     }
 
-    // Certificado: arquivo grande → Supabase Storage
-    const previewReader = new FileReader()
-    previewReader.onload = ev => setters[campo]?.(ev.target?.result as string)
-    previewReader.readAsDataURL(file)
-    try {
-      const ext = file.name.split('.').pop() || 'png'
-      const path = `logos/certUrl-${Date.now()}.${ext}`
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('bucket', 'artes')
-      formData.append('path', path)
-      const res = await fetch('/api/admin/upload', { method: 'POST', body: formData })
-      const data = await res.json()
-      if (res.ok && data.url) {
-        setters[campo]?.(data.url)
-        await fetch('/api/admin/configuracoes', {
+    // Certificado: base64 também (até 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setMsg('❌ Arquivo muito grande. Use um PNG de até 5MB.')
+      setUploading('')
+      return
+    }
+    const certReader = new FileReader()
+    certReader.onload = async ev => {
+      const base64 = ev.target?.result as string
+      setters[campo]?.(base64)
+      try {
+        const res = await fetch('/api/admin/configuracoes', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify([{ chave: 'certificado_template_url', valor: data.url }]),
+          body: JSON.stringify([{ chave: 'certificado_template_url', valor: base64 }]),
         })
-        setMsg('✅ Template do certificado salvo!')
-      } else {
-        setMsg(`❌ Erro no upload: ${data.error || 'Tente novamente.'}`)
+        setMsg(res.ok ? '✅ Template do certificado salvo!' : '❌ Erro ao salvar.')
+      } catch (e: any) {
+        setMsg(`❌ Erro: ${e.message}`)
       }
-    } catch (e: any) {
-      setMsg(`❌ Erro: ${e.message}`)
+      setUploading('')
     }
-    setUploading('')
+    certReader.onerror = () => { setMsg('❌ Erro ao ler o arquivo'); setUploading('') }
+    certReader.readAsDataURL(file)
   }
 
   async function salvar() {
