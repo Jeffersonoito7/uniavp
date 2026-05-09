@@ -106,12 +106,45 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   async function uploadImagem(campo: string, file: File) {
     setUploading(campo)
     setMsg('')
-    const reader = new FileReader()
-    reader.onload = ev => setters[campo]?.(ev.target?.result as string)
-    reader.readAsDataURL(file)
+
+    if (campo !== 'certUrl') {
+      // Logos: salva como base64 direto no banco (sem depender de Storage público)
+      if (file.size > 800 * 1024) {
+        setMsg('❌ Logo muito grande. Use uma imagem de até 800KB.')
+        setUploading('')
+        return
+      }
+      const reader = new FileReader()
+      reader.onload = async ev => {
+        const base64 = ev.target?.result as string
+        setters[campo]?.(base64)
+        const chave = campoToChave[campo]
+        if (chave) {
+          try {
+            const res = await fetch('/api/admin/configuracoes', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify([{ chave, valor: base64 }]),
+            })
+            setMsg(res.ok ? '✅ Logo salva!' : '❌ Erro ao salvar.')
+          } catch (e: any) {
+            setMsg(`❌ Erro: ${e.message}`)
+          }
+        }
+        setUploading('')
+      }
+      reader.onerror = () => { setMsg('❌ Erro ao ler o arquivo'); setUploading('') }
+      reader.readAsDataURL(file)
+      return
+    }
+
+    // Certificado: arquivo grande → Supabase Storage
+    const previewReader = new FileReader()
+    previewReader.onload = ev => setters[campo]?.(ev.target?.result as string)
+    previewReader.readAsDataURL(file)
     try {
       const ext = file.name.split('.').pop() || 'png'
-      const path = `logos/${campo}-${Date.now()}.${ext}`
+      const path = `logos/certUrl-${Date.now()}.${ext}`
       const formData = new FormData()
       formData.append('file', file)
       formData.append('bucket', 'artes')
@@ -120,16 +153,12 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       const data = await res.json()
       if (res.ok && data.url) {
         setters[campo]?.(data.url)
-        // Auto-salva a URL no banco imediatamente
-        const chave = campoToChave[campo]
-        if (chave) {
-          await fetch('/api/admin/configuracoes', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify([{ chave, valor: data.url }]),
-          })
-        }
-        setMsg('✅ Imagem salva com sucesso!')
+        await fetch('/api/admin/configuracoes', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify([{ chave: 'certificado_template_url', valor: data.url }]),
+        })
+        setMsg('✅ Template do certificado salvo!')
       } else {
         setMsg(`❌ Erro no upload: ${data.error || 'Tente novamente.'}`)
       }
