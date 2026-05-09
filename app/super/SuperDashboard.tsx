@@ -37,15 +37,16 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(editando ? { ...form, id: editando.id } : form),
     })
+    const data = await res.json()
     if (res.ok) {
-      const data = await res.json()
       if (editando) setClientes(prev => prev.map(c => c.id === editando.id ? data : c))
       else setClientes(prev => [...prev, data])
       setForm({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 })
       setEditando(null)
+      setTipoNovo('')
       setAba('clientes')
       setMsg('Cliente salvo!')
-    } else setMsg('Erro ao salvar.')
+    } else setMsg(`Erro: ${data.error || res.status}`)
     setSalvando(false)
   }
 
