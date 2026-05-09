@@ -1,28 +1,60 @@
+import https from 'https'
+import { URL } from 'url'
+
 const BASE = process.env.EFI_SANDBOX === 'true'
   ? 'https://pix-h.api.efipay.com.br'
   : 'https://pix.api.efipay.com.br'
+
+function getAgent() {
+  return new https.Agent({
+    pfx: Buffer.from(process.env.EFI_CERT_BASE64!, 'base64'),
+    passphrase: process.env.EFI_CERT_PASSWORD!,
+  })
+}
+
+function httpsRequest(url: string, options: { method?: string; headers?: Record<string, string>; body?: string }): Promise<{ status: number; data: unknown }> {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(url)
+    const reqOptions = {
+      hostname: parsed.hostname,
+      path: parsed.pathname + parsed.search,
+      method: options.method || 'GET',
+      headers: options.headers || {},
+      agent: getAgent(),
+    }
+    const req = https.request(reqOptions, res => {
+      let raw = ''
+      res.on('data', chunk => { raw += chunk })
+      res.on('end', () => {
+        try { resolve({ status: res.statusCode || 0, data: JSON.parse(raw) }) }
+        catch { resolve({ status: res.statusCode || 0, data: raw }) }
+      })
+    })
+    req.on('error', reject)
+    if (options.body) req.write(options.body)
+    req.end()
+  })
+}
 
 async function getToken(): Promise<string> {
   const credentials = Buffer.from(
     `${process.env.EFI_CLIENT_ID}:${process.env.EFI_CLIENT_SECRET}`
   ).toString('base64')
 
-  const res = await fetch(`${BASE}/oauth/token`, {
+  const { data } = await httpsRequest(`${BASE}/oauth/token`, {
     method: 'POST',
-    headers: {
-      Authorization: `Basic ${credentials}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { Authorization: `Basic ${credentials}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ grant_type: 'client_credentials' }),
   })
-  const data = await res.json()
-  return data.access_token
+  const d = data as any
+  if (!d.access_token) throw new Error(`Auth Efí falhou: ${JSON.stringify(d)}`)
+  return d.access_token
 }
 
 export async function criarCobrancaPix(params: {
   txid: string
   valor: number
-  vencimento: string // YYYY-MM-DD
+  vencimento: string
   nomeDevedor: string
   cpfCnpj?: string
   descricao?: string
@@ -42,31 +74,38 @@ export async function criarCobrancaPix(params: {
     else if (digits.length === 14) (payload.devedor as Record<string, string>).cnpj = digits
   }
 
-  const cobRes = await fetch(`${BASE}/v2/cobv/${params.txid}`, {
+  const { data: cob } = await httpsRequest(`${BASE}/v2/cobv/${params.txid}`, {
     method: 'PUT',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
-  const cob = await cobRes.json()
-  if (!cob.loc?.id) throw new Error(`Erro Efí: ${JSON.stringify(cob)}`)
+  const c = cob as any
+  if (!c.loc?.id) throw new Error(`Erro Efí cobrança: ${JSON.stringify(c)}`)
 
-  const qrRes = await fetch(`${BASE}/v2/loc/${cob.loc.id}/qrcode`, {
+  const { data: qr } = await httpsRequest(`${BASE}/v2/loc/${c.loc.id}/qrcode`, {
     headers: { Authorization: `Bearer ${token}` },
   })
-  const qr = await qrRes.json()
+  const q = qr as any
 
-  return {
-    pixCopiaECola: qr.qrcode,
-    qrcodeBase64: qr.imagemQrcode,
-    locId: cob.loc.id,
-  }
+  return { pixCopiaECola: q.qrcode, qrcodeBase64: q.imagemQrcode, locId: c.loc.id }
 }
 
 export async function consultarPagamento(txid: string): Promise<{ status: string; pago: boolean }> {
   const token = await getToken()
-  const res = await fetch(`${BASE}/v2/cobv/${txid}`, {
+  const { data } = await httpsRequest(`${BASE}/v2/cobv/${txid}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
-  const data = await res.json()
-  return { status: data.status, pago: data.status === 'CONCLUIDA' }
+  const d = data as any
+  return { status: d.status, pago: d.status === 'CONCLUIDA' }
+}
+
+export async function registrarWebhook(webhookUrl: string): Promise<void> {
+  const token = await getToken()
+  const chave = process.env.EFI_PIX_KEY!
+  const { status, data } = await httpsRequest(`${BASE}/v2/webhook/${chave}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ webhookUrl }),
+  })
+  if (status !== 200 && status !== 204) throw new Error(JSON.stringify(data))
 }
