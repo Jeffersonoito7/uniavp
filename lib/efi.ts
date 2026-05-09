@@ -43,8 +43,8 @@ async function getToken(): Promise<string> {
 
   const { data } = await httpsRequest(`${BASE}/oauth/token`, {
     method: 'POST',
-    headers: { Authorization: `Basic ${credentials}`, 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'grant_type=client_credentials',
+    headers: { Authorization: `Basic ${credentials}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ grant_type: 'client_credentials' }),
   })
   const d = data as any
   if (!d.access_token) throw new Error(`Auth Efí falhou: ${JSON.stringify(d)}`)
