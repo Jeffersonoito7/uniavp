@@ -144,38 +144,51 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
         <p style={{ fontWeight: 800, fontSize: 16 }}>🖼️ Logo da empresa</p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {[
-            { label: 'Logo principal', campo: 'logoUrl', value: logoUrl, setValue: setLogoUrl, desc: 'Usada em todo o sistema', rec: '400×120px' },
-            { label: 'Logo do menu', campo: 'logoMenuUrl', value: logoMenuUrl, setValue: setLogoMenuUrl, desc: 'Cabeçalho do painel', rec: '200×60px' },
-            { label: 'Logo da página de login', campo: 'logoPaginaUrl', value: logoPaginaUrl, setValue: setLogoPaginaUrl, desc: 'Login e captação', rec: '300×100px' },
-            { label: 'Favicon', campo: 'logoFaviconUrl', value: logoFaviconUrl, setValue: setLogoFaviconUrl, desc: 'Ícone na aba do navegador', rec: '64×64px' },
-          ].map(({ label, campo, value, setValue, desc, rec }) => {
+            { label: 'Logo principal', campo: 'logoUrl', value: logoUrl, setValue: setLogoUrl, desc: 'Usada em todo o sistema', rec: '400×120px', formato: 'PNG transparente' },
+            { label: 'Logo do menu', campo: 'logoMenuUrl', value: logoMenuUrl, setValue: setLogoMenuUrl, desc: 'Cabeçalho do painel', rec: '200×60px', formato: 'PNG transparente' },
+            { label: 'Logo da página de login', campo: 'logoPaginaUrl', value: logoPaginaUrl, setValue: setLogoPaginaUrl, desc: 'Login e captação', rec: '300×100px', formato: 'PNG transparente' },
+            { label: 'Favicon', campo: 'logoFaviconUrl', value: logoFaviconUrl, setValue: setLogoFaviconUrl, desc: 'Ícone na aba do navegador', rec: '64×64px', formato: 'PNG quadrado' },
+          ].map(({ label, campo, value, setValue, desc, rec, formato }) => {
             const ref = refs[campo as keyof typeof refs]
             return (
               <div key={campo} style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div>
-                  <p style={{ fontWeight: 700, fontSize: 13 }}>{label}</p>
-                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>{desc} · <span style={{ color: 'var(--avp-green)' }}>Recomendado: {rec}</span></p>
+                  <p style={{ fontWeight: 700, fontSize: 14 }}>{label}</p>
+                  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 2 }}>{desc}</p>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 6, background: 'rgba(2,161,83,0.12)', border: '1px solid rgba(2,161,83,0.3)', borderRadius: 6, padding: '3px 8px' }}>
+                    <span style={{ fontSize: 11, color: 'var(--avp-green)', fontWeight: 700 }}>📐 {rec}</span>
+                    <span style={{ fontSize: 10, color: 'var(--avp-text-dim)' }}>· {formato}</span>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 90, background: 'var(--avp-card)', borderRadius: 8, border: `2px dashed ${value ? 'var(--avp-green)' : 'var(--avp-border)'}`, overflow: 'hidden', position: 'relative', flexDirection: 'column', gap: 4 }}>
+
+                {/* Preview */}
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100, background: 'var(--avp-card)', borderRadius: 8, border: `2px dashed ${value ? 'var(--avp-green)' : 'var(--avp-border)'}`, overflow: 'hidden', flexDirection: 'column', gap: 4, padding: 8 }}>
                   {value ? (
                     <>
                       <img
                         src={value}
                         alt={label}
-                        style={{ maxHeight: 74, maxWidth: '100%', objectFit: 'contain' }}
+                        style={{ maxHeight: 76, maxWidth: '100%', objectFit: 'contain' }}
                         onLoad={e => {
                           const img = e.target as HTMLImageElement
-                          const dim = img.nextElementSibling as HTMLElement
-                          if (dim) dim.textContent = `${img.naturalWidth}×${img.naturalHeight}px`
+                          const span = img.parentElement?.querySelector('.dim-label') as HTMLElement
+                          if (span) span.textContent = `${img.naturalWidth}×${img.naturalHeight}px`
+                          img.style.display = 'block'
                         }}
                         onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
                       />
-                      <span style={{ fontSize: 10, color: 'var(--avp-green)', fontWeight: 600 }}></span>
+                      <span className="dim-label" style={{ fontSize: 10, color: 'var(--avp-green)', fontWeight: 600, fontFamily: 'monospace' }}></span>
                     </>
                   ) : (
-                    <span style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Sem logo</span>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 28, marginBottom: 4 }}>🖼️</div>
+                      <span style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>Nenhuma imagem</span>
+                      <br />
+                      <span style={{ color: 'var(--avp-text-dim)', fontSize: 11 }}>Tamanho ideal: <strong style={{ color: 'var(--avp-text)' }}>{rec}</strong></span>
+                    </div>
                   )}
                 </div>
+
                 <input type="file" accept="image/*" style={{ display: 'none' }} ref={ref}
                   onChange={e => {
                     const f = e.target.files?.[0]
@@ -189,8 +202,8 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
                   }}
                 />
                 <button onClick={() => ref?.current?.click()} disabled={uploading === campo}
-                  style={{ background: uploading === campo ? 'var(--avp-border)' : value ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px', cursor: uploading === campo ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, width: '100%' }}>
-                  {uploading === campo ? '⏳ Enviando...' : value ? '🔄 Trocar logo' : '📤 Subir logo'}
+                  style={{ background: uploading === campo ? 'var(--avp-border)' : value ? '#02A15390' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: uploading === campo ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, width: '100%' }}>
+                  {uploading === campo ? '⏳ Enviando...' : value ? '🔄 Trocar imagem' : '📤 Subir imagem'}
                 </button>
               </div>
             )
