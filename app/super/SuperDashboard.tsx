@@ -191,22 +191,23 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
               </div>
             </div>
 
-            {/* Painel Consultor */}
+            {/* Experiência do Consultor */}
             <div style={{ background: '#181b24', border: '1px solid #02A15340', borderRadius: 12, padding: 24 }}>
-              <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 8 }}>👤 Painel Consultor</p>
-              <p style={{ color: '#8a8fa3', fontSize: 13, marginBottom: 12 }}>Digite o WhatsApp do consultor para abrir o painel dele.</p>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <input
-                  placeholder="WhatsApp (ex: 11999999999)"
-                  value={whatsappTeste}
-                  onChange={e => setWhatsappTeste(e.target.value.replace(/\D/g, ''))}
-                  style={{ flex: 1, background: '#08090d', border: '1px solid #252836', borderRadius: 8, padding: '10px 14px', color: '#f0f1f5', fontSize: 14, outline: 'none' }}
-                />
-                <a href={whatsappTeste ? `${BASE_URL}/aluno/${whatsappTeste}` : '#'} target="_blank" rel="noreferrer"
-                  onClick={e => { if (!whatsappTeste) e.preventDefault() }}
-                  style={{ background: whatsappTeste ? '#02A153' : '#252836', color: '#fff', borderRadius: 8, padding: '10px 18px', fontWeight: 700, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap', opacity: whatsappTeste ? 1 : 0.5 }}>
-                  Abrir Consultor ↗
+              <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>👤 Experiência do Consultor</p>
+              <p style={{ color: '#8a8fa3', fontSize: 13, marginBottom: 16 }}>Acesse o login de cada empresa e entre com uma conta de consultor para ver exatamente o que ele vê.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <a href={`${BASE_URL}/login`} target="_blank" rel="noreferrer"
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#08090d', borderRadius: 8, padding: '12px 16px', textDecoration: 'none' }}>
+                  <span style={{ color: '#f0f1f5', fontWeight: 600, fontSize: 14 }}>Oito7 Digital (domínio principal)</span>
+                  <span style={{ color: '#02A153', fontWeight: 700, fontSize: 12 }}>Entrar como Consultor ↗</span>
                 </a>
+                {clientes.filter(c => c.ativo && c.dominio).map(c => (
+                  <a key={c.id} href={`https://${c.dominio}/login`} target="_blank" rel="noreferrer"
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#08090d', borderRadius: 8, padding: '12px 16px', textDecoration: 'none' }}>
+                    <span style={{ color: '#f0f1f5', fontWeight: 600, fontSize: 14 }}>{c.nome}</span>
+                    <span style={{ color: '#02A153', fontWeight: 700, fontSize: 12 }}>Entrar como Consultor ↗</span>
+                  </a>
+                ))}
               </div>
             </div>
 
