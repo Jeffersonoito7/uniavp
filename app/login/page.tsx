@@ -7,6 +7,7 @@ export default async function LoginPage() {
     <LoginForm
       logoUrl={config.logoPaginaUrl || config.logoUrl || '/logo.png'}
       siteNome={config.isDominioMaster ? '' : config.nome}
+      isDominioMaster={config.isDominioMaster}
     />
   )
 }

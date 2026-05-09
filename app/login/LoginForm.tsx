@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import ThemeToggle from '@/app/components/ThemeToggle'
 
-export default function LoginForm({ logoUrl, siteNome }: { logoUrl: string; siteNome: string }) {
+export default function LoginForm({ logoUrl, siteNome, isDominioMaster }: { logoUrl: string; siteNome: string; isDominioMaster: boolean }) {
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
@@ -47,11 +47,13 @@ export default function LoginForm({ logoUrl, siteNome }: { logoUrl: string; site
             </h1>
           )}
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>Acesse sua conta para continuar</p>
-          <p style={{ marginTop: 8, fontSize: 13 }}>
-            <a href="/captacao" style={{ color: 'var(--avp-green)' }}>Sou consultor</a>
-            {' · '}
-            <a href="/planos" style={{ color: 'var(--avp-text-dim)' }}>Para empresas</a>
-          </p>
+          {isDominioMaster && (
+            <p style={{ marginTop: 8, fontSize: 13 }}>
+              <a href="/captacao" style={{ color: 'var(--avp-green)' }}>Sou consultor</a>
+              {' · '}
+              <a href="/planos" style={{ color: 'var(--avp-text-dim)' }}>Para empresas</a>
+            </p>
+          )}
         </div>
         <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32 }}>
           {erro && (
