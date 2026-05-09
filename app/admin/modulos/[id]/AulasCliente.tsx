@@ -16,6 +16,7 @@ type Aula = {
   ao_vivo_data: string | null
   ao_vivo_plataforma: string | null
   validade_meses: number | null
+  capa_url: string | null
 }
 
 type Arquivo = { id: string; nome: string; url: string }
