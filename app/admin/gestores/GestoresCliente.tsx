@@ -82,6 +82,22 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
     setTimeout(() => setMsg(null), 5000)
   }
 
+  async function excluirGestor(gestor: Gestor) {
+    if (!confirm(`Excluir o gestor "${gestor.nome}" permanentemente? Isso remove o acesso dele à plataforma.`)) return
+    const res = await fetch('/api/admin/gestores', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: gestor.id }),
+    })
+    if (res.ok) {
+      setGestores(prev => prev.filter(g => g.id !== gestor.id))
+      setMsg({ tipo: 'ok', texto: `Gestor "${gestor.nome}" excluído.` })
+    } else {
+      setMsg({ tipo: 'err', texto: 'Erro ao excluir gestor.' })
+    }
+    setTimeout(() => setMsg(null), 4000)
+  }
+
   async function toggleAtivo(gestor: Gestor) {
     const res = await fetch('/api/admin/gestores', {
       method: 'PUT',
@@ -201,12 +217,16 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
                 </td>
                 <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 13 }}>{new Date(g.created_at).toLocaleDateString('pt-BR')}</td>
                 <td style={{ padding: '14px 16px' }}>
-                  <button
-                    onClick={() => toggleAtivo(g)}
-                    style={{ background: g.ativo ? '#e6394620' : '#02A15320', color: g.ativo ? 'var(--avp-danger)' : 'var(--avp-green)', border: `1px solid ${g.ativo ? 'var(--avp-danger)' : 'var(--avp-green)'}`, borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
-                  >
-                    {g.ativo ? 'Desativar' : 'Ativar'}
-                  </button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => toggleAtivo(g)}
+                      style={{ background: g.ativo ? '#e6394620' : '#02A15320', color: g.ativo ? 'var(--avp-danger)' : 'var(--avp-green)', border: `1px solid ${g.ativo ? 'var(--avp-danger)' : 'var(--avp-green)'}`, borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                      {g.ativo ? 'Desativar' : 'Ativar'}
+                    </button>
+                    <button onClick={() => excluirGestor(g)}
+                      style={{ background: 'var(--avp-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                      Excluir
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

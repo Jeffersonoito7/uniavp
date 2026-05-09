@@ -38,6 +38,22 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
     c.email.toLowerCase().includes(busca.toLowerCase())
   )
 
+  async function excluirConsultor(c: Consultor) {
+    if (!confirm(`Excluir "${c.nome}" permanentemente? Isso remove o acesso e todos os dados do consultor.`)) return
+    const res = await fetch('/api/admin/consultores', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: c.id }),
+    })
+    if (res.ok) {
+      setConsultores(prev => prev.filter(x => x.id !== c.id))
+      setMsg({ tipo: 'ok', texto: `${c.nome} excluído com sucesso.` })
+    } else {
+      setMsg({ tipo: 'err', texto: 'Erro ao excluir consultor.' })
+    }
+    setTimeout(() => setMsg(null), 4000)
+  }
+
   async function cadastrar(e: React.FormEvent) {
     e.preventDefault()
     setSalvando(true)
@@ -157,7 +173,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--avp-border)' }}>
-                {['Nome', 'WhatsApp', 'E-mail', 'Indicador', 'Status', 'Cadastro'].map(h => (
+                {['Nome', 'WhatsApp', 'E-mail', 'Indicador', 'Status', 'Cadastro', ''].map(h => (
                   <th key={h} style={{ padding: '14px 16px', textAlign: 'left', color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
                 ))}
               </tr>
@@ -184,11 +200,17 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
                   <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 13 }}>
                     {new Date(c.created_at).toLocaleDateString('pt-BR')}
                   </td>
+                  <td style={{ padding: '14px 16px' }}>
+                    <button onClick={() => excluirConsultor(c)}
+                      style={{ background: 'var(--avp-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                      Excluir
+                    </button>
+                  </td>
                 </tr>
               ))}
               {filtrados.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Nenhum consultor encontrado.</td>
+                  <td colSpan={7} style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Nenhum consultor encontrado.</td>
                 </tr>
               )}
             </tbody>

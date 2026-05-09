@@ -70,3 +70,28 @@ export async function PUT(request: NextRequest) {
 
   return NextResponse.json({ gestor })
 }
+
+export async function DELETE(request: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+
+  const adminClient = createServiceRoleClient()
+  const isAdmin = await verificarAdmin(adminClient, user.id)
+  if (!isAdmin) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+
+  const { id } = await request.json()
+  if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
+
+  const { data: gestor } = await (adminClient.from('gestores') as any)
+    .select('user_id').eq('id', id).maybeSingle()
+
+  const { error } = await (adminClient.from('gestores') as any).delete().eq('id', id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  if (gestor?.user_id) {
+    await adminClient.auth.admin.deleteUser(gestor.user_id).catch(() => {})
+  }
+
+  return NextResponse.json({ ok: true })
+}
