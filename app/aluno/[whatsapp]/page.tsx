@@ -46,7 +46,12 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
   // Configs do certificado
   const { data: certConfigs } = await (adminClient.from('configuracoes') as any)
     .select('chave, valor')
-    .in('chave', ['certificado_template_url', 'certificado_nome_x', 'certificado_nome_y', 'certificado_nome_tamanho', 'certificado_nome_cor'])
+    .in('chave', [
+      'certificado_template_url', 'certificado_nome_x', 'certificado_nome_y',
+      'certificado_nome_tamanho', 'certificado_nome_cor',
+      'certificado_cidade', 'certificado_data_x', 'certificado_data_y',
+      'certificado_data_tamanho', 'certificado_data_cor',
+    ])
   const certMap: Record<string, string> = {}
   for (const r of certConfigs ?? []) { try { certMap[r.chave] = JSON.parse(r.valor) } catch { certMap[r.chave] = r.valor } }
   if (!aluno) redirect('/login')
@@ -225,6 +230,11 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
         nomeY={Number(certMap['certificado_nome_y'] || 62)}
         nomeTamanho={Number(certMap['certificado_nome_tamanho'] || 72)}
         nomeCor={certMap['certificado_nome_cor'] || '#1a1a2e'}
+        cidade={certMap['certificado_cidade'] || ''}
+        dataX={Number(certMap['certificado_data_x'] || 50)}
+        dataY={Number(certMap['certificado_data_y'] || 72)}
+        dataTamanho={Number(certMap['certificado_data_tamanho'] || 36)}
+        dataCor={certMap['certificado_data_cor'] || '#1a1a2e'}
       />
     )}
     </>

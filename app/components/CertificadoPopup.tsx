@@ -8,6 +8,11 @@ type Props = {
   nomeY: number
   nomeTamanho: number
   nomeCor: string
+  cidade?: string
+  dataX?: number
+  dataY?: number
+  dataTamanho?: number
+  dataCor?: string
   onClose: () => void
 }
 
@@ -21,7 +26,7 @@ function carregarImagem(src: string, crossOrigin?: string): Promise<HTMLImageEle
   })
 }
 
-export default function CertificadoPopup({ nomeAluno, templateUrl, nomeX, nomeY, nomeTamanho, nomeCor, onClose }: Props) {
+export default function CertificadoPopup({ nomeAluno, templateUrl, nomeX, nomeY, nomeTamanho, nomeCor, cidade, dataX, dataY, dataTamanho, dataCor, onClose }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [gerado, setGerado] = useState(false)
   const [gerando, setGerando] = useState(false)
@@ -43,15 +48,30 @@ export default function CertificadoPopup({ nomeAluno, templateUrl, nomeX, nomeY,
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.drawImage(template, 0, 0, canvas.width, canvas.height)
 
+      // Nome do aluno
       const x = canvas.width * (nomeX / 100)
       const y = canvas.height * (nomeY / 100)
       const fontSize = nomeTamanho || 72
-
       ctx.font = `bold ${fontSize}px 'Inter', 'Arial', sans-serif`
       ctx.fillStyle = nomeCor || '#1a1a2e'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText(nomeAluno, x, y)
+
+      // Data e cidade
+      if (cidade || dataX) {
+        const hoje = new Date()
+        const dataFormatada = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+        const textoCidade = cidade ? `${cidade}, ${dataFormatada}` : dataFormatada
+        const dx = canvas.width * ((dataX || 50) / 100)
+        const dy = canvas.height * ((dataY || 72) / 100)
+        const dfontSize = dataTamanho || 36
+        ctx.font = `${dfontSize}px 'Inter', 'Arial', sans-serif`
+        ctx.fillStyle = dataCor || '#1a1a2e'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(textoCidade, dx, dy)
+      }
 
       setGerado(true)
     } catch {

@@ -33,6 +33,11 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const [certNomeY, setCertNomeY] = useState(getValor('certificado_nome_y') || '62')
   const [certNomeTamanho, setCertNomeTamanho] = useState(getValor('certificado_nome_tamanho') || '72')
   const [certNomeCor, setCertNomeCor] = useState(getValor('certificado_nome_cor') || '#1a1a2e')
+  const [certCidade, setCertCidade] = useState(getValor('certificado_cidade') || '')
+  const [certDataX, setCertDataX] = useState(getValor('certificado_data_x') || '50')
+  const [certDataY, setCertDataY] = useState(getValor('certificado_data_y') || '72')
+  const [certDataTamanho, setCertDataTamanho] = useState(getValor('certificado_data_tamanho') || '36')
+  const [certDataCor, setCertDataCor] = useState(getValor('certificado_data_cor') || '#1a1a2e')
   const [logoMobileUrl, setLogoMobileUrl] = useState(getValor('logo_mobile_url'))
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
@@ -95,6 +100,11 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       { chave: 'certificado_nome_y', valor: certNomeY },
       { chave: 'certificado_nome_tamanho', valor: certNomeTamanho },
       { chave: 'certificado_nome_cor', valor: certNomeCor },
+      { chave: 'certificado_cidade', valor: certCidade },
+      { chave: 'certificado_data_x', valor: certDataX },
+      { chave: 'certificado_data_y', valor: certDataY },
+      { chave: 'certificado_data_tamanho', valor: certDataTamanho },
+      { chave: 'certificado_data_cor', valor: certDataCor },
     ]
     const res = await fetch('/api/admin/configuracoes', {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
@@ -381,7 +391,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
 
         {/* Posição do nome */}
         <div>
-          <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>Posição do nome do aluno</p>
+          <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>📝 Posição do nome do aluno</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
             {[
               { label: 'X (%)', value: certNomeX, set: setCertNomeX },
@@ -401,7 +411,36 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
               </div>
             ))}
           </div>
-          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 8 }}>X e Y são % da largura/altura do certificado. O nome é centralizado horizontalmente no ponto X.</p>
+          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 8 }}>X e Y são % da largura/altura. O nome é centralizado horizontalmente no ponto X.</p>
+        </div>
+
+        {/* Cidade e data */}
+        <div>
+          <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>📅 Cidade e data de conclusão</p>
+          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 12 }}>Aparece como: <strong style={{ color: 'var(--avp-text)' }}>Sua Cidade, 09 de maio de 2026</strong> — a data é gerada automaticamente no dia da geração do certificado.</p>
+          <div>
+            <label style={labelStyle}>Cidade</label>
+            <input style={{ ...inputStyle, width: '100%', marginBottom: 12 }} value={certCidade} onChange={e => setCertCidade(e.target.value)} placeholder="Ex: Juazeiro do Norte - CE" />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+            {[
+              { label: 'X (%)', value: certDataX, set: setCertDataX },
+              { label: 'Y (%)', value: certDataY, set: setCertDataY },
+              { label: 'Tamanho (px)', value: certDataTamanho, set: setCertDataTamanho },
+              { label: 'Cor', value: certDataCor, set: setCertDataCor },
+            ].map(({ label, value, set }) => (
+              <div key={label}>
+                <label style={labelStyle}>{label}</label>
+                {label === 'Cor'
+                  ? <div style={{ display: 'flex', gap: 6 }}>
+                      <input type="color" value={value} onChange={e => set(e.target.value)} style={{ width: 38, height: 38, border: 'none', borderRadius: 6, cursor: 'pointer', padding: 2, background: 'transparent' }} />
+                      <input style={inputStyle} value={value} onChange={e => set(e.target.value)} />
+                    </div>
+                  : <input type="number" style={inputStyle} value={value} onChange={e => set(e.target.value)} />
+                }
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

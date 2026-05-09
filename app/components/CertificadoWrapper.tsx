@@ -9,10 +9,16 @@ type Props = {
   nomeY: number
   nomeTamanho: number
   nomeCor: string
+  cidade?: string
+  dataX?: number
+  dataY?: number
+  dataTamanho?: number
+  dataCor?: string
 }
 
 export default function CertificadoWrapper(props: Props) {
   const [aberto, setAberto] = useState(true)
   if (!aberto) return null
   return <CertificadoPopup {...props} onClose={() => setAberto(false)} />
+
 }
