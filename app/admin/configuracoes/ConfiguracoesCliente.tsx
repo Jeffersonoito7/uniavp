@@ -3,6 +3,40 @@ import { useRef, useState } from 'react'
 
 type Config = { chave: string; valor: string; descricao?: string }
 
+function LogoCard({ label, campo, value, desc, rec, fileRef, uploading, onUpload }: {
+  label: string; campo: string; value: string; desc: string; rec: string
+  fileRef: React.RefObject<HTMLInputElement>; uploading: string
+  onUpload: (campo: string, file: File) => void
+}) {
+  return (
+    <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div>
+        <p style={{ fontWeight: 700, fontSize: 13 }}>{label}</p>
+        <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 2 }}>{desc}</p>
+        <span style={{ fontSize: 11, color: 'var(--avp-green)', fontWeight: 700 }}>📐 {rec}</span>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 90, background: 'var(--avp-card)', borderRadius: 8, border: `2px dashed ${value ? 'var(--avp-green)' : 'var(--avp-border)'}`, padding: 8, flexDirection: 'column', gap: 4 }}>
+        {value ? (
+          <img src={value} alt={label} style={{ maxHeight: 74, maxWidth: '100%', objectFit: 'contain' }}
+            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+          />
+        ) : (
+          <span style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>Nenhuma imagem · ideal: {rec}</span>
+        )}
+      </div>
+      <input type="file" accept="image/*" style={{ display: 'none' }} ref={fileRef}
+        onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(campo, f); e.target.value = '' }}
+      />
+      <button
+        onClick={() => fileRef.current?.click()}
+        disabled={uploading === campo}
+        style={{ background: uploading === campo ? 'var(--avp-border)' : value ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700, width: '100%', opacity: uploading === campo ? 0.7 : 1 }}>
+        {uploading === campo ? '⏳ Enviando...' : value ? '🔄 Trocar imagem' : '📤 Subir imagem'}
+      </button>
+    </div>
+  )
+}
+
 function parseVal(v: string) {
   try { return JSON.parse(v) } catch { return v }
 }
@@ -45,15 +79,6 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const logoFaviconUrlRef = useRef<HTMLInputElement>(null)
   const logoMobileUrlRef = useRef<HTMLInputElement>(null)
   const certUrlRef = useRef<HTMLInputElement>(null)
-
-  const fileRefs: Record<string, React.RefObject<HTMLInputElement>> = {
-    logoUrl: logoUrlRef,
-    logoMenuUrl: logoMenuUrlRef,
-    logoPaginaUrl: logoPaginaUrlRef,
-    logoFaviconUrl: logoFaviconUrlRef,
-    logoMobileUrl: logoMobileUrlRef,
-    certUrl: certUrlRef,
-  }
 
   const setters: Record<string, (v: string) => void> = {
     logoUrl: setLogoUrl,
@@ -134,41 +159,6 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const lbl: React.CSSProperties = { display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 6, fontWeight: 500 }
   const card: React.CSSProperties = { background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }
 
-  function LogoCard({ label, campo, value, desc, rec }: { label: string; campo: string; value: string; desc: string; rec: string }) {
-    return (
-      <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div>
-          <p style={{ fontWeight: 700, fontSize: 13 }}>{label}</p>
-          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 2 }}>{desc}</p>
-          <span style={{ fontSize: 11, color: 'var(--avp-green)', fontWeight: 700 }}>📐 {rec}</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 90, background: 'var(--avp-card)', borderRadius: 8, border: `2px dashed ${value ? 'var(--avp-green)' : 'var(--avp-border)'}`, padding: 8, flexDirection: 'column', gap: 4 }}>
-          {value ? (
-            <img src={value} alt={label} style={{ maxHeight: 74, maxWidth: '100%', objectFit: 'contain' }}
-              onLoad={e => {
-                const img = e.target as HTMLImageElement
-                const el = img.nextSibling as HTMLElement
-                if (el) el.textContent = `${img.naturalWidth}×${img.naturalHeight}px`
-              }}
-              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-            />
-          ) : null}
-          {!value && <span style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>Nenhuma imagem · ideal: {rec}</span>}
-          <span style={{ fontSize: 10, color: 'var(--avp-green)', fontFamily: 'monospace' }}></span>
-        </div>
-        <input type="file" accept="image/*" style={{ display: 'none' }} ref={fileRefs[campo]}
-          onChange={e => { const f = e.target.files?.[0]; if (f) uploadImagem(campo, f); e.target.value = '' }}
-        />
-        <button
-          onClick={() => fileRefs[campo]?.current?.click()}
-          disabled={uploading === campo}
-          style={{ background: uploading === campo ? 'var(--avp-border)' : value ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700, width: '100%', opacity: uploading === campo ? 0.7 : 1 }}>
-          {uploading === campo ? '⏳ Enviando...' : value ? '🔄 Trocar imagem' : '📤 Subir imagem'}
-        </button>
-      </div>
-    )
-  }
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 700 }}>
 
@@ -179,16 +169,16 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
           <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>🖥️ Versão Web (horizontal)</p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <LogoCard label="Logo principal" campo="logoUrl" value={logoUrl} desc="Fallback geral" rec="400×120px" />
-          <LogoCard label="Logo do menu lateral" campo="logoMenuUrl" value={logoMenuUrl} desc="Sidebar admin/gestor" rec="200×56px" />
-          <LogoCard label="Logo da página de login" campo="logoPaginaUrl" value={logoPaginaUrl} desc="Login e captação" rec="300×90px" />
+          <LogoCard label="Logo principal" campo="logoUrl" value={logoUrl} desc="Fallback geral" rec="400×120px" fileRef={logoUrlRef} uploading={uploading} onUpload={uploadImagem} />
+          <LogoCard label="Logo do menu lateral" campo="logoMenuUrl" value={logoMenuUrl} desc="Sidebar admin/gestor" rec="200×56px" fileRef={logoMenuUrlRef} uploading={uploading} onUpload={uploadImagem} />
+          <LogoCard label="Logo da página de login" campo="logoPaginaUrl" value={logoPaginaUrl} desc="Login e captação" rec="300×90px" fileRef={logoPaginaUrlRef} uploading={uploading} onUpload={uploadImagem} />
         </div>
         <div style={{ background: 'var(--avp-black)', borderRadius: 8, padding: '8px 12px', marginTop: 8 }}>
           <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>📱 Versão Mobile (quadrado)</p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <LogoCard label="Ícone mobile / PWA" campo="logoMobileUrl" value={logoMobileUrl} desc="Tela inicial do celular" rec="512×512px" />
-          <LogoCard label="Favicon" campo="logoFaviconUrl" value={logoFaviconUrl} desc="Aba do navegador" rec="64×64px" />
+          <LogoCard label="Ícone mobile / PWA" campo="logoMobileUrl" value={logoMobileUrl} desc="Tela inicial do celular" rec="512×512px" fileRef={logoMobileUrlRef} uploading={uploading} onUpload={uploadImagem} />
+          <LogoCard label="Favicon" campo="logoFaviconUrl" value={logoFaviconUrl} desc="Aba do navegador" rec="64×64px" fileRef={logoFaviconUrlRef} uploading={uploading} onUpload={uploadImagem} />
         </div>
       </div>
 
@@ -247,7 +237,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
         <p style={{ fontWeight: 800, fontSize: 16 }}>🎓 Certificado de Conclusão</p>
         <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>Template PNG em alta resolução (mínimo 2480×1748px — A4 paisagem)</p>
-        <LogoCard label="Template do certificado" campo="certUrl" value={certUrl} desc="PNG com espaço em branco para o nome" rec="2480×1748px" />
+        <LogoCard label="Template do certificado" campo="certUrl" value={certUrl} desc="PNG com espaço em branco para o nome" rec="2480×1748px" fileRef={certUrlRef} uploading={uploading} onUpload={uploadImagem} />
         <div>
           <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>📝 Posição do nome</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
