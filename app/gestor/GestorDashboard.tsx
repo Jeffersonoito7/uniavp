@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import EventosWidget from '@/app/components/EventosWidget'
@@ -42,6 +42,9 @@ export default function GestorDashboard({
   progressoMap: Record<string, number>
   whatsappWidget?: React.ReactNode
 }) {
+  const [siteNome, setSiteNome] = useState('')
+  const [siteLogoUrl, setSiteLogoUrl] = useState('')
+  const [logoError, setLogoError] = useState(false)
   const [linkCopiado, setLinkCopiado] = useState(false)
   const [consultorSelecionado, setConsultorSelecionado] = useState<Consultor | null>(null)
   const [modulos, setModulos] = useState<Modulo[]>([])
@@ -52,6 +55,14 @@ export default function GestorDashboard({
   const [salvandoEvento, setSalvandoEvento] = useState(false)
   const [msgEvento, setMsgEvento] = useState('')
   const [abaGestor, setAbaGestor] = useState<'consultores' | 'eventos' | 'config'>('consultores')
+
+  useEffect(() => {
+    fetch('/api/site-config').then(r => r.json()).then(d => {
+      setSiteNome(d.nome)
+      setSiteLogoUrl(d.logoUrl || '')
+      setLogoError(false)
+    }).catch(() => {})
+  }, [])
 
   const [listaConsultores, setListaConsultores] = useState(consultores)
   const ativos = listaConsultores.filter(c => c.status !== 'concluido')
@@ -135,6 +146,7 @@ export default function GestorDashboard({
   }
 
   async function removerEvento(id: string) {
+    if (!confirm('Excluir este evento?')) return
     await fetch('/api/gestor/eventos', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
     setEventos(prev => prev.filter(ev => ev.id !== id))
   }
@@ -162,10 +174,18 @@ export default function GestorDashboard({
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
       <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 32px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <img src="/logo.png" alt="Logo AVP" style={{ height: 36, objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-          <span style={{ fontWeight: 800, fontSize: 16, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            UNIVERSIDADE AVP
-          </span>
+          {siteLogoUrl && !logoError ? (
+            <img
+              src={siteLogoUrl}
+              alt={siteNome}
+              style={{ height: 36, objectFit: 'contain' }}
+              onError={() => setLogoError(true)}
+            />
+          ) : (
+            <span style={{ fontWeight: 800, fontSize: 16, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              {siteNome || 'Universidade'}
+            </span>
+          )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Olá, <strong style={{ color: 'var(--avp-text)' }}>{gestor.nome}</strong></span>

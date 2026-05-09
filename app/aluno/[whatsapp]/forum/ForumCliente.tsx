@@ -12,7 +12,7 @@ type Topico = {
   respostas: { count: number }[]
 }
 
-export default function ForumCliente({ topicosIniciais, whatsapp, alunoId }: { topicosIniciais: Topico[]; whatsapp: string; alunoId: string }) {
+export default function ForumCliente({ topicosIniciais, whatsapp, alunoId, alunoNome }: { topicosIniciais: Topico[]; whatsapp: string; alunoId: string; alunoNome: string }) {
   const [topicos, setTopicos] = useState<Topico[]>(topicosIniciais)
   const [criando, setCriando] = useState(false)
   const [form, setForm] = useState({ titulo: '', descricao: '' })
@@ -28,7 +28,7 @@ export default function ForumCliente({ topicosIniciais, whatsapp, alunoId }: { t
     })
     const data = await res.json()
     if (data.topico) {
-      setTopicos(t => [{ ...data.topico, aluno: null, respostas: [{ count: 0 }] }, ...t])
+      setTopicos(t => [{ ...data.topico, aluno: { nome: alunoNome }, respostas: [{ count: 0 }] }, ...t])
       setForm({ titulo: '', descricao: '' })
       setCriando(false)
     }

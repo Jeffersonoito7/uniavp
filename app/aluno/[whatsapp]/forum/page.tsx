@@ -26,7 +26,7 @@ export default async function ForumPage({ params }: { params: { whatsapp: string
         <div />
       </header>
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 24px' }}>
-        <ForumCliente topicosIniciais={topicos ?? []} whatsapp={params.whatsapp} alunoId={aluno.id} />
+        <ForumCliente topicosIniciais={topicos ?? []} whatsapp={params.whatsapp} alunoId={aluno.id} alunoNome={aluno.nome} />
       </div>
     </div>
   )

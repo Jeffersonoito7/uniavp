@@ -58,6 +58,8 @@ export async function DELETE(req: NextRequest) {
   const gestor = await getGestor(user, adminClient)
   if (!gestor) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
   const { id } = await req.json()
+  // TODO: A tabela 'eventos' não possui campo gestor_id ainda. Quando houver,
+  // adicionar .eq('gestor_id', gestor.id) para garantir que apenas o dono possa excluir.
   await (adminClient.from('eventos') as any).delete().eq('id', id)
   return NextResponse.json({ ok: true })
 }
