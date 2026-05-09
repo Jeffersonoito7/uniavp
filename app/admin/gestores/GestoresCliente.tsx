@@ -10,6 +10,28 @@ type Gestor = {
   created_at: string
 }
 
+function LinkCopiavel({ label, url, desc }: { label: string; url: string; desc: string }) {
+  const [copiado, setCopiado] = useState(false)
+  function copiar() {
+    navigator.clipboard.writeText(url)
+    setCopiado(true)
+    setTimeout(() => setCopiado(false), 2000)
+  }
+  return (
+    <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>{label}</p>
+        <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 4 }}>{desc}</p>
+        <p style={{ fontSize: 12, color: 'var(--avp-blue)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{url}</p>
+      </div>
+      <button onClick={copiar}
+        style={{ background: copiado ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+        {copiado ? '✓ Copiado' : 'Copiar'}
+      </button>
+    </div>
+  )
+}
+
 const formVazio = { nome: '', email: '', whatsapp: '', senha: '' }
 
 export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais: Gestor[] }) {
@@ -123,6 +145,24 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
         </div>
       )}
 
+      {/* Links de captação */}
+      <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, marginBottom: 20 }}>
+        <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>🔗 Links de Captação</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 16 }}>Envie estes links para que gestores e consultores se cadastrem na plataforma.</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <LinkCopiavel
+            label="Cadastro de Gestor"
+            url={typeof window !== 'undefined' ? `${window.location.origin}/convite/gestor` : '/convite/gestor'}
+            desc="Envie para quem vai ser gestor. O cadastro fica pendente até você ativar."
+          />
+          <LinkCopiavel
+            label="Cadastro de Consultor (geral)"
+            url={typeof window !== 'undefined' ? `${window.location.origin}/captacao` : '/captacao'}
+            desc="Link geral sem gestor específico. Use quando o consultor não tem gestor."
+          />
+        </div>
+      </div>
+
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
         <button
           onClick={() => setShowModal(true)}
@@ -136,7 +176,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--avp-border)' }}>
-              {['Nome', 'E-mail', 'WhatsApp', 'Status', 'Cadastro', 'Ações'].map(h => (
+              {['Nome', 'E-mail', 'WhatsApp', 'Link Consultor', 'Status', 'Cadastro', 'Ações'].map(h => (
                 <th key={h} style={{ padding: '14px 16px', textAlign: 'left', color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
               ))}
             </tr>
@@ -148,7 +188,16 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
                 <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 14 }}>{g.email}</td>
                 <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 14 }}>{g.whatsapp}</td>
                 <td style={{ padding: '14px 16px' }}>
-                  <span style={{ color: g.ativo ? 'var(--avp-green)' : 'var(--avp-danger)', fontSize: 13, fontWeight: 600 }}>{g.ativo ? 'Ativo' : 'Inativo'}</span>
+                  <LinkCopiavel
+                    label=""
+                    url={typeof window !== 'undefined' ? `${window.location.origin}/g/${g.whatsapp}` : `/g/${g.whatsapp}`}
+                    desc=""
+                  />
+                </td>
+                <td style={{ padding: '14px 16px' }}>
+                  <span style={{ color: g.ativo ? 'var(--avp-green)' : '#f59e0b', fontSize: 13, fontWeight: 600 }}>
+                    {g.ativo ? 'Ativo' : 'Pendente'}
+                  </span>
                 </td>
                 <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 13 }}>{new Date(g.created_at).toLocaleDateString('pt-BR')}</td>
                 <td style={{ padding: '14px 16px' }}>
@@ -163,7 +212,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
             ))}
             {gestores.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Nenhum gestor cadastrado.</td>
+                <td colSpan={7} style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Nenhum gestor cadastrado.</td>
               </tr>
             )}
           </tbody>
