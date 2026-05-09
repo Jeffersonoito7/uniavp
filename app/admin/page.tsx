@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import AdminLayout from './AdminLayout'
+import LinksCaptacao from './LinksCapatacao'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
@@ -33,6 +34,7 @@ export default async function AdminDashboard() {
           </div>
         ))}
       </div>
+      <LinksCaptacao />
     </AdminLayout>
   )
 }
