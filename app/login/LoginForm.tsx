@@ -41,9 +41,11 @@ export default function LoginForm({ logoUrl, siteNome }: { logoUrl: string; site
       <div style={{ width: 400, maxWidth: '95vw' }}>
         <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <img src={logoUrl} alt="Logo" style={{ height: 72, objectFit: 'contain', marginBottom: 14, display: 'block' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
-          <h1 style={{ fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>
-            {siteNome}
-          </h1>
+          {siteNome && (
+            <h1 style={{ fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>
+              {siteNome}
+            </h1>
+          )}
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>Acesse sua conta para continuar</p>
           <p style={{ marginTop: 8, fontSize: 13 }}>
             <a href="/captacao" style={{ color: 'var(--avp-green)' }}>Sou consultor</a>

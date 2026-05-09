@@ -6,7 +6,7 @@ export default async function RedefinirSenhaPage() {
   return (
     <RedefinirSenhaForm
       logoUrl={config.logoPaginaUrl || config.logoUrl || '/logo.png'}
-      siteNome={config.nome}
+      siteNome={config.isDominioMaster ? '' : config.nome}
     />
   )
 }

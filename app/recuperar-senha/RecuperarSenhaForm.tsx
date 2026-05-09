@@ -30,7 +30,7 @@ export default function RecuperarSenhaForm({ logoUrl, siteNome }: { logoUrl: str
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <img src={logoUrl} alt="Logo" style={{ height: 72, objectFit: 'contain', marginBottom: 14 }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-          <h1 style={{ fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: 2, textTransform: 'uppercase' }}>{siteNome}</h1>
+          {siteNome && <h1 style={{ fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: 2, textTransform: 'uppercase' }}>{siteNome}</h1>}
         </div>
         <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32 }}>
           {!enviado ? (

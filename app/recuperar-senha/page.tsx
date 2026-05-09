@@ -6,7 +6,7 @@ export default async function RecuperarSenhaPage() {
   return (
     <RecuperarSenhaForm
       logoUrl={config.logoPaginaUrl || config.logoUrl || '/logo.png'}
-      siteNome={config.nome}
+      siteNome={config.isDominioMaster ? '' : config.nome}
     />
   )
 }
