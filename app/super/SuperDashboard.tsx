@@ -342,7 +342,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                     <input type="checkbox" checked={form.gestor_ativo} onChange={e => setForm(p => ({ ...p, gestor_ativo: e.target.checked }))} style={{ width: 18, height: 18, accentColor: '#f59e0b', flexShrink: 0 }} />
                     <div>
                       <p style={{ color: '#f0f1f5', fontSize: 13, fontWeight: 700 }}>Painel do Gestor <span style={{ color: '#f59e0b', fontSize: 11, fontWeight: 600 }}>(add-on — cobrado à parte)</span></p>
-                      <p style={{ fontSize: 11, color: '#8a8fa3', marginTop: 1 }}>Gestores gerenciam seus próprios consultores · até 30 cada</p>
+                      <p style={{ fontSize: 11, color: '#8a8fa3', marginTop: 1 }}>A empresa cadastra seus próprios gestores · cada gestor gerencia até 30 consultores</p>
                     </div>
                   </label>
                 </div>
