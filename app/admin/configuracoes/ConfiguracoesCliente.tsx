@@ -144,34 +144,54 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
         <p style={{ fontWeight: 800, fontSize: 16 }}>🖼️ Logo da empresa</p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {[
-            { label: 'Logo principal', campo: 'logoUrl', value: logoUrl, setValue: setLogoUrl, desc: 'Usada em todo o sistema' },
-            { label: 'Logo do menu', campo: 'logoMenuUrl', value: logoMenuUrl, setValue: setLogoMenuUrl, desc: 'Cabeçalho do painel' },
-            { label: 'Logo da página de login', campo: 'logoPaginaUrl', value: logoPaginaUrl, setValue: setLogoPaginaUrl, desc: 'Login e captação' },
-            { label: 'Favicon', campo: 'logoFaviconUrl', value: logoFaviconUrl, setValue: setLogoFaviconUrl, desc: 'Ícone na aba do navegador' },
-          ].map(({ label, campo, value, setValue, desc }) => {
+            { label: 'Logo principal', campo: 'logoUrl', value: logoUrl, setValue: setLogoUrl, desc: 'Usada em todo o sistema', rec: '400×120px' },
+            { label: 'Logo do menu', campo: 'logoMenuUrl', value: logoMenuUrl, setValue: setLogoMenuUrl, desc: 'Cabeçalho do painel', rec: '200×60px' },
+            { label: 'Logo da página de login', campo: 'logoPaginaUrl', value: logoPaginaUrl, setValue: setLogoPaginaUrl, desc: 'Login e captação', rec: '300×100px' },
+            { label: 'Favicon', campo: 'logoFaviconUrl', value: logoFaviconUrl, setValue: setLogoFaviconUrl, desc: 'Ícone na aba do navegador', rec: '64×64px' },
+          ].map(({ label, campo, value, setValue, desc, rec }) => {
             const ref = refs[campo as keyof typeof refs]
             return (
               <div key={campo} style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div>
                   <p style={{ fontWeight: 700, fontSize: 13 }}>{label}</p>
-                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>{desc}</p>
+                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>{desc} · <span style={{ color: 'var(--avp-green)' }}>Recomendado: {rec}</span></p>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 80, background: 'var(--avp-card)', borderRadius: 8, border: '1px solid var(--avp-border)', overflow: 'hidden' }}>
-                  {value
-                    ? <img src={value} alt={label} style={{ maxHeight: 70, maxWidth: '100%', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-                    : <span style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Sem logo</span>
-                  }
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 90, background: 'var(--avp-card)', borderRadius: 8, border: `2px dashed ${value ? 'var(--avp-green)' : 'var(--avp-border)'}`, overflow: 'hidden', position: 'relative', flexDirection: 'column', gap: 4 }}>
+                  {value ? (
+                    <>
+                      <img
+                        src={value}
+                        alt={label}
+                        style={{ maxHeight: 74, maxWidth: '100%', objectFit: 'contain' }}
+                        onLoad={e => {
+                          const img = e.target as HTMLImageElement
+                          const dim = img.nextElementSibling as HTMLElement
+                          if (dim) dim.textContent = `${img.naturalWidth}×${img.naturalHeight}px`
+                        }}
+                        onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                      />
+                      <span style={{ fontSize: 10, color: 'var(--avp-green)', fontWeight: 600 }}></span>
+                    </>
+                  ) : (
+                    <span style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Sem logo</span>
+                  )}
                 </div>
                 <input type="file" accept="image/*" style={{ display: 'none' }} ref={ref}
-                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadLogo(campo, f); e.target.value = '' }}
+                  onChange={e => {
+                    const f = e.target.files?.[0]
+                    if (f) {
+                      const reader = new FileReader()
+                      reader.onload = ev => setValue(ev.target?.result as string)
+                      reader.readAsDataURL(f)
+                      uploadLogo(campo, f)
+                    }
+                    e.target.value = ''
+                  }}
                 />
                 <button onClick={() => ref?.current?.click()} disabled={uploading === campo}
-                  style={{ background: uploading === campo ? 'var(--avp-border)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px', cursor: uploading === campo ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, width: '100%' }}>
-                  {uploading === campo ? '⏳ Enviando...' : '📤 Subir logo'}
+                  style={{ background: uploading === campo ? 'var(--avp-border)' : value ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px', cursor: uploading === campo ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, width: '100%' }}>
+                  {uploading === campo ? '⏳ Enviando...' : value ? '🔄 Trocar logo' : '📤 Subir logo'}
                 </button>
-                {value && (
-                  <input style={{ ...inputStyle, fontSize: 11 }} value={value} onChange={e => setValue(e.target.value)} placeholder="URL da imagem" />
-                )}
               </div>
             )
           })}
