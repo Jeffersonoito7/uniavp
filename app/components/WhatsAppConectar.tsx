@@ -28,7 +28,7 @@ export default function WhatsAppConectar() {
     const interval = setInterval(async () => {
       const res = await fetch('/api/whatsapp/status')
       const data = await res.json()
-      setStatus(prev => ({ ...prev, conectado: data.conectado, numero: data.numero, instancia: data.instancia }))
+      setStatus(prev => ({ conectado: data.conectado, numero: data.numero, instancia: data.instancia, qrcode: prev?.qrcode ?? null }))
       if (data.conectado) {
         setPolling(false)
         setMsg('✅ WhatsApp conectado com sucesso!')
