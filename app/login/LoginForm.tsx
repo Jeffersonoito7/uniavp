@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import ThemeToggle from '@/app/components/ThemeToggle'
 
-export default function LoginForm({ logoUrl }: { logoUrl: string }) {
+export default function LoginForm({ logoUrl, siteNome }: { logoUrl: string; siteNome: string }) {
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
@@ -42,7 +42,7 @@ export default function LoginForm({ logoUrl }: { logoUrl: string }) {
         <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <img src={logoUrl} alt="Logo" style={{ height: 72, objectFit: 'contain', marginBottom: 14, display: 'block' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
           <h1 style={{ fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>
-            UNIVERSIDADE AVP
+            {siteNome}
           </h1>
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>Acesse sua conta para continuar</p>
           <p style={{ marginTop: 8, fontSize: 13 }}>

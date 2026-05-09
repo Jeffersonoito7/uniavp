@@ -3,5 +3,10 @@ import LoginForm from './LoginForm'
 
 export default async function LoginPage() {
   const config = await getSiteConfig()
-  return <LoginForm logoUrl={config.logoPaginaUrl || config.logoUrl || '/logo.png'} />
+  return (
+    <LoginForm
+      logoUrl={config.logoPaginaUrl || config.logoUrl || '/logo.png'}
+      siteNome={config.nome}
+    />
+  )
 }
