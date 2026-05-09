@@ -7,6 +7,7 @@ export default function LoginForm({ logoUrl, siteNome, isDominioMaster }: { logo
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
+  const [logoFalhou, setLogoFalhou] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -40,11 +41,15 @@ export default function LoginForm({ logoUrl, siteNome, isDominioMaster }: { logo
       <div style={{ position: 'absolute', top: 16, right: 16 }}><ThemeToggle /></div>
       <div style={{ width: 400, maxWidth: '95vw' }}>
         <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <img src={logoUrl} alt="Logo" style={{ height: 72, objectFit: 'contain', marginBottom: 14, display: 'block' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
-          {siteNome && (
-            <h1 style={{ fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>
-              {siteNome}
-            </h1>
+          {logoUrl && !logoFalhou ? (
+            <img src={logoUrl} alt={siteNome} style={{ height: 72, objectFit: 'contain', marginBottom: 14, display: 'block' }}
+              onError={() => setLogoFalhou(true)} />
+          ) : (
+            siteNome && (
+              <h1 style={{ fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 14 }}>
+                {siteNome}
+              </h1>
+            )
           )}
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>Acesse sua conta para continuar</p>
           {isDominioMaster && (
