@@ -94,6 +94,15 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
     certUrl: setCertUrl,
   }
 
+  const campoToChave: Record<string, string> = {
+    logoUrl: 'site_logo_url',
+    logoMenuUrl: 'logo_menu_url',
+    logoPaginaUrl: 'logo_pagina_url',
+    logoFaviconUrl: 'logo_favicon_url',
+    logoMobileUrl: 'logo_mobile_url',
+    certUrl: 'certificado_template_url',
+  }
+
   async function uploadImagem(campo: string, file: File) {
     setUploading(campo)
     setMsg('')
@@ -111,12 +120,21 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       const data = await res.json()
       if (res.ok && data.url) {
         setters[campo]?.(data.url)
-        setMsg('✅ Imagem enviada! Clique em Salvar.')
+        // Auto-salva a URL no banco imediatamente
+        const chave = campoToChave[campo]
+        if (chave) {
+          await fetch('/api/admin/configuracoes', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify([{ chave, valor: data.url }]),
+          })
+        }
+        setMsg('✅ Imagem salva com sucesso!')
       } else {
-        setMsg(`Erro no upload: ${data.error || 'Tente novamente.'}`)
+        setMsg(`❌ Erro no upload: ${data.error || 'Tente novamente.'}`)
       }
     } catch (e: any) {
-      setMsg(`Erro: ${e.message}`)
+      setMsg(`❌ Erro: ${e.message}`)
     }
     setUploading('')
   }
