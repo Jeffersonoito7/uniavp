@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 type Aluno = {
   id: string
@@ -12,6 +12,10 @@ type Aluno = {
 }
 
 export default function PerfilCliente({ aluno, email }: { aluno: Aluno; email: string }) {
+  const [siteNome, setSiteNome] = useState('')
+  useEffect(() => {
+    fetch('/api/site-config').then(r => r.json()).then(d => setSiteNome(d.nome)).catch(() => {})
+  }, [])
   const [nome, setNome] = useState(aluno.nome)
   const [bio, setBio] = useState(aluno.bio ?? '')
   const [fotoUrl, setFotoUrl] = useState<string | null>(aluno.foto_url)
@@ -80,7 +84,7 @@ export default function PerfilCliente({ aluno, email }: { aluno: Aluno; email: s
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
       <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontWeight: 800, fontSize: 20, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          Uni AVP
+          {siteNome || ''}
         </span>
         <a href={`/aluno/${aluno.whatsapp}`} style={{ color: 'var(--avp-text-dim)', fontSize: 14, textDecoration: 'none', fontWeight: 500 }}>
           ← Voltar

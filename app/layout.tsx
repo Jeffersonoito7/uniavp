@@ -21,7 +21,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <meta name="theme-color" content={config.corPrimaria} />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Uni AVP" />
+        <meta name="apple-mobile-web-app-title" content={config.nome} />
         <link rel="icon" href={config.logoFaviconUrl || '/logo.png'} />
         <link rel="apple-touch-icon" href={config.logoFaviconUrl || '/logo.png'} />
         <link rel="manifest" href="/manifest.json" />

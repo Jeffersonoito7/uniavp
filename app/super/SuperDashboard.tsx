@@ -83,7 +83,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
             <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #252836' }}>
               <p style={{ fontSize: 11, color: '#8a8fa3', fontWeight: 700, padding: '0 12px', marginBottom: 6, letterSpacing: 1 }}>PAINÉIS DOS CLIENTES</p>
               {clientes.filter(c => c.ativo).map(c => (
-                <a key={c.id} href="/admin" target="_blank"
+                <a key={c.id} href={c.dominio ? `https://${c.dominio}/admin` : '/admin'} target="_blank"
                   style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, fontSize: 13, fontWeight: 500, color: '#8a8fa3', textDecoration: 'none' }}>
                   🎓 {c.nome.split('—')[0].trim()}
                 </a>
@@ -103,7 +103,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
         {aba === 'dashboard' && (
           <div>
             <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Dashboard</h1>
-            <p style={{ color: '#8a8fa3', fontSize: 14, marginBottom: 28 }}>Visão geral da plataforma Uni AVP</p>
+            <p style={{ color: '#8a8fa3', fontSize: 14, marginBottom: 28 }}>Visão geral da Oito7 Digital</p>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16, marginBottom: 28 }}>
               {[

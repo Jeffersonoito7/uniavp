@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { getSiteConfig } from '@/lib/site-config'
 import Link from 'next/link'
 import ArtesCliente from './ArtesCliente'
 import ThemeToggle from '@/app/components/ThemeToggle'
@@ -10,7 +11,7 @@ export default async function ArtesPage({ params }: { params: { whatsapp: string
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const adminClient = createServiceRoleClient()
+  const [adminClient, siteConfig] = [createServiceRoleClient(), await getSiteConfig()]
   const { data: aluno } = await (adminClient.from('alunos') as any)
     .select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
   if (!aluno) redirect('/login')
@@ -23,7 +24,7 @@ export default async function ArtesPage({ params }: { params: { whatsapp: string
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
       <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Link href={`/aluno/${params.whatsapp}`} style={{ fontWeight: 800, fontSize: 20, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textDecoration: 'none' }}>
-          Uni AVP
+          {siteConfig.nome}
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <EventosWidget />

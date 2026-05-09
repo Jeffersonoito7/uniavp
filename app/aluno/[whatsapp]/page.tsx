@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { getSiteConfig } from '@/lib/site-config'
 import Link from 'next/link'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import EventosWidget from '@/app/components/EventosWidget'
@@ -35,7 +36,7 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const adminClient = createServiceRoleClient()
+  const [adminClient, siteConfig] = [createServiceRoleClient(), await getSiteConfig()]
   const { data: aluno } = await (adminClient.from('alunos') as any)
     .select('id, nome, whatsapp, status')
     .eq('user_id', user.id)
@@ -88,7 +89,7 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
       <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontWeight: 800, fontSize: 20, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          Uni AVP
+          {siteConfig.nome}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <Link href={`/aluno/${params.whatsapp}/forum`} style={{ color: 'var(--avp-text-dim)', fontSize: 14, textDecoration: 'none', fontWeight: 500 }}>
@@ -119,7 +120,7 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 32 }}>
         <div style={{ marginBottom: 32 }}>
           <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4 }}>Olá, {aluno.nome.split(' ')[0]}!</h1>
-          <p style={{ color: 'var(--avp-text-dim)', fontSize: 16 }}>Continue sua jornada de formação na Uni AVP.</p>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 16 }}>Continue sua jornada de formação na {siteConfig.nome}.</p>
         </div>
 
         <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 24, marginBottom: 32 }}>

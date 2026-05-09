@@ -34,7 +34,9 @@ export async function POST(req: NextRequest) {
       hour: '2-digit', minute: '2-digit', timeZone: 'America/Fortaleza'
     })
 
-    const msg = `🗓️ *Novo Evento Uni AVP!*\n\n*${titulo}*\n📍 ${cidade || 'A definir'}\n📅 ${dataFormatada}${descricao ? `\n\n${descricao}` : ''}`
+    const { data: configNome } = await (adminClient.from('configuracoes') as any).select('valor').eq('chave', 'site_nome').maybeSingle()
+    const nomeEvento = configNome?.valor ? JSON.parse(configNome.valor) : 'Novo Evento'
+    const msg = `🗓️ *${nomeEvento} — Novo Evento!*\n\n*${titulo}*\n📍 ${cidade || 'A definir'}\n📅 ${dataFormatada}${descricao ? `\n\n${descricao}` : ''}`
 
     for (const aluno of alunos ?? []) {
       if (aluno.whatsapp) await enviarWhatsApp(aluno.whatsapp, msg)
