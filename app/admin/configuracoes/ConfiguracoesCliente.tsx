@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 type Config = { chave: string; valor: string; descricao?: string }
 
@@ -8,8 +8,9 @@ function LogoCard({ label, campo, value, desc, rec, fileRef, uploading, onUpload
   fileRef: React.RefObject<HTMLInputElement>; uploading: string
   onUpload: (campo: string, file: File) => void
 }) {
-  const [imgError, setImgError] = useState(false)
-  useEffect(() => { setImgError(false) }, [value])
+  // Só mostra preview se for base64 — URLs http do banco antigo são ignoradas
+  const isBase64 = value?.startsWith('data:')
+  const temImagem = isBase64
 
   return (
     <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -18,14 +19,12 @@ function LogoCard({ label, campo, value, desc, rec, fileRef, uploading, onUpload
         <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 2 }}>{desc}</p>
         <span style={{ fontSize: 11, color: 'var(--avp-green)', fontWeight: 700 }}>📐 {rec}</span>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 90, background: 'var(--avp-card)', borderRadius: 8, border: `2px dashed ${value ? 'var(--avp-green)' : 'var(--avp-border)'}`, padding: 8, flexDirection: 'column', gap: 4 }}>
-        {value && !imgError ? (
-          <img src={value} alt={label} style={{ maxHeight: 74, maxWidth: '100%', objectFit: 'contain' }}
-            onError={() => setImgError(true)}
-          />
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 90, background: 'var(--avp-card)', borderRadius: 8, border: `2px dashed ${temImagem ? 'var(--avp-green)' : 'var(--avp-border)'}`, padding: 8, flexDirection: 'column', gap: 4 }}>
+        {temImagem ? (
+          <img src={value} alt={label} style={{ maxHeight: 74, maxWidth: '100%', objectFit: 'contain' }} />
         ) : (
-          <span style={{ color: imgError ? 'var(--avp-danger)' : 'var(--avp-text-dim)', fontSize: 12 }}>
-            {imgError ? '⚠️ URL inválida — suba novamente' : `Nenhuma imagem · ideal: ${rec}`}
+          <span style={{ color: 'var(--avp-text-dim)', fontSize: 12, textAlign: 'center' }}>
+            {value && !isBase64 ? '📤 Suba a imagem novamente' : `Nenhuma imagem · ideal: ${rec}`}
           </span>
         )}
       </div>
@@ -35,8 +34,8 @@ function LogoCard({ label, campo, value, desc, rec, fileRef, uploading, onUpload
       <button
         onClick={() => fileRef.current?.click()}
         disabled={uploading === campo}
-        style={{ background: uploading === campo ? 'var(--avp-border)' : value ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700, width: '100%', opacity: uploading === campo ? 0.7 : 1 }}>
-        {uploading === campo ? '⏳ Enviando...' : value ? '🔄 Trocar imagem' : '📤 Subir imagem'}
+        style={{ background: uploading === campo ? 'var(--avp-border)' : temImagem ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700, width: '100%', opacity: uploading === campo ? 0.7 : 1 }}>
+        {uploading === campo ? '⏳ Lendo arquivo...' : temImagem ? '🔄 Trocar imagem' : '📤 Subir imagem'}
       </button>
     </div>
   )
