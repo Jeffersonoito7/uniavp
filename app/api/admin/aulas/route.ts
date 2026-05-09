@@ -24,7 +24,7 @@ export async function PUT(req: NextRequest) {
 
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  const camposPermitidos = ['titulo', 'descricao', 'youtube_video_id', 'duracao_minutos', 'quiz_qtd_questoes',
+  const camposPermitidos = ['titulo', 'descricao', 'capa_url', 'youtube_video_id', 'duracao_minutos', 'quiz_qtd_questoes',
     'quiz_aprovacao_minima', 'espera_horas', 'publicado', 'ao_vivo_link', 'ao_vivo_data',
     'ao_vivo_plataforma', 'validade_meses', 'ordem']
 

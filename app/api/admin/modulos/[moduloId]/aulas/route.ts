@@ -35,6 +35,7 @@ export async function POST(req: NextRequest, { params }: { params: { moduloId: s
       ao_vivo_data: body.ao_vivo_data ?? null,
       ao_vivo_plataforma: body.ao_vivo_plataforma ?? null,
       validade_meses: body.validade_meses ?? null,
+      capa_url: body.capa_url ?? null,
     })
     .select('*')
     .single()
@@ -57,7 +58,7 @@ export async function PUT(req: NextRequest, { params }: { params: { moduloId: st
   const { id, ...updates } = body
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  const camposPermitidos = ['titulo', 'descricao', 'youtube_video_id', 'duracao_minutos', 'quiz_qtd_questoes',
+  const camposPermitidos = ['titulo', 'descricao', 'capa_url', 'youtube_video_id', 'duracao_minutos', 'quiz_qtd_questoes',
     'quiz_aprovacao_minima', 'espera_horas', 'publicado', 'ao_vivo_link', 'ao_vivo_data',
     'ao_vivo_plataforma', 'validade_meses', 'ordem']
 

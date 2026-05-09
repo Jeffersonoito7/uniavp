@@ -151,7 +151,20 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
     ao_vivo_link: '', ao_vivo_data: '', ao_vivo_plataforma: 'zoom',
     validade_meses: '',
   })
+  const [capaPreview, setCapaPreview] = useState<string | null>(null)
+  const [capaBase64, setCapaBase64] = useState<string | null>(null)
+  const [uploadandoCapa, setUploadandoCapa] = useState(false)
+  const capaFileRef = useRef<HTMLInputElement>(null)
   const [msg, setMsg] = useState('')
+
+  function selecionarCapa(file: File) {
+    if (file.size > 3 * 1024 * 1024) { setMsg('Imagem muito grande. Use até 3MB.'); return }
+    setUploadandoCapa(true)
+    setCapaPreview(URL.createObjectURL(file))
+    const reader = new FileReader()
+    reader.onload = ev => { setCapaBase64(ev.target?.result as string); setUploadandoCapa(false) }
+    reader.readAsDataURL(file)
+  }
 
   async function salvarAula(e: React.FormEvent) {
     e.preventDefault()
@@ -165,6 +178,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
       quiz_aprovacao_minima: form.quiz_aprovacao_minima,
       espera_horas: form.espera_horas,
       validade_meses: form.validade_meses ? parseInt(form.validade_meses) : null,
+      capa_url: capaBase64 || null,
     }
     if (aoVivo && form.ao_vivo_link) {
       body.ao_vivo_link = form.ao_vivo_link
@@ -181,6 +195,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
       setAulas(a => [...a, data.aula])
       setCriando(false)
       setAoVivo(false)
+      setCapaPreview(null); setCapaBase64(null)
       setForm({ titulo: '', youtube_video_id: '', duracao_minutos: '', quiz_qtd_questoes: 5, quiz_aprovacao_minima: 80, espera_horas: 24, ao_vivo_link: '', ao_vivo_data: '', ao_vivo_plataforma: 'zoom', validade_meses: '' })
       setMsg('Aula criada com sucesso!')
     }
@@ -265,7 +280,35 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
             )}
           </div>
 
-          <button type="submit" disabled={salvando} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, cursor: 'pointer', fontSize: 14, alignSelf: 'flex-start' }}>
+          {/* Capa da aula */}
+          <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 16 }}>
+            <label style={{ ...labelStyle, marginBottom: 10 }}>Capa da aula <span style={{ color: 'var(--avp-green)', fontSize: 11, fontWeight: 700 }}>📐 1380 × 1080 px</span></label>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <div onClick={() => capaFileRef.current?.click()}
+                style={{ width: 120, height: 94, flexShrink: 0, borderRadius: 8, overflow: 'hidden', border: `2px dashed ${capaPreview ? 'var(--avp-green)' : 'var(--avp-border)'}`, background: 'var(--avp-black)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {capaPreview
+                  ? <img src={capaPreview} alt="capa" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <span style={{ color: 'var(--avp-text-dim)', fontSize: 24 }}>🖼️</span>}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <input ref={capaFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) selecionarCapa(f); e.target.value = '' }} />
+                <button type="button" onClick={() => capaFileRef.current?.click()} disabled={uploadandoCapa}
+                  style={{ background: capaPreview ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700, opacity: uploadandoCapa ? 0.7 : 1 }}>
+                  {uploadandoCapa ? '⏳ Lendo...' : capaPreview ? '🔄 Trocar' : '📤 Subir capa'}
+                </button>
+                {capaPreview && (
+                  <button type="button" onClick={() => { setCapaPreview(null); setCapaBase64(null) }}
+                    style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 }}>
+                    Remover
+                  </button>
+                )}
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>PNG ou JPG · máx. 3MB</p>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" disabled={salvando || uploadandoCapa} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, cursor: 'pointer', fontSize: 14, alignSelf: 'flex-start' }}>
             {salvando ? 'Salvando...' : 'Criar Aula'}
           </button>
         </form>

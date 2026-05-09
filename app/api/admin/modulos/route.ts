@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   if (!adminRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const body = await req.json()
-  const { titulo, descricao } = body
+  const { titulo, descricao, capa_url } = body
   if (!titulo) return NextResponse.json({ error: 'Título obrigatório' }, { status: 400 })
 
   const { data: ultimo } = await (adminClient.from('modulos') as any)
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   const ordem = (ultimo?.ordem ?? 0) + 1
 
   const { data: modulo, error } = await (adminClient.from('modulos') as any)
-    .insert({ titulo, descricao: descricao ?? null, ordem, publicado: false })
+    .insert({ titulo, descricao: descricao ?? null, capa_url: capa_url ?? null, ordem, publicado: false })
     .select('*')
     .single()
 
@@ -53,7 +53,7 @@ export async function PUT(req: NextRequest) {
   const { id, ...updates } = body
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  const camposPermitidos = ['titulo', 'descricao', 'publicado', 'ordem']
+  const camposPermitidos = ['titulo', 'descricao', 'capa_url', 'publicado', 'ordem']
   const atualizacoes: Record<string, unknown> = {}
   for (const campo of camposPermitidos) {
     if (campo in updates) atualizacoes[campo] = updates[campo]
