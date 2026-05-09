@@ -49,6 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <img
                 src={siteLogoUrl}
                 alt={siteNome}
+                className="logo-site"
                 style={{ maxHeight: 36, maxWidth: 160, objectFit: 'contain', display: 'block' }}
                 onError={() => setLogoError(true)}
               />

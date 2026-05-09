@@ -178,6 +178,7 @@ export default function GestorDashboard({
             <img
               src={siteLogoUrl}
               alt={siteNome}
+              className="logo-site"
               style={{ height: 36, objectFit: 'contain' }}
               onError={() => setLogoError(true)}
             />

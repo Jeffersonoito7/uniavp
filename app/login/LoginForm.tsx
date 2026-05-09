@@ -42,7 +42,7 @@ export default function LoginForm({ logoUrl, siteNome, isDominioMaster }: { logo
       <div style={{ width: 400, maxWidth: '95vw' }}>
         <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {logoUrl && !logoFalhou ? (
-            <img src={logoUrl} alt={siteNome} style={{ height: 72, objectFit: 'contain', marginBottom: 14, display: 'block' }}
+            <img src={logoUrl} alt={siteNome} className="logo-site" style={{ height: 72, objectFit: 'contain', marginBottom: 14, display: 'block' }}
               onError={() => setLogoFalhou(true)} />
           ) : (
             siteNome && (

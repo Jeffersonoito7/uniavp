@@ -66,7 +66,7 @@ export default function CadastroPage() {
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '32px 16px' }}>
       <div style={{ width: 440, maxWidth: '100%' }}>
         <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <img src="/logo.png" alt="Logo AVP" style={{ height: 72, objectFit: 'contain', marginBottom: 14, display: 'block' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          <img src="/logo.png" className="logo-site" alt="Logo AVP" style={{ height: 72, objectFit: 'contain', marginBottom: 14, display: 'block' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           <h1 style={{ fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>
             UNIVERSIDADE AVP
           </h1>

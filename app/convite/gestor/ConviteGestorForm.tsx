@@ -36,7 +36,7 @@ export default function ConviteGestorForm({ siteNome, logoUrl }: { siteNome: str
         {/* Logo e título */}
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           {logoUrl && (
-            <img src={logoUrl} alt={siteNome} style={{ height: 64, objectFit: 'contain', marginBottom: 16 }}
+            <img src={logoUrl} alt={siteNome} className="logo-site" style={{ height: 64, objectFit: 'contain', marginBottom: 16 }}
               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
           )}
           <h1 style={{ fontSize: 26, fontWeight: 900, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 8 }}>

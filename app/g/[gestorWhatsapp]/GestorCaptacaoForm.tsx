@@ -49,7 +49,7 @@ export default function GestorCaptacaoForm({ gestor, siteNome, logoUrl }: { gest
       <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '80px 24px 60px', background: 'radial-gradient(ellipse at 50% 0%, rgba(51,54,135,0.4) 0%, transparent 60%), var(--avp-black)', position: 'relative' }}>
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 800 }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
-            <img src={logoUrl} alt="Logo" style={{ height: 80, objectFit: 'contain', marginBottom: 16 }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            <img src={logoUrl} className="logo-site" alt="Logo" style={{ height: 80, objectFit: 'contain', marginBottom: 16 }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(2,161,83,0.15)', border: '1px solid rgba(2,161,83,0.3)', borderRadius: 100, padding: '6px 18px', fontSize: 12, fontWeight: 700, color: 'var(--avp-green)', letterSpacing: 2, textTransform: 'uppercase' }}>
               🎯 Convite de {gestor.nome}
             </div>

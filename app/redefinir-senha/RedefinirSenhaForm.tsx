@@ -30,7 +30,7 @@ export default function RedefinirSenhaForm({ logoUrl, siteNome }: { logoUrl: str
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: 'Inter, sans-serif' }}>
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <img src={logoUrl} alt="Logo" style={{ height: 72, objectFit: 'contain', marginBottom: 14 }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
+          <img src={logoUrl} className="logo-site" alt="Logo" style={{ height: 72, objectFit: 'contain', marginBottom: 14 }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
           {siteNome && <h1 style={{ fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: 2, textTransform: 'uppercase' }}>{siteNome}</h1>}
         </div>
         <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32 }}>
