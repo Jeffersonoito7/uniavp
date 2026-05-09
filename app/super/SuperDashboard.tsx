@@ -265,7 +265,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                         <span style={{ background: '#6366f125', color: '#6366f1', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>
                           Completo
                         </span>
-                        {c.gestor_ativo && <span style={{ background: '#f59e0b25', color: '#f59e0b', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>+ Gestor R$97/mês</span>}
+                        {c.gestor_ativo && <span style={{ background: '#f59e0b25', color: '#f59e0b', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>+ Painel Gestor</span>}
                         <span style={{ background: '#02A15325', color: '#02A153', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>Admin ilimitado</span>
                       </div>
                       <div style={{ display: 'flex', gap: 20, fontSize: 13, color: '#8a8fa3', flexWrap: 'wrap' }}>
@@ -330,12 +330,19 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                 <div><label style={labelStyle}>Nome da empresa *</label><input style={inputStyle} value={form.nome} onChange={e => setForm(p => ({ ...p, nome: e.target.value }))} placeholder="Ex: Auto Vale Prevenções — Uni AVP" /></div>
                 <div><label style={labelStyle}>Domínio personalizado</label><input style={inputStyle} value={form.dominio} onChange={e => setForm(p => ({ ...p, dominio: e.target.value }))} placeholder="Ex: uni.empresa.com.br" /></div>
                 <div style={{ background: '#08090d', borderRadius: 10, padding: 16 }}>
-                  <p style={{ fontSize: 13, color: '#8a8fa3', fontWeight: 700, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>Add-on</p>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                    <input type="checkbox" checked={form.gestor_ativo} onChange={e => setForm(p => ({ ...p, gestor_ativo: e.target.checked }))} style={{ width: 18, height: 18, accentColor: '#f59e0b' }} />
+                  <p style={{ fontSize: 11, color: '#8a8fa3', fontWeight: 700, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>Recursos contratados</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, padding: '10px 12px', background: '#181b24', borderRadius: 8 }}>
+                    <span style={{ fontSize: 16 }}>✅</span>
                     <div>
-                      <p style={{ color: '#f0f1f5', fontSize: 14, fontWeight: 700 }}>Painel do Gestor <span style={{ color: '#f59e0b' }}>R$97/mês</span></p>
-                      <p style={{ fontSize: 12, color: '#8a8fa3', marginTop: 2 }}>Cada gestor gerencia até 30 consultores</p>
+                      <p style={{ color: '#f0f1f5', fontSize: 13, fontWeight: 700 }}>Plano Completo</p>
+                      <p style={{ fontSize: 11, color: '#8a8fa3', marginTop: 1 }}>Admin ilimitado · Módulos · Aulas · Quiz · Ranking · Artes</p>
+                    </div>
+                  </div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '10px 12px', background: '#181b24', borderRadius: 8 }}>
+                    <input type="checkbox" checked={form.gestor_ativo} onChange={e => setForm(p => ({ ...p, gestor_ativo: e.target.checked }))} style={{ width: 18, height: 18, accentColor: '#f59e0b', flexShrink: 0 }} />
+                    <div>
+                      <p style={{ color: '#f0f1f5', fontSize: 13, fontWeight: 700 }}>Painel do Gestor <span style={{ color: '#f59e0b', fontSize: 11, fontWeight: 600 }}>(add-on — cobrado à parte)</span></p>
+                      <p style={{ fontSize: 11, color: '#8a8fa3', marginTop: 1 }}>Gestores gerenciam seus próprios consultores · até 30 cada</p>
                     </div>
                   </label>
                 </div>
