@@ -1,5 +1,5 @@
 'use client'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 type Config = { chave: string; valor: string; descricao?: string }
 
@@ -8,6 +8,9 @@ function LogoCard({ label, campo, value, desc, rec, fileRef, uploading, onUpload
   fileRef: React.RefObject<HTMLInputElement>; uploading: string
   onUpload: (campo: string, file: File) => void
 }) {
+  const [imgError, setImgError] = useState(false)
+  useEffect(() => { setImgError(false) }, [value])
+
   return (
     <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div>
@@ -16,12 +19,14 @@ function LogoCard({ label, campo, value, desc, rec, fileRef, uploading, onUpload
         <span style={{ fontSize: 11, color: 'var(--avp-green)', fontWeight: 700 }}>📐 {rec}</span>
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 90, background: 'var(--avp-card)', borderRadius: 8, border: `2px dashed ${value ? 'var(--avp-green)' : 'var(--avp-border)'}`, padding: 8, flexDirection: 'column', gap: 4 }}>
-        {value ? (
+        {value && !imgError ? (
           <img src={value} alt={label} style={{ maxHeight: 74, maxWidth: '100%', objectFit: 'contain' }}
-            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+            onError={() => setImgError(true)}
           />
         ) : (
-          <span style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>Nenhuma imagem · ideal: {rec}</span>
+          <span style={{ color: imgError ? 'var(--avp-danger)' : 'var(--avp-text-dim)', fontSize: 12 }}>
+            {imgError ? '⚠️ URL inválida — suba novamente' : `Nenhuma imagem · ideal: ${rec}`}
+          </span>
         )}
       </div>
       <input type="file" accept="image/*" style={{ display: 'none' }} ref={fileRef}
