@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp } from '@/lib/whatsapp'
 
+export const maxDuration = 60
+
 async function verificarAdmin(user: { id: string }, adminClient: ReturnType<typeof createServiceRoleClient>) {
   const { data } = await (adminClient.from('admins') as any)
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
@@ -17,10 +19,10 @@ export async function POST(req: NextRequest) {
   if (!await verificarAdmin(user, adminClient)) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const body = await req.json()
-  const { titulo, descricao, cidade, data_hora, notificar } = body
+  const { titulo, descricao, cidade, data_hora, notificar, imagem_url } = body
 
   const { data: evento, error } = await (adminClient.from('eventos') as any)
-    .insert({ titulo, descricao: descricao || '', cidade: cidade || '', data_hora })
+    .insert({ titulo, descricao: descricao || '', cidade: cidade || '', data_hora, imagem_url: imagem_url || '' })
     .select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
