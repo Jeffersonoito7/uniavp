@@ -2,6 +2,27 @@
 import { useRef, useState } from 'react'
 import Link from 'next/link'
 
+function CapaUpload({ preview, onSelect, fileRef: ref }: {
+  preview: string | null
+  onSelect: (f: File) => void
+  fileRef: React.RefObject<HTMLInputElement>
+}) {
+  return (
+    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+      <div onClick={() => ref.current?.click()} style={{ width: 110, height: 86, flexShrink: 0, borderRadius: 8, overflow: 'hidden', border: `2px dashed ${preview ? 'var(--avp-green)' : 'var(--avp-border)'}`, background: 'var(--avp-black)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {preview ? <img src={preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 22, color: 'var(--avp-text-dim)' }}>🖼️</span>}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <input ref={ref} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) onSelect(f); e.target.value = '' }} />
+        <button type="button" onClick={() => ref.current?.click()} style={{ background: preview ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
+          {preview ? '🔄 Trocar' : '📤 Subir capa'}
+        </button>
+        <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>1380×1080px · máx. 3MB</p>
+      </div>
+    </div>
+  )
+}
+
 type Modulo = {
   id: string
   titulo: string
@@ -113,23 +134,6 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
     if (data.modulo) setModulos(prev => prev.map(x => x.id === m.id ? { ...x, publicado: !x.publicado } : x))
   }
 
-  function CapaUpload({ preview, onSelect, fileRef: ref }: { preview: string | null; onSelect: (f: File) => void; fileRef: React.RefObject<HTMLInputElement> }) {
-    return (
-      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-        <div onClick={() => ref.current?.click()} style={{ width: 110, height: 86, flexShrink: 0, borderRadius: 8, overflow: 'hidden', border: `2px dashed ${preview ? 'var(--avp-green)' : 'var(--avp-border)'}`, background: 'var(--avp-black)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {preview ? <img src={preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 22, color: 'var(--avp-text-dim)' }}>🖼️</span>}
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <input ref={ref} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) onSelect(f); e.target.value = '' }} />
-          <button type="button" onClick={() => ref.current?.click()} style={{ background: preview ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
-            {preview ? '🔄 Trocar' : '📤 Subir capa'}
-          </button>
-          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>1380×1080px · máx. 3MB</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {msg && (
@@ -198,7 +202,7 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
                     </div>
                     {m.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>{m.descricao}</p>}
                   </Link>
-                  <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                     <button onClick={() => abrirEdicao(m)}
                       style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                       Editar
@@ -208,7 +212,7 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
                       {m.publicado ? 'Despublicar' : 'Publicar'}
                     </button>
                     <button onClick={() => excluirModulo(m)}
-                      style={{ background: '#e6394615', border: '1px solid #e6394630', color: 'var(--avp-danger)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                      style={{ background: 'var(--avp-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                       Excluir
                     </button>
                   </div>
