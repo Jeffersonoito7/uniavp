@@ -9,8 +9,6 @@ export async function POST(req: NextRequest) {
 
   const adminClient = createServiceRoleClient()
 
-  // Gera o link via service role — bypassa a allowlist do Supabase
-  // e garante que o redirect_to funcione corretamente
   const { data, error } = await adminClient.auth.admin.generateLink({
     type: 'recovery',
     email,
@@ -19,12 +17,10 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  if (error) {
-    // Não revelar se o e-mail existe ou não (segurança)
-    return NextResponse.json({ ok: true })
+  if (error || !data) {
+    return NextResponse.json({ ok: true, link: null })
   }
 
-  // Se gerou o link, o Supabase já enviou o e-mail automaticamente
-  // O link também é retornado mas não o exibimos por segurança
-  return NextResponse.json({ ok: true, enviado: !!data })
+  // Retorna o link para exibir na tela — e-mail do Supabase é instável
+  return NextResponse.json({ ok: true, link: data.properties?.action_link ?? null })
 }
