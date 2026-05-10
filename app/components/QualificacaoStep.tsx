@@ -14,13 +14,6 @@ const PERGUNTAS: Pergunta[] = [
       { label: '❌ Não, vendas não é meu perfil', aprovado: false },
     ],
   },
-  {
-    texto: 'Você está disposto(a) a se dedicar a um treinamento online para se qualificar?',
-    opcoes: [
-      { label: '✅ Sim, estou pronto(a) para aprender', aprovado: true },
-      { label: '❌ Não tenho disponibilidade agora', aprovado: false },
-    ],
-  },
 ]
 
 interface Props {
