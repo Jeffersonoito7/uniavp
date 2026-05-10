@@ -44,7 +44,6 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
     .eq('user_id', user.id)
     .maybeSingle()
 
-  // Configs do certificado
   const { data: certConfigs } = await (adminClient.from('configuracoes') as any)
     .select('chave, valor')
     .in('chave', [
@@ -81,8 +80,11 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
   const nivel = calcularNivel(totalPontos)
   const progressoPct = nivel.prox ? Math.round(((nivel.atual - nivel.min) / (nivel.max - nivel.min)) * 100) : 100
 
-  const agora = new Date()
+  const totalAulas = trilha.length
+  const aulasConcluidas = trilha.filter(a => a.status === 'concluida').length
+  const progressoGeral = totalAulas > 0 ? Math.round((aulasConcluidas / totalAulas) * 100) : 0
 
+  const agora = new Date()
   function getStatusRecertificacao(item: TrilhaItem): boolean {
     if (item.status !== 'concluida') return false
     if (!item.validade_meses || item.validade_meses === 0) return false
@@ -93,149 +95,220 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
   }
 
   const statusColor: Record<string, string> = {
-    concluida: 'var(--avp-green)',
-    disponivel: 'var(--avp-blue)',
+    concluida: '#22c55e',
+    disponivel: '#3b82f6',
     aguardando_tempo: '#f59e0b',
-    bloqueada: 'var(--avp-text-dim)',
+    bloqueada: '#6b7280',
   }
 
   return (
     <>
-    <SupportChat painel="Consultor" />
-    <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
-      <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 16px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
-        {siteConfig.logoUrl && !siteConfig.logoUrl.startsWith('/') ? (
-          <img src={siteConfig.logoUrl} alt={siteConfig.nome} className="logo-site"
-            style={{ height: 32, objectFit: 'contain', display: 'block' }} />
-        ) : (
-          <span style={{ fontWeight: 800, fontSize: 18, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            {siteConfig.nome}
-          </span>
-        )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* Links visíveis só no desktop */}
-          <Link href={`/aluno/${params.whatsapp}/forum`} className="hide-mobile" style={{ color: 'var(--avp-text-dim)', fontSize: 14, textDecoration: 'none', fontWeight: 500 }}>Fórum</Link>
-          <Link href={`/aluno/${params.whatsapp}/loja`} className="hide-mobile" style={{ color: 'var(--avp-text-dim)', fontSize: 14, textDecoration: 'none', fontWeight: 500 }}>Loja</Link>
-          <Link href={`/aluno/${params.whatsapp}/artes`} className="hide-mobile" style={{ color: 'var(--avp-text-dim)', fontSize: 14, textDecoration: 'none', fontWeight: 500 }}>🎨 Artes</Link>
-          <MuralNoticias />
-          <EventosWidget />
-          <a href={`/aluno/${params.whatsapp}/perfil`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, flexShrink: 0 }}>
-              {aluno.nome.charAt(0).toUpperCase()}
-            </div>
-            <span className="hide-mobile" style={{ fontSize: 14, fontWeight: 600 }}>{aluno.nome.split(' ')[0]}</span>
-          </a>
-          <ThemeToggle />
-          <LogoutButton />
-        </div>
-      </header>
+      <SupportChat painel="Consultor" />
+      <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
 
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: 32 }}>
-        <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4 }}>Olá, {aluno.nome.split(' ')[0]}!</h1>
-          <p style={{ color: 'var(--avp-text-dim)', fontSize: 16 }}>Continue sua jornada de formação na {siteConfig.nome}.</p>
-        </div>
+        {/* ── HEADER ── */}
+        <header style={{
+          background: 'rgba(8,9,13,0.92)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid var(--avp-border)',
+          padding: '0 20px',
+          height: 62,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          position: 'sticky', top: 0, zIndex: 100,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            {siteConfig.logoUrl && !siteConfig.logoUrl.startsWith('/') ? (
+              <img src={siteConfig.logoUrl} alt={siteConfig.nome} className="logo-site" style={{ height: 34, objectFit: 'contain' }} />
+            ) : (
+              <span style={{ fontWeight: 800, fontSize: 17, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{siteConfig.nome}</span>
+            )}
+          </div>
+          <nav style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Link href={`/aluno/${params.whatsapp}/forum`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none', fontWeight: 500, padding: '6px 10px', borderRadius: 8, background: 'transparent' }}
+              className="hide-mobile">Fórum</Link>
+            <Link href={`/aluno/${params.whatsapp}/loja`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none', fontWeight: 500, padding: '6px 10px', borderRadius: 8 }}
+              className="hide-mobile">Loja</Link>
+            <Link href={`/aluno/${params.whatsapp}/artes`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none', fontWeight: 500, padding: '6px 10px', borderRadius: 8 }}
+              className="hide-mobile">🎨 Artes</Link>
+            <MuralNoticias />
+            <EventosWidget />
+            <a href={`/aluno/${params.whatsapp}/perfil`} style={{ display: 'flex', alignItems: 'center', gap: 7, textDecoration: 'none', marginLeft: 4 }}>
+              <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14, color: '#fff', flexShrink: 0 }}>
+                {aluno.nome.charAt(0).toUpperCase()}
+              </div>
+              <span className="hide-mobile" style={{ fontSize: 13, fontWeight: 600, color: 'var(--avp-text)' }}>{aluno.nome.split(' ')[0]}</span>
+            </a>
+            <ThemeToggle />
+            <LogoutButton />
+          </nav>
+        </header>
 
-        <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 24, marginBottom: 32 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 20, marginBottom: 20 }}>
-            <div>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Nível atual</p>
-              <p style={{ fontSize: 24, fontWeight: 800 }}>{nivel.nome}</p>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>
-                {totalPontos} pontos{nivel.prox ? ` · próximo nível: ${nivel.prox} pts` : ' · Nível máximo!'}
-              </p>
+        <div style={{ maxWidth: 1140, margin: '0 auto', padding: '28px 20px 60px' }}>
+
+          {/* ── HERO SAUDAÇÃO ── */}
+          <div style={{ marginBottom: 28 }}>
+            <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 4 }}>
+              Olá, {aluno.nome.split(' ')[0]}! 👋
+            </h1>
+            <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>
+              Continue sua jornada de formação em {siteConfig.nome}.
+            </p>
+          </div>
+
+          {/* ── CARDS DE STATS + PROGRESSO ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 28 }}>
+            {/* Card nível */}
+            <div style={{ background: 'linear-gradient(135deg, #1e3a8a20, #3b82f610)', border: '1px solid #3b82f630', borderRadius: 14, padding: 20 }}>
+              <p style={{ color: '#93c5fd', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Nível</p>
+              <p style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 4 }}>{nivel.nome}</p>
+              <p style={{ color: '#93c5fd', fontSize: 12 }}>{totalPontos} pts{nivel.prox ? ` · próximo: ${nivel.prox}` : ' · Máximo!'}</p>
+              <div style={{ marginTop: 10, background: 'rgba(59,130,246,0.15)', borderRadius: 100, height: 5, overflow: 'hidden' }}>
+                <div style={{ width: `${progressoPct}%`, height: '100%', background: 'linear-gradient(90deg, #1e40af, #3b82f6)', borderRadius: 100 }} />
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              {medalhas.map((m: { icone: string; nome: string }, i: number) => (
-                <div key={i} style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '10px 14px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, marginBottom: 4 }}>{m.icone}</div>
-                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 600 }}>{m.nome}</p>
+
+            {/* Card progresso geral */}
+            <div style={{ background: 'linear-gradient(135deg, #05260e20, #02A15310)', border: '1px solid #02A15330', borderRadius: 14, padding: 20 }}>
+              <p style={{ color: '#6ee7b7', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Progresso Geral</p>
+              <p style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 4 }}>{progressoGeral}%</p>
+              <p style={{ color: '#6ee7b7', fontSize: 12 }}>{aulasConcluidas} de {totalAulas} aulas concluídas</p>
+              <div style={{ marginTop: 10, background: 'rgba(2,161,83,0.15)', borderRadius: 100, height: 5, overflow: 'hidden' }}>
+                <div style={{ width: `${progressoGeral}%`, height: '100%', background: 'linear-gradient(90deg, #059669, #02A153)', borderRadius: 100 }} />
+              </div>
+            </div>
+
+            {/* Medalhas */}
+            <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: 20 }}>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Medalhas</p>
+              {medalhas.length > 0 ? (
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {medalhas.map((m: { icone: string; nome: string }, i: number) => (
+                    <div key={i} title={m.nome} style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
+                      {m.icone}
+                    </div>
+                  ))}
                 </div>
-              ))}
-              {medalhas.length === 0 && (
-                <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, alignSelf: 'center' }}>Complete aulas para ganhar medalhas!</p>
+              ) : (
+                <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Complete aulas para ganhar medalhas!</p>
               )}
             </div>
-          </div>
-          <div style={{ background: 'var(--avp-black)', borderRadius: 100, height: 8, overflow: 'hidden' }}>
-            <div style={{ width: `${progressoPct}%`, height: '100%', background: 'var(--grad-brand)', borderRadius: 100, transition: 'width 0.5s ease' }} />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-            <span style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>{nivel.nome}</span>
-            {nivel.prox && <span style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>Próximo: {nivel.prox} pts</span>}
-          </div>
-        </div>
 
-        {modulos.map(mod => (
-          <div key={mod.modulo_titulo} style={{ marginBottom: 40 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid var(--avp-border)' }}>
-              {mod.modulo_titulo}
-            </h2>
-            <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8 }}>
-              {mod.aulas.map(aula => {
-                const recertNeeded = getStatusRecertificacao(aula)
-                const isDisponivel = aula.status === 'disponivel'
-                const isConcluida = aula.status === 'concluida'
-                return (
-                  <div
-                    key={aula.aula_id}
-                    style={{ minWidth: 200, maxWidth: 220, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden', flex: '0 0 auto', opacity: aula.status === 'bloqueada' ? 0.5 : 1 }}
-                  >
-                    <div style={{ height: 110, background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>
-                      {isConcluida ? '✅' : isDisponivel ? '▶️' : aula.status === 'aguardando_tempo' ? '⏳' : '🔒'}
-                    </div>
-                    <div style={{ padding: '12px 14px' }}>
-                      <p style={{ fontSize: 13, fontWeight: 700, marginBottom: 6, lineHeight: 1.3 }}>{aula.aula_titulo}</p>
-                      {recertNeeded && (
-                        <span style={{ background: '#f59e0b20', color: '#f59e0b', borderRadius: 20, padding: '2px 8px', fontSize: 11, fontWeight: 600, display: 'inline-block', marginBottom: 6 }}>
-                          ⚠️ Recertificação necessária
-                        </span>
-                      )}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: 11, color: statusColor[aula.status] || 'var(--avp-text-dim)', fontWeight: 600 }}>
-                          {isConcluida ? (recertNeeded ? 'Refazer' : 'Concluída') : aula.status === 'disponivel' ? 'Disponível' : aula.status === 'aguardando_tempo' ? 'Aguardando' : 'Bloqueada'}
-                        </span>
-                        {(isDisponivel || isConcluida) && (
-                          <Link href={`/aluno/${params.whatsapp}/aula/${aula.aula_id}`} style={{ fontSize: 12, color: 'var(--avp-green)', textDecoration: 'none', fontWeight: 600 }}>
-                            {isConcluida && !recertNeeded ? 'Rever' : 'Acessar'}
-                          </Link>
-                        )}
-                        {aula.status === 'aguardando_tempo' && aula.liberada_em && (
-                          <span style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>
-                            {new Date(aula.liberada_em).toLocaleDateString('pt-BR')}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+            {/* Atalhos mobile */}
+            <div className="hide-desktop" style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: 20 }}>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Acessar</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[
+                  { href: `/aluno/${params.whatsapp}/forum`, label: '💬 Fórum' },
+                  { href: `/aluno/${params.whatsapp}/loja`, label: '🛍️ Loja' },
+                  { href: `/aluno/${params.whatsapp}/artes`, label: '🎨 Artes' },
+                  { href: `/aluno/${params.whatsapp}/perfil`, label: '👤 Perfil' },
+                ].map(l => (
+                  <a key={l.href} href={l.href} style={{ color: 'var(--avp-text)', fontSize: 13, textDecoration: 'none', fontWeight: 500 }}>{l.label}</a>
+                ))}
+              </div>
             </div>
           </div>
-        ))}
-        {modulos.length === 0 && (
-          <div style={{ textAlign: 'center', padding: 80, color: 'var(--avp-text-dim)' }}>
-            <p style={{ fontSize: 48, marginBottom: 16 }}>📚</p>
-            <p>Nenhuma aula disponível no momento.</p>
-          </div>
-        )}
+
+          {/* ── TRILHA DE AULAS ── */}
+          {modulos.map(mod => (
+            <div key={mod.modulo_titulo} style={{ marginBottom: 40 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18, paddingBottom: 12, borderBottom: '1px solid var(--avp-border)' }}>
+                <h2 style={{ fontSize: 17, fontWeight: 700 }}>{mod.modulo_titulo}</h2>
+                <span style={{ fontSize: 12, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 20, padding: '2px 10px' }}>
+                  {mod.aulas.filter(a => a.status === 'concluida').length}/{mod.aulas.length} aulas
+                </span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
+                {mod.aulas.map(aula => {
+                  const recertNeeded = getStatusRecertificacao(aula)
+                  const isDisponivel = aula.status === 'disponivel'
+                  const isConcluida = aula.status === 'concluida'
+                  const isBloqueada = aula.status === 'bloqueada'
+                  const cor = statusColor[aula.status] || '#6b7280'
+                  return (
+                    <div key={aula.aula_id} style={{
+                      background: 'var(--avp-card)',
+                      border: `1px solid ${isConcluida ? '#22c55e30' : isDisponivel ? '#3b82f630' : 'var(--avp-border)'}`,
+                      borderRadius: 12, overflow: 'hidden',
+                      opacity: isBloqueada ? 0.55 : 1,
+                      transition: 'transform 0.15s, box-shadow 0.15s',
+                    }}>
+                      {/* Thumbnail */}
+                      <div style={{ height: 112, position: 'relative', background: 'linear-gradient(135deg, #1e3a8a, #1e40af)', overflow: 'hidden' }}>
+                        {aula.youtube_video_id && (
+                          <img
+                            src={`https://img.youtube.com/vi/${aula.youtube_video_id}/mqdefault.jpg`}
+                            alt={aula.aula_titulo}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
+                          />
+                        )}
+                        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{
+                            width: 38, height: 38, borderRadius: '50%',
+                            background: isConcluida ? '#22c55e' : isDisponivel ? '#3b82f6' : 'rgba(255,255,255,0.2)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 16,
+                          }}>
+                            {isConcluida ? '✓' : isDisponivel ? '▶' : isBloqueada ? '🔒' : '⏳'}
+                          </div>
+                        </div>
+                        {recertNeeded && (
+                          <div style={{ position: 'absolute', top: 6, right: 6, background: '#f59e0b', borderRadius: 6, padding: '2px 6px', fontSize: 10, fontWeight: 700, color: '#000' }}>
+                            RECERT.
+                          </div>
+                        )}
+                      </div>
+                      {/* Info */}
+                      <div style={{ padding: '10px 12px' }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, marginBottom: 6, lineHeight: 1.35, color: 'var(--avp-text)' }}>{aula.aula_titulo}</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: 11, color: cor, fontWeight: 600 }}>
+                            {isConcluida ? (recertNeeded ? '⚠️ Refazer' : '✓ Concluída') : isDisponivel ? 'Disponível' : aula.status === 'aguardando_tempo' ? 'Aguardando' : 'Bloqueada'}
+                          </span>
+                          {(isDisponivel || isConcluida) ? (
+                            <Link href={`/aluno/${params.whatsapp}/aula/${aula.aula_id}`}
+                              style={{ fontSize: 12, color: isConcluida && !recertNeeded ? 'var(--avp-text-dim)' : '#3b82f6', textDecoration: 'none', fontWeight: 600 }}>
+                              {isConcluida && !recertNeeded ? 'Rever' : 'Acessar →'}
+                            </Link>
+                          ) : aula.status === 'aguardando_tempo' && aula.liberada_em ? (
+                            <span style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>
+                              {new Date(aula.liberada_em).toLocaleDateString('pt-BR')}
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+
+          {modulos.length === 0 && (
+            <div style={{ textAlign: 'center', padding: 80, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', borderRadius: 16, border: '1px solid var(--avp-border)' }}>
+              <p style={{ fontSize: 48, marginBottom: 16 }}>📚</p>
+              <p style={{ fontSize: 16 }}>Nenhuma aula disponível no momento.</p>
+              <p style={{ fontSize: 14, marginTop: 8 }}>Em breve novos conteúdos serão liberados!</p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-    {aluno.status === 'concluido' && certMap['certificado_template_url'] && (
-      <CertificadoWrapper
-        nomeAluno={aluno.nome}
-        templateUrl={certMap['certificado_template_url']}
-        nomeX={Number(certMap['certificado_nome_x'] || 50)}
-        nomeY={Number(certMap['certificado_nome_y'] || 62)}
-        nomeTamanho={Number(certMap['certificado_nome_tamanho'] || 72)}
-        nomeCor={certMap['certificado_nome_cor'] || '#1a1a2e'}
-        cidade={certMap['certificado_cidade'] || ''}
-        dataX={Number(certMap['certificado_data_x'] || 50)}
-        dataY={Number(certMap['certificado_data_y'] || 72)}
-        dataTamanho={Number(certMap['certificado_data_tamanho'] || 36)}
-        dataCor={certMap['certificado_data_cor'] || '#1a1a2e'}
-      />
-    )}
+
+      {aluno.status === 'concluido' && certMap['certificado_template_url'] && (
+        <CertificadoWrapper
+          nomeAluno={aluno.nome}
+          templateUrl={certMap['certificado_template_url']}
+          nomeX={Number(certMap['certificado_nome_x'] || 50)}
+          nomeY={Number(certMap['certificado_nome_y'] || 62)}
+          nomeTamanho={Number(certMap['certificado_nome_tamanho'] || 72)}
+          nomeCor={certMap['certificado_nome_cor'] || '#1a1a2e'}
+          cidade={certMap['certificado_cidade'] || ''}
+          dataX={Number(certMap['certificado_data_x'] || 50)}
+          dataY={Number(certMap['certificado_data_y'] || 72)}
+          dataTamanho={Number(certMap['certificado_data_tamanho'] || 36)}
+          dataCor={certMap['certificado_data_cor'] || '#1a1a2e'}
+        />
+      )}
     </>
   )
 }
