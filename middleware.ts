@@ -3,7 +3,9 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 const MAIN_HOST = 'uniavp.autovaleprevencoes.org.br'
 
-// Mapa de subdomínio → destino no domínio principal
+// Subdomínios reconhecidos → destino no domínio principal
+// Funciona tanto com consultor.autovaleprevencoes.org.br
+// quanto com consultor.uniavp.autovaleprevencoes.org.br
 const SUBDOMAIN_REDIRECTS: Record<string, string> = {
   consultor: '/captacao',
   gestor:    '/convite/gestor',
