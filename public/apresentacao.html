@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Universidade AVP — Apresentação</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root {
+    --brand: #333687;
+    --green: #02A153;
+    --blue: #4f46e5;
+    --card: #0f1117;
+    --bg: #07080d;
+    --border: #1e2130;
+    --text: #f0f2ff;
+    --dim: #6b7280;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── SLIDES ── */
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    transform: translateY(30px);
+  }
+  .slide.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+  }
+  .slide.exit {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+
+  /* ── NAV ── */
+  .nav {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(15,17,23,0.9);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 12px 24px;
+    backdrop-filter: blur(20px);
+    z-index: 100;
+  }
+  .nav button {
+    background: none;
+    border: none;
+    color: var(--dim);
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    transition: all 0.2s;
+  }
+  .nav button:hover { background: var(--border); color: var(--text); }
+  .nav .counter { font-size: 13px; color: var(--dim); min-width: 60px; text-align: center; }
+  .dots { display: flex; gap: 6px; }
+  .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .dot.active { background: var(--green); width: 20px; border-radius: 10px; }
+
+  /* ── PROGRESS BAR ── */
+  .progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--green), var(--blue));
+    transition: width 0.5s ease;
+    z-index: 100;
+    box-shadow: 0 0 10px rgba(2,161,83,0.5);
+  }
+
+  /* ── SLIDE NÚMERO ── */
+  .slide-num {
+    position: fixed;
+    top: 20px;
+    right: 28px;
+    font-size: 12px;
+    color: var(--dim);
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  /* ── LOGO ── */
+  .logo-badge {
+    position: fixed;
+    top: 16px;
+    left: 28px;
+    font-size: 13px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--brand), var(--green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+  }
+
+  /* ── HELPERS ── */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(51,54,135,0.2);
+    border: 1px solid rgba(51,54,135,0.4);
+    color: #a5b4fc;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .tag.green { background: rgba(2,161,83,0.15); border-color: rgba(2,161,83,0.3); color: #4ade80; }
+  .tag.orange { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.3); color: #fbbf24; }
+
+  h1.hero { font-size: clamp(36px, 5vw, 72px); font-weight: 900; line-height: 1.05; letter-spacing: -2px; }
+  h2.title { font-size: clamp(28px, 3.5vw, 48px); font-weight: 800; letter-spacing: -1px; }
+  h3.section { font-size: clamp(20px, 2.5vw, 32px); font-weight: 700; letter-spacing: -0.5px; }
+  p.sub { color: var(--dim); font-size: clamp(14px, 1.5vw, 18px); line-height: 1.6; }
+
+  .grid { display: grid; gap: 16px; width: 100%; max-width: 1000px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(51,54,135,0.05), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .card:hover { border-color: rgba(51,54,135,0.4); transform: translateY(-2px); }
+  .card:hover::before { opacity: 1; }
+
+  .card .icon { font-size: 28px; margin-bottom: 12px; }
+  .card h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .card p { font-size: 13px; color: var(--dim); line-height: 1.5; }
+
+  .feature-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .feature-list li {
+    display: flex; align-items: flex-start; gap: 12px;
+    font-size: 14px; line-height: 1.5;
+  }
+  .feature-list li::before {
+    content: '✓';
+    color: var(--green);
+    font-weight: 700;
+    font-size: 13px;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .stat-big { font-size: clamp(36px, 4vw, 56px); font-weight: 900; }
+  .stat-label { font-size: 13px; color: var(--dim); margin-top: 4px; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(2,161,83,0.15);
+    border: 1px solid rgba(2,161,83,0.25);
+    color: #4ade80;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* ── GRADIENT TEXT ── */
+  .grad { background: linear-gradient(135deg, #a5b4fc, var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .grad-brand { background: linear-gradient(135deg, #6366f1, #02A153); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+  /* ── PAINEL MOCKUP ── */
+  .mockup {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    flex: 1;
+  }
+  .mockup-bar {
+    background: #0a0b10;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot-r { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; }
+  .dot-y { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .dot-g { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; }
+  .url-bar {
+    flex: 1; background: var(--border); border-radius: 20px;
+    padding: 4px 12px; font-size: 11px; color: var(--dim); text-align: center;
+  }
+
+  /* ── FLOW STEPS ── */
+  .flow { display: flex; align-items: center; gap: 0; width: 100%; max-width: 900px; }
+  .flow-step {
+    flex: 1; background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 16px; text-align: center;
+    position: relative;
+  }
+  .flow-arrow {
+    color: var(--dim); font-size: 20px; padding: 0 8px; flex-shrink: 0;
+  }
+  .flow-step .num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand), var(--green));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; margin: 0 auto 10px;
+  }
+  .flow-step h5 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .flow-step p { font-size: 11px; color: var(--dim); }
+
+  /* ── CRON TABLE ── */
+  .cron-row {
+    display: grid; grid-template-columns: 1fr 1.5fr 2fr;
+    gap: 16px; padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    transition: background 0.2s;
+  }
+  .cron-row:hover { background: rgba(255,255,255,0.02); }
+  .cron-row:last-child { border-bottom: none; }
+
+  /* ── ANIMATE IN ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .slide.active .anim { animation: fadeUp 0.5s ease both; }
+  .slide.active .anim:nth-child(1) { animation-delay: 0.05s; }
+  .slide.active .anim:nth-child(2) { animation-delay: 0.15s; }
+  .slide.active .anim:nth-child(3) { animation-delay: 0.25s; }
+  .slide.active .anim:nth-child(4) { animation-delay: 0.35s; }
+  .slide.active .anim:nth-child(5) { animation-delay: 0.45s; }
+  .slide.active .anim:nth-child(6) { animation-delay: 0.55s; }
+
+  /* ── GLOW ── */
+  .glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Keyboard hint */
+  .hint {
+    position: fixed; bottom: 90px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px; color: var(--dim);
+    display: flex; gap: 8px; align-items: center;
+  }
+  kbd {
+    background: var(--border); border-radius: 4px;
+    padding: 2px 6px; font-size: 10px; font-family: inherit;
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="logo-badge">Universidade AVP</div>
+<div class="slide-num" id="slideNum">1 / 12</div>
+
+<!-- ════════════════════════════════════════
+     SLIDE 1 — CAPA
+════════════════════════════════════════ -->
+<div class="slide active" id="s1">
+  <div class="glow" style="width:500px;height:500px;background:rgba(51,54,135,0.3);top:-100px;left:-100px;"></div>
+  <div class="glow" style="width:400px;height:400px;background:rgba(2,161,83,0.15);bottom:-50px;right:-50px;"></div>
+
+  <div style="position:relative;z-index:1;text-align:center;display:flex;flex-direction:column;align-items:center;gap:28px;">
+    <div class="anim">
+      <div class="tag">Plataforma EAD White-Label</div>
+    </div>
+    <div class="anim">
+      <h1 class="hero">Universidade<br><span class="grad">AVP</span></h1>
+    </div>
+    <div class="anim">
+      <p class="sub" style="max-width:540px;">A plataforma completa de formação corporativa que transforma consultores em profissionais certificados — com a sua marca.</p>
+    </div>
+    <div class="anim" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <div class="pill">✅ 4 Painéis</div>
+      <div class="pill">✅ 5 Automações</div>
+      <div class="pill">✅ WhatsApp Integrado</div>
+      <div class="pill">✅ Certificados</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SLIDE 2 — VISÃO GERAL
+════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div style="text-align:center;margin-bottom:40px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+    <div class="anim tag">Visão Geral</div>
+    <h2 class="anim title">Quem usa e o que acessa</h2>
+    <p class="anim sub">4 perfis de acesso, cada um com seu painel e responsabilidade</p>
+  </div>
+
+  <div class="anim grid grid-4" style="max-width:1100px;">
+    <div class="card" style="border-top:3px solid #6366f1;">
+      <div class="icon">🛡️</div>
+      <h4>Super Admin</h4>
+      <p>Oito7 Digital. Gerencia todos os clientes, cobranças e onboarding automático.</p>
+      <div style="margin-top:14px;font-size:11px;color:#6366f1;font-weight:700;">universidade.oito7digital.com.br</div>
+    </div>
+    <div class="card" style="border-top:3px solid var(--brand);">
+      <div class="icon">⚙️</div>
+      <h4>Admin da Empresa</h4>
+      <p>Cria o conteúdo, gerencia consultores, gestores e todas as configurações.</p>
+      <div style="margin-top:14px;font-size:11px;color:#a5b4fc;font-weight:700;">adm.autovaleprevencoes.org.br</div>
+    </div>
+    <div class="card" style="border-top:3px solid #f59e0b;">
+      <div class="icon">👔</div>
+      <h4>Gestor</h4>
+      <p>Lidera equipes de consultores. Acompanha progresso, cria eventos e libera aulas.</p>
+      <div style="margin-top:14px;font-size:11px;color:#fbbf24;font-weight:700;">gestor.autovaleprevencoes.org.br</div>
+    </div>
+    <div class="card" style="border-top:3px solid var(--green);">
+      <div class="icon">🎓</div>
+      <h4>Consultor (Aluno)</h4>
+      <p>Faz as aulas, responde quizzes, acumula pontos e conquista o certificado.</p>
+      <div style="margin-top:14px;font-size:11px;color:#4ade80;font-weight:700;">Link pessoal /aluno/seunumero</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SLIDE 3 — PAINEL ADMIN (CONTEÚDO)
+════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div style="display:flex;gap:48px;align-items:flex-start;width:100%;max-width:1100px;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:20px;">
+      <div class="anim tag">Painel Admin</div>
+      <h2 class="anim title" style="font-size:36px;">Conteúdo &<br>Estrutura do Curso</h2>
+      <p class="anim sub" style="font-size:14px;">O admin cria toda a trilha de formação: módulos, aulas, quizzes e materiais de apoio.</p>
+      <ul class="anim feature-list" style="font-size:13px;">
+        <li>Cria módulos com capa e ordena à vontade</li>
+        <li>Aulas com vídeo YouTube ou URL própria</li>
+        <li>Aulas ao vivo com countdown automático</li>
+        <li>Arquivos para download (PDF, PPT, Excel)</li>
+        <li>Quiz com questões, alternativas e gabarito</li>
+        <li>Nota mínima de aprovação configurável</li>
+        <li>Validade de certificação por aula</li>
+        <li>3 modos de liberação: automático, gestor ou admin</li>
+      </ul>
+    </div>
+
+    <div class="anim" style="flex:1.2;">
+      <div class="mockup">
+        <div class="mockup-bar">
+          <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+          <div class="url-bar">adm.autovaleprevencoes.org.br/admin/modulos</div>
+        </div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:700;font-size:15px;">Módulos</span>
+            <div style="background:var(--green);color:#fff;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;">+ Novo Módulo</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="background:#0a0b10;border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;">
+              <div style="width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--green));display:flex;align-items:center;justify-content:center;font-size:18px;">📘</div>
+              <div style="flex:1;">
+                <p style="font-weight:700;font-size:13px;">Módulo 1 — Fundamentos</p>
+                <p style="color:var(--dim);font-size:11px;margin-top:2px;">8 aulas · Publicado</p>
+              </div>
+              <div style="background:rgba(2,161,83,0.15);color:#4ade80;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;">Ativo</div>
+            </div>
+            <div style="background:#0a0b10;border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;">
+              <div style="width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:18px;">📗</div>
+              <div style="flex:1;">
+                <p style="font-weight:700;font-size:13px;">Módulo 2 — Técnicas Avançadas</p>
+                <p style="color:var(--dim);font-size:11px;margin-top:2px;">6 aulas · Publicado</p>
+              </div>
+              <div style="background:rgba(2,161,83,0.15);color:#4ade80;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;">Ativo</div>
+            </div>
+            <div style="background:#0a0b10;border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;opacity:0.5;">
+              <div style="width:48px;height:48px;border-radius:8px;background:#1e2130;display:flex;align-items:center;justify-content:center;font-size:18px;">📙</div>
+              <div style="flex:1;">
+                <p style="font-weight:700;font-size:13px;">Módulo 3 — Liderança</p>
+                <p style="color:var(--dim);font-size:11px;margin-top:2px;">0 aulas · Rascunho</p>
+              </div>
+              <div style="background:rgba(107,114,128,0.15);color:var(--dim);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;">Rascunho</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SLIDE 4 — PAINEL ADMIN (GESTÃO)
+════════════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div style="text-align:center;margin-bottom:36px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+    <div class="anim tag">Painel Admin</div>
+    <h2 class="anim title" style="font-size:36px;">Gestão Completa de Pessoas</h2>
+    <p class="anim sub">Tudo numa tela só — consultores, gestores e admins</p>
+  </div>
+
+  <div class="anim grid grid-3" style="max-width:1000px;">
+    <div class="card">
+      <div class="icon">👥</div>
+      <h4>CRM de Consultores</h4>
+      <p>Vê todos os consultores, progresso, pontos, módulo atual e tempo sem atividade. Filtra por status.</p>
+    </div>
+    <div class="card">
+      <div class="icon">✏️</div>
+      <h4>Edição Completa</h4>
+      <p>Edita nome, WhatsApp, e-mail, gestor e status de qualquer cadastro. Redefine senhas com senha provisória.</p>
+    </div>
+    <div class="card">
+      <div class="icon">📊</div>
+      <h4>Relatórios Visuais</h4>
+      <p>Gráfico de novos cadastros por mês. Distribuição por status. Consultores agrupados por módulo.</p>
+    </div>
+    <div class="card">
+      <div class="icon">📣</div>
+      <h4>Notícias e Eventos</h4>
+      <p>Publica no mural com notificação automática por WhatsApp. Cria eventos com cidade, data e hora.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🏆</div>
+      <h4>Ranking e Loja</h4>
+      <p>Top 3 em destaque. Cria prêmios com custo em pontos. Aprova resgates dos consultores.</p>
+    </div>
+    <div class="card">
+      <div class="icon">📜</div>
+      <h4>Certificado Personalizado</h4>
+      <p>Sobe o template PNG da empresa. O sistema imprime o nome e a data do consultor automaticamente.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SLIDE 5 — PAINEL ADMIN (CONFIG)
+════════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div style="display:flex;gap:48px;align-items:center;width:100%;max-width:1100px;">
+    <div class="anim" style="flex:1.2;">
+      <div class="mockup">
+        <div class="mockup-bar">
+          <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+          <div class="url-bar">adm.autovaleprevencoes.org.br/admin/configuracoes</div>
+        </div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:16px;">
+          <p style="font-weight:800;font-size:14px;">🖼️ Logo da empresa</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="background:#0a0b10;border:2px dashed var(--border);border-radius:10px;padding:14px;text-align:center;">
+              <p style="font-size:11px;color:var(--dim);margin-bottom:6px;">Logo do menu lateral</p>
+              <div style="font-size:20px;margin-bottom:6px;">🖼️</div>
+              <div style="background:var(--brand);color:#fff;border-radius:6px;padding:4px;font-size:10px;font-weight:700;">📤 Subir imagem</div>
+            </div>
+            <div style="background:#0a0b10;border:2px dashed var(--border);border-radius:10px;padding:14px;text-align:center;">
+              <p style="font-size:11px;color:var(--dim);margin-bottom:6px;">Logo da página login</p>
+              <div style="font-size:20px;margin-bottom:6px;">🖼️</div>
+              <div style="background:var(--brand);color:#fff;border-radius:6px;padding:4px;font-size:10px;font-weight:700;">📤 Subir imagem</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div><p style="font-size:11px;color:var(--dim);margin-bottom:4px;">Nome do site</p><div style="background:#0a0b10;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;">Universidade AVP</div></div>
+            <div><p style="font-size:11px;color:var(--dim);margin-bottom:4px;">Cor primária</p>
+              <div style="background:#0a0b10;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;display:flex;align-items:center;gap:8px;">
+                <div style="width:16px;height:16px;border-radius:4px;background:#333687;"></div>#333687
+              </div>
+            </div>
+          </div>
+          <div style="background:rgba(2,161,83,0.1);border:1px solid rgba(2,161,83,0.2);border-radius:8px;padding:12px;font-size:12px;color:#4ade80;font-weight:600;">✅ Configurações salvas com sucesso!</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;display:flex;flex-direction:column;gap:20px;">
+      <div class="anim tag">Painel Admin</div>
+      <h2 class="anim title" style="font-size:36px;">White-Label<br>Completo</h2>
+      <p class="anim sub" style="font-size:14px;">Cada empresa vê a plataforma com sua própria identidade visual. Nenhuma referência à Oito7 Digital.</p>
+      <ul class="anim feature-list" style="font-size:13px;">
+        <li>Logo em 5 formatos (menu, login, mobile, favicon)</li>
+        <li>Nome e slogan da universidade</li>
+        <li>Cores primária e secundária da marca</li>
+        <li>Domínio personalizado com guia DNS</li>
+        <li>WhatsApp de suporte da empresa</li>
+        <li>Template do certificado de conclusão</li>
+        <li>Posicionamento de nome e data no certificado</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SLIDE 6 — PAINEL GESTOR
+════════════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div style="display:flex;gap:48px;align-items:flex-start;width:100%;max-width:1100px;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:20px;">
+      <div class="anim tag orange">Painel Gestor</div>
+      <h2 class="anim title" style="font-size:36px;">Liderança<br>da Equipe</h2>
+      <p class="anim sub" style="font-size:14px;">O gestor comanda até 50 consultores, acompanha progresso em tempo real e libera aulas com 1 clique.</p>
+
+      <div class="anim" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+          <p style="font-size:28px;font-weight:900;color:#f59e0b;">50</p>
+          <p style="font-size:12px;color:var(--dim);margin-top:2px;">Vagas totais de equipe</p>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+          <p style="font-size:28px;font-weight:900;color:var(--green);">100%</p>
+          <p style="font-size:12px;color:var(--dim);margin-top:2px;">Rastreamento em tempo real</p>
+        </div>
+      </div>
+
+      <ul class="anim feature-list" style="font-size:13px;">
+        <li>Painel com vagas usadas, em andamento, formados</li>
+        <li>Progresso de cada consultor por módulo</li>
+        <li>Libera próxima aula com 1 clique</li>
+        <li>Gera link personalizado para novos consultores</li>
+        <li>Cria eventos com notificação automática por WhatsApp</li>
+        <li>Conecta seu WhatsApp para envio das mensagens</li>
+        <li>Recebe relatório semanal automático</li>
+      </ul>
+    </div>
+
+    <div class="anim" style="flex:1.2;">
+      <div class="mockup">
+        <div class="mockup-bar">
+          <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+          <div class="url-bar">gestor.autovaleprevencoes.org.br</div>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+          <div style="background:#f59e0b15;border:1px solid #f59e0b40;border-radius:10px;padding:14px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <p style="font-weight:700;font-size:13px;color:#f59e0b;">⏳ Aguardando sua liberação</p>
+              <p style="font-size:12px;color:var(--dim);margin-top:2px;">Ana Consultora concluiu: Aula 3 — Abordagem</p>
+              <p style="font-size:11px;color:var(--green);margin-top:2px;">✓ 85% de acerto</p>
+            </div>
+            <div style="background:var(--green);color:#fff;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;white-space:nowrap;">✅ Liberar</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div style="background:#0a0b10;border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+              <p style="font-size:22px;font-weight:800;">12</p>
+              <p style="font-size:10px;color:var(--dim);">Vagas usadas</p>
+            </div>
+            <div style="background:#0a0b10;border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+              <p style="font-size:22px;font-weight:800;color:var(--green);">3</p>
+              <p style="font-size:10px;color:var(--dim);">Formados</p>
+            </div>
+            <div style="background:#0a0b10;border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+              <p style="font-size:22px;font-weight:800;color:#a5b4fc;">38</p>
+              <p style="font-size:10px;color:var(--dim);">Vagas livres</p>
+            </div>
+          </div>
+          <div style="background:#0a0b10;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+            <div style="padding:10px 14px;display:grid;grid-template-columns:1fr 1fr 80px 60px;font-size:10px;color:var(--dim);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">
+              <span>Nome</span><span>Progresso</span><span>Status</span><span></span>
+            </div>
+            <div style="padding:10px 14px;display:grid;grid-template-columns:1fr 1fr 80px 60px;font-size:12px;align-items:center;border-bottom:1px solid #0a0b10;">
+              <span style="font-weight:600;">Ana Silva</span>
+              <div style="background:var(--border);border-radius:100px;height:5px;"><div style="width:65%;background:var(--brand);height:100%;border-radius:100px;"></div></div>
+              <span style="background:rgba(2,161,83,0.15);color:#4ade80;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;text-align:center;">Ativo</span>
+              <span style="color:var(--dim);font-size:11px;">65%</span>
+            </div>
+            <div style="padding:10px 14px;display:grid;grid-template-columns:1fr 1fr 80px 60px;font-size:12px;align-items:center;">
+              <span style="font-weight:600;">Carlos Lima</span>
+              <div style="background:var(--border);border-radius:100px;height:5px;"><div style="width:100%;background:var(--green);height:100%;border-radius:100px;"></div></div>
+              <span style="background:rgba(51,54,135,0.2);color:#a5b4fc;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;text-align:center;">Formado</span>
+              <span style="color:var(--green);font-size:11px;">100%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SLIDE 7 — PAINEL CONSULTOR
+════════════════════════════════════════ -->
+<div class="slide" id="s7">
+  <div style="display:flex;gap:48px;align-items:flex-start;width:100%;max-width:1100px;">
+    <div class="anim" style="flex:1.2;">
+      <div class="mockup">
+        <div class="mockup-bar">
+          <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+          <div class="url-bar">uniavp.autovaleprevencoes.org.br/aluno/85999990002</div>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+          <div style="background:linear-gradient(135deg,rgba(51,54,135,0.3),rgba(2,161,83,0.1));border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+              <div>
+                <p style="font-size:11px;color:var(--dim);">Nível atual</p>
+                <p style="font-size:20px;font-weight:800;">Consultor</p>
+                <p style="font-size:11px;color:var(--dim);margin-top:2px;">150 pontos · próximo: 300 pts</p>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <div style="background:#0a0b10;border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center;">
+                  <div style="font-size:18px;">🥇</div>
+                  <p style="font-size:9px;color:var(--dim);margin-top:2px;">Pioneiro</p>
+                </div>
+                <div style="background:#0a0b10;border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center;">
+                  <div style="font-size:18px;">⚡</div>
+                  <p style="font-size:9px;color:var(--dim);margin-top:2px;">Veloz</p>
+                </div>
+              </div>
+            </div>
+            <div style="background:rgba(0,0,0,0.4);border-radius:100px;height:6px;overflow:hidden;">
+              <div style="width:50%;background:linear-gradient(90deg,var(--brand),var(--green));height:100%;border-radius:100px;"></div>
+            </div>
+          </div>
+          <p style="font-weight:700;font-size:13px;">Módulo 1 — Fundamentos de Vendas</p>
+          <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;">
+            <div style="min-width:120px;background:#0a0b10;border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0;">
+              <div style="height:60px;background:linear-gradient(135deg,var(--brand),var(--green));display:flex;align-items:center;justify-content:center;font-size:22px;">✅</div>
+              <div style="padding:8px;">
+                <p style="font-size:11px;font-weight:700;line-height:1.3;">Aula 1 — Boas-vindas</p>
+                <p style="font-size:10px;color:var(--green);margin-top:4px;font-weight:600;">Concluída</p>
+              </div>
+            </div>
+            <div style="min-width:120px;background:#0a0b10;border:1px solid #4f46e530;border-radius:10px;overflow:hidden;flex-shrink:0;">
+              <div style="height:60px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:22px;">▶️</div>
+              <div style="padding:8px;">
+                <p style="font-size:11px;font-weight:700;line-height:1.3;">Aula 2 — O Mercado</p>
+                <p style="font-size:10px;color:#4f46e5;margin-top:4px;font-weight:600;">Disponível</p>
+              </div>
+            </div>
+            <div style="min-width:120px;background:#0a0b10;border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0;opacity:0.4;">
+              <div style="height:60px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;">🔒</div>
+              <div style="padding:8px;">
+                <p style="font-size:11px;font-weight:700;line-height:1.3;">Aula 3 — Abordagem</p>
+                <p style="font-size:10px;color:var(--dim);margin-top:4px;font-weight:600;">Bloqueada</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;display:flex;flex-direction:column;gap:20px;">
+      <div class="anim tag green">Painel Consultor</div>
+      <h2 class="anim title" style="font-size:36px;">A Jornada<br>do Consultor</h2>
+      <p class="anim sub" style="font-size:14px;">Da primeira aula ao certificado, tudo acompanhado com gamificação e comunicação automática.</p>
+      <ul class="anim feature-list" style="font-size:13px;">
+        <li>Trilha visual de aulas com status em tempo real</li>
+        <li>Sistema de níveis e pontos (Iniciante → Especialista)</li>
+        <li>Medalhas por conquistas</li>
+        <li>Quiz com gabarito e explicação após cada resposta</li>
+        <li>Materiais para download por aula</li>
+        <li>Fórum de discussão entre consultores</li>
+        <li>Loja de prêmios com os pontos acumulados</li>
+        <li>Artes de marketing para download</li>
+        <li>Certificado digital personalizado ao concluir</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SLIDE 8 — DENTRO DA AULA
+════════════════════════════════════════ -->
+<div class="slide" id="s8">
+  <div style="text-align:center;margin-bottom:36px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+    <div class="anim tag green">Experiência do Consultor</div>
+    <h2 class="anim title" style="font-size:36px;">O que acontece dentro de uma aula</h2>
+  </div>
+
+  <div class="anim flow">
+    <div class="flow-step">
+      <div class="num">1</div>
+      <div style="font-size:24px;margin-bottom:8px;">🎬</div>
+      <h5>Assiste o vídeo</h5>
+      <p>YouTube ou vídeo hospedado. Aulas ao vivo com countdown.</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="num">2</div>
+      <div style="font-size:24px;margin-bottom:8px;">📥</div>
+      <h5>Baixa materiais</h5>
+      <p>PDFs, apresentações e planilhas disponíveis na aula.</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="num">3</div>
+      <div style="font-size:24px;margin-bottom:8px;">📝</div>
+      <h5>Responde o quiz</h5>
+      <p>Questões com alternativas. Vê gabarito após responder.</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="num">4</div>
+      <div style="font-size:24px;margin-bottom:8px;">✅</div>
+      <h5>Aprovado</h5>
+      <p>Acima da nota mínima, ganha pontos e a próxima aula libera.</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="num">5</div>
+      <div style="font-size:24px;margin-bottom:8px;">📱</div>
+      <h5>Notificação</h5>
+      <p>Consultor recebe aviso no WhatsApp quando nova aula libera.</p>
+    </div>
+  </div>
+
+  <div class="anim" style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+    <div class="pill">❤️ Curtidas por aula</div>
+    <div class="pill">😊 Reação com emoji</div>
+    <div class="pill">💬 Comentários</div>
+    <div class="pill">🔄 Retentativas configuráveis</div>
+    <div class="pill">⏳ Aula ao vivo com countdown</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SLIDE 9 — AUTOMAÇÕES
+════════════════════════════════════════ -->
+<div class="slide" id="s9">
+  <div style="text-align:center;margin-bottom:36px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+    <div class="anim tag">Automações</div>
+    <h2 class="anim title" style="font-size:36px;">5 Robôs que trabalham<br>enquanto você dorme</h2>
+    <p class="anim sub">Toda a comunicação acontece automaticamente via WhatsApp</p>
+  </div>
+
+  <div class="anim" style="width:100%;max-width:860px;background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+    <div style="padding:14px 20px;background:#0a0b10;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 1.5fr 2fr;font-size:11px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:1px;">
+      <span>Automação</span><span>Quando roda</span><span>O que faz</span>
+    </div>
+    <div class="cron-row">
+      <span style="font-weight:700;font-size:14px;">👋 Boas-vindas</span>
+      <span style="color:var(--dim);font-size:13px;">Dias 1, 3 e 7 após cadastro</span>
+      <span style="font-size:13px;color:var(--dim);">Sequência de mensagens para engajar o consultor no início</span>
+    </div>
+    <div class="cron-row">
+      <span style="font-weight:700;font-size:14px;">😴 Inatividade</span>
+      <span style="color:var(--dim);font-size:13px;">Todo dia às 12h</span>
+      <span style="font-size:13px;color:var(--dim);">Avisa o gestor se consultor parou há 3, 7 ou 15 dias</span>
+    </div>
+    <div class="cron-row">
+      <span style="font-weight:700;font-size:14px;">⏰ Validade</span>
+      <span style="color:var(--dim);font-size:13px;">Todo dia</span>
+      <span style="font-size:13px;color:var(--dim);">Avisa 7 dias e 1 dia antes do certificado expirar</span>
+    </div>
+    <div class="cron-row">
+      <span style="font-weight:700;font-size:14px;">💳 Cobrança</span>
+      <span style="color:var(--dim);font-size:13px;">Todo dia às 8h</span>
+      <span style="font-size:13px;color:var(--dim);">Gera PIX, envia por WhatsApp e suspende inadimplentes</span>
+    </div>
+    <div class="cron-row">
+      <span style="font-weight:700;font-size:14px;">📊 Relatório</span>
+      <span style="color:var(--dim);font-size:13px;">Toda segunda às 8h</span>
+      <span style="font-size:13px;color:var(--dim);">Relatório semanal para cada gestor e para o admin</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SLIDE 10 — SUPER ADMIN
+════════════════════════════════════════ -->
+<div class="slide" id="s10">
+  <div style="display:flex;gap:48px;align-items:center;width:100%;max-width:1100px;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:20px;">
+      <div class="anim tag" style="background:rgba(99,102,241,0.15);border-color:rgba(99,102,241,0.3);color:#a5b4fc;">Painel Master</div>
+      <h2 class="anim title" style="font-size:36px;">Controle de<br>Todos os Clientes</h2>
+      <p class="anim sub" style="font-size:14px;">A Oito7 Digital gerencia todos os clientes da plataforma num painel central — cobrança, onboarding e suporte.</p>
+      <ul class="anim feature-list" style="font-size:13px;">
+        <li>Números globais de todos os clientes juntos</li>
+        <li>Cadastra nova empresa e configura o sistema completo</li>
+        <li>Onboarding com 1 botão: cria admin + configura DNS + envia credenciais</li>
+        <li>Gera PIX de mensalidade e envia por WhatsApp</li>
+        <li>Suspende e reativa clientes inadimplentes</li>
+        <li>Webhook automático de confirmação de pagamento</li>
+        <li>Links rápidos para testar qualquer painel de qualquer cliente</li>
+      </ul>
+    </div>
+
+    <div class="anim" style="flex:1.2;">
+      <div class="mockup">
+        <div class="mockup-bar">
+          <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+          <div class="url-bar">universidade.oito7digital.com.br</div>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div style="background:#0a0b10;border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+              <p style="font-size:24px;font-weight:900;color:#a5b4fc;">247</p>
+              <p style="font-size:10px;color:var(--dim);">Consultores</p>
+            </div>
+            <div style="background:#0a0b10;border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+              <p style="font-size:24px;font-weight:900;color:#f59e0b;">18</p>
+              <p style="font-size:10px;color:var(--dim);">Gestores</p>
+            </div>
+            <div style="background:#0a0b10;border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+              <p style="font-size:24px;font-weight:900;color:var(--green);">5</p>
+              <p style="font-size:10px;color:var(--dim);">Clientes ativos</p>
+            </div>
+          </div>
+          <div style="background:#0a0b10;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+            <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <p style="font-weight:700;font-size:13px;">Uni AVP</p>
+                <p style="font-size:11px;color:var(--dim);">uniavp.autovaleprevencoes.org.br</p>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <div style="background:rgba(2,161,83,0.15);color:#4ade80;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;">Ativo</div>
+                <div style="background:var(--brand);color:#fff;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;">Gerar PIX</div>
+              </div>
+            </div>
+            <div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <p style="font-weight:700;font-size:13px;">Empresa Demo</p>
+                <p style="font-size:11px;color:var(--dim);">demo.empresa.com.br</p>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <div style="background:rgba(239,68,68,0.15);color:#f87171;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;">Suspenso</div>
+                <div style="background:var(--green);color:#fff;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;">Reativar</div>
+              </div>
+            </div>
+          </div>
+          <div style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:12px;">
+            <p style="font-weight:700;font-size:13px;color:#a5b4fc;margin-bottom:8px;">🚀 Onboarding Automático</p>
+            <p style="font-size:11px;color:var(--dim);">Cria admin + configura DNS + envia credenciais por WhatsApp — tudo com 1 botão</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SLIDE 11 — SUBDOMÍNIOS / ACESSO
+════════════════════════════════════════ -->
+<div class="slide" id="s11">
+  <div style="text-align:center;margin-bottom:40px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+    <div class="anim tag">Links de Acesso</div>
+    <h2 class="anim title" style="font-size:36px;">Cada perfil tem<br>seu próprio endereço</h2>
+    <p class="anim sub">Links fáceis de memorizar e compartilhar</p>
+  </div>
+
+  <div class="anim grid grid-4" style="max-width:1100px;">
+    <div class="card" style="text-align:center;border-top:3px solid #ef4444;">
+      <div style="font-size:36px;margin-bottom:12px;">📢</div>
+      <h4>Captação</h4>
+      <div style="margin-top:12px;background:#0a0b10;border-radius:8px;padding:10px;font-size:11px;font-family:monospace;color:#fca5a5;word-break:break-all;">consultor.<br>autovaleprevencoes<br>.org.br</div>
+      <p style="margin-top:10px;font-size:12px;color:var(--dim);">Landing page de cadastro de novos consultores</p>
+    </div>
+    <div class="card" style="text-align:center;border-top:3px solid #f59e0b;">
+      <div style="font-size:36px;margin-bottom:12px;">👔</div>
+      <h4>Painel Gestor</h4>
+      <div style="margin-top:12px;background:#0a0b10;border-radius:8px;padding:10px;font-size:11px;font-family:monospace;color:#fcd34d;word-break:break-all;">gestor.<br>autovaleprevencoes<br>.org.br</div>
+      <p style="margin-top:10px;font-size:12px;color:var(--dim);">Login direto para o painel do gestor</p>
+    </div>
+    <div class="card" style="text-align:center;border-top:3px solid var(--brand);">
+      <div style="font-size:36px;margin-bottom:12px;">⚙️</div>
+      <h4>Painel Admin</h4>
+      <div style="margin-top:12px;background:#0a0b10;border-radius:8px;padding:10px;font-size:11px;font-family:monospace;color:#a5b4fc;word-break:break-all;">adm.<br>autovaleprevencoes<br>.org.br</div>
+      <p style="margin-top:10px;font-size:12px;color:var(--dim);">Acesso ao painel de controle da empresa</p>
+    </div>
+    <div class="card" style="text-align:center;border-top:3px solid var(--green);">
+      <div style="font-size:36px;margin-bottom:12px;">🎓</div>
+      <h4>Consultor</h4>
+      <div style="margin-top:12px;background:#0a0b10;border-radius:8px;padding:10px;font-size:11px;font-family:monospace;color:#86efac;word-break:break-all;">/aluno/<br>{whatsapp}</div>
+      <p style="margin-top:10px;font-size:12px;color:var(--dim);">Link pessoal único para cada consultor</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SLIDE 12 — ENTREGA FINAL
+════════════════════════════════════════ -->
+<div class="slide" id="s12">
+  <div class="glow" style="width:600px;height:600px;background:rgba(2,161,83,0.15);top:-200px;right:-200px;"></div>
+  <div class="glow" style="width:400px;height:400px;background:rgba(51,54,135,0.2);bottom:-100px;left:-100px;"></div>
+
+  <div style="position:relative;z-index:1;text-align:center;display:flex;flex-direction:column;align-items:center;gap:32px;max-width:800px;">
+    <div class="anim tag green">Entrega Final</div>
+    <h2 class="anim hero" style="font-size:clamp(32px,4.5vw,60px);">Do cadastro ao<br><span class="grad">certificado</span></h2>
+    <p class="anim sub" style="font-size:16px;max-width:600px;">O consultor entra no sistema, percorre a trilha de formação no próprio ritmo, realiza as provas, acumula pontos e conquista o certificado — tudo com a <strong style="color:var(--text);">marca da sua empresa</strong>, sem nenhuma aparência de plataforma terceirizada.</p>
+
+    <div class="anim" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;width:100%;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:8px;">🎯</div>
+        <h4 style="font-size:14px;margin-bottom:4px;">Para a empresa</h4>
+        <p style="font-size:12px;color:var(--dim);">Consultores formados, engajados e com certificação válida</p>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:8px;">🤖</div>
+        <h4 style="font-size:14px;margin-bottom:4px;">Para o admin</h4>
+        <p style="font-size:12px;color:var(--dim);">Tudo automatizado — relatórios, cobranças e comunicação</p>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:8px;">🏷️</div>
+        <h4 style="font-size:14px;margin-bottom:4px;">White-label</h4>
+        <p style="font-size:12px;color:var(--dim);">Domínio, logo, cores e nome da empresa — sem Oito7 aparente</p>
+      </div>
+    </div>
+
+    <div class="anim" style="font-size:13px;color:var(--dim);">
+      Desenvolvido por <strong style="color:var(--text);">Oito7 Digital</strong> · universidade.oito7digital.com.br
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     NAVEGAÇÃO
+════════════════════════════════════════ -->
+<nav class="nav">
+  <button onclick="prev()" title="Anterior">←</button>
+  <div class="dots" id="dots"></div>
+  <span class="counter" id="counter">1 / 12</span>
+  <button onclick="next()" title="Próximo">→</button>
+</nav>
+
+<div class="hint" id="hint">
+  <kbd>←</kbd> <kbd>→</kbd> para navegar · <kbd>F</kbd> tela cheia
+</div>
+
+<script>
+  const total = 12
+  let current = 1
+  let transitioning = false
+
+  function goTo(n, direction = 'next') {
+    if (transitioning || n === current || n < 1 || n > total) return
+    transitioning = true
+
+    const prev = document.getElementById('s' + current)
+    const next = document.getElementById('s' + n)
+
+    prev.classList.add('exit')
+    prev.classList.remove('active')
+
+    setTimeout(() => {
+      prev.classList.remove('exit')
+      current = n
+      next.classList.add('active')
+      update()
+      setTimeout(() => { transitioning = false }, 520)
+    }, 300)
+  }
+
+  function next() { goTo(current + 1, 'next') }
+  function prev() { goTo(current - 1, 'prev') }
+
+  function update() {
+    // Progress
+    document.getElementById('progress').style.width = ((current / total) * 100) + '%'
+    // Counter
+    document.getElementById('counter').textContent = current + ' / ' + total
+    document.getElementById('slideNum').textContent = current + ' / ' + total
+    // Dots
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i + 1 === current)
+    })
+    // Hide hint after slide 1
+    document.getElementById('hint').style.opacity = current === 1 ? '1' : '0'
+  }
+
+  // Build dots
+  const dotsEl = document.getElementById('dots')
+  for (let i = 1; i <= total; i++) {
+    const d = document.createElement('div')
+    d.className = 'dot' + (i === 1 ? ' active' : '')
+    d.onclick = () => goTo(i)
+    d.title = 'Slide ' + i
+    dotsEl.appendChild(d)
+  }
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next() }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prev() }
+    if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen()
+      else document.exitFullscreen()
+    }
+  })
+
+  // Touch/swipe
+  let touchX = 0
+  document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX })
+  document.addEventListener('touchend', e => {
+    const diff = touchX - e.changedTouches[0].clientX
+    if (Math.abs(diff) > 50) diff > 0 ? next() : prev()
+  })
+
+  update()
+</script>
+</body>
+</html>
