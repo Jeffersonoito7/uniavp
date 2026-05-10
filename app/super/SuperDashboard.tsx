@@ -12,6 +12,10 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
 }) {
   const [clientes, setClientes] = useState<Cliente[]>(inicial)
   const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca'>('dashboard')
+  const [onboardingId, setOnboardingId] = useState<string | null>(null)
+  const [onboardingForm, setOnboardingForm] = useState({ admin_email: '', admin_nome: '', admin_senha: '', dominio: '' })
+  const [onboardingMsg, setOnboardingMsg] = useState<string[]>([])
+  const [onboardingLoading, setOnboardingLoading] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [menuAberto, setMenuAberto] = useState(false)
   const [colapsada, setColapsada] = useState(false)
@@ -35,6 +39,17 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
     const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
     await sb.auth.signOut()
     window.location.href = '/super/login'
+  }
+
+  async function rodarOnboarding(clienteId: string) {
+    setOnboardingLoading(true); setOnboardingMsg([])
+    const res = await fetch('/api/super/onboarding', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cliente_id: clienteId, ...onboardingForm }),
+    })
+    const data = await res.json()
+    setOnboardingMsg(data.resultados ?? [data.error ?? 'Erro'])
+    setOnboardingLoading(false)
   }
 
   async function salvarCliente() {
@@ -344,7 +359,9 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                       {c.observacoes && <p style={{ fontSize: 12, color: '#8a8fa3', marginTop: 6 }}>{c.observacoes}</p>}
                       <p style={{ fontSize: 11, color: '#8a8fa3', marginTop: 6 }}>Cliente desde {new Date(c.created_at).toLocaleDateString('pt-BR')}</p>
                     </div>
-                    <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                    <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
+                      <button onClick={() => { setOnboardingId(c.id); setOnboardingForm({ admin_email: c.contato_email || '', admin_nome: c.contato_nome || '', admin_senha: '', dominio: c.dominio || '' }); setOnboardingMsg([]) }}
+                        style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', color: '#fff', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>🚀 Onboarding</button>
                       <button onClick={() => iniciarEdicao(c)} style={{ background: '#252836', border: 'none', color: '#f0f1f5', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Editar</button>
                       <button onClick={() => toggleAtivo(c)} style={{ background: c.ativo ? '#f59e0b20' : '#02A15320', border: 'none', color: c.ativo ? '#f59e0b' : '#02A153', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
                         {c.ativo ? 'Suspender' : 'Reativar'}
@@ -580,6 +597,49 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
           </div>
         )}
       </main>
+
+      {/* ── Modal Onboarding Automático ── */}
+      {onboardingId && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 }}
+          onClick={e => e.target === e.currentTarget && setOnboardingId(null)}>
+          <div style={{ background: '#181b24', border: '1px solid #252836', borderRadius: 16, padding: 32, width: 520, maxWidth: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: '#f0f1f5' }}>🚀 Onboarding Automático</h2>
+              <button onClick={() => setOnboardingId(null)} style={{ background: 'none', border: 'none', color: '#8a8fa3', cursor: 'pointer', fontSize: 22 }}>×</button>
+            </div>
+            <p style={{ color: '#8a8fa3', fontSize: 13, marginBottom: 20 }}>Preencha e clique em executar. O sistema vai criar o admin, configurar os subdomínios e enviar as credenciais por WhatsApp.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {[
+                { label: 'Nome do Admin *', key: 'admin_nome', type: 'text', placeholder: 'Nome do responsável' },
+                { label: 'E-mail do Admin *', key: 'admin_email', type: 'email', placeholder: 'admin@empresa.com.br' },
+                { label: 'Senha inicial *', key: 'admin_senha', type: 'password', placeholder: 'Mín. 8 caracteres' },
+                { label: 'Domínio (opcional)', key: 'dominio', type: 'text', placeholder: 'uni.empresa.com.br' },
+              ].map(f => (
+                <div key={f.key}>
+                  <label style={{ display: 'block', color: '#8a8fa3', fontSize: 12, marginBottom: 5, fontWeight: 600 }}>{f.label}</label>
+                  <input type={f.type} placeholder={f.placeholder} value={(onboardingForm as any)[f.key]}
+                    onChange={e => setOnboardingForm(p => ({ ...p, [f.key]: e.target.value }))}
+                    style={{ width: '100%', background: '#08090d', border: '1px solid #252836', borderRadius: 8, padding: '10px 12px', color: '#f0f1f5', fontSize: 13, outline: 'none', boxSizing: 'border-box' as const }} />
+                </div>
+              ))}
+            </div>
+            {onboardingMsg.length > 0 && (
+              <div style={{ marginTop: 16, background: '#08090d', borderRadius: 8, padding: 14, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {onboardingMsg.map((m, i) => (
+                  <p key={i} style={{ fontSize: 12, color: m.startsWith('✅') ? '#02A153' : m.startsWith('⚠️') ? '#f59e0b' : '#8a8fa3', margin: 0 }}>{m}</p>
+                ))}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
+              <button onClick={() => setOnboardingId(null)} style={{ background: 'none', border: '1px solid #252836', color: '#8a8fa3', borderRadius: 8, padding: '10px 18px', cursor: 'pointer', fontSize: 13 }}>Cancelar</button>
+              <button onClick={() => rodarOnboarding(onboardingId)} disabled={onboardingLoading || !onboardingForm.admin_email || !onboardingForm.admin_senha}
+                style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: onboardingLoading ? 0.7 : 1 }}>
+                {onboardingLoading ? '⏳ Executando...' : '🚀 Executar Onboarding'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
