@@ -3,10 +3,12 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import SiteLogoHeader from '@/app/components/SiteLogoHeader'
 import PhoneInput from '@/app/components/PhoneInput'
+import QualificacaoStep from '@/app/components/QualificacaoStep'
 
 export default function CaptacaoPage() {
   const router = useRouter()
   const formRef = useRef<HTMLDivElement>(null)
+  const [qualificado, setQualificado] = useState(false)
   const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', senha: '', gestor_nome: '', gestor_whatsapp: '' })
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
@@ -144,6 +146,12 @@ export default function CaptacaoPage() {
 
       {/* FORMULÁRIO */}
       <section ref={formRef} style={{ padding: '40px 24px 100px', maxWidth: 560, margin: '0 auto' }}>
+        {!qualificado ? (
+          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 20, padding: 40, boxShadow: '0 24px 80px rgba(0,0,0,0.5)' }}>
+            <QualificacaoStep onAprovado={() => setQualificado(true)} />
+          </div>
+        ) : (
+        <>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <h2 style={{ fontSize: 28, fontWeight: 900, marginBottom: 8 }}>Comece sua jornada <span style={{ background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>agora</span></h2>
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>É gratuito. Sem cartão de crédito. Sem burocracia.</p>
@@ -171,6 +179,8 @@ export default function CaptacaoPage() {
             Já tem conta? <a href="/consultor/login" style={{ color: 'var(--avp-green)', textDecoration: 'none', fontWeight: 600 }}>Entrar aqui</a>
           </p>
         </div>
+        </>
+        )}
       </section>
 
     </div>

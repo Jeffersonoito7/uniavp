@@ -2,11 +2,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PhoneInput from '@/app/components/PhoneInput'
+import QualificacaoStep from '@/app/components/QualificacaoStep'
 
 type Gestor = { nome: string; whatsapp: string }
 
 export default function GestorCaptacaoForm({ gestor, siteNome, logoUrl }: { gestor: Gestor; siteNome: string; logoUrl: string }) {
   const router = useRouter()
+  const [qualificado, setQualificado] = useState(false)
   const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', senha: '' })
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
@@ -105,9 +107,18 @@ export default function GestorCaptacaoForm({ gestor, siteNome, logoUrl }: { gest
           </div>
         </div>
 
-        {/* LADO DIREITO — Formulário */}
+        {/* LADO DIREITO — Qualificação ou Formulário */}
         <div className="split-form" style={{ width: 420, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
           <div style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: 36, backdropFilter: 'blur(12px)' }}>
+
+            {/* QUALIFICAÇÃO */}
+            {!qualificado && (
+              <QualificacaoStep gestorNome={gestor.nome} onAprovado={() => setQualificado(true)} />
+            )}
+
+            {/* FORMULÁRIO — só aparece após qualificação */}
+            {qualificado && (
+              <>
             <h2 style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 6 }}>Criar conta grátis</h2>
             <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, marginBottom: 28 }}>
               Cadastrado como consultor de <strong style={{ color: 'rgba(255,255,255,0.7)' }}>{gestor.nome}</strong>
@@ -160,6 +171,8 @@ export default function GestorCaptacaoForm({ gestor, siteNome, logoUrl }: { gest
               Já tem cadastro?{' '}
               <a href="/consultor/login" style={{ color: '#60a5fa', textDecoration: 'none', fontWeight: 600 }}>Entrar aqui</a>
             </p>
+              </>
+            )}
           </div>
         </div>
       </div>
