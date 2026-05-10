@@ -5,7 +5,7 @@ import GestorDashboard from './GestorDashboard'
 export default async function GestorPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login?from=gestor')
+  if (!user) redirect('/gestor/login')
 
   const adminClient = createServiceRoleClient()
 
@@ -14,7 +14,7 @@ export default async function GestorPage() {
     .eq('user_id', user.id)
     .eq('ativo', true)
     .maybeSingle()
-  if (!gestor) redirect('/login')
+  if (!gestor) redirect('/gestor/login')
 
   const { data: consultores } = await (adminClient.from('alunos') as any)
     .select('id, nome, whatsapp, email, status, created_at')

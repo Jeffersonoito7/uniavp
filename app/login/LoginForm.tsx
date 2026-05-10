@@ -59,7 +59,15 @@ export default function LoginForm({ logoUrl, siteNome, isDominioMaster }: { logo
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--avp-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', position: 'relative' }}>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #08090d 0%, #0f1117 60%, #08090d 100%)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden',
+    }}>
+      {/* Marca d'água neutra admin */}
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', opacity: 0.025, fontSize: 340 }}>🏛️</div>
+      <div style={{ position: 'absolute', bottom: 40, right: 60, pointerEvents: 'none', opacity: 0.03, fontSize: 180 }}>🔐</div>
       <div style={{ position: 'absolute', top: 16, right: 16 }}><ThemeToggle /></div>
       <div style={{ width: 400, maxWidth: '95vw' }}>
         <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
