@@ -22,7 +22,7 @@
     {
       "source": "/",
       "has": [{ "type": "host", "value": "gestor.autovaleprevencoes.org.br" }],
-      "destination": "https://uniavp.autovaleprevencoes.org.br/convite/gestor",
+      "destination": "https://uniavp.autovaleprevencoes.org.br/gestor",
       "permanent": true
     },
     {
