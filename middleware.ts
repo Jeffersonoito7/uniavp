@@ -14,6 +14,8 @@ export function middleware(request: NextRequest) {
   const isPublic =
     path === '/' ||
     path.startsWith('/login') ||
+    path.startsWith('/consultor/login') ||
+    path.startsWith('/gestor/login') ||
     path.startsWith('/cadastro') ||
     path.startsWith('/captacao') ||
     path.startsWith('/recuperar-senha') ||
@@ -27,10 +29,14 @@ export function middleware(request: NextRequest) {
   if (isPublic) return NextResponse.next()
 
   if (!hasSession(request)) {
-    if (path.startsWith('/aluno') || path.startsWith('/admin') || path.startsWith('/gestor')) {
-      const loginUrl = new URL('/login', request.url)
-      loginUrl.searchParams.set('redirect', path)
-      return NextResponse.redirect(loginUrl)
+    if (path.startsWith('/aluno')) {
+      return NextResponse.redirect(new URL('/consultor/login', request.url))
+    }
+    if (path.startsWith('/gestor') && !path.startsWith('/gestor/login')) {
+      return NextResponse.redirect(new URL('/gestor/login', request.url))
+    }
+    if (path.startsWith('/admin')) {
+      return NextResponse.redirect(new URL('/login', request.url))
     }
     if (path.startsWith('/super')) {
       return NextResponse.redirect(new URL('/super/login', request.url))
@@ -46,5 +52,6 @@ export const config = {
     '/admin/:path*',
     '/gestor/:path*',
     '/super/:path*',
+    '/consultor/:path*',
   ]
 }
