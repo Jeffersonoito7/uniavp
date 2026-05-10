@@ -11,12 +11,14 @@ export default function LoginForm({ logoUrl, siteNome, isDominioMaster }: { logo
   const [logoFalhou, setLogoFalhou] = useState(false)
   const [verSenha, setVerSenha] = useState(false)
 
+  const [fromCtx, setFromCtx] = useState('')
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get('msg') === 'senha-redefinida') {
       setSucesso('Senha redefinida com sucesso! Faça login com a nova senha.')
       window.history.replaceState({}, '', '/login')
     }
+    if (params.get('from')) setFromCtx(params.get('from')!)
   }, [])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -35,7 +37,8 @@ export default function LoginForm({ logoUrl, siteNome, isDominioMaster }: { logo
     }
 
     // Usar API server-side para checar perfil (bypassa RLS do Supabase)
-    const res = await fetch('/api/auth/perfil')
+    const qs = fromCtx ? `?from=${fromCtx}` : ''
+    const res = await fetch(`/api/auth/perfil${qs}`)
     const perfil = await res.json()
 
     if (perfil.redirect) {

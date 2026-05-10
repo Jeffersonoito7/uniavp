@@ -6,7 +6,7 @@ import WhatsAppConectar from '@/app/components/WhatsAppConectar'
 export default async function GestorPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/login?from=gestor')
 
   const adminClient = createServiceRoleClient()
 

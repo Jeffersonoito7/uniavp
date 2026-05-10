@@ -41,9 +41,11 @@ export default function SupportChat({ painel }: { painel?: string }) {
         }),
       })
       const data = await res.json()
-      setMsgs(prev => [...prev, { role: 'assistant', content: data.resposta ?? 'Erro ao responder. Tente novamente.' }])
-    } catch {
-      setMsgs(prev => [...prev, { role: 'assistant', content: 'Sem conexão. Verifique sua internet e tente novamente.' }])
+      if (data.error) throw new Error(data.error)
+      setMsgs(prev => [...prev, { role: 'assistant', content: data.resposta ?? 'Não consegui processar. Tente novamente.' }])
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Sem conexão. Tente novamente.'
+      setMsgs(prev => [...prev, { role: 'assistant', content: `⚠️ ${msg}` }])
     }
     setLoading(false)
   }
