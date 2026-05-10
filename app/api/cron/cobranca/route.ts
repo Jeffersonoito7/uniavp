@@ -4,6 +4,8 @@ import { criarCobrancaPix } from '@/lib/efi'
 import { enviarWhatsApp } from '@/lib/whatsapp'
 import { randomUUID } from 'crypto'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   const auth = req.headers.get('authorization')
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {

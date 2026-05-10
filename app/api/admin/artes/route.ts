@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+
 async function verificarAdmin(user: { id: string }, adminClient: ReturnType<typeof createServiceRoleClient>) {
   const { data } = await (adminClient.from('admins') as any)
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()

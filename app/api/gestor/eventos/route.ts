@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp } from '@/lib/whatsapp'
 
+export const dynamic = 'force-dynamic'
+
 async function getGestor(user: { id: string }, adminClient: ReturnType<typeof createServiceRoleClient>) {
   const { data } = await (adminClient.from('gestores') as any)
     .select('id, nome, whatsapp').eq('user_id', user.id).eq('ativo', true).maybeSingle()

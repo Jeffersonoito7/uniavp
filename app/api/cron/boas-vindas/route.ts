@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp } from '@/lib/whatsapp'
 
+export const dynamic = 'force-dynamic'
+
 // Roda diariamente às 9h — envia mensagens de boas-vindas nos dias 1, 3, 7
 export async function GET(req: NextRequest) {
   if (req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`)

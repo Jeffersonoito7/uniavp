@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+
 export const maxDuration = 60
 
 export async function PUT(req: NextRequest) {

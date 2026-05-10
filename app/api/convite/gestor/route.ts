@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   const { nome, email, whatsapp, senha } = await req.json()
   if (!nome || !email || !whatsapp || !senha) {

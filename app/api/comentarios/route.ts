@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   const aulaId = req.nextUrl.searchParams.get('aula_id')
   if (!aulaId) return NextResponse.json({ error: 'aula_id obrigatório' }, { status: 400 })

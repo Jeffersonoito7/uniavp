@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { consultarVeiculo } from '@/lib/providers'
 import { calcularScore } from '@/lib/score'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   try {
     const { placa, chassi } = await req.json()

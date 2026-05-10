@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp, getInstanciaGestorPorNome } from '@/lib/whatsapp'
 
+export const dynamic = 'force-dynamic'
+
 // Roda toda segunda-feira às 8h — relatório semanal para gestores e admin
 export async function GET(req: NextRequest) {
   if (req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`)

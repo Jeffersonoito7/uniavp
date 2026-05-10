@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+
 const EVO_URL = process.env.EVOLUTION_API_URL!
 const EVO_KEY = process.env.EVOLUTION_API_KEY!
 

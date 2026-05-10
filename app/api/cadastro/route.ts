@@ -3,6 +3,8 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp } from '@/lib/whatsapp'
 import { z } from 'zod'
 
+export const dynamic = 'force-dynamic'
+
 const schema = z.object({
   nome: z.string().min(2),
   whatsapp: z.string().min(10),

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp } from '@/lib/whatsapp'
 
+export const dynamic = 'force-dynamic'
+
 // Efí envia POST neste endpoint quando pagamento é confirmado
 export async function POST(req: NextRequest) {
   try {

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+
 // Onboarding automático de novo cliente:
 // 1. Cria admin auth + registro
 // 2. Adiciona domínio na Vercel

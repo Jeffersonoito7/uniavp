@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp } from '@/lib/whatsapp'
 
+export const dynamic = 'force-dynamic'
+
 // Vercel Cron: roda todo dia às 9h
 // vercel.json: { "crons": [{ "path": "/api/cron/inatividade", "schedule": "0 12 * * *" }] }
 
