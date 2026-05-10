@@ -84,6 +84,12 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
   const aulasConcluidas = trilha.filter(a => a.status === 'concluida').length
   const progressoGeral = totalAulas > 0 ? Math.round((aulasConcluidas / totalAulas) * 100) : 0
 
+  // Aula para "Continue assistindo": primeira disponível em ordem de módulo/aula
+  const aulaAtual = trilha
+    .slice()
+    .sort((a, b) => a.modulo_ordem !== b.modulo_ordem ? a.modulo_ordem - b.modulo_ordem : a.aula_ordem - b.aula_ordem)
+    .find(a => a.status === 'disponivel')
+
   const agora = new Date()
   function getStatusRecertificacao(item: TrilhaItem): boolean {
     if (item.status !== 'concluida') return false
@@ -146,7 +152,7 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
         <div style={{ maxWidth: 1140, margin: '0 auto', padding: 'clamp(16px, 4vw, 28px) clamp(12px, 4vw, 20px) 60px' }}>
 
           {/* ── HERO SAUDAÇÃO ── */}
-          <div style={{ marginBottom: 28 }}>
+          <div style={{ marginBottom: aulaAtual ? 20 : 28 }}>
             <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 4 }}>
               Olá, {aluno.nome.split(' ')[0]}! 👋
             </h1>
@@ -154,6 +160,70 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
               Continue sua jornada de formação em {siteConfig.nome}.
             </p>
           </div>
+
+          {/* ── CONTINUE ASSISTINDO ── */}
+          {aulaAtual && (
+            <div style={{
+              marginBottom: 28,
+              background: 'linear-gradient(135deg, rgba(30,58,138,0.6) 0%, rgba(17,24,39,0.9) 100%)',
+              border: '1px solid rgba(59,130,246,0.3)',
+              borderRadius: 16,
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'row',
+              minHeight: 140,
+            }}>
+              {/* Thumbnail */}
+              <div style={{ width: 220, flexShrink: 0, position: 'relative', background: 'linear-gradient(135deg, #1e3a8a, #1e40af)', overflow: 'hidden' }}
+                className="hide-mobile">
+                {aulaAtual.youtube_video_id && (
+                  <img
+                    src={`https://img.youtube.com/vi/${aulaAtual.youtube_video_id}/mqdefault.jpg`}
+                    alt={aulaAtual.aula_titulo}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
+                  />
+                )}
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#1e3a8a' }}>▶</div>
+                </div>
+              </div>
+
+              {/* Info */}
+              <div style={{ flex: 1, padding: '20px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ background: 'rgba(59,130,246,0.2)', color: '#60a5fa', borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
+                    ▶ Continue assistindo
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>{aulaAtual.modulo_titulo}</span>
+                </div>
+                <h2 style={{ fontSize: 18, fontWeight: 800, color: '#fff', lineHeight: 1.3, margin: 0 }}>
+                  {aulaAtual.aula_titulo}
+                </h2>
+                {aulaAtual.aula_descricao && (
+                  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', lineHeight: 1.5, margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {aulaAtual.aula_descricao}
+                  </p>
+                )}
+                <div style={{ marginTop: 4 }}>
+                  <Link href={`/aluno/${params.whatsapp}/aula/${aulaAtual.aula_id}`}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 8,
+                      background: 'linear-gradient(135deg, #1e40af, #3b82f6)',
+                      color: '#fff', textDecoration: 'none', borderRadius: 10,
+                      padding: '10px 22px', fontWeight: 700, fontSize: 14,
+                      boxShadow: '0 4px 16px rgba(59,130,246,0.4)',
+                    }}>
+                    ▶ Continuar agora
+                  </Link>
+                  {aulaAtual.duracao_minutos && (
+                    <span style={{ marginLeft: 12, fontSize: 12, color: 'var(--avp-text-dim)' }}>
+                      ⏱ {aulaAtual.duracao_minutos} min
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ── CARDS DE STATS + PROGRESSO ── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14, marginBottom: 24 }}>
