@@ -516,9 +516,18 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                 </div>
                 <div><label style={labelStyle}>Espera após aprovação (h) {form.liberacao_modo !== 'automatico' ? <span style={{ color: 'var(--avp-text-dim)', fontWeight: 400 }}>(após liberação manual)</span> : ''}</label><input type="number" style={inputStyle} value={form.espera_horas} onChange={e => setForm(p => ({ ...p, espera_horas: parseInt(e.target.value) || 0 }))} /></div>
                 <div><label style={labelStyle}>Duração (min)</label><input type="number" style={inputStyle} value={form.duracao_minutos} onChange={e => setForm(p => ({ ...p, duracao_minutos: e.target.value }))} placeholder="Ex: 12" /></div>
-                <div><label style={labelStyle}>Questões no quiz</label><input type="number" style={inputStyle} value={form.quiz_qtd_questoes} onChange={e => setForm(p => ({ ...p, quiz_qtd_questoes: parseInt(e.target.value) }))} min={1} max={20} /></div>
+                <div><label style={labelStyle}>Qtd. de questões no quiz</label><input type="number" style={inputStyle} value={form.quiz_qtd_questoes} onChange={e => setForm(p => ({ ...p, quiz_qtd_questoes: parseInt(e.target.value) }))} min={1} max={20} /></div>
                 <div><label style={labelStyle}>Aprovação mínima (%)</label><input type="number" style={inputStyle} value={form.quiz_aprovacao_minima} onChange={e => setForm(p => ({ ...p, quiz_aprovacao_minima: parseInt(e.target.value) }))} min={50} max={100} /></div>
                 <div><label style={labelStyle}>Validade (meses)</label><input type="number" style={inputStyle} value={form.validade_meses} onChange={e => setForm(p => ({ ...p, validade_meses: e.target.value }))} min={0} placeholder="0 = sem validade" /></div>
+                <div style={{ gridColumn: '1 / -1', background: '#3b82f615', border: '1px solid #3b82f640', borderRadius: 8, padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: 20, flexShrink: 0 }}>💡</span>
+                  <div>
+                    <p style={{ fontWeight: 700, fontSize: 13, color: '#60a5fa', marginBottom: 4 }}>As perguntas do quiz são adicionadas depois de salvar</p>
+                    <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>
+                      Aqui você define <strong style={{ color: 'var(--avp-text)' }}>quantas perguntas</strong> aparecem no quiz e a <strong style={{ color: 'var(--avp-text)' }}>nota mínima</strong> para aprovação. Após salvar a aula, aparecerá um botão <strong style={{ color: 'var(--avp-text)' }}>"Clique aqui para adicionar as perguntas"</strong> onde você escreve cada pergunta com as alternativas e marca a resposta correta.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -590,9 +599,15 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                     </div>
                     <div><label style={labelStyle}>Duração (min)</label><input type="number" style={inputStyle} value={editForm.duracao_minutos} onChange={e => setEditForm(p => ({ ...p, duracao_minutos: e.target.value }))} /></div>
                     <div><label style={labelStyle}>Espera após aprovação (horas)</label><input type="number" style={inputStyle} value={editForm.espera_horas} onChange={e => setEditForm(p => ({ ...p, espera_horas: parseInt(e.target.value) }))} /></div>
-                    <div><label style={labelStyle}>Questões no quiz</label><input type="number" style={inputStyle} value={editForm.quiz_qtd_questoes} onChange={e => setEditForm(p => ({ ...p, quiz_qtd_questoes: parseInt(e.target.value) }))} min={1} max={20} /></div>
+                    <div><label style={labelStyle}>Qtd. de questões no quiz</label><input type="number" style={inputStyle} value={editForm.quiz_qtd_questoes} onChange={e => setEditForm(p => ({ ...p, quiz_qtd_questoes: parseInt(e.target.value) }))} min={1} max={20} /></div>
                     <div><label style={labelStyle}>Aprovação mínima (%)</label><input type="number" style={inputStyle} value={editForm.quiz_aprovacao_minima} onChange={e => setEditForm(p => ({ ...p, quiz_aprovacao_minima: parseInt(e.target.value) }))} min={50} max={100} /></div>
                     <div><label style={labelStyle}>Validade (meses)</label><input type="number" style={inputStyle} value={editForm.validade_meses} onChange={e => setEditForm(p => ({ ...p, validade_meses: e.target.value }))} min={0} placeholder="0 = sem validade" /></div>
+                    <div style={{ gridColumn: '1 / -1', background: '#3b82f615', border: '1px solid #3b82f640', borderRadius: 8, padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                      <span style={{ fontSize: 18, flexShrink: 0 }}>💡</span>
+                      <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>
+                        As perguntas do quiz são editadas <strong style={{ color: '#60a5fa' }}>abaixo desta seção</strong>, no botão <strong style={{ color: 'var(--avp-text)' }}>"Clique aqui para adicionar as perguntas"</strong>. Cancele a edição para ver o botão.
+                      </p>
+                    </div>
                   </div>
                   <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 12 }}>
                     <label style={{ ...labelStyle, marginBottom: 8 }}>Capa <span style={{ color: 'var(--avp-green)', fontSize: 11, fontWeight: 700 }}>📐 1380×1080px</span></label>
