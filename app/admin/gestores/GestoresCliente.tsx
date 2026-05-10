@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import PhoneInput from '@/app/components/PhoneInput'
 
 type Gestor = {
   id: string
@@ -200,7 +201,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
               </div>
               <div>
                 <label style={labelStyle}>WhatsApp *</label>
-                <input style={inputStyle} value={form.whatsapp} onChange={e => setForm(p => ({ ...p, whatsapp: e.target.value.replace(/\D/g, '') }))} required placeholder="5511999999999" />
+                <PhoneInput value={form.whatsapp} onChange={v => setForm(p => ({ ...p, whatsapp: v }))} required style={{ background: 'var(--avp-black)', borderRadius: 8 }} />
               </div>
               <div>
                 <label style={labelStyle}>Senha inicial *</label>

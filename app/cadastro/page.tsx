@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import SiteLogoHeader from '@/app/components/SiteLogoHeader'
+import PhoneInput from '@/app/components/PhoneInput'
 
 export default function CadastroPage() {
   const router = useRouter()
@@ -96,14 +97,7 @@ export default function CadastroPage() {
             </div>
             <div>
               <label style={labelStyle}>WhatsApp *</label>
-              <input
-                type="tel"
-                placeholder="11999999999"
-                value={form.whatsapp}
-                onChange={e => setForm(p => ({ ...p, whatsapp: e.target.value.replace(/\D/g, '') }))}
-                required
-                style={inputStyle}
-              />
+              <PhoneInput value={form.whatsapp} onChange={v => setForm(p => ({ ...p, whatsapp: v }))} required />
             </div>
             <div>
               <label style={labelStyle}>E-mail *</label>
@@ -151,14 +145,7 @@ export default function CadastroPage() {
                 </div>
                 <div>
                   <label style={labelStyle}>WhatsApp do gestor *</label>
-                  <input
-                    type="tel"
-                    placeholder="11999999999"
-                    value={form.gestor_whatsapp}
-                    onChange={e => setForm(p => ({ ...p, gestor_whatsapp: e.target.value.replace(/\D/g, '') }))}
-                    required
-                    style={inputStyle}
-                  />
+                  <PhoneInput value={form.gestor_whatsapp} onChange={v => setForm(p => ({ ...p, gestor_whatsapp: v }))} required placeholder="WhatsApp do seu gestor" />
                 </div>
               </div>
             </div>

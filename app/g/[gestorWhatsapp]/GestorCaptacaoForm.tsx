@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import PhoneInput from '@/app/components/PhoneInput'
 
 type Gestor = { nome: string; whatsapp: string }
 
@@ -125,7 +126,7 @@ export default function GestorCaptacaoForm({ gestor, siteNome, logoUrl }: { gest
               </div>
               <div>
                 <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>WhatsApp *</label>
-                <input type="tel" placeholder="5587999999999" value={form.whatsapp} onChange={e => setForm(p => ({ ...p, whatsapp: e.target.value.replace(/\D/g, '') }))} required style={inp} />
+                <PhoneInput value={form.whatsapp} onChange={v => setForm(p => ({ ...p, whatsapp: v }))} required style={inp} />
               </div>
               <div>
                 <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>E-mail *</label>

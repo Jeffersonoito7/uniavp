@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import PhoneInput from '@/app/components/PhoneInput'
 
 type Consultor = { id: string; nome: string; whatsapp: string; email: string; status: string; created_at: string; gestor_nome?: string; gestor_whatsapp?: string; user_id: string }
 type Gestor = { id: string; nome: string; email: string; whatsapp: string; ativo: boolean; created_at: string; user_id: string }
@@ -244,7 +245,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <div><label style={lbl}>Nome *</label><input style={inp} value={editForm.nome} onChange={e => setEditForm(p => ({ ...p, nome: e.target.value }))} /></div>
-                <div><label style={lbl}>WhatsApp *</label><input style={inp} value={editForm.whatsapp} onChange={e => setEditForm(p => ({ ...p, whatsapp: e.target.value.replace(/\D/g, '') }))} /></div>
+                <div><label style={lbl}>WhatsApp *</label><PhoneInput value={editForm.whatsapp} onChange={v => setEditForm(p => ({ ...p, whatsapp: v }))} /></div>
                 <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>E-mail *</label><input type="email" style={inp} value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} /></div>
                 {editando.tipo === 'consultor' ? (
                   <>
@@ -258,7 +259,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
                       </select>
                     </div>
                     <div><label style={lbl}>Nome do Gestor</label><input style={inp} value={editForm.gestor_nome} onChange={e => setEditForm(p => ({ ...p, gestor_nome: e.target.value }))} /></div>
-                    <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>WhatsApp do Gestor</label><input style={inp} value={editForm.gestor_whatsapp} onChange={e => setEditForm(p => ({ ...p, gestor_whatsapp: e.target.value.replace(/\D/g, '') }))} /></div>
+                    <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>WhatsApp do Gestor</label><PhoneInput value={editForm.gestor_whatsapp} onChange={v => setEditForm(p => ({ ...p, gestor_whatsapp: v }))} placeholder="WhatsApp do gestor" /></div>
                   </>
                 ) : (
                   <div>

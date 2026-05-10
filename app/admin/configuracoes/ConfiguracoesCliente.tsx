@@ -1,5 +1,6 @@
 'use client'
 import { useRef, useState } from 'react'
+import PhoneInput from '@/app/components/PhoneInput'
 
 type Config = { chave: string; valor: string; descricao?: string }
 
@@ -278,7 +279,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       {/* OUTROS */}
       <div style={card}>
         <p style={{ fontWeight: 700, fontSize: 15 }}>⚙️ Outros</p>
-        <div><label style={lbl}>WhatsApp suporte</label><input style={inp} value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="11999999999" /></div>
+        <div><label style={lbl}>WhatsApp suporte</label><PhoneInput value={whatsapp} onChange={setWhatsapp} placeholder="suporte da empresa" /></div>
       </div>
 
       {/* CERTIFICADO */}

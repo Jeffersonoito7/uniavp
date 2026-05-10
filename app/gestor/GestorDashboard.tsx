@@ -4,6 +4,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import GestorLayout from './GestorLayout'
 import LiberacoesPendentes from './LiberacoesPendentes'
 import WhatsAppConectar from '@/app/components/WhatsAppConectar'
+import PhoneInput from '@/app/components/PhoneInput'
 import EventosWidget from '@/app/components/EventosWidget'
 import MuralNoticias from '@/app/components/MuralNoticias'
 
@@ -221,7 +222,7 @@ export default function GestorDashboard({
               </div>
               <div>
                 <label style={lbl}>WhatsApp *</label>
-                <input type="tel" placeholder="5587999999999" value={novoForm.whatsapp} onChange={e => setNovoForm(p => ({ ...p, whatsapp: e.target.value.replace(/\D/g, '') }))} required style={inp} />
+                <PhoneInput value={novoForm.whatsapp} onChange={v => setNovoForm(p => ({ ...p, whatsapp: v }))} required />
               </div>
               <div>
                 <label style={lbl}>E-mail *</label>

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import ImportarXLS from './ImportarXLS'
+import PhoneInput from '@/app/components/PhoneInput'
 
 type Consultor = {
   id: string
@@ -106,7 +107,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
                 </div>
                 <div>
                   <label style={labelStyle}>WhatsApp *</label>
-                  <input style={inputStyle} value={form.whatsapp} onChange={e => setForm(p => ({ ...p, whatsapp: e.target.value.replace(/\D/g, '') }))} required placeholder="5511999999999" />
+                  <PhoneInput value={form.whatsapp} onChange={v => setForm(p => ({ ...p, whatsapp: v }))} required style={{ background: 'var(--avp-black)', borderRadius: 8 }} />
                 </div>
                 <div>
                   <label style={labelStyle}>E-mail *</label>
@@ -122,7 +123,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
                 </div>
                 <div>
                   <label style={labelStyle}>WhatsApp do gestor *</label>
-                  <input style={inputStyle} value={form.gestor_whatsapp} onChange={e => setForm(p => ({ ...p, gestor_whatsapp: e.target.value.replace(/\D/g, '') }))} required placeholder="11999999999" />
+                  <PhoneInput value={form.gestor_whatsapp} onChange={v => setForm(p => ({ ...p, gestor_whatsapp: v }))} required style={{ background: 'var(--avp-black)', borderRadius: 8 }} />
                 </div>
               </div>
               {msg && (

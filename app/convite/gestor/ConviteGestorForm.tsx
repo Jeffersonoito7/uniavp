@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import PhoneInput from '@/app/components/PhoneInput'
 
 export default function ConviteGestorForm({ siteNome, logoUrl }: { siteNome: string; logoUrl: string }) {
   const router = useRouter()
@@ -74,7 +75,7 @@ export default function ConviteGestorForm({ siteNome, logoUrl }: { siteNome: str
             </div>
             <div>
               <label style={lbl}>WhatsApp *</label>
-              <input style={inp} value={form.whatsapp} onChange={e => setForm(p => ({ ...p, whatsapp: e.target.value }))} required placeholder="(11) 99999-9999" />
+              <PhoneInput value={form.whatsapp} onChange={v => setForm(p => ({ ...p, whatsapp: v }))} required />
             </div>
             <div>
               <label style={lbl}>Senha *</label>
