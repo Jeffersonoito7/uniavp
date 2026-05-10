@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import {
   LayoutDashboard, BookOpen, Users, ShieldCheck,
   Trophy, Settings, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper, Star,
-  Menu, X, ChevronLeft, ChevronRight
+  Menu, X, ChevronLeft, ChevronRight, UsersRound
 } from 'lucide-react'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import EventosWidget from '@/app/components/EventosWidget'
@@ -15,6 +15,7 @@ const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/crm', label: 'CRM', icon: BarChart3 },
   { href: '/admin/modulos', label: 'Módulos', icon: BookOpen },
+  { href: '/admin/usuarios', label: 'Usuários', icon: UsersRound },
   { href: '/admin/consultores', label: 'Consultores', icon: Users },
   { href: '/admin/gestores', label: 'Gestores', icon: UserCog },
   { href: '/admin/admins', label: 'Admins', icon: ShieldCheck },

@@ -55,21 +55,28 @@ export async function PUT(request: NextRequest) {
   const isAdmin = await verificarAdmin(adminClient, user.id)
   if (!isAdmin) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
-  const { id, ativo } = await request.json()
-  if (!id || ativo === undefined) {
-    return NextResponse.json({ error: 'Campos obrigatórios: id, ativo' }, { status: 400 })
-  }
+  const body = await request.json()
+  const { id, ativo, nome, email, whatsapp } = body
+  if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
+
+  const updates: Record<string, unknown> = {}
+  if (ativo !== undefined) updates.ativo = ativo
+  if (nome !== undefined) updates.nome = nome
+  if (email !== undefined) updates.email = email
+  if (whatsapp !== undefined) updates.whatsapp = whatsapp.replace?.(/\D/g, '') ?? whatsapp
 
   const { data: gestor, error } = await (adminClient.from('gestores') as any)
-    .update({ ativo })
-    .eq('id', id)
-    .select()
-    .single()
-
+    .update(updates).eq('id', id).select('*').single()
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  // Atualiza email no auth se mudou
+  if (email && gestor.user_id) {
+    await adminClient.auth.admin.updateUserById(gestor.user_id, { email }).catch(() => {})
+  }
 
   return NextResponse.json({ gestor })
 }
+
 
 export async function DELETE(request: NextRequest) {
   const supabase = await createClient()
