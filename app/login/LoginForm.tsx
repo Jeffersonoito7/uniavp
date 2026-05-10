@@ -27,26 +27,30 @@ export default function LoginForm({ logoUrl, siteNome, isDominioMaster }: { logo
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
-    const { data, error } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password })
-    if (error || !data.user) {
+    const { error } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password })
+    if (error) {
       setErro('E-mail ou senha incorretos.')
       setLoading(false)
       return
     }
-    const { data: adminData } = await supabase.from('admins').select('role').eq('user_id', data.user.id).eq('ativo', true).maybeSingle()
-    if (adminData) { window.location.href = '/admin'; return }
 
-    const { data: gestorData } = await supabase.from('gestores').select('id, ativo').eq('user_id', data.user.id).maybeSingle()
-    if (gestorData) {
-      if (gestorData.ativo) { window.location.href = '/gestor'; return }
-      await supabase.auth.signOut()
-      setErro('Sua conta de gestor ainda não foi ativada. Aguarde a aprovação da empresa.')
-      setLoading(false); return
+    // Usar API server-side para checar perfil (bypassa RLS do Supabase)
+    const res = await fetch('/api/auth/perfil')
+    const perfil = await res.json()
+
+    if (perfil.redirect) {
+      window.location.href = perfil.redirect
+      return
     }
 
-    const { data: alunoData } = await supabase.from('alunos').select('whatsapp').eq('user_id', data.user.id).maybeSingle()
-    if (alunoData?.whatsapp) { window.location.href = `/aluno/${alunoData.whatsapp}`; return }
+    if (perfil.tipo === 'gestor_inativo') {
+      await supabase.auth.signOut()
+      setErro('Sua conta de gestor ainda não foi ativada. Aguarde a aprovação da empresa.')
+      setLoading(false)
+      return
+    }
 
+    await supabase.auth.signOut()
     setErro('Usuário sem perfil cadastrado. Entre em contato com a empresa.')
     setLoading(false)
   }
