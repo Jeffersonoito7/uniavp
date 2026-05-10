@@ -15,8 +15,8 @@ export async function GET() {
 
   const wb = XLSX.utils.book_new()
   const ws = XLSX.utils.aoa_to_sheet([
-    ['nome', 'whatsapp', 'email', 'senha'],
-    ['João da Silva', '5587999990001', 'joao@email.com', 'Senha@123'],
+    ['nome', 'whatsapp', 'email', 'senha', 'gestor_nome', 'gestor_whatsapp'],
+    ['João da Silva', '5587999990001', 'joao@email.com', 'Senha@123', 'Nome do Gestor', '5587999990000'],
   ])
   XLSX.utils.book_append_sheet(wb, ws, 'Consultores')
   const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' })

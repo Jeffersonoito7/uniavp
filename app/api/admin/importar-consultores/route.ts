@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   const buffer = await file.arrayBuffer()
   const wb = XLSX.read(buffer, { type: 'array' })
   const ws = wb.Sheets[wb.SheetNames[0]]
-  const rows = XLSX.utils.sheet_to_json<{ nome: string; whatsapp: string; email: string; senha: string }>(ws)
+  const rows = XLSX.utils.sheet_to_json<{ nome: string; whatsapp: string; email: string; senha: string; gestor_nome?: string; gestor_whatsapp?: string }>(ws)
 
   let importados = 0
   const erros: { linha: number; motivo: string }[] = []
@@ -50,11 +50,16 @@ export async function POST(req: NextRequest) {
       continue
     }
 
+    const gestorNome = row.gestor_nome ? String(row.gestor_nome).trim() : null
+    const gestorWpp = row.gestor_whatsapp ? String(row.gestor_whatsapp).replace(/\D/g, '') : null
+
     const { error: alunoErr } = await (adminClient.from('alunos') as any).insert({
       user_id: authUser.user.id,
       nome,
       whatsapp,
       email,
+      ...(gestorNome && { gestor_nome: gestorNome }),
+      ...(gestorWpp && { gestor_whatsapp: gestorWpp }),
     })
 
     if (alunoErr) {
