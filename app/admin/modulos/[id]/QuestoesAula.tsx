@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 type Alternativa = { texto: string; correta: boolean }
 type Questao = { id: string; enunciado: string; alternativas: Alternativa[]; explicacao: string | null; ordem: number }
@@ -31,14 +31,20 @@ export default function QuestoesAula({ aulaId, aprovacaoMinima }: { aulaId: stri
     if (carregado) return
     const res = await fetch(`/api/admin/questoes?aula_id=${aulaId}`)
     const data = await res.json()
-    setQuestoes(data.questoes ?? [])
+    const qs = data.questoes ?? []
+    setQuestoes(qs)
     setCarregado(true)
+    // Abre automaticamente se ainda não tem questões
+    if (qs.length === 0) setAberto(true)
   }
 
   async function toggle() {
     if (!aberto) await carregar()
-    setAberto(a => !a)
+    else setAberto(false)
   }
+
+  // Carrega ao montar para detectar se tem questões (mostra alerta se não tiver)
+  useEffect(() => { carregar() }, [])
 
   function setCorreta(idx: number) {
     setAlts(prev => prev.map((a, i) => ({ ...a, correta: i === idx })))
@@ -109,11 +115,38 @@ export default function QuestoesAula({ aulaId, aprovacaoMinima }: { aulaId: stri
 
   const letraAlt = (i: number) => ['A', 'B', 'C', 'D', 'E', 'F'][i]
 
+  const semQuestoes = carregado && questoes.length === 0
+
   return (
-    <div style={{ marginTop: 12 }}>
+    <div style={{ marginTop: 14 }}>
+      {/* Alerta quando não tem questões */}
+      {semQuestoes && !aberto && (
+        <div style={{ background: '#f59e0b15', border: '1px solid #f59e0b50', borderRadius: 8, padding: '10px 14px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 18 }}>⚠️</span>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontWeight: 700, fontSize: 13, color: '#f59e0b', marginBottom: 2 }}>Quiz sem perguntas</p>
+            <p style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>Esta aula não tem questões. O aluno não conseguirá concluí-la.</p>
+          </div>
+        </div>
+      )}
+
       <button type="button" onClick={toggle}
-        style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 6, padding: '5px 12px', color: 'var(--avp-text-dim)', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
-        📝 Quiz {carregado ? `(${questoes.length} questão${questoes.length !== 1 ? 'ões' : ''})` : ''} · Mínimo: {aprovacaoMinima}%
+        style={{
+          background: semQuestoes ? '#f59e0b20' : '#02A15315',
+          border: `1px solid ${semQuestoes ? '#f59e0b60' : '#02A15350'}`,
+          borderRadius: 8, padding: '8px 16px',
+          color: semQuestoes ? '#f59e0b' : 'var(--avp-green)',
+          fontSize: 13, cursor: 'pointer', fontWeight: 700,
+          display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+        }}>
+        <span>{semQuestoes ? '⚠️' : '📝'}</span>
+        <span style={{ flex: 1, textAlign: 'left' }}>
+          {semQuestoes
+            ? 'Clique aqui para adicionar as perguntas do quiz'
+            : `Quiz: ${questoes.length} questão${questoes.length !== 1 ? 'ões' : ''} · Aprovação mínima: ${aprovacaoMinima}%`
+          }
+        </span>
+        <span style={{ fontSize: 12, opacity: 0.7 }}>{aberto ? '▲ fechar' : '▼ abrir'}</span>
       </button>
 
       {aberto && (
@@ -154,7 +187,14 @@ export default function QuestoesAula({ aulaId, aprovacaoMinima }: { aulaId: stri
           ))}
 
           {questoes.length === 0 && !adicionando && (
-            <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, textAlign: 'center', padding: '12px 0' }}>Nenhuma questão ainda. Adicione pelo menos uma para o quiz funcionar.</p>
+            <div style={{ textAlign: 'center', padding: '20px 0' }}>
+              <p style={{ fontSize: 32, marginBottom: 8 }}>📝</p>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 16 }}>Nenhuma pergunta ainda. Adicione pelo menos uma para o quiz funcionar.</p>
+              <button type="button" onClick={() => setAdicionando(true)}
+                style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>
+                + Adicionar primeira pergunta
+              </button>
+            </div>
           )}
 
           {/* Formulário adicionar/editar questão */}
