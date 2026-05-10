@@ -4,6 +4,7 @@ import { createServiceRoleClient } from '@/lib/supabase-server'
 import AdminLayout from './AdminLayout'
 import LinksCaptacao from './LinksCapatacao'
 import LiberacoesPendentes from './LiberacoesPendentes'
+import LinksTeste from './LinksTeste'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
@@ -23,6 +24,7 @@ export default async function AdminDashboard() {
         <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Dashboard</h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Visão geral da plataforma</p>
       </div>
+      <LinksTeste />
       <LiberacoesPendentes />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
         {[
