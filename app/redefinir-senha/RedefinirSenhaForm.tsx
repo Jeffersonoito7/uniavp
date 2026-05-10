@@ -23,7 +23,8 @@ export default function RedefinirSenhaForm({ logoUrl, siteNome }: { logoUrl: str
     // 1. Ouve mudanças de auth — Supabase processa ?code= e #access_token automaticamente
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (done.current) return
-      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
+      // Só aceita PASSWORD_RECOVERY — ignora sessões já existentes (admin, gestor, etc.)
+      if (event === 'PASSWORD_RECOVERY') {
         done.current = true
         window.history.replaceState({}, '', '/redefinir-senha')
         setPronto(true)
@@ -31,14 +32,15 @@ export default function RedefinirSenhaForm({ logoUrl, siteNome }: { logoUrl: str
       }
     })
 
-    // 2. Timeout de 8s — se nada aconteceu, link é inválido/expirado
+    // 2. Timeout — se PASSWORD_RECOVERY não disparou, provavelmente foi aberto
+    //    em browser diferente do que solicitou (PKCE verifier não encontrado)
     const timeout = setTimeout(() => {
       if (done.current) return
       done.current = true
       subscription.unsubscribe()
-      setErro('Link inválido ou expirado. Solicite um novo.')
+      setErro('browser_diferente')
       setPronto(true)
-    }, 8000)
+    }, 6000)
 
     return () => {
       clearTimeout(timeout)
@@ -97,14 +99,34 @@ export default function RedefinirSenhaForm({ logoUrl, siteNome }: { logoUrl: str
             </div>
           )}
 
-          {/* Link inválido */}
+          {/* Link inválido ou browser diferente */}
           {pronto && erro && !loading && (
             <div style={{ textAlign: 'center', padding: '8px 0' }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
-              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 12 }}>Link inválido ou expirado</h2>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
-                Este link já foi usado ou expirou.<br />Solicite um novo link para continuar.
-              </p>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>{erro === 'browser_diferente' ? '📱' : '⚠️'}</div>
+              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 12 }}>
+                {erro === 'browser_diferente' ? 'Abra no mesmo navegador' : 'Link inválido ou expirado'}
+              </h2>
+              {erro === 'browser_diferente' ? (
+                <div>
+                  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 16, lineHeight: 1.7 }}>
+                    O link de recuperação precisa ser aberto<br />
+                    <strong style={{ color: 'var(--avp-text)' }}>no mesmo navegador e dispositivo</strong><br />
+                    onde você solicitou a recuperação.
+                  </p>
+                  <div style={{ background: '#f59e0b15', border: '1px solid #f59e0b40', borderRadius: 10, padding: '12px 14px', marginBottom: 20, textAlign: 'left' }}>
+                    <p style={{ fontSize: 13, color: '#f59e0b', lineHeight: 1.6 }}>
+                      <strong>Como resolver:</strong><br />
+                      1. Volte ao navegador onde pediu a recuperação<br />
+                      2. Clique no link do e-mail nesse mesmo navegador<br />
+                      3. Ou solicite um novo link abaixo
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
+                  Este link já foi usado ou expirou.<br />Solicite um novo link para continuar.
+                </p>
+              )}
               <a href="/recuperar-senha"
                 style={{ display: 'block', background: 'var(--grad-brand)', color: '#fff', borderRadius: 10, padding: '12px', fontWeight: 700, fontSize: 15, textDecoration: 'none', textAlign: 'center' }}>
                 Solicitar novo link
