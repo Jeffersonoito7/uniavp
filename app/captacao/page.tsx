@@ -62,12 +62,6 @@ export default function CaptacaoPage() {
     },
   ]
 
-  const numeros = [
-    { valor: '500+', label: 'Consultores formados' },
-    { valor: '98%', label: 'Taxa de aprovação' },
-    { valor: '3 semanas', label: 'Tempo médio de formação' },
-    { valor: '100%', label: 'Online e gratuito' },
-  ]
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', fontFamily: 'Inter, sans-serif', color: 'var(--avp-text)' }}>
@@ -99,17 +93,6 @@ export default function CaptacaoPage() {
         </div>
       </section>
 
-      {/* NÚMEROS */}
-      <section style={{ padding: '60px 24px', background: 'var(--avp-card)', borderTop: '1px solid var(--avp-border)', borderBottom: '1px solid var(--avp-border)' }}>
-        <div style={{ maxWidth: 960, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 32, textAlign: 'center' }}>
-          {numeros.map(n => (
-            <div key={n.valor}>
-              <div style={{ fontSize: 36, fontWeight: 900, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 6 }}>{n.valor}</div>
-              <div style={{ fontSize: 14, color: 'var(--avp-text-dim)', fontWeight: 500 }}>{n.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* BENEFÍCIOS */}
       <section style={{ padding: '80px 24px', maxWidth: 1000, margin: '0 auto' }}>
