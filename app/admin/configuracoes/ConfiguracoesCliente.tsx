@@ -8,9 +8,7 @@ function LogoCard({ label, campo, value, desc, rec, fileRef, uploading, onUpload
   fileRef: React.RefObject<HTMLInputElement>; uploading: string
   onUpload: (campo: string, file: File) => void
 }) {
-  // Mostra preview só para base64 ou blob URL (locais) — ignora URLs http antigas
-  const isLocal = value?.startsWith('data:') || value?.startsWith('blob:')
-  const temImagem = isLocal
+  const temImagem = !!value && (value.startsWith('data:') || value.startsWith('blob:') || value.startsWith('http'))
 
   return (
     <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -24,7 +22,7 @@ function LogoCard({ label, campo, value, desc, rec, fileRef, uploading, onUpload
           <img src={value} alt={label} style={{ maxHeight: 74, maxWidth: '100%', objectFit: 'contain' }} />
         ) : (
           <span style={{ color: 'var(--avp-text-dim)', fontSize: 12, textAlign: 'center' }}>
-            {value && !isLocal ? '📤 Suba a imagem novamente' : `Nenhuma imagem · ideal: ${rec}`}
+            {`Nenhuma imagem · ideal: ${rec}`}
           </span>
         )}
       </div>
@@ -106,89 +104,83 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
     setUploading(campo)
     setMsg('')
 
-    if (campo !== 'certUrl') {
-      // Logos: salva como base64 direto no banco (sem depender de Storage público)
-      if (file.size > 800 * 1024) {
-        setMsg('❌ Logo muito grande. Use uma imagem de até 800KB.')
-        setUploading('')
-        return
-      }
-      const reader = new FileReader()
-      reader.onload = async ev => {
-        const base64 = ev.target?.result as string
-        setters[campo]?.(base64)
-        const chave = campoToChave[campo]
-        if (chave) {
-          try {
-            const res = await fetch('/api/admin/configuracoes', {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify([{ chave, valor: base64 }]),
-            })
-            setMsg(res.ok ? '✅ Logo salva!' : '❌ Erro ao salvar.')
-          } catch (e: any) {
-            setMsg(`❌ Erro: ${e.message}`)
-          }
-        }
-        setUploading('')
-      }
-      reader.onerror = () => { setMsg('❌ Erro ao ler o arquivo'); setUploading('') }
-      reader.readAsDataURL(file)
+    const isCert = campo === 'certUrl'
+    const maxSize = isCert ? 8 * 1024 * 1024 : 2 * 1024 * 1024
+
+    if (file.size > maxSize) {
+      setMsg(`❌ Arquivo muito grande (${(file.size / 1024 / 1024).toFixed(1)}MB). Limite: ${isCert ? '8MB' : '2MB'}.`)
+      setUploading('')
       return
     }
 
-    // Certificado: blob URL para preview imediato (não bota base64 gigante no state)
-    // depois lê como base64 para salvar no banco
+    // Preview imediato com blob URL
     const blobUrl = URL.createObjectURL(file)
-    setCertUrl(blobUrl)
-    setMsg('⏳ Lendo arquivo...')
+    if (isCert) setCertUrl(blobUrl)
+    else setters[campo]?.(blobUrl)
+    setMsg('⏳ Enviando para storage...')
 
-    const certReader = new FileReader()
-    certReader.onload = async ev => {
-      const base64 = ev.target?.result as string
-      if (file.size > 8 * 1024 * 1024) {
-        setMsg(`⚠️ Arquivo muito grande (${(file.size / 1024 / 1024).toFixed(1)}MB). Otimize o PNG para menos de 8MB.`)
+    try {
+      const ext = file.name.split('.').pop() || (file.type.includes('png') ? 'png' : 'jpg')
+      const filename = isCert ? `cert_template.${ext}` : `${campoToChave[campo] || campo}.${ext}`
+
+      const form = new FormData()
+      form.append('file', file)
+      form.append('bucket', 'logos')
+      form.append('path', filename)
+
+      const res = await fetch('/api/admin/upload', { method: 'POST', body: form })
+      const data = await res.json()
+
+      if (!res.ok || !data.url) {
+        setMsg(`❌ Erro no upload: ${data.error ?? 'tente novamente'}`)
         setUploading('')
         return
       }
-      try {
-        const res = await fetch('/api/admin/configuracoes', {
+
+      // Atualiza preview com URL permanente
+      const publicUrl = data.url
+      if (isCert) setCertUrl(publicUrl)
+      else setters[campo]?.(publicUrl)
+
+      // Salva URL no banco
+      const chave = isCert ? 'certificado_template_url' : campoToChave[campo]
+      if (chave) {
+        const saveRes = await fetch('/api/admin/configuracoes', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify([{ chave: 'certificado_template_url', valor: base64 }]),
+          body: JSON.stringify([{ chave, valor: publicUrl }]),
         })
-        if (res.ok) {
-          setCertUrl(base64) // troca blob por base64 persistido
-          setMsg('✅ Template do certificado salvo!')
-        } else {
-          setMsg('❌ Erro ao salvar — arquivo muito grande, otimize o PNG.')
-        }
-      } catch (e: any) {
-        setMsg(`❌ Erro: ${e.message}`)
+        setMsg(saveRes.ok ? '✅ Imagem salva!' : '❌ Upload ok mas erro ao salvar URL.')
+      } else {
+        setMsg('✅ Upload feito!')
       }
-      setUploading('')
+    } catch (e: any) {
+      setMsg(`❌ Erro: ${e.message}`)
     }
-    certReader.onerror = () => { setMsg('❌ Erro ao ler o arquivo'); setUploading('') }
-    certReader.readAsDataURL(file)
+    setUploading('')
   }
 
   async function salvar() {
     setSalvando(true)
     setMsg('')
     try {
+      // Não salvar logos/cert no botão Salvar — eles são salvos individualmente no upload
+      // Apenas salvar se forem URLs (não base64)
+      const urlSafe = (v: string) => v && !v.startsWith('data:') && !v.startsWith('blob:') ? v : undefined
+
       const body = [
         { chave: 'site_nome', valor: nome },
         { chave: 'site_slogan', valor: slogan },
-        { chave: 'site_logo_url', valor: logoUrl },
-        { chave: 'logo_menu_url', valor: logoMenuUrl },
-        { chave: 'logo_pagina_url', valor: logoPaginaUrl },
-        { chave: 'logo_favicon_url', valor: logoFaviconUrl },
-        { chave: 'logo_mobile_url', valor: logoMobileUrl },
+        ...(urlSafe(logoUrl) ? [{ chave: 'site_logo_url', valor: logoUrl }] : []),
+        ...(urlSafe(logoMenuUrl) ? [{ chave: 'logo_menu_url', valor: logoMenuUrl }] : []),
+        ...(urlSafe(logoPaginaUrl) ? [{ chave: 'logo_pagina_url', valor: logoPaginaUrl }] : []),
+        ...(urlSafe(logoFaviconUrl) ? [{ chave: 'logo_favicon_url', valor: logoFaviconUrl }] : []),
+        ...(urlSafe(logoMobileUrl) ? [{ chave: 'logo_mobile_url', valor: logoMobileUrl }] : []),
         { chave: 'site_cor_primaria', valor: corPrimaria },
         { chave: 'site_cor_secundaria', valor: corSecundaria },
         { chave: 'whatsapp_suporte', valor: whatsapp },
         { chave: 'dominio_customizado', valor: dominio },
-        { chave: 'certificado_template_url', valor: certUrl },
+        ...(urlSafe(certUrl) ? [{ chave: 'certificado_template_url', valor: certUrl }] : []),
         { chave: 'certificado_nome_x', valor: certNomeX },
         { chave: 'certificado_nome_y', valor: certNomeY },
         { chave: 'certificado_nome_tamanho', valor: certNomeTamanho },
