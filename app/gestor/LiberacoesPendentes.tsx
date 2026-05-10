@@ -23,12 +23,12 @@ export default function LiberacoesPendentes() {
 
   async function liberar(progresso_id: string) {
     setLiberando(progresso_id)
-    await fetch('/api/gestor/liberar-aula', {
+    const res = await fetch('/api/gestor/liberar-aula', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ progresso_id, espera_horas: 0 }),
     })
-    setPendentes(prev => prev.filter(p => p.id !== progresso_id))
+    if (res.ok) setPendentes(prev => prev.filter(p => p.id !== progresso_id))
     setLiberando(null)
   }
 
