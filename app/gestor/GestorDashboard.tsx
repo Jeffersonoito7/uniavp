@@ -48,6 +48,9 @@ export default function GestorDashboard({
   const [linkCopiado, setLinkCopiado] = useState(false)
   const [eventos, setEventos] = useState<Evento[]>([])
   const [eventosCarregados, setEventosCarregados] = useState(false)
+  const [modulosAulas, setModulosAulas] = useState<{ id: string; titulo: string; ordem: number; aulas: { id: string; titulo: string; descricao: string | null; youtube_video_id: string; duracao_minutos: number | null; ordem: number }[] }[]>([])
+  const [aulasCarregadas, setAulasCarregadas] = useState(false)
+  const [aulaAberta, setAulaAberta] = useState<{ id: string; titulo: string; youtube_video_id: string; descricao: string | null } | null>(null)
   const [eventoForm, setEventoForm] = useState({ titulo: '', descricao: '', cidade: '', data_hora: '', notificar: true })
   const [salvandoEvento, setSalvandoEvento] = useState(false)
   const [showEvento, setShowEvento] = useState(false)
@@ -93,6 +96,20 @@ export default function GestorDashboard({
     setEventosCarregados(true)
   }
 
+  async function carregarAulas() {
+    if (aulasCarregadas) return
+    const res = await fetch('/api/gestor/aulas')
+    const data = await res.json()
+    const mods = (data.modulos ?? []) as { id: string; titulo: string; ordem: number }[]
+    const auls = (data.aulas ?? []) as { id: string; titulo: string; descricao: string | null; youtube_video_id: string; duracao_minutos: number | null; ordem: number; modulo_id: string }[]
+    const agrupado = mods.map(m => ({
+      ...m,
+      aulas: auls.filter(a => a.modulo_id === m.id).sort((a, b) => a.ordem - b.ordem),
+    }))
+    setModulosAulas(agrupado)
+    setAulasCarregadas(true)
+  }
+
   async function salvarEvento(e: React.FormEvent) {
     e.preventDefault()
     setSalvandoEvento(true)
@@ -122,6 +139,7 @@ export default function GestorDashboard({
   function handleSetAba(id: string) {
     setAba(id)
     if (id === 'eventos') carregarEventos()
+    if (id === 'aulas') carregarAulas()
   }
 
   const inp: React.CSSProperties = { width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' }
@@ -214,6 +232,94 @@ export default function GestorDashboard({
               </table>
             </div>
           </div>
+        </>
+      )}
+
+      {/* ── AULAS ── */}
+      {aba === 'aulas' && (
+        <>
+          <div style={{ marginBottom: 24 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 800 }}>Aulas</h1>
+            <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Assista a todos os módulos e aulas da plataforma</p>
+          </div>
+
+          {!aulasCarregadas && (
+            <p style={{ color: 'var(--avp-text-dim)', textAlign: 'center', padding: 48 }}>Carregando aulas...</p>
+          )}
+
+          {modulosAulas.map(mod => (
+            <div key={mod.id} style={{ marginBottom: 36 }}>
+              <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 16, paddingBottom: 10, borderBottom: '1px solid var(--avp-border)' }}>
+                {mod.titulo}
+              </h2>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                {mod.aulas.map(aula => (
+                  <div key={aula.id}
+                    onClick={() => setAulaAberta(aula)}
+                    style={{ width: 200, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.15s, border-color 0.15s' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--avp-green)' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--avp-border)' }}
+                  >
+                    <div style={{ height: 100, background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, position: 'relative' }}>
+                      {aula.youtube_video_id
+                        ? <img src={`https://img.youtube.com/vi/${aula.youtube_video_id}/mqdefault.jpg`} alt={aula.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                        : '▶️'}
+                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>▶</div>
+                      </div>
+                    </div>
+                    <div style={{ padding: '10px 12px' }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.3, marginBottom: 4 }}>{aula.titulo}</p>
+                      {aula.duracao_minutos && (
+                        <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>⏱ {aula.duracao_minutos} min</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {aulasCarregadas && modulosAulas.length === 0 && (
+            <div style={{ textAlign: 'center', padding: 64, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', borderRadius: 12, border: '1px solid var(--avp-border)' }}>
+              <p style={{ fontSize: 40, marginBottom: 12 }}>📚</p>
+              <p>Nenhuma aula publicada ainda.</p>
+            </div>
+          )}
+
+          {/* Modal player aula */}
+          {aulaAberta && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: 16 }}
+              onClick={e => e.target === e.currentTarget && setAulaAberta(null)}>
+              <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, width: '100%', maxWidth: 860, maxHeight: '90vh', overflow: 'auto' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--avp-border)' }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700 }}>{aulaAberta.titulo}</h3>
+                  <button onClick={() => setAulaAberta(null)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 24 }}>×</button>
+                </div>
+                <div style={{ padding: '0' }}>
+                  {aulaAberta.youtube_video_id ? (
+                    <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+                      <iframe
+                        src={`https://www.youtube.com/embed/${aulaAberta.youtube_video_id}?autoplay=1&rel=0`}
+                        title={aulaAberta.titulo}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: '0 0 0 0' }}
+                      />
+                    </div>
+                  ) : (
+                    <div style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Vídeo não disponível</div>
+                  )}
+                  {aulaAberta.descricao && (
+                    <div style={{ padding: '16px 20px' }}>
+                      <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, lineHeight: 1.6 }}>{aulaAberta.descricao}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
 
