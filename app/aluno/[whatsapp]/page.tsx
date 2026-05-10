@@ -36,7 +36,7 @@ function calcularNivel(pontos: number) {
 export default async function AlunoHomePage({ params }: { params: { whatsapp: string } }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/consultor/login')
 
   const [adminClient, siteConfig] = [createServiceRoleClient(), await getSiteConfig()]
   const { data: aluno } = await (adminClient.from('alunos') as any)
@@ -54,7 +54,7 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
     ])
   const certMap: Record<string, string> = {}
   for (const r of certConfigs ?? []) { try { certMap[r.chave] = JSON.parse(r.valor) } catch { certMap[r.chave] = r.valor } }
-  if (!aluno) redirect('/login')
+  if (!aluno) redirect('/consultor/login')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
   const { data: trilhaRaw } = await (adminClient as any).rpc('obter_trilha_aluno', { p_aluno_id: aluno.id })

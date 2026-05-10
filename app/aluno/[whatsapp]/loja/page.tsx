@@ -6,11 +6,11 @@ import LojaCliente from './LojaCliente'
 export default async function LojaPage({ params }: { params: { whatsapp: string } }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/consultor/login')
 
   const adminClient = createServiceRoleClient()
   const { data: aluno } = await (adminClient.from('alunos') as any).select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
-  if (!aluno) redirect('/login')
+  if (!aluno) redirect('/consultor/login')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}/loja`)
 
   const { data: pontosRows } = await (adminClient.from('aluno_pontos') as any).select('quantidade').eq('aluno_id', aluno.id)

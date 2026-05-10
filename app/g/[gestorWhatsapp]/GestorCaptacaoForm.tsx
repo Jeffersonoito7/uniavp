@@ -33,7 +33,7 @@ export default function GestorCaptacaoForm({ gestor, siteNome, logoUrl }: { gest
     const data = await res.json()
     if (data.ok || data.aluno) {
       setSucesso('Conta criada! Redirecionando...')
-      setTimeout(() => router.push('/login'), 1800)
+      setTimeout(() => router.push('/consultor/login'), 1800)
     } else {
       setErro(data.erro ?? data.error ?? 'Erro ao criar conta.')
     }
@@ -117,7 +117,7 @@ export default function GestorCaptacaoForm({ gestor, siteNome, logoUrl }: { gest
             </button>
           </form>
           <p style={{ textAlign: 'center', color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 20 }}>
-            Já tem conta? <a href="/login" style={{ color: 'var(--avp-green)', textDecoration: 'none', fontWeight: 600 }}>Entrar aqui</a>
+            Já tem conta? <a href="/consultor/login" style={{ color: 'var(--avp-green)', textDecoration: 'none', fontWeight: 600 }}>Entrar aqui</a>
           </p>
         </div>
       </section>

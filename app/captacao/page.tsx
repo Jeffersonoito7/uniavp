@@ -25,7 +25,7 @@ export default function CaptacaoPage() {
     const data = await res.json()
     if (data.ok || data.aluno) {
       setSucesso('Conta criada com sucesso! Redirecionando...')
-      setTimeout(() => router.push('/login'), 1800)
+      setTimeout(() => router.push('/consultor/login'), 1800)
     } else {
       setErro(data.erro ?? data.error ?? 'Erro ao criar conta.')
     }
@@ -86,7 +86,7 @@ export default function CaptacaoPage() {
             <button onClick={scrollToForm} style={{ background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 12, padding: '16px 40px', fontWeight: 800, fontSize: 17, cursor: 'pointer', boxShadow: '0 8px 32px rgba(51,54,135,0.4)', letterSpacing: 0.5 }}>
               🚀 Quero me formar agora
             </button>
-            <a href="/login" style={{ background: 'transparent', color: 'var(--avp-text-dim)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '16px 28px', fontWeight: 600, fontSize: 15, cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+            <a href="/consultor/login" style={{ background: 'transparent', color: 'var(--avp-text-dim)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '16px 28px', fontWeight: 600, fontSize: 15, cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
               Já tenho conta
             </a>
           </div>
@@ -167,7 +167,7 @@ export default function CaptacaoPage() {
             </button>
           </form>
           <p style={{ textAlign: 'center', color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 20 }}>
-            Já tem conta? <a href="/login" style={{ color: 'var(--avp-green)', textDecoration: 'none', fontWeight: 600 }}>Entrar aqui</a>
+            Já tem conta? <a href="/consultor/login" style={{ color: 'var(--avp-green)', textDecoration: 'none', fontWeight: 600 }}>Entrar aqui</a>
           </p>
         </div>
       </section>
