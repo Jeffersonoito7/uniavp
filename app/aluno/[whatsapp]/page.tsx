@@ -101,38 +101,30 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
   return (
     <>
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
-      <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 16px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
         {siteConfig.logoUrl && !siteConfig.logoUrl.startsWith('/') ? (
           <img src={siteConfig.logoUrl} alt={siteConfig.nome} className="logo-site"
-            style={{ height: 36, objectFit: 'contain', display: 'block' }} />
+            style={{ height: 32, objectFit: 'contain', display: 'block' }} />
         ) : (
-          <span style={{ fontWeight: 800, fontSize: 20, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          <span style={{ fontWeight: 800, fontSize: 18, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             {siteConfig.nome}
           </span>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Link href={`/aluno/${params.whatsapp}/forum`} style={{ color: 'var(--avp-text-dim)', fontSize: 14, textDecoration: 'none', fontWeight: 500 }}>
-            Fórum
-          </Link>
-          <Link href={`/aluno/${params.whatsapp}/loja`} style={{ color: 'var(--avp-text-dim)', fontSize: 14, textDecoration: 'none', fontWeight: 500 }}>
-            Loja
-          </Link>
-          <Link href={`/aluno/${params.whatsapp}/artes`} style={{ color: 'var(--avp-text-dim)', fontSize: 14, textDecoration: 'none', fontWeight: 500 }}>
-            🎨 Artes
-          </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Links visíveis só no desktop */}
+          <Link href={`/aluno/${params.whatsapp}/forum`} className="hide-mobile" style={{ color: 'var(--avp-text-dim)', fontSize: 14, textDecoration: 'none', fontWeight: 500 }}>Fórum</Link>
+          <Link href={`/aluno/${params.whatsapp}/loja`} className="hide-mobile" style={{ color: 'var(--avp-text-dim)', fontSize: 14, textDecoration: 'none', fontWeight: 500 }}>Loja</Link>
+          <Link href={`/aluno/${params.whatsapp}/artes`} className="hide-mobile" style={{ color: 'var(--avp-text-dim)', fontSize: 14, textDecoration: 'none', fontWeight: 500 }}>🎨 Artes</Link>
           <MuralNoticias />
           <EventosWidget />
-          <a href={`/aluno/${params.whatsapp}/perfil`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none' }}>
-            👤 Meu Perfil
+          <a href={`/aluno/${params.whatsapp}/perfil`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, flexShrink: 0 }}>
+              {aluno.nome.charAt(0).toUpperCase()}
+            </div>
+            <span className="hide-mobile" style={{ fontSize: 14, fontWeight: 600 }}>{aluno.nome.split(' ')[0]}</span>
           </a>
           <ThemeToggle />
           <LogoutButton />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14 }}>
-              {aluno.nome.charAt(0).toUpperCase()}
-            </div>
-            <span style={{ fontSize: 14, fontWeight: 600 }}>{aluno.nome.split(' ')[0]}</span>
-          </div>
         </div>
       </header>
 

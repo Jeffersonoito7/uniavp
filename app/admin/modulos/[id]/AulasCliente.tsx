@@ -1,10 +1,12 @@
 'use client'
 import { useState, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import QuestoesAula from './QuestoesAula'
 
 type Aula = {
   id: string
   titulo: string
+  descricao: string | null
   ordem: number
   youtube_video_id: string
   duracao_minutos: number | null
@@ -17,6 +19,17 @@ type Aula = {
   ao_vivo_plataforma: string | null
   validade_meses: number | null
   capa_url: string | null
+  video_url: string | null
+  liberacao_modo: 'automatico' | 'manual_gestor' | 'manual_admin'
+}
+
+function extrairIdYoutube(input: string): string {
+  if (!input) return ''
+  const match = input.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
+  if (match) return match[1]
+  // Se já é um ID direto (11 chars alfanuméricos)
+  if (/^[a-zA-Z0-9_-]{11}$/.test(input.trim())) return input.trim()
+  return ''
 }
 
 type Arquivo = { id: string; nome: string; url: string }
@@ -146,11 +159,16 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
   const [criando, setCriando] = useState(false)
   const [salvando, setSalvando] = useState(false)
   const [aoVivo, setAoVivo] = useState(false)
+  const [tipoVideo, setTipoVideo] = useState<'youtube' | 'arquivo' | 'url'>('youtube')
+  const [videoUrl, setVideoUrl] = useState('')
+  const [uploadandoVideo, setUploadandoVideo] = useState(false)
+  const [progressoVideo, setProgressoVideo] = useState(0)
+  const videoFileRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
-    titulo: '', youtube_video_id: '', duracao_minutos: '',
-    quiz_qtd_questoes: 5, quiz_aprovacao_minima: 80, espera_horas: 24,
+    titulo: '', descricao: '', youtube_url: '', duracao_minutos: '',
+    quiz_qtd_questoes: 5, quiz_aprovacao_minima: 80, espera_horas: 0,
     ao_vivo_link: '', ao_vivo_data: '', ao_vivo_plataforma: 'zoom',
-    validade_meses: '',
+    validade_meses: '', liberacao_modo: 'automatico' as 'automatico' | 'manual_gestor' | 'manual_admin',
   })
   const [capaPreview, setCapaPreview] = useState<string | null>(null)
   const [capaBase64, setCapaBase64] = useState<string | null>(null)
@@ -160,11 +178,17 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
   // Edição de aula
   const [editandoId, setEditandoId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<{
-    titulo: string; youtube_video_id: string; duracao_minutos: string;
+    titulo: string; descricao: string; youtube_url: string; duracao_minutos: string;
     quiz_qtd_questoes: number; quiz_aprovacao_minima: number; espera_horas: number;
     validade_meses: string; ao_vivo_link: string; ao_vivo_data: string; ao_vivo_plataforma: string;
+    liberacao_modo: 'automatico' | 'manual_gestor' | 'manual_admin';
     capaPreview: string | null; capaBase64: string | null;
-  }>({ titulo: '', youtube_video_id: '', duracao_minutos: '', quiz_qtd_questoes: 5, quiz_aprovacao_minima: 80, espera_horas: 24, validade_meses: '', ao_vivo_link: '', ao_vivo_data: '', ao_vivo_plataforma: 'zoom', capaPreview: null, capaBase64: null })
+  }>({ titulo: '', descricao: '', youtube_url: '', duracao_minutos: '', quiz_qtd_questoes: 5, quiz_aprovacao_minima: 80, espera_horas: 0, validade_meses: '', ao_vivo_link: '', ao_vivo_data: '', ao_vivo_plataforma: 'zoom', liberacao_modo: 'automatico', capaPreview: null, capaBase64: null })
+  const [editTipoVideo, setEditTipoVideo] = useState<'youtube' | 'arquivo' | 'url'>('youtube')
+  const [editVideoUrl, setEditVideoUrl] = useState('')
+  const [editUploadandoVideo, setEditUploadandoVideo] = useState(false)
+  const [editProgressoVideo, setEditProgressoVideo] = useState(0)
+  const editVideoFileRef = useRef<HTMLInputElement>(null)
   const [salvandoEdit, setSalvandoEdit] = useState(false)
   const editCapaRef = useRef<HTMLInputElement>(null)
 
@@ -184,11 +208,72 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
     reader.readAsDataURL(file)
   }
 
+  async function uploadVideo(file: File) {
+    setUploadandoVideo(true); setProgressoVideo(0); setMsg('')
+    try {
+      // 1. Pede URL assinada ao servidor
+      const res = await fetch('/api/admin/video-upload-url', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: file.name }),
+      })
+      const { signedUrl, publicUrl, error } = await res.json()
+      if (!signedUrl) { setMsg(`Erro: ${error || 'Não foi possível gerar URL de upload'}`); setUploadandoVideo(false); return }
+
+      // 2. Upload direto para o Supabase (sem passar pelo Vercel)
+      const xhr = new XMLHttpRequest()
+      xhr.upload.onprogress = e => { if (e.lengthComputable) setProgressoVideo(Math.round(e.loaded / e.total * 100)) }
+      xhr.open('PUT', signedUrl)
+      xhr.setRequestHeader('Content-Type', file.type)
+      await new Promise<void>((resolve, reject) => {
+        xhr.onload = () => xhr.status < 300 ? resolve() : reject(new Error(`HTTP ${xhr.status}`))
+        xhr.onerror = () => reject(new Error('Erro de rede'))
+        xhr.send(file)
+      })
+
+      setVideoUrl(publicUrl)
+      setMsg('✅ Vídeo enviado! Clique em Criar Aula para salvar.')
+    } catch (e: any) {
+      setMsg(`Erro no upload: ${e.message}`)
+    }
+    setUploadandoVideo(false)
+  }
+
+  async function uploadVideoEdit(file: File) {
+    setEditUploadandoVideo(true); setEditProgressoVideo(0)
+    try {
+      const res = await fetch('/api/admin/video-upload-url', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: file.name }),
+      })
+      const { signedUrl, publicUrl, error } = await res.json()
+      if (!signedUrl) { setMsg(`Erro: ${error || 'Não foi possível gerar URL de upload'}`); setEditUploadandoVideo(false); return }
+      const xhr = new XMLHttpRequest()
+      xhr.upload.onprogress = e => { if (e.lengthComputable) setEditProgressoVideo(Math.round(e.loaded / e.total * 100)) }
+      xhr.open('PUT', signedUrl)
+      xhr.setRequestHeader('Content-Type', file.type)
+      await new Promise<void>((resolve, reject) => {
+        xhr.onload = () => xhr.status < 300 ? resolve() : reject(new Error(`HTTP ${xhr.status}`))
+        xhr.onerror = () => reject(new Error('Erro de rede'))
+        xhr.send(file)
+      })
+      setEditVideoUrl(publicUrl)
+      setMsg('✅ Vídeo enviado! Salve a aula para confirmar.')
+    } catch (e: any) {
+      setMsg(`Erro no upload: ${e.message}`)
+    }
+    setEditUploadandoVideo(false)
+  }
+
   function abrirEdicaoAula(aula: Aula) {
     const temCapa = aula.capa_url?.startsWith('data:') || aula.capa_url?.startsWith('blob:')
+    const tipo: 'youtube' | 'arquivo' | 'url' = aula.youtube_video_id ? 'youtube' : aula.video_url ? 'url' : 'youtube'
+    setEditTipoVideo(tipo)
+    setEditVideoUrl(aula.video_url ?? '')
     setEditandoId(aula.id)
     setEditForm({
-      titulo: aula.titulo, youtube_video_id: aula.youtube_video_id,
+      titulo: aula.titulo, descricao: aula.descricao ?? '',
+      youtube_url: aula.youtube_video_id || '',
+      liberacao_modo: aula.liberacao_modo ?? 'automatico',
       duracao_minutos: aula.duracao_minutos?.toString() ?? '',
       quiz_qtd_questoes: aula.quiz_qtd_questoes, quiz_aprovacao_minima: aula.quiz_aprovacao_minima,
       espera_horas: aula.espera_horas, validade_meses: aula.validade_meses?.toString() ?? '',
@@ -203,7 +288,9 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
     const res = await fetch(`/api/admin/modulos/${moduloId}/aulas`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        id, titulo: editForm.titulo, youtube_video_id: editForm.youtube_video_id,
+        id, titulo: editForm.titulo, descricao: editForm.descricao || null,
+        youtube_video_id: editTipoVideo === 'youtube' ? extrairIdYoutube(editForm.youtube_url) : '',
+        video_url: editTipoVideo !== 'youtube' ? editVideoUrl || null : null,
         duracao_minutos: editForm.duracao_minutos ? parseInt(editForm.duracao_minutos) : null,
         quiz_qtd_questoes: editForm.quiz_qtd_questoes, quiz_aprovacao_minima: editForm.quiz_aprovacao_minima,
         espera_horas: editForm.espera_horas,
@@ -211,6 +298,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
         ao_vivo_link: editForm.ao_vivo_link || null, ao_vivo_data: editForm.ao_vivo_data || null,
         ao_vivo_plataforma: editForm.ao_vivo_link ? editForm.ao_vivo_plataforma : null,
         capa_url: editForm.capaBase64 || null,
+        liberacao_modo: editForm.liberacao_modo,
       }),
     })
     const data = await res.json()
@@ -238,13 +326,16 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
     const body: Record<string, unknown> = {
       modulo_id: moduloId,
       titulo: form.titulo,
-      youtube_video_id: form.youtube_video_id,
+      descricao: form.descricao || null,
+      youtube_video_id: tipoVideo === 'youtube' ? extrairIdYoutube(form.youtube_url) : '',
+      video_url: tipoVideo !== 'youtube' ? videoUrl || null : null,
       duracao_minutos: form.duracao_minutos ? parseInt(form.duracao_minutos) : null,
       quiz_qtd_questoes: form.quiz_qtd_questoes,
       quiz_aprovacao_minima: form.quiz_aprovacao_minima,
       espera_horas: form.espera_horas,
       validade_meses: form.validade_meses ? parseInt(form.validade_meses) : null,
       capa_url: capaBase64 || null,
+      liberacao_modo: form.liberacao_modo,
     }
     if (aoVivo && form.ao_vivo_link) {
       body.ao_vivo_link = form.ao_vivo_link
@@ -262,7 +353,8 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
       setCriando(false)
       setAoVivo(false)
       setCapaPreview(null); setCapaBase64(null)
-      setForm({ titulo: '', youtube_video_id: '', duracao_minutos: '', quiz_qtd_questoes: 5, quiz_aprovacao_minima: 80, espera_horas: 24, ao_vivo_link: '', ao_vivo_data: '', ao_vivo_plataforma: 'zoom', validade_meses: '' })
+      setTipoVideo('youtube'); setVideoUrl('')
+      setForm({ titulo: '', descricao: '', youtube_url: '', duracao_minutos: '', quiz_qtd_questoes: 5, quiz_aprovacao_minima: 80, espera_horas: 0, ao_vivo_link: '', ao_vivo_data: '', ao_vivo_plataforma: 'zoom', validade_meses: '', liberacao_modo: 'automatico' })
       setMsg('Aula criada com sucesso!')
     }
     setSalvando(false)
@@ -285,98 +377,151 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
       </div>
 
       {criando && (
-        <form onSubmit={salvarAula} style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <h3 style={{ fontWeight: 700 }}>Nova Aula</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <form onSubmit={salvarAula} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden' }}>
+          {/* Cabeçalho */}
+          <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--avp-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <label style={labelStyle}>Título *</label>
-              <input style={inputStyle} value={form.titulo} onChange={e => setForm(p => ({ ...p, titulo: e.target.value }))} required />
+              <h3 style={{ fontWeight: 700, fontSize: 16, margin: 0 }}>Detalhes do conteúdo</h3>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Preencha as informações da aula</p>
             </div>
-            <div>
-              <label style={labelStyle}>YouTube Video ID *</label>
-              <input style={inputStyle} value={form.youtube_video_id} onChange={e => setForm(p => ({ ...p, youtube_video_id: e.target.value }))} required />
-            </div>
-            <div>
-              <label style={labelStyle}>Duração (min)</label>
-              <input type="number" style={inputStyle} value={form.duracao_minutos} onChange={e => setForm(p => ({ ...p, duracao_minutos: e.target.value }))} />
-            </div>
-            <div>
-              <label style={labelStyle}>Espera após aprovação (horas)</label>
-              <input type="number" style={inputStyle} value={form.espera_horas} onChange={e => setForm(p => ({ ...p, espera_horas: parseInt(e.target.value) }))} />
-            </div>
-            <div>
-              <label style={labelStyle}>Questões no quiz</label>
-              <input type="number" style={inputStyle} value={form.quiz_qtd_questoes} onChange={e => setForm(p => ({ ...p, quiz_qtd_questoes: parseInt(e.target.value) }))} min={1} max={20} />
-            </div>
-            <div>
-              <label style={labelStyle}>Aprovação mínima (%)</label>
-              <input type="number" style={inputStyle} value={form.quiz_aprovacao_minima} onChange={e => setForm(p => ({ ...p, quiz_aprovacao_minima: parseInt(e.target.value) }))} min={50} max={100} />
-            </div>
-            <div>
-              <label style={labelStyle}>Validade (meses, 0 = sem validade)</label>
-              <input type="number" style={inputStyle} value={form.validade_meses} onChange={e => setForm(p => ({ ...p, validade_meses: e.target.value }))} min={0} placeholder="Opcional" />
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button type="button" onClick={() => setCriando(false)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '8px 18px', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>Cancelar</button>
+              <button type="submit" disabled={salvando || uploadandoCapa} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: salvando ? 0.7 : 1 }}>
+                {salvando ? 'Salvando...' : 'Salvar alterações'}
+              </button>
             </div>
           </div>
 
-          <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 16 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: aoVivo ? 16 : 0 }}>
-              <input type="checkbox" checked={aoVivo} onChange={e => setAoVivo(e.target.checked)} style={{ width: 16, height: 16 }} />
-              <span style={{ color: 'var(--avp-text)', fontWeight: 600 }}>Aula ao vivo</span>
-            </label>
-            {aoVivo && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
-                <div>
-                  <label style={labelStyle}>Link da reunião</label>
-                  <input style={inputStyle} value={form.ao_vivo_link} onChange={e => setForm(p => ({ ...p, ao_vivo_link: e.target.value }))} placeholder="https://zoom.us/..." />
-                </div>
-                <div>
-                  <label style={labelStyle}>Data e hora</label>
-                  <input type="datetime-local" style={inputStyle} value={form.ao_vivo_data} onChange={e => setForm(p => ({ ...p, ao_vivo_data: e.target.value }))} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Plataforma</label>
-                  <select style={inputStyle} value={form.ao_vivo_plataforma} onChange={e => setForm(p => ({ ...p, ao_vivo_plataforma: e.target.value }))}>
-                    <option value="zoom">Zoom</option>
-                    <option value="meet">Google Meet</option>
-                    <option value="teams">Microsoft Teams</option>
-                    <option value="outro">Outro</option>
-                  </select>
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Corpo: 2 colunas */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px' }}>
 
-          {/* Capa da aula */}
-          <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 16 }}>
-            <label style={{ ...labelStyle, marginBottom: 10 }}>Capa da aula <span style={{ color: 'var(--avp-green)', fontSize: 11, fontWeight: 700 }}>📐 1380 × 1080 px</span></label>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-              <div onClick={() => capaFileRef.current?.click()}
-                style={{ width: 120, height: 94, flexShrink: 0, borderRadius: 8, overflow: 'hidden', border: `2px dashed ${capaPreview ? 'var(--avp-green)' : 'var(--avp-border)'}`, background: 'var(--avp-black)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {capaPreview
-                  ? <img src={capaPreview} alt="capa" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <span style={{ color: 'var(--avp-text-dim)', fontSize: 24 }}>🖼️</span>}
+            {/* ── Coluna esquerda: conteúdo principal ── */}
+            <div style={{ padding: 24, borderRight: '1px solid var(--avp-border)', display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div>
+                <label style={labelStyle}>Título *</label>
+                <input style={inputStyle} value={form.titulo} onChange={e => setForm(p => ({ ...p, titulo: e.target.value }))} required placeholder="Nome da aula" />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <input ref={capaFileRef} type="file" accept="image/*" style={{ display: 'none' }}
-                  onChange={e => { const f = e.target.files?.[0]; if (f) selecionarCapa(f); e.target.value = '' }} />
-                <button type="button" onClick={() => capaFileRef.current?.click()} disabled={uploadandoCapa}
-                  style={{ background: capaPreview ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700, opacity: uploadandoCapa ? 0.7 : 1 }}>
-                  {uploadandoCapa ? '⏳ Lendo...' : capaPreview ? '🔄 Trocar' : '📤 Subir capa'}
-                </button>
-                {capaPreview && (
-                  <button type="button" onClick={() => { setCapaPreview(null); setCapaBase64(null) }}
-                    style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 }}>
-                    Remover
-                  </button>
+              <div>
+                <label style={labelStyle}>Descrição</label>
+                <textarea style={{ ...inputStyle, minHeight: 80, resize: 'vertical' as const }} value={form.descricao} onChange={e => setForm(p => ({ ...p, descricao: e.target.value }))} placeholder="Descreva o conteúdo desta aula..." />
+              </div>
+
+              {/* Tipo de vídeo */}
+              <div>
+                <label style={labelStyle}>Vídeo</label>
+                <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+                  {(['youtube', 'arquivo', 'url'] as const).map(t => (
+                    <button key={t} type="button" onClick={() => { setTipoVideo(t); setVideoUrl('') }}
+                      style={{ padding: '6px 16px', borderRadius: 6, border: '1px solid', cursor: 'pointer', fontSize: 13, fontWeight: 600, background: tipoVideo === t ? 'var(--avp-blue)' : 'transparent', borderColor: tipoVideo === t ? 'var(--avp-blue)' : 'var(--avp-border)', color: tipoVideo === t ? '#fff' : 'var(--avp-text-dim)' }}>
+                      {t === 'youtube' ? '▶ YouTube' : t === 'arquivo' ? '📁 Arquivo' : '🔗 URL / Vimeo'}
+                    </button>
+                  ))}
+                </div>
+
+                {tipoVideo === 'youtube' && (() => {
+                  const ytId = extrairIdYoutube(form.youtube_url)
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <input style={inputStyle} placeholder="Youtube URL (ex: https://www.youtube.com/watch?v=...)" value={form.youtube_url} onChange={e => setForm(p => ({ ...p, youtube_url: e.target.value }))} />
+                      {ytId && (
+                        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 10, overflow: 'hidden', background: '#000' }}>
+                          <iframe src={`https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowFullScreen style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }} />
+                        </div>
+                      )}
+                    </div>
+                  )
+                })()}
+
+                {tipoVideo === 'arquivo' && (
+                  <div>
+                    <input ref={videoFileRef} type="file" accept="video/*" style={{ display: 'none' }}
+                      onChange={e => { const f = e.target.files?.[0]; if (f) uploadVideo(f); e.target.value = '' }} />
+                    {!videoUrl ? (
+                      <button type="button" onClick={() => videoFileRef.current?.click()} disabled={uploadandoVideo}
+                        style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 18px', cursor: uploadandoVideo ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 600 }}>
+                        {uploadandoVideo ? `⏳ Enviando ${progressoVideo}%...` : '📁 Selecionar vídeo'}
+                      </button>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#02A15320', border: '1px solid var(--avp-green)', borderRadius: 8, padding: '10px 14px' }}>
+                        <span style={{ fontSize: 13, color: 'var(--avp-green)', flex: 1 }}>✅ Vídeo enviado com sucesso</span>
+                        <button type="button" onClick={() => setVideoUrl('')} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 12 }}>Remover</button>
+                      </div>
+                    )}
+                    {uploadandoVideo && (
+                      <div style={{ marginTop: 8, background: 'var(--avp-border)', borderRadius: 4, height: 4 }}>
+                        <div style={{ background: 'var(--avp-blue)', width: `${progressoVideo}%`, height: '100%', borderRadius: 4, transition: 'width 0.2s' }} />
+                      </div>
+                    )}
+                  </div>
                 )}
-                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>PNG ou JPG · máx. 3MB</p>
+
+                {tipoVideo === 'url' && (
+                  <input style={inputStyle} placeholder="URL do vídeo (Vimeo, MP4 direto...)" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} />
+                )}
+              </div>
+
+              {/* Aula ao vivo */}
+              <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 16 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: aoVivo ? 16 : 0 }}>
+                  <input type="checkbox" checked={aoVivo} onChange={e => setAoVivo(e.target.checked)} style={{ width: 16, height: 16 }} />
+                  <span style={{ color: 'var(--avp-text)', fontWeight: 600 }}>Esta aula é ao vivo</span>
+                </label>
+                {aoVivo && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                    <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Link da reunião</label><input style={inputStyle} value={form.ao_vivo_link} onChange={e => setForm(p => ({ ...p, ao_vivo_link: e.target.value }))} placeholder="https://zoom.us/..." /></div>
+                    <div><label style={labelStyle}>Data e hora</label><input type="datetime-local" style={inputStyle} value={form.ao_vivo_data} onChange={e => setForm(p => ({ ...p, ao_vivo_data: e.target.value }))} /></div>
+                    <div><label style={labelStyle}>Plataforma</label>
+                      <select style={inputStyle} value={form.ao_vivo_plataforma} onChange={e => setForm(p => ({ ...p, ao_vivo_plataforma: e.target.value }))}>
+                        <option value="zoom">Zoom</option><option value="meet">Google Meet</option><option value="teams">Microsoft Teams</option><option value="outro">Outro</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ── Coluna direita: configurações + capa ── */}
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 18, background: 'rgba(0,0,0,0.15)' }}>
+              {/* Capa da aula */}
+              <div>
+                <label style={labelStyle}>Imagem da aula</label>
+                <div onClick={() => capaFileRef.current?.click()} style={{ borderRadius: 8, overflow: 'hidden', border: `2px dashed ${capaPreview ? 'var(--avp-green)' : 'var(--avp-border)'}`, background: 'var(--avp-black)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', aspectRatio: '320/480', marginBottom: 8 }}>
+                  {capaPreview ? <img src={capaPreview} alt="capa" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: 'var(--avp-text-dim)', fontSize: 28 }}>🖼️</span>}
+                </div>
+                <input ref={capaFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) selecionarCapa(f); e.target.value = '' }} />
+                <button type="button" onClick={() => capaFileRef.current?.click()} disabled={uploadandoCapa}
+                  style={{ width: '100%', background: capaPreview ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px', cursor: 'pointer', fontSize: 13, fontWeight: 700, opacity: uploadandoCapa ? 0.7 : 1 }}>
+                  {uploadandoCapa ? '⏳ Lendo...' : capaPreview ? '🔄 Trocar imagem' : '📤 Subir imagem'}
+                </button>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', textAlign: 'center', marginTop: 6 }}>Tamanho recomendado: 320×480 px</p>
+              </div>
+
+              <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase' as const, letterSpacing: 1 }}>Configurações</p>
+                <div>
+                  <label style={labelStyle}>Liberação da próxima aula</label>
+                  {(['automatico', 'manual_gestor', 'manual_admin'] as const).map(modo => (
+                    <label key={modo} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', marginBottom: 8, padding: '8px 10px', borderRadius: 8, border: `1px solid ${form.liberacao_modo === modo ? 'var(--avp-blue)' : 'var(--avp-border)'}`, background: form.liberacao_modo === modo ? '#33368715' : 'transparent' }}>
+                      <input type="radio" name="liberacao_modo_new" checked={form.liberacao_modo === modo} onChange={() => setForm(p => ({ ...p, liberacao_modo: modo }))} style={{ marginTop: 2, accentColor: 'var(--avp-blue)' }} />
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--avp-text)', margin: 0 }}>
+                          {modo === 'automatico' ? '⚡ Automático' : modo === 'manual_gestor' ? '👤 Aprovação do Gestor' : '🛡 Aprovação do Admin'}
+                        </p>
+                        <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
+                          {modo === 'automatico' ? 'Libera sozinho após o tempo configurado' : modo === 'manual_gestor' ? 'Gestor precisa clicar para liberar' : 'Só o admin da empresa pode liberar'}
+                        </p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                <div><label style={labelStyle}>Espera após aprovação (h) {form.liberacao_modo !== 'automatico' ? <span style={{ color: 'var(--avp-text-dim)', fontWeight: 400 }}>(após liberação manual)</span> : ''}</label><input type="number" style={inputStyle} value={form.espera_horas} onChange={e => setForm(p => ({ ...p, espera_horas: parseInt(e.target.value) || 0 }))} /></div>
+                <div><label style={labelStyle}>Duração (min)</label><input type="number" style={inputStyle} value={form.duracao_minutos} onChange={e => setForm(p => ({ ...p, duracao_minutos: e.target.value }))} placeholder="Ex: 12" /></div>
+                <div><label style={labelStyle}>Questões no quiz</label><input type="number" style={inputStyle} value={form.quiz_qtd_questoes} onChange={e => setForm(p => ({ ...p, quiz_qtd_questoes: parseInt(e.target.value) }))} min={1} max={20} /></div>
+                <div><label style={labelStyle}>Aprovação mínima (%)</label><input type="number" style={inputStyle} value={form.quiz_aprovacao_minima} onChange={e => setForm(p => ({ ...p, quiz_aprovacao_minima: parseInt(e.target.value) }))} min={50} max={100} /></div>
+                <div><label style={labelStyle}>Validade (meses)</label><input type="number" style={inputStyle} value={form.validade_meses} onChange={e => setForm(p => ({ ...p, validade_meses: e.target.value }))} min={0} placeholder="0 = sem validade" /></div>
               </div>
             </div>
           </div>
-
-          <button type="submit" disabled={salvando || uploadandoCapa} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, cursor: 'pointer', fontSize: 14, alignSelf: 'flex-start' }}>
-            {salvando ? 'Salvando...' : 'Criar Aula'}
-          </button>
         </form>
       )}
 
@@ -393,8 +538,56 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                     <button onClick={() => setEditandoId(null)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 20 }}>×</button>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div><label style={labelStyle}>Título *</label><input style={inputStyle} value={editForm.titulo} onChange={e => setEditForm(p => ({ ...p, titulo: e.target.value }))} /></div>
-                    <div><label style={labelStyle}>YouTube Video ID *</label><input style={inputStyle} value={editForm.youtube_video_id} onChange={e => setEditForm(p => ({ ...p, youtube_video_id: e.target.value }))} /></div>
+                    <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Título *</label><input style={inputStyle} value={editForm.titulo} onChange={e => setEditForm(p => ({ ...p, titulo: e.target.value }))} /></div>
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label style={labelStyle}>Vídeo</label>
+                      <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+                        {(['youtube', 'arquivo', 'url'] as const).map(t => (
+                          <button key={t} type="button" onClick={() => { setEditTipoVideo(t); setEditVideoUrl('') }}
+                            style={{ padding: '5px 14px', borderRadius: 6, border: '1px solid', cursor: 'pointer', fontSize: 12, fontWeight: 600, background: editTipoVideo === t ? 'var(--avp-blue)' : 'transparent', borderColor: editTipoVideo === t ? 'var(--avp-blue)' : 'var(--avp-border)', color: editTipoVideo === t ? '#fff' : 'var(--avp-text-dim)' }}>
+                            {t === 'youtube' ? '▶ YouTube' : t === 'arquivo' ? '📁 Arquivo' : '🔗 URL / Vimeo'}
+                          </button>
+                        ))}
+                      </div>
+                      {editTipoVideo === 'youtube' && (() => {
+                        const ytId = extrairIdYoutube(editForm.youtube_url)
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <input style={inputStyle} placeholder="Youtube URL (ex: https://www.youtube.com/watch?v=...)" value={editForm.youtube_url} onChange={e => setEditForm(p => ({ ...p, youtube_url: e.target.value }))} />
+                            {ytId && (
+                              <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 8, overflow: 'hidden', background: '#000' }}>
+                                <iframe src={`https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1`} allowFullScreen style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }} />
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })()}
+                      {editTipoVideo === 'arquivo' && (
+                        <div>
+                          <input ref={editVideoFileRef} type="file" accept="video/*" style={{ display: 'none' }}
+                            onChange={e => { const f = e.target.files?.[0]; if (f) uploadVideoEdit(f); e.target.value = '' }} />
+                          {!editVideoUrl ? (
+                            <button type="button" onClick={() => editVideoFileRef.current?.click()} disabled={editUploadandoVideo}
+                              style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', cursor: editUploadandoVideo ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 600 }}>
+                              {editUploadandoVideo ? `⏳ Enviando ${editProgressoVideo}%...` : '📁 Selecionar vídeo'}
+                            </button>
+                          ) : (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#02A15320', border: '1px solid var(--avp-green)', borderRadius: 8, padding: '9px 12px' }}>
+                              <span style={{ fontSize: 12, color: 'var(--avp-green)', flex: 1 }}>✅ Vídeo pronto</span>
+                              <button type="button" onClick={() => setEditVideoUrl('')} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 11 }}>Remover</button>
+                            </div>
+                          )}
+                          {editUploadandoVideo && (
+                            <div style={{ marginTop: 6, background: 'var(--avp-border)', borderRadius: 4, height: 4 }}>
+                              <div style={{ background: 'var(--avp-blue)', width: `${editProgressoVideo}%`, height: '100%', borderRadius: 4, transition: 'width 0.2s' }} />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {editTipoVideo === 'url' && (
+                        <input style={inputStyle} placeholder="URL do vídeo (Vimeo, MP4 direto...)" value={editVideoUrl} onChange={e => setEditVideoUrl(e.target.value)} />
+                      )}
+                    </div>
                     <div><label style={labelStyle}>Duração (min)</label><input type="number" style={inputStyle} value={editForm.duracao_minutos} onChange={e => setEditForm(p => ({ ...p, duracao_minutos: e.target.value }))} /></div>
                     <div><label style={labelStyle}>Espera após aprovação (horas)</label><input type="number" style={inputStyle} value={editForm.espera_horas} onChange={e => setEditForm(p => ({ ...p, espera_horas: parseInt(e.target.value) }))} /></div>
                     <div><label style={labelStyle}>Questões no quiz</label><input type="number" style={inputStyle} value={editForm.quiz_qtd_questoes} onChange={e => setEditForm(p => ({ ...p, quiz_qtd_questoes: parseInt(e.target.value) }))} min={1} max={20} /></div>
@@ -437,7 +630,12 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                           {aula.validade_meses && <span style={{ background: '#f59e0b20', color: '#f59e0b', borderRadius: 20, padding: '2px 8px', fontSize: 11, fontWeight: 600 }}>Validade: {aula.validade_meses}m</span>}
                         </div>
                         <div style={{ display: 'flex', gap: 16, color: 'var(--avp-text-dim)', fontSize: 13 }}>
-                          <span>{aula.youtube_video_id}</span>
+                          {aula.youtube_video_id
+                            ? <span>▶ YouTube: {aula.youtube_video_id}</span>
+                            : aula.video_url
+                              ? <span style={{ color: 'var(--avp-green)' }}>📁 {aula.video_url.includes('vimeo') ? 'Vimeo' : 'Arquivo de vídeo'}</span>
+                              : <span style={{ color: 'var(--avp-danger)' }}>Sem vídeo</span>
+                          }
                           {aula.duracao_minutos && <span>{aula.duracao_minutos} min</span>}
                           <span>Quiz: {aula.quiz_qtd_questoes}q / {aula.quiz_aprovacao_minima}%</span>
                           <span>Espera: {aula.espera_horas}h</span>
@@ -466,6 +664,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                     </div>
                   </div>
                   <ArquivosAula aulaId={aula.id} />
+                  <QuestoesAula aulaId={aula.id} aprovacaoMinima={aula.quiz_aprovacao_minima} />
                 </>
               )}
             </div>

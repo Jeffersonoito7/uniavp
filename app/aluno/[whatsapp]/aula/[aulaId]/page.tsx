@@ -5,6 +5,8 @@ import Comentarios from './Comentarios'
 import CountdownAoVivo from './CountdownAoVivo'
 import CurtidasButton from '@/app/components/CurtidasButton'
 import ReacaoAula from './ReacaoAula'
+import VideoPlayer from '@/app/components/VideoPlayer'
+import Quiz from './Quiz'
 
 export default async function AulaPage({ params }: { params: { whatsapp: string; aulaId: string } }) {
   const supabase = await createClient()
@@ -34,6 +36,24 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   // Arquivos
   const { data: arquivos } = await (adminClient.from('aula_arquivos') as any)
     .select('*').eq('aula_id', params.aulaId).order('created_at')
+
+  // Quiz
+  const { data: questoesRaw } = await (adminClient.from('questoes') as any)
+    .select('id, enunciado, alternativas, explicacao, ordem')
+    .eq('aula_id', params.aulaId).eq('ativa', true).order('ordem')
+  const questoes = questoesRaw ?? []
+
+  // Progresso do aluno nesta aula
+  const { data: progressoRow } = await (adminClient.from('progresso') as any)
+    .select('aprovado, tentativa_numero')
+    .eq('aula_id', params.aulaId).eq('aluno_id', aluno.id)
+    .eq('aprovado', true).limit(1).maybeSingle()
+  const jaAprovado = !!progressoRow
+
+  const { data: tentativas } = await (adminClient.from('progresso') as any)
+    .select('tentativa_numero').eq('aula_id', params.aulaId).eq('aluno_id', aluno.id)
+    .order('tentativa_numero', { ascending: false }).limit(1).maybeSingle()
+  const tentativasAnteriores = tentativas?.tentativa_numero ?? 0
 
   const agora = new Date()
   const temAoVivo = aula.ao_vivo_link && aula.ao_vivo_data
@@ -71,15 +91,11 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
         )}
 
         {(!temAoVivo || aoVivoPassou) && (
-          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 12, overflow: 'hidden' }}>
-            <iframe
-              src={`https://www.youtube.com/embed/${aula.youtube_video_id}`}
-              title={aula.titulo}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-            />
-          </div>
+          <VideoPlayer
+            youtubeId={aula.youtube_video_id}
+            videoUrl={(aula as any).video_url}
+            titulo={aula.titulo}
+          />
         )}
 
         {/* Curtidas */}
@@ -118,6 +134,17 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
               ))}
             </div>
           </div>
+        )}
+
+        {/* Quiz */}
+        {questoes.length > 0 && (
+          <Quiz
+            aulaId={params.aulaId}
+            questoes={questoes}
+            aprovacaoMinima={aula.quiz_aprovacao_minima}
+            jaAprovado={jaAprovado}
+            tentativasAnteriores={tentativasAnteriores}
+          />
         )}
 
         {/* Pesquisa de reação */}

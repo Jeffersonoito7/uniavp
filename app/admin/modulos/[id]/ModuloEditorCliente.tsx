@@ -1,15 +1,18 @@
 'use client'
 import { useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import AulasCliente from './AulasCliente'
 
 type Modulo = { id: string; titulo: string; descricao: string | null; capa_url: string | null; ordem: number; publicado: boolean }
-type Aula = { id: string; titulo: string; ordem: number; youtube_video_id: string; duracao_minutos: number | null; quiz_qtd_questoes: number; quiz_aprovacao_minima: number; espera_horas: number; publicado: boolean; ao_vivo_link: string | null; ao_vivo_data: string | null; ao_vivo_plataforma: string | null; validade_meses: number | null; capa_url: string | null }
+type Aula = { id: string; titulo: string; descricao: string | null; ordem: number; youtube_video_id: string; duracao_minutos: number | null; quiz_qtd_questoes: number; quiz_aprovacao_minima: number; espera_horas: number; publicado: boolean; ao_vivo_link: string | null; ao_vivo_data: string | null; ao_vivo_plataforma: string | null; validade_meses: number | null; capa_url: string | null; video_url: string | null; liberacao_modo: 'automatico' | 'manual_gestor' | 'manual_admin' }
 
 type Aba = 'geral' | 'aulas' | 'configuracoes'
 
 export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo: Modulo; aulas: Aula[] }) {
-  const [aba, setAba] = useState<Aba>('geral')
+  const searchParams = useSearchParams()
+  const abaInicial = (searchParams.get('aba') as Aba | null) ?? 'geral'
+  const [aba, setAba] = useState<Aba>(abaInicial)
   const [modulo, setModulo] = useState(inicial)
   const [titulo, setTitulo] = useState(inicial.titulo)
   const [descricao, setDescricao] = useState(inicial.descricao ?? '')

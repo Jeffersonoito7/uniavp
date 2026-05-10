@@ -1,6 +1,7 @@
 'use client'
 import { useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 function CapaUpload({ preview, onSelect, fileRef: ref }: {
   preview: string | null
@@ -35,6 +36,7 @@ type Modulo = {
 type EditForm = { titulo: string; descricao: string; capaPreview: string | null; capaBase64: string | null }
 
 export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: Modulo[] }) {
+  const router = useRouter()
   const [modulos, setModulos] = useState<Modulo[]>(modulosIniciais)
   const [criando, setCriando] = useState(false)
   const [salvando, setSalvando] = useState(false)
@@ -79,16 +81,11 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
     })
     const data = await res.json()
     if (data.modulo) {
-      setModulos(m => [...m, data.modulo])
-      setForm({ titulo: '', descricao: '' })
-      setCapaPreview(null); setCapaBase64(null)
-      setCriando(false)
-      setMsg({ tipo: 'ok', texto: 'Módulo criado!' })
+      router.push(`/admin/modulos/${data.modulo.id}?aba=aulas`)
     } else {
       setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao criar módulo.' })
+      setSalvando(false)
     }
-    setSalvando(false)
-    setTimeout(() => setMsg(null), 4000)
   }
 
   function abrirEdicao(m: Modulo) {

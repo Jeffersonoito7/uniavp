@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import AdminLayout from '../../AdminLayout'
 import ModuloEditorCliente from './ModuloEditorCliente'
@@ -18,7 +19,9 @@ export default async function ModuloDetalhePage({ params }: { params: { id: stri
 
   return (
     <AdminLayout>
-      <ModuloEditorCliente modulo={modulo} aulas={aulas ?? []} />
+      <Suspense>
+        <ModuloEditorCliente modulo={modulo} aulas={aulas ?? []} />
+      </Suspense>
     </AdminLayout>
   )
 }

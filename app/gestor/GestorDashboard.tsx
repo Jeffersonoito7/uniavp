@@ -4,6 +4,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import EventosWidget from '@/app/components/EventosWidget'
 import MuralNoticias from '@/app/components/MuralNoticias'
+import LiberacoesPendentes from './LiberacoesPendentes'
 
 type Evento = { id: string; titulo: string; descricao: string; cidade: string; data_hora: string }
 
@@ -55,6 +56,14 @@ export default function GestorDashboard({
   const [salvandoEvento, setSalvandoEvento] = useState(false)
   const [msgEvento, setMsgEvento] = useState('')
   const [abaGestor, setAbaGestor] = useState<'consultores' | 'eventos' | 'config'>('consultores')
+  const [isMobile, setIsMobile] = useState(false)
+  const [menuMobileAberto, setMenuMobileAberto] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   useEffect(() => {
     fetch('/api/site-config').then(r => r.json()).then(d => {
@@ -172,40 +181,54 @@ export default function GestorDashboard({
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
-      <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 32px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: isMobile ? '0 14px' : '0 32px', height: isMobile ? 56 : 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {siteLogoUrl && !logoError ? (
-            <img
-              src={siteLogoUrl}
-              alt={siteNome}
-              className="logo-site"
-              style={{ height: 36, objectFit: 'contain' }}
-              onError={() => setLogoError(true)}
-            />
+            <img src={siteLogoUrl} alt={siteNome} className="logo-site"
+              style={{ height: isMobile ? 28 : 36, objectFit: 'contain' }}
+              onError={() => setLogoError(true)} />
           ) : (
-            <span style={{ fontWeight: 800, fontSize: 16, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <span style={{ fontWeight: 800, fontSize: isMobile ? 15 : 16, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               {siteNome || 'Universidade'}
             </span>
           )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Olá, <strong style={{ color: 'var(--avp-text)' }}>{gestor.nome}</strong></span>
+        {isMobile ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <ThemeToggle />
+            <button onClick={() => setMenuMobileAberto(m => !m)}
+              style={{ background: 'var(--avp-border)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--avp-text)', fontSize: 18, fontWeight: 700 }}>
+              ☰
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Olá, <strong style={{ color: 'var(--avp-text)' }}>{gestor.nome}</strong></span>
+            <MuralNoticias />
+            <EventosWidget />
+            <ThemeToggle />
+            <button onClick={sair} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 14 }}>Sair</button>
+          </div>
+        )}
+      </header>
+      {/* Menu dropdown mobile */}
+      {isMobile && menuMobileAberto && (
+        <div style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10, position: 'sticky', top: 56, zIndex: 99 }}>
+          <span style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Olá, <strong style={{ color: 'var(--avp-text)' }}>{gestor.nome.split(' ')[0]}</strong></span>
           <MuralNoticias />
           <EventosWidget />
-          <ThemeToggle />
-          <button onClick={sair} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 14 }}>
-            Sair
-          </button>
+          <button onClick={() => { sair(); setMenuMobileAberto(false) }} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontSize: 14, textAlign: 'left' }}>Sair</button>
         </div>
-      </header>
+      )}
 
-      <main style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
+      <main style={{ maxWidth: 1100, margin: '0 auto', padding: isMobile ? '16px 12px 40px' : '32px 24px' }}>
+        <LiberacoesPendentes />
         <div style={{ marginBottom: 28 }}>
           <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Painel do Gestor</h1>
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Acompanhe o progresso dos seus consultores</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: isMobile ? 10 : 16, marginBottom: 28 }}>
           <div style={{ background: 'var(--avp-card)', border: `1px solid ${vagasUsadas >= 50 ? 'var(--avp-danger)' : 'var(--avp-border)'}`, borderRadius: 12, padding: 24 }}>
             <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 8 }}>Vagas usadas</p>
             <p style={{ fontSize: 36, fontWeight: 800, color: vagasUsadas >= 50 ? 'var(--avp-danger)' : 'var(--avp-text)' }}>{vagasUsadas}<span style={{ fontSize: 16, color: 'var(--avp-text-dim)', fontWeight: 400 }}>/50</span></p>

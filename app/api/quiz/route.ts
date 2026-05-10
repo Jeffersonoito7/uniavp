@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   const { aula_id, respostas: respostasEnviadas } = body
 
   const { data: aula } = await (adminClient.from('aulas') as any)
-    .select('id, quiz_qtd_questoes, quiz_aprovacao_minima, espera_horas, modulo_id')
+    .select('id, quiz_qtd_questoes, quiz_aprovacao_minima, espera_horas, modulo_id, liberacao_modo')
     .eq('id', aula_id)
     .single()
   if (!aula) return NextResponse.json({ error: 'Aula não encontrada' }, { status: 404 })
@@ -45,7 +45,11 @@ export async function POST(req: NextRequest) {
     .maybeSingle()
 
   const tentativa_numero = (tentativaAnterior?.tentativa_numero ?? 0) + 1
-  const proxima_aula_liberada_em = aprovado ? new Date(Date.now() + aula.espera_horas * 3600000).toISOString() : null
+  const modo = (aula.liberacao_modo ?? 'automatico') as 'automatico' | 'manual_gestor' | 'manual_admin'
+  const pendente_liberacao = aprovado && modo !== 'automatico'
+  const proxima_aula_liberada_em = aprovado && modo === 'automatico'
+    ? new Date(Date.now() + aula.espera_horas * 3600000).toISOString()
+    : null
 
   await (adminClient.from('progresso') as any).insert({
     aluno_id: aluno.id,
@@ -57,7 +61,27 @@ export async function POST(req: NextRequest) {
     aprovado,
     respostas: respostasEnviadas,
     proxima_aula_liberada_em,
+    pendente_liberacao,
   })
+
+  // Notifica gestor/admin sobre liberação pendente
+  if (pendente_liberacao) {
+    const { data: alunoInfo } = await (adminClient.from('alunos') as any)
+      .select('nome, gestor_nome, gestor_whatsapp').eq('id', aluno.id).maybeSingle()
+    const { data: aulaInfo } = await (adminClient.from('aulas') as any)
+      .select('titulo').eq('id', aula_id).maybeSingle()
+    if (modo === 'manual_gestor' && alunoInfo?.gestor_whatsapp) {
+      const { enviarWhatsApp, getInstanciaGestorPorNome } = await import('@/lib/whatsapp')
+      const inst = await getInstanciaGestorPorNome(alunoInfo.gestor_nome, adminClient)
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || ''
+      await enviarWhatsApp(
+        alunoInfo.gestor_whatsapp,
+        `📋 *${alunoInfo.nome}* foi aprovado na aula *${aulaInfo?.titulo}* e está aguardando sua liberação para continuar.\n\nAcesse o painel: ${appUrl}/gestor`,
+        inst
+      )
+    }
+    return NextResponse.json({ ok: true, acertos, total, percentual, aprovado, pendente_liberacao: true, modo })
+  }
 
   if (aprovado) {
     await (adminClient.from('aluno_pontos') as any).insert({

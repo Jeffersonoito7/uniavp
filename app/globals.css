@@ -39,3 +39,17 @@ input, select, textarea { font-family: inherit; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--avp-border); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--avp-blue-bright); }
+
+/* ── Responsivo mobile ── */
+@media (max-width: 767px) {
+  .hide-mobile { display: none !important; }
+  .show-mobile { display: flex !important; }
+  .grid-mobile-1 { grid-template-columns: 1fr !important; }
+  .grid-mobile-2 { grid-template-columns: 1fr 1fr !important; }
+  .padding-mobile-sm { padding: 14px !important; }
+  .header-nav-mobile { display: none !important; }
+  .header-mobile-wrap { flex-wrap: wrap; gap: 8px !important; }
+}
+@media (min-width: 768px) {
+  .show-mobile { display: none !important; }
+}
