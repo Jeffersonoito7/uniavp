@@ -46,6 +46,11 @@ export default function GestorDashboard({
   const [modulos, setModulos] = useState<Modulo[]>([])
   const [carregandoModulos, setCarregandoModulos] = useState(false)
   const [linkCopiado, setLinkCopiado] = useState(false)
+  const [showNovoConsultor, setShowNovoConsultor] = useState(false)
+  const [novoForm, setNovoForm] = useState({ nome: '', whatsapp: '', email: '', senha: '' })
+  const [salvandoConsultor, setSalvandoConsultor] = useState(false)
+  const [msgConsultor, setMsgConsultor] = useState<{ tipo: 'ok' | 'err'; texto: string } | null>(null)
+  const [verSenhaNovo, setVerSenhaNovo] = useState(false)
   const [eventos, setEventos] = useState<Evento[]>([])
   const [eventosCarregados, setEventosCarregados] = useState(false)
   const [modulosAulas, setModulosAulas] = useState<{ id: string; titulo: string; ordem: number; aulas: { id: string; titulo: string; descricao: string | null; youtube_video_id: string; duracao_minutos: number | null; ordem: number }[] }[]>([])
@@ -66,6 +71,36 @@ export default function GestorDashboard({
     navigator.clipboard.writeText(`${window.location.origin}/g/${gestor.whatsapp}`)
     setLinkCopiado(true)
     setTimeout(() => setLinkCopiado(false), 2000)
+  }
+
+  async function cadastrarConsultor(e: React.FormEvent) {
+    e.preventDefault()
+    setSalvandoConsultor(true)
+    setMsgConsultor(null)
+    const res = await fetch('/api/cadastro', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome: novoForm.nome,
+        whatsapp: novoForm.whatsapp.replace(/\D/g, ''),
+        email: novoForm.email,
+        senha: novoForm.senha,
+        gestor_nome: gestor.nome,
+        gestor_whatsapp: gestor.whatsapp,
+      }),
+    })
+    const data = await res.json()
+    if (data.ok || data.aluno) {
+      setMsgConsultor({ tipo: 'ok', texto: `Consultor "${novoForm.nome}" cadastrado com sucesso!` })
+      if (data.aluno) {
+        setListaConsultores(prev => [data.aluno, ...prev])
+      }
+      setNovoForm({ nome: '', whatsapp: '', email: '', senha: '' })
+      setTimeout(() => { setShowNovoConsultor(false); setMsgConsultor(null) }, 2500)
+    } else {
+      setMsgConsultor({ tipo: 'err', texto: data.erro ?? data.error ?? 'Erro ao cadastrar.' })
+    }
+    setSalvandoConsultor(false)
   }
 
   async function removerConsultor(c: Consultor) {
@@ -142,9 +177,84 @@ export default function GestorDashboard({
     if (id === 'aulas') carregarAulas()
   }
 
-  const inp: React.CSSProperties = { width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' }
+  const inp: React.CSSProperties = { width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' }
+  const lbl: React.CSSProperties = { display: 'block', color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }
 
   return (
+    <>
+    {/* Modal Novo Consultor */}
+    {showNovoConsultor && (
+      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: 16 }}
+        onClick={e => e.target === e.currentTarget && setShowNovoConsultor(false)}>
+        <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 20, width: '100%', maxWidth: 540, maxHeight: '90vh', overflow: 'auto' }}>
+          <div style={{ padding: '24px 28px', borderBottom: '1px solid var(--avp-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700 }}>Novo Consultor</h2>
+            <button onClick={() => setShowNovoConsultor(false)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 24 }}>×</button>
+          </div>
+          <div style={{ padding: 28 }}>
+            {/* Aba link ou cadastro manual */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+              <div style={{ flex: 1, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+                <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>🔗 Link de cadastro</p>
+                <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 10, lineHeight: 1.5 }}>Envie este link para o consultor se cadastrar sozinho</p>
+                <button onClick={() => { copiarLink(); }}
+                  style={{ width: '100%', background: linkCopiado ? 'var(--avp-green)' : 'var(--avp-border)', color: linkCopiado ? '#fff' : 'var(--avp-text)', border: 'none', borderRadius: 8, padding: '9px', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s' }}>
+                  {linkCopiado ? '✓ Link copiado!' : '📋 Copiar link'}
+                </button>
+              </div>
+            </div>
+
+            <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 20, marginBottom: 4 }}>
+              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 16 }}>✍️ Cadastrar manualmente</p>
+            </div>
+
+            {msgConsultor && (
+              <div style={{ padding: '10px 14px', background: msgConsultor.tipo === 'ok' ? '#02A15320' : '#e6394620', border: `1px solid ${msgConsultor.tipo === 'ok' ? 'var(--avp-green)' : 'var(--avp-danger)'}`, borderRadius: 8, color: msgConsultor.tipo === 'ok' ? 'var(--avp-green)' : 'var(--avp-danger)', fontSize: 13, marginBottom: 16 }}>
+                {msgConsultor.texto}
+              </div>
+            )}
+
+            <form onSubmit={cadastrarConsultor} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <label style={lbl}>Nome completo *</label>
+                <input type="text" placeholder="Nome do consultor" value={novoForm.nome} onChange={e => setNovoForm(p => ({ ...p, nome: e.target.value }))} required style={inp} />
+              </div>
+              <div>
+                <label style={lbl}>WhatsApp *</label>
+                <input type="tel" placeholder="5587999999999" value={novoForm.whatsapp} onChange={e => setNovoForm(p => ({ ...p, whatsapp: e.target.value.replace(/\D/g, '') }))} required style={inp} />
+              </div>
+              <div>
+                <label style={lbl}>E-mail *</label>
+                <input type="email" placeholder="email@consultor.com" value={novoForm.email} onChange={e => setNovoForm(p => ({ ...p, email: e.target.value }))} required style={inp} />
+              </div>
+              <div>
+                <label style={lbl}>Senha inicial *</label>
+                <div style={{ position: 'relative' }}>
+                  <input type={verSenhaNovo ? 'text' : 'password'} placeholder="Mínimo 6 caracteres" value={novoForm.senha} onChange={e => setNovoForm(p => ({ ...p, senha: e.target.value }))} required minLength={6} style={{ ...inp, paddingRight: 44 }} />
+                  <button type="button" onClick={() => setVerSenhaNovo(v => !v)}
+                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--avp-text-dim)', display: 'flex' }}>
+                    {verSenhaNovo
+                      ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                      : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>}
+                  </button>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                <button type="button" onClick={() => setShowNovoConsultor(false)}
+                  style={{ flex: 1, background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 10, padding: '12px', cursor: 'pointer', fontSize: 14 }}>
+                  Cancelar
+                </button>
+                <button type="submit" disabled={salvandoConsultor}
+                  style={{ flex: 2, background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: salvandoConsultor ? 0.7 : 1 }}>
+                  {salvandoConsultor ? 'Cadastrando...' : '+ Cadastrar consultor'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    )}
+
     <GestorLayout aba={aba} setAba={handleSetAba} nomeGestor={gestor.nome}>
 
       {/* ── DASHBOARD ── */}
@@ -163,9 +273,9 @@ export default function GestorDashboard({
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <MuralNoticias />
               <EventosWidget />
-              <button onClick={copiarLink}
-                style={{ background: linkCopiado ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>
-                {linkCopiado ? '✓ Copiado!' : '+ Novo consultor'}
+              <button onClick={() => setShowNovoConsultor(true)}
+                style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>
+                + Novo consultor
               </button>
             </div>
           </div>
@@ -448,5 +558,6 @@ export default function GestorDashboard({
         </div>
       )}
     </GestorLayout>
+    </>
   )
 }
