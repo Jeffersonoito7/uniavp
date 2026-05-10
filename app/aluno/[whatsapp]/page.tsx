@@ -7,6 +7,7 @@ import EventosWidget from '@/app/components/EventosWidget'
 import MuralNoticias from '@/app/components/MuralNoticias'
 import LogoutButton from '@/app/components/LogoutButton'
 import CertificadoWrapper from '@/app/components/CertificadoWrapper'
+import SupportChat from '@/app/components/SupportChat'
 
 type TrilhaItem = {
   modulo_id: string
@@ -100,6 +101,7 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
 
   return (
     <>
+    <SupportChat painel="Consultor" />
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
       <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 16px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
         {siteConfig.logoUrl && !siteConfig.logoUrl.startsWith('/') ? (

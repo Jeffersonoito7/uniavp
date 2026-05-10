@@ -10,6 +10,7 @@ import {
 import ThemeToggle from '@/app/components/ThemeToggle'
 import EventosWidget from '@/app/components/EventosWidget'
 import LogoutButton from '@/app/components/LogoutButton'
+import SupportChat from '@/app/components/SupportChat'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -183,6 +184,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
       </aside>
+
+      <SupportChat painel="Admin" />
 
       {/* ── Conteúdo principal ── */}
       <main style={{

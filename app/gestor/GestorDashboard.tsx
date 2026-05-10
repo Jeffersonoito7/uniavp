@@ -5,6 +5,7 @@ import ThemeToggle from '@/app/components/ThemeToggle'
 import EventosWidget from '@/app/components/EventosWidget'
 import MuralNoticias from '@/app/components/MuralNoticias'
 import LiberacoesPendentes from './LiberacoesPendentes'
+import SupportChat from '@/app/components/SupportChat'
 
 type Evento = { id: string; titulo: string; descricao: string; cidade: string; data_hora: string }
 
@@ -181,6 +182,7 @@ export default function GestorDashboard({
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
+      <SupportChat painel="Gestor" />
       <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: isMobile ? '0 14px' : '0 32px', height: isMobile ? 56 : 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {siteLogoUrl && !logoError ? (
