@@ -8,7 +8,6 @@ import {
   Menu, X, ChevronLeft, ChevronRight, UsersRound
 } from 'lucide-react'
 import ThemeToggle from '@/app/components/ThemeToggle'
-import EventosWidget from '@/app/components/EventosWidget'
 import LogoutButton from '@/app/components/LogoutButton'
 import SupportChat from '@/app/components/SupportChat'
 
@@ -175,13 +174,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         {/* ── Rodapé ── */}
-        <div style={{ padding: colapsada ? '12px 8px' : '12px 14px', borderTop: '1px solid var(--avp-border)', display: 'flex', flexDirection: 'column', gap: 8, alignItems: colapsada ? 'center' : 'stretch' }}>
-          {!colapsada && <EventosWidget />}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: colapsada ? 'center' : 'space-between' }}>
-            {!colapsada && <LogoutButton style={{ flex: 1 }} />}
-            <ThemeToggle />
-            {colapsada && <LogoutButton />}
-          </div>
+        <div style={{ padding: colapsada ? '12px 8px' : '12px 14px', borderTop: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', gap: 8, justifyContent: colapsada ? 'center' : 'space-between' }}>
+          {!colapsada && <LogoutButton style={{ flex: 1 }} />}
+          <ThemeToggle />
+          {colapsada && <LogoutButton />}
         </div>
       </aside>
 
