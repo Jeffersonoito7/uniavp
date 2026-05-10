@@ -27,13 +27,18 @@ export default function LoginForm({ logoUrl, siteNome, isDominioMaster }: { logo
     const { data: adminData } = await supabase.from('admins').select('role').eq('user_id', data.user.id).eq('ativo', true).maybeSingle()
     if (adminData) { window.location.href = '/admin'; return }
 
-    const { data: gestorData } = await supabase.from('gestores').select('id').eq('user_id', data.user.id).eq('ativo', true).maybeSingle()
-    if (gestorData) { window.location.href = '/gestor'; return }
+    const { data: gestorData } = await supabase.from('gestores').select('id, ativo').eq('user_id', data.user.id).maybeSingle()
+    if (gestorData) {
+      if (gestorData.ativo) { window.location.href = '/gestor'; return }
+      await supabase.auth.signOut()
+      setErro('Sua conta de gestor ainda não foi ativada. Aguarde a aprovação da empresa.')
+      setLoading(false); return
+    }
 
     const { data: alunoData } = await supabase.from('alunos').select('whatsapp').eq('user_id', data.user.id).maybeSingle()
     if (alunoData?.whatsapp) { window.location.href = `/aluno/${alunoData.whatsapp}`; return }
 
-    setErro('Usuário sem perfil cadastrado.')
+    setErro('Usuário sem perfil cadastrado. Entre em contato com a empresa.')
     setLoading(false)
   }
 
