@@ -71,10 +71,10 @@ export default function GestorCaptacaoForm({ gestor, siteNome, logoUrl }: { gest
       </header>
 
       {/* BODY */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'stretch', maxWidth: 1100, width: '100%', margin: '0 auto', padding: '40px 24px', gap: 60 }}>
+      <div className="split-layout" style={{ flex: 1, display: 'flex', alignItems: 'stretch', maxWidth: 1100, width: '100%', margin: '0 auto', padding: '40px 24px', gap: 60 }}>
 
         {/* LADO ESQUERDO — Info */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', color: '#fff' }}>
+        <div className="split-info" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', color: '#fff' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(2,161,83,0.15)', border: '1px solid rgba(2,161,83,0.3)', borderRadius: 100, padding: '6px 16px', fontSize: 12, fontWeight: 700, color: '#4ade80', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 28, width: 'fit-content' }}>
             🎯 Convite de {gestor.nome}
           </div>
@@ -105,7 +105,7 @@ export default function GestorCaptacaoForm({ gestor, siteNome, logoUrl }: { gest
         </div>
 
         {/* LADO DIREITO — Formulário */}
-        <div style={{ width: 420, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+        <div className="split-form" style={{ width: 420, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
           <div style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: 36, backdropFilter: 'blur(12px)' }}>
             <h2 style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 6 }}>Criar conta grátis</h2>
             <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, marginBottom: 28 }}>
@@ -163,14 +163,6 @@ export default function GestorCaptacaoForm({ gestor, siteNome, logoUrl }: { gest
         </div>
       </div>
 
-      {/* Responsive mobile */}
-      <style>{`
-        @media (max-width: 768px) {
-          .captacao-body { flex-direction: column !important; }
-          .captacao-info { display: none !important; }
-          .captacao-form { width: 100% !important; }
-        }
-      `}</style>
     </div>
   )
 }

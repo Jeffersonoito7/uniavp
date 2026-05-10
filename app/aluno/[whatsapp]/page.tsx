@@ -143,7 +143,7 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
           </nav>
         </header>
 
-        <div style={{ maxWidth: 1140, margin: '0 auto', padding: '28px 20px 60px' }}>
+        <div style={{ maxWidth: 1140, margin: '0 auto', padding: 'clamp(16px, 4vw, 28px) clamp(12px, 4vw, 20px) 60px' }}>
 
           {/* ── HERO SAUDAÇÃO ── */}
           <div style={{ marginBottom: 28 }}>
@@ -156,7 +156,7 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
           </div>
 
           {/* ── CARDS DE STATS + PROGRESSO ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 28 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14, marginBottom: 24 }}>
             {/* Card nível */}
             <div style={{ background: 'linear-gradient(135deg, #1e3a8a20, #3b82f610)', border: '1px solid #3b82f630', borderRadius: 14, padding: 20 }}>
               <p style={{ color: '#93c5fd', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Nível</p>
@@ -218,7 +218,7 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
                   {mod.aulas.filter(a => a.status === 'concluida').length}/{mod.aulas.length} aulas
                 </span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
                 {mod.aulas.map(aula => {
                   const recertNeeded = getStatusRecertificacao(aula)
                   const isDisponivel = aula.status === 'disponivel'

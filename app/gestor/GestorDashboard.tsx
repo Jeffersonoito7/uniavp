@@ -298,7 +298,8 @@ export default function GestorDashboard({
           </div>
 
           <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden' }}>
-            <div style={{ overflowX: 'auto' }}>
+            {/* Desktop: tabela | Mobile: cards */}
+            <div className="table-scroll hide-mobile" style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--avp-border)' }}>
@@ -332,14 +333,42 @@ export default function GestorDashboard({
                     )
                   })}
                   {listaConsultores.length === 0 && (
-                    <tr>
-                      <td colSpan={6} style={{ padding: 48, textAlign: 'center', color: 'var(--avp-text-dim)' }}>
-                        Nenhum consultor vinculado. Clique em "+ Novo consultor" para copiar seu link de cadastro.
-                      </td>
-                    </tr>
+                    <tr><td colSpan={6} style={{ padding: 48, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Nenhum consultor vinculado. Clique em "+ Novo consultor".</td></tr>
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="show-mobile" style={{ flexDirection: 'column', gap: 10, padding: 12 }}>
+              {listaConsultores.length === 0 && (
+                <p style={{ textAlign: 'center', padding: 32, color: 'var(--avp-text-dim)', fontSize: 14 }}>Nenhum consultor vinculado ainda.</p>
+              )}
+              {listaConsultores.map(c => {
+                const pct = progressoMap[c.id] ?? 0
+                const badge = badgeStatus[c.status] ?? { label: c.status, color: 'var(--avp-text-dim)', bg: 'var(--avp-border)' }
+                return (
+                  <div key={c.id} style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '14px 16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                      <div>
+                        <p onClick={() => abrirConsultor(c)} style={{ fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 2 }}>{c.nome}</p>
+                        <p style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>{c.whatsapp}</p>
+                      </div>
+                      <span style={{ background: badge.bg, color: badge.color, borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 600, flexShrink: 0 }}>{badge.label}</span>
+                    </div>
+                    <BarraProgresso pct={pct} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, alignItems: 'center' }}>
+                      <span style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>{new Date(c.created_at).toLocaleDateString('pt-BR')}</span>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={() => abrirConsultor(c)} style={{ background: 'var(--avp-border)', color: 'var(--avp-text)', border: 'none', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Ver progresso</button>
+                        {c.status !== 'concluido' && (
+                          <button onClick={() => removerConsultor(c)} style={{ background: '#e6394615', border: '1px solid #e6394630', color: 'var(--avp-danger)', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Remover</button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </>
@@ -454,7 +483,7 @@ export default function GestorDashboard({
           {showEvento && (
             <form onSubmit={salvarEvento} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
               <h3 style={{ fontWeight: 700, fontSize: 16 }}>Novo Evento</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <div className="evento-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <div><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Título *</label><input required value={eventoForm.titulo} onChange={e => setEventoForm(p => ({ ...p, titulo: e.target.value }))} style={inp} /></div>
                 <div><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Cidade</label><input value={eventoForm.cidade} onChange={e => setEventoForm(p => ({ ...p, cidade: e.target.value }))} style={inp} /></div>
                 <div><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Data e Hora *</label><input required type="datetime-local" value={eventoForm.data_hora} onChange={e => setEventoForm(p => ({ ...p, data_hora: e.target.value }))} style={inp} /></div>

@@ -195,12 +195,47 @@ export default function GestorLayout({
         flex: 1,
         marginLeft: isMobile ? 0 : sidebarW,
         marginTop: isMobile ? 56 : 0,
-        padding: isMobile ? '20px 14px 40px' : '32px',
+        marginBottom: isMobile ? 64 : 0,
+        padding: isMobile ? '16px 12px 24px' : '32px',
         transition: 'margin-left 0.2s ease',
         minWidth: 0,
       }}>
         {children}
       </main>
+
+      {/* ── Bottom nav mobile ── */}
+      {isMobile && (
+        <nav style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 400,
+          background: 'var(--avp-card)', borderTop: '1px solid var(--avp-border)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+          height: 60, padding: '0 4px',
+        }}>
+          {navItems.map(item => {
+            const Icon = item.icon
+            const ativo = aba === item.id
+            return (
+              <button key={item.id} onClick={() => handleNav(item.id)}
+                style={{
+                  flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  justifyContent: 'center', gap: 3, background: 'none', border: 'none',
+                  cursor: 'pointer', padding: '8px 4px',
+                  color: ativo ? 'var(--avp-green)' : 'var(--avp-text-dim)',
+                }}>
+                <Icon size={20} strokeWidth={ativo ? 2.5 : 1.8} />
+                <span style={{ fontSize: 10, fontWeight: ativo ? 700 : 400, letterSpacing: 0.3 }}>
+                  {item.label}
+                </span>
+              </button>
+            )
+          })}
+          <button onClick={sair}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, background: 'none', border: 'none', cursor: 'pointer', padding: '8px 4px', color: 'var(--avp-text-dim)' }}>
+            <span style={{ fontSize: 18 }}>⎋</span>
+            <span style={{ fontSize: 10 }}>Sair</span>
+          </button>
+        </nav>
+      )}
     </div>
   )
 }

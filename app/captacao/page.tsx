@@ -67,7 +67,7 @@ export default function CaptacaoPage() {
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', fontFamily: 'Inter, sans-serif', color: 'var(--avp-text)' }}>
 
       {/* HERO */}
-      <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '80px 24px 60px', background: 'radial-gradient(ellipse at 50% 0%, rgba(51,54,135,0.4) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(2,161,83,0.2) 0%, transparent 50%), var(--avp-black)', position: 'relative', overflow: 'hidden' }}>
+      <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 'clamp(48px,8vw,80px) 20px clamp(40px,6vw,60px)', background: 'radial-gradient(ellipse at 50% 0%, rgba(51,54,135,0.4) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(2,161,83,0.2) 0%, transparent 50%), var(--avp-black)', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(51,54,135,0.05) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(2,161,83,0.05) 0%, transparent 50%)' }} />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 800 }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32, gap: 16 }}>
@@ -95,12 +95,12 @@ export default function CaptacaoPage() {
 
 
       {/* BENEFÍCIOS */}
-      <section style={{ padding: '80px 24px', maxWidth: 1000, margin: '0 auto' }}>
+      <section style={{ padding: 'clamp(40px,7vw,80px) 20px', maxWidth: 1000, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <h2 style={{ fontSize: 32, fontWeight: 900, marginBottom: 12 }}>Por que escolher a <span style={{ background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Uni AVP</span>?</h2>
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 16 }}>A formação mais completa para consultores de proteção veicular do país</p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))', gap: 16 }}>
           {[
             { icon: '📱', titulo: '100% Online e Gratuito', desc: 'Acesse pelo celular ou computador, a qualquer hora, de qualquer lugar do Brasil' },
             { icon: '🎓', titulo: 'Certificado Oficial AVP', desc: 'Comprove sua qualificação com o certificado reconhecido pela Auto Vale Prevenções' },
@@ -126,7 +126,7 @@ export default function CaptacaoPage() {
             <h2 style={{ fontSize: 28, fontWeight: 900, marginBottom: 8 }}>O que dizem nossos consultores</h2>
             <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>Histórias reais de transformação profissional</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))', gap: 16 }}>
             {depoimentos.map(d => (
               <div key={d.nome} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 28 }}>
                 <div style={{ fontSize: 14, marginBottom: 12 }}>{d.emoji}</div>
