@@ -127,7 +127,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           )}
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-            {!isMobile && !colapsada && <ThemeToggle />}
             {/* Botão colapsar/expandir desktop */}
             {!isMobile && (
               <button
@@ -176,10 +175,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* ── Rodapé ── */}
         <div style={{ padding: colapsada ? '12px 8px' : '12px 14px', borderTop: '1px solid var(--avp-border)', display: 'flex', flexDirection: 'column', gap: 8, alignItems: colapsada ? 'center' : 'stretch' }}>
           {!colapsada && <EventosWidget />}
-          {colapsada
-            ? <ThemeToggle />
-            : <LogoutButton style={{ width: '100%' }} />
-          }
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: colapsada ? 'center' : 'space-between' }}>
+            {!colapsada && <LogoutButton style={{ flex: 1 }} />}
+            <ThemeToggle />
+            {colapsada && <LogoutButton />}
+          </div>
         </div>
       </aside>
 
