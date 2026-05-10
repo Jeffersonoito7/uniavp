@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 
 type Cliente = { id: string; nome: string; dominio: string; ativo: boolean; contato_nome: string; contato_whatsapp: string; contato_email: string; observacoes: string; created_at: string; gestor_ativo: boolean; limite_consultores: number }
@@ -12,6 +12,14 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
 }) {
   const [clientes, setClientes] = useState<Cliente[]>(inicial)
   const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca'>('dashboard')
+  const [isMobile, setIsMobile] = useState(false)
+  const [menuAberto, setMenuAberto] = useState(false)
+  const [colapsada, setColapsada] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check(); window.addEventListener('resize', check); return () => window.removeEventListener('resize', check)
+  }, [])
+  useEffect(() => { if (isMobile) setMenuAberto(false) }, [aba, isMobile])
   const [tipoNovo, setTipoNovo] = useState<'' | 'empresa' | 'gestor' | 'consultor'>('')
   const [cobrancaClienteId, setCobrancaClienteId] = useState<string | null>(null)
   const [gerandoPix, setGerandoPix] = useState<string | null>(null)
@@ -73,30 +81,81 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
   const labelStyle: React.CSSProperties = { display: 'block', color: '#8a8fa3', fontSize: 13, marginBottom: 6, fontWeight: 500 }
   const cardStyle: React.CSSProperties = { background: '#181b24', border: '1px solid #252836', borderRadius: 12, padding: '20px 24px' }
 
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { id: 'clientes', label: 'Clientes', icon: '🏢' },
+    { id: 'novo', label: 'Novo Cliente', icon: '➕' },
+    { id: 'testar', label: 'Testar', icon: '🧪' },
+    { id: 'cobranca', label: 'Cobranças', icon: '💰' },
+  ] as const
+
+  const sidebarW = colapsada ? 56 : 220
+
   return (
     <div style={{ minHeight: '100vh', background: '#08090d', color: '#f0f1f5', fontFamily: 'Inter, sans-serif', display: 'flex' }}>
-      {/* Sidebar */}
-      <aside style={{ width: 220, background: '#181b24', borderRight: '1px solid #252836', display: 'flex', flexDirection: 'column', padding: '24px 0' }}>
-        <div style={{ padding: '0 16px 20px', borderBottom: '1px solid #252836' }}>
-          <img src="/oito7-logo.png" alt="Oito7 Digital" style={{ width: '100%', maxHeight: 48, objectFit: 'contain', marginBottom: 4, filter: 'brightness(0) invert(1)' }} />
-          <p style={{ fontSize: 11, color: '#8a8fa3', textAlign: 'center' }}>Painel Master</p>
+
+      {/* Barra superior mobile */}
+      {isMobile && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 56, zIndex: 400, background: '#181b24', borderBottom: '1px solid #252836', display: 'flex', alignItems: 'center', padding: '0 14px', gap: 12 }}>
+          <button onClick={() => setMenuAberto(m => !m)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f0f1f5', display: 'flex', fontSize: 22, padding: 4 }}>
+            {menuAberto ? '✕' : '☰'}
+          </button>
+          <img src="/oito7-logo.png" alt="Oito7" style={{ height: 28, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+          <span style={{ fontSize: 12, color: '#8a8fa3', marginLeft: 4 }}>Painel Master</span>
         </div>
-        <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 4, overflowY: 'auto' }}>
-          {([
-            { id: 'dashboard', label: '📊 Dashboard' },
-            { id: 'clientes', label: '🏢 Clientes' },
-            { id: 'novo', label: '+ Novo Cliente' },
-            { id: 'testar', label: '🧪 Testar' },
-            { id: 'cobranca', label: '💰 Cobranças' },
-          ] as const).map(item => (
-            <button key={item.id} onClick={() => { setAba(item.id as any); if (item.id !== 'novo') { setEditando(null); setTipoNovo(''); setForm({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 }) } }}
-              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, fontSize: 14, fontWeight: 500, color: aba === item.id ? '#f0f1f5' : '#8a8fa3', background: aba === item.id ? '#252836' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
-              {item.label}
+      )}
+
+      {/* Overlay mobile */}
+      {isMobile && menuAberto && (
+        <div onClick={() => setMenuAberto(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 450 }} />
+      )}
+
+      {/* Sidebar */}
+      <aside style={{
+        background: '#181b24', borderRight: '1px solid #252836', display: 'flex', flexDirection: 'column', padding: '20px 0 0', overflow: 'hidden',
+        ...(isMobile ? {
+          width: 240, position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 500,
+          transform: menuAberto ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.25s cubic-bezier(.4,0,.2,1)',
+          boxShadow: menuAberto ? '6px 0 32px rgba(0,0,0,0.5)' : 'none',
+        } : {
+          width: sidebarW, position: 'sticky', top: 0, height: '100vh', flexShrink: 0,
+          transition: 'width 0.22s ease', overflowY: 'auto',
+        }),
+      }}>
+        <div style={{ padding: colapsada ? '0 8px 16px' : '0 16px 16px', borderBottom: '1px solid #252836', display: 'flex', alignItems: 'center', justifyContent: colapsada ? 'center' : 'space-between', gap: 8, minHeight: 52 }}>
+          {!colapsada && (
+            <div style={{ flex: 1 }}>
+              <img src="/oito7-logo.png" alt="Oito7 Digital" style={{ maxHeight: 36, maxWidth: 140, objectFit: 'contain', filter: 'brightness(0) invert(1)', display: 'block' }} />
+              <p style={{ fontSize: 10, color: '#8a8fa3', marginTop: 2, whiteSpace: 'nowrap' }}>Painel Master</p>
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+            {!isMobile && (
+              <button onClick={() => setColapsada(c => !c)} title={colapsada ? 'Expandir' : 'Recolher'}
+                style={{ background: '#252836', border: 'none', cursor: 'pointer', color: '#8a8fa3', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 6, borderRadius: 6 }}>
+                {colapsada ? '›' : '‹'}
+              </button>
+            )}
+            {isMobile && (
+              <button onClick={() => setMenuAberto(false)} style={{ background: '#252836', border: 'none', cursor: 'pointer', color: '#f0f1f5', display: 'flex', padding: 6, borderRadius: 6, fontSize: 16 }}>✕</button>
+            )}
+          </div>
+        </div>
+
+        <nav style={{ flex: 1, padding: colapsada ? '12px 8px' : '12px 10px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
+          {navItems.map(item => (
+            <button key={item.id}
+              onClick={() => { setAba(item.id as any); if (item.id !== 'novo') { setEditando(null); setTipoNovo(''); setForm({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 }) } if (isMobile) setMenuAberto(false) }}
+              title={colapsada ? item.label : undefined}
+              style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 10, justifyContent: colapsada ? 'center' : 'flex-start', padding: colapsada ? '10px 0' : '10px 12px', borderRadius: 8, fontSize: 14, fontWeight: 500, color: aba === item.id ? '#f0f1f5' : '#8a8fa3', background: aba === item.id ? '#252836' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%', whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
+              {!colapsada && <span>{item.label}</span>}
             </button>
           ))}
-          {clientes.filter(c => c.ativo).length > 0 && (
+          {!colapsada && clientes.filter(c => c.ativo).length > 0 && (
             <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #252836' }}>
-              <p style={{ fontSize: 11, color: '#8a8fa3', fontWeight: 700, padding: '0 12px', marginBottom: 6, letterSpacing: 1 }}>PAINÉIS DOS CLIENTES</p>
+              <p style={{ fontSize: 10, color: '#8a8fa3', fontWeight: 700, padding: '0 12px', marginBottom: 6, letterSpacing: 1, textTransform: 'uppercase' }}>Painéis dos Clientes</p>
               {clientes.filter(c => c.ativo).map(c => (
                 <a key={c.id} href={c.dominio ? `https://${c.dominio}/admin` : '/admin'} target="_blank"
                   style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, fontSize: 13, fontWeight: 500, color: '#8a8fa3', textDecoration: 'none' }}>
@@ -106,14 +165,16 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
             </div>
           )}
         </nav>
-        <div style={{ padding: '12px 16px', borderTop: '1px solid #252836' }}>
-          <p style={{ fontSize: 12, color: '#8a8fa3', marginBottom: 8 }}>Logado como <strong style={{ color: '#f0f1f5' }}>{nome}</strong></p>
-          <button onClick={sair} style={{ width: '100%', background: 'none', border: '1px solid #252836', color: '#8a8fa3', borderRadius: 8, padding: '8px', cursor: 'pointer', fontSize: 13 }}>Sair</button>
+        <div style={{ padding: colapsada ? '12px 8px' : '12px 16px', borderTop: '1px solid #252836', display: 'flex', flexDirection: 'column', gap: 8, alignItems: colapsada ? 'center' : 'stretch' }}>
+          {!colapsada && <p style={{ fontSize: 12, color: '#8a8fa3' }}>Logado como <strong style={{ color: '#f0f1f5' }}>{nome}</strong></p>}
+          <button onClick={sair} title={colapsada ? 'Sair' : undefined} style={{ background: 'none', border: '1px solid #252836', color: '#8a8fa3', borderRadius: 8, padding: '8px', cursor: 'pointer', fontSize: colapsada ? 16 : 13 }}>
+            {colapsada ? '🚪' : 'Sair'}
+          </button>
         </div>
       </aside>
 
       {/* Main */}
-      <main style={{ flex: 1, padding: 32, overflow: 'auto' }}>
+      <main style={{ flex: 1, padding: isMobile ? '68px 14px 40px' : 32, overflow: 'auto', minWidth: 0 }}>
 
         {aba === 'dashboard' && (
           <div>
