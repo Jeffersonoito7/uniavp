@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import ThemeToggle from '@/app/components/ThemeToggle'
 
@@ -7,8 +7,17 @@ export default function LoginForm({ logoUrl, siteNome, isDominioMaster }: { logo
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
+  const [sucesso, setSucesso] = useState('')
   const [logoFalhou, setLogoFalhou] = useState(false)
   const [verSenha, setVerSenha] = useState(false)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('msg') === 'senha-redefinida') {
+      setSucesso('Senha redefinida com sucesso! Faça login com a nova senha.')
+      window.history.replaceState({}, '', '/login')
+    }
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -67,6 +76,11 @@ export default function LoginForm({ logoUrl, siteNome, isDominioMaster }: { logo
           )}
         </div>
         <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32 }}>
+          {sucesso && (
+            <div style={{ background: '#02A15320', border: '1px solid var(--avp-green)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-green)', fontSize: 14, marginBottom: 16 }}>
+              ✅ {sucesso}
+            </div>
+          )}
           {erro && (
             <div style={{ background: '#e6394620', border: '1px solid var(--avp-danger)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-danger)', fontSize: 14, marginBottom: 16 }}>
               {erro}
