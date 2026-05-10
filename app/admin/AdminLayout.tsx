@@ -18,7 +18,7 @@ const navItems = [
   { href: '/admin/usuarios', label: 'Usuários', icon: UsersRound },
   { href: '/admin/consultores', label: 'Consultores', icon: Users },
   { href: '/admin/gestores', label: 'Gestores', icon: UserCog },
-  { href: '/admin/admins', label: 'Admins', icon: ShieldCheck },
+  { href: '/admin/admins', label: 'Gerentes', icon: ShieldCheck },
   { href: '/admin/ranking', label: 'Ranking', icon: Trophy },
   { href: '/admin/premios', label: 'Prêmios', icon: Gift },
   { href: '/admin/noticias', label: 'Notícias', icon: Newspaper },
