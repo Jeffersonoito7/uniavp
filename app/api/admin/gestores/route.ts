@@ -80,6 +80,29 @@ export async function PUT(request: NextRequest) {
 }
 
 
+export async function PATCH(request: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+
+  const adminClient = createServiceRoleClient()
+  const isAdmin = await verificarAdmin(adminClient, user.id)
+  if (!isAdmin) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+
+  const { id, senha } = await request.json()
+  if (!id || !senha) return NextResponse.json({ error: 'id e senha obrigatórios' }, { status: 400 })
+  if (senha.length < 6) return NextResponse.json({ error: 'Senha mínimo 6 caracteres' }, { status: 400 })
+
+  const { data: gestor } = await (adminClient.from('gestores') as any)
+    .select('user_id').eq('id', id).maybeSingle()
+  if (!gestor?.user_id) return NextResponse.json({ error: 'Gestor não encontrado' }, { status: 404 })
+
+  const { error } = await adminClient.auth.admin.updateUserById(gestor.user_id, { password: senha })
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  return NextResponse.json({ ok: true })
+}
+
 export async function DELETE(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

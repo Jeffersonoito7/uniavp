@@ -116,11 +116,11 @@ export default function RecuperarSenhaForm({ logoUrl, siteNome }: { logoUrl: str
                     </button>
                   </div>
 
-                  {/* Também tenta abrir direto */}
-                  <a href={link} target="_blank" rel="noopener noreferrer"
-                    style={{ display: 'block', background: 'var(--avp-border)', color: 'var(--avp-text)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', textAlign: 'center', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>
+                  {/* Abre direto via JS para evitar pré-fetch do navegador */}
+                  <button onClick={() => window.open(link!, '_self')}
+                    style={{ width: '100%', background: 'var(--avp-border)', color: 'var(--avp-text)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', textAlign: 'center', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
                     🔗 Ou clique aqui para abrir direto
-                  </a>
+                  </button>
                 </div>
               )}
 
