@@ -68,6 +68,10 @@ export default function LinksTeste() {
     setTimeout(() => setCopiado(null), 2000)
   }
 
+  function urlCompleta(href: string) {
+    return typeof window !== 'undefined' ? `${window.location.origin}${href}` : href
+  }
+
   return (
     <div style={{ marginBottom: 24 }}>
       <button
@@ -108,10 +112,17 @@ export default function LinksTeste() {
                 </div>
               )}
 
-              <a href={p.href} target="_blank" rel="noopener noreferrer"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: p.cor, color: '#fff', borderRadius: 8, padding: '8px 14px', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>
-                Abrir painel ↗
-              </a>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => copiar(urlCompleta(p.href), `link-${p.href}`)}
+                  style={{ flex: 1, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', color: copiado === `link-${p.href}` ? 'var(--avp-green)' : 'var(--avp-text-dim)', borderRadius: 8, padding: '8px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 700, transition: 'all 0.15s' }}>
+                  {copiado === `link-${p.href}` ? '✓ Copiado!' : '📋 Copiar link'}
+                </button>
+                <a href={p.href} target="_blank" rel="noopener noreferrer"
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, background: p.cor, color: '#fff', borderRadius: 8, padding: '8px 10px', textDecoration: 'none', fontSize: 12, fontWeight: 700 }}>
+                  Abrir ↗
+                </a>
+              </div>
             </div>
           ))}
         </div>
