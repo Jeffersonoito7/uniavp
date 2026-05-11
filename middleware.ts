@@ -11,7 +11,6 @@ function hasSession(request: NextRequest): boolean {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const hostname = request.headers.get('host') || ''
-  const origin = request.nextUrl.origin
 
   // ── Roteamento transparente por subdomínio ──────────────────
   if (hostname.startsWith('gestor.')) {
@@ -26,21 +25,19 @@ export function middleware(request: NextRequest) {
       pathname.startsWith('/captacao')
 
     if (!excluded) {
-      const dest = pathname === '/' ? '/gestor' : `/gestor${pathname}`
-
-      // sem sessão → login
       if (!hasSession(request)) {
-        return NextResponse.redirect(new URL('/gestor/login', origin))
+        return NextResponse.redirect(new URL('/gestor/login', request.url))
       }
-      return NextResponse.rewrite(new URL(dest, origin))
+      const dest = pathname === '/' ? '/gestor' : `/gestor${pathname}`
+      return NextResponse.rewrite(new URL(dest, request.url))
     }
   } else if (hostname.startsWith('adm.') && pathname === '/') {
     if (!hasSession(request)) {
-      return NextResponse.redirect(new URL('/login', origin))
+      return NextResponse.redirect(new URL('/login', request.url))
     }
-    return NextResponse.rewrite(new URL('/admin', origin))
+    return NextResponse.rewrite(new URL('/admin', request.url))
   } else if (hostname.startsWith('consultor.') && pathname === '/') {
-    return NextResponse.rewrite(new URL('/captacao', origin))
+    return NextResponse.rewrite(new URL('/captacao', request.url))
   }
 
   // ── Proteção de rotas (domínio principal) ───────────────────
@@ -62,10 +59,10 @@ export function middleware(request: NextRequest) {
   if (isPublic) return NextResponse.next()
 
   if (!hasSession(request)) {
-    if (pathname.startsWith('/aluno'))  return NextResponse.redirect(new URL('/consultor/login', origin))
-    if (pathname.startsWith('/gestor')) return NextResponse.redirect(new URL('/gestor/login', origin))
-    if (pathname.startsWith('/admin'))  return NextResponse.redirect(new URL('/login', origin))
-    if (pathname.startsWith('/super'))  return NextResponse.redirect(new URL('/super/login', origin))
+    if (pathname.startsWith('/aluno'))  return NextResponse.redirect(new URL('/consultor/login', request.url))
+    if (pathname.startsWith('/gestor')) return NextResponse.redirect(new URL('/gestor/login', request.url))
+    if (pathname.startsWith('/admin'))  return NextResponse.redirect(new URL('/login', request.url))
+    if (pathname.startsWith('/super'))  return NextResponse.redirect(new URL('/super/login', request.url))
   }
 
   return NextResponse.next()
