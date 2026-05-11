@@ -69,7 +69,8 @@ export default function GestorDashboard({
   const vagasLivres = 50 - vagasUsadas
 
   function copiarLink() {
-    navigator.clipboard.writeText(`${window.location.origin}/g/${gestor.whatsapp}`)
+    const base = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+    navigator.clipboard.writeText(`${base}/g/${gestor.whatsapp}`)
     setLinkCopiado(true)
     setTimeout(() => setLinkCopiado(false), 2000)
   }

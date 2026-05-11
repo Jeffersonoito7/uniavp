@@ -26,7 +26,7 @@ export default async function AdminDashboard() {
       </div>
       <LinksTeste />
       <LiberacoesPendentes />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16 }}>
         {[
           { label: 'Alunos', value: totalAlunos ?? 0 },
           { label: 'Módulos', value: totalModulos ?? 0 },

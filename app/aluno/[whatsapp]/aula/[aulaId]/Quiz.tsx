@@ -17,14 +17,13 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
   const [enviando, setEnviando] = useState(false)
   const [resultado, setResultado] = useState<{ acertos: number; total: number; percentual: number; aprovado: boolean } | null>(null)
   const [iniciado, setIniciado] = useState(false)
+  const [pendenteLiberacao, setPendenteLiberacao] = useState(false)
+  const [modoLiberacao, setModoLiberacao] = useState('')
 
   if (questoes.length === 0) return null
 
   const letraAlt = (i: number) => ['A', 'B', 'C', 'D', 'E', 'F'][i]
   const todasRespondidas = questoes.every(q => respostas[q.id] !== undefined)
-
-  const [pendenteLiberacao, setPendenteLiberacao] = useState(false)
-  const [modoLiberacao, setModoLiberacao] = useState('')
 
   async function enviar() {
     if (!todasRespondidas) return

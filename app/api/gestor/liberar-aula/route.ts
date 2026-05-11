@@ -37,12 +37,12 @@ export async function GET(req: NextRequest) {
 
   const adminClient = createServiceRoleClient()
   const { data: gestor } = await (adminClient.from('gestores') as any)
-    .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+    .select('id, whatsapp').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!gestor) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   // Busca consultores do gestor com liberações pendentes
   const { data: alunos } = await (adminClient.from('alunos') as any)
-    .select('id').eq('gestor_id', gestor.id).eq('status', 'ativo')
+    .select('id').eq('gestor_whatsapp', gestor.whatsapp).eq('status', 'ativo')
 
   if (!alunos || alunos.length === 0) return NextResponse.json({ pendentes: [] })
 

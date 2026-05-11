@@ -257,7 +257,8 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
       </div>
 
       <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--avp-border)' }}>
               {['Nome', 'E-mail', 'WhatsApp', 'Link Consultor', 'Status', 'Cadastro', 'Ações'].map(h => (
@@ -310,6 +311,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </>
   )

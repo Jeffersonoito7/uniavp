@@ -26,13 +26,21 @@ export default async function GestorPage() {
     .eq('publicado', true)
 
   const progressoMap: Record<string, number> = {}
-  for (const c of (consultores ?? [])) {
-    const { data: prog } = await (adminClient.from('progresso') as any)
-      .select('aula_id')
-      .eq('aluno_id', c.id)
+  if ((consultores ?? []).length > 0) {
+    const alunoIds = (consultores ?? []).map((c: any) => c.id)
+    const { data: todosProgresso } = await (adminClient.from('progresso') as any)
+      .select('aluno_id, aula_id')
+      .in('aluno_id', alunoIds)
       .eq('aprovado', true)
-    const uniqueAulas = new Set((prog ?? []).map((p: any) => p.aula_id)).size
-    progressoMap[c.id] = totalAulas ? Math.round((uniqueAulas / totalAulas) * 100) : 0
+    const contagem: Record<string, Set<string>> = {}
+    for (const p of (todosProgresso ?? [])) {
+      if (!contagem[p.aluno_id]) contagem[p.aluno_id] = new Set()
+      contagem[p.aluno_id].add(p.aula_id)
+    }
+    for (const c of (consultores ?? [])) {
+      const unique = contagem[c.id]?.size ?? 0
+      progressoMap[c.id] = totalAulas ? Math.round((unique / totalAulas) * 100) : 0
+    }
   }
 
   return (

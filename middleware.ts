@@ -25,7 +25,9 @@ export function middleware(request: NextRequest) {
       path.startsWith('/_next/') ||
       path.startsWith('/recuperar-senha') ||
       path.startsWith('/redefinir-senha') ||
-      path.startsWith('/convite')
+      path.startsWith('/convite') ||
+      path.startsWith('/g/') ||
+      path.startsWith('/captacao')
     if (!gestorExcluded) {
       effectivePath = path === '/' ? '/gestor' : `/gestor${path}`
       shouldRewrite = true
