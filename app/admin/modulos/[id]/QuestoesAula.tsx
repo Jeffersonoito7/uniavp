@@ -39,8 +39,12 @@ export default function QuestoesAula({ aulaId, aprovacaoMinima }: { aulaId: stri
   }
 
   async function toggle() {
-    if (!aberto) await carregar()
-    else setAberto(false)
+    if (!aberto) {
+      await carregar()
+      setAberto(true)
+    } else {
+      setAberto(false)
+    }
   }
 
   // Carrega ao montar para detectar se tem questões (mostra alerta se não tiver)
