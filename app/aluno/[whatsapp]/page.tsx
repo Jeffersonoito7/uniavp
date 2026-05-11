@@ -181,9 +181,9 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
               {/* Thumbnail */}
               <div style={{ width: 220, flexShrink: 0, position: 'relative', background: 'linear-gradient(135deg, #1e3a8a, #1e40af)', overflow: 'hidden' }}
                 className="hide-mobile">
-                {aulaAtual.youtube_video_id && (
+                {(aulaAtual.capa_url || aulaAtual.youtube_video_id) && (
                   <img
-                    src={`https://img.youtube.com/vi/${aulaAtual.youtube_video_id}/mqdefault.jpg`}
+                    src={aulaAtual.capa_url || `https://img.youtube.com/vi/${aulaAtual.youtube_video_id}/mqdefault.jpg`}
                     alt={aulaAtual.aula_titulo}
                     style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
                   />
@@ -310,9 +310,9 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
                     }}>
                       {/* Thumbnail */}
                       <div style={{ height: 112, position: 'relative', background: 'linear-gradient(135deg, #1e3a8a, #1e40af)', overflow: 'hidden' }}>
-                        {aula.youtube_video_id && (
+                        {(aula.capa_url || aula.youtube_video_id) && (
                           <img
-                            src={`https://img.youtube.com/vi/${aula.youtube_video_id}/mqdefault.jpg`}
+                            src={aula.capa_url || `https://img.youtube.com/vi/${aula.youtube_video_id}/mqdefault.jpg`}
                             alt={aula.aula_titulo}
                             style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
                           />
