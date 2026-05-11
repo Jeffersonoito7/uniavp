@@ -10,6 +10,7 @@ import CertificadoWrapper from '@/app/components/CertificadoWrapper'
 import SupportChat from '@/app/components/SupportChat'
 import PushButton from '@/app/components/PushButton'
 import PWAInstallButton from '@/app/components/PWAInstallButton'
+import RankingWidget from '@/app/components/RankingWidget'
 
 type TrilhaItem = {
   modulo_id: string
@@ -367,6 +368,8 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
           )}
         </div>
       </div>
+
+      <RankingWidget meuId={aluno.id} />
 
       {aluno.status === 'concluido' && certMap['certificado_template_url'] && (
         <CertificadoWrapper
