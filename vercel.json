@@ -5,43 +5,5 @@
     { "path": "/api/cron/boas-vindas", "schedule": "0 9 * * *"  },
     { "path": "/api/cron/validade",    "schedule": "0 10 * * *" },
     { "path": "/api/cron/relatorio",   "schedule": "0 8 * * 1"  }
-  ],
-  "redirects": [
-    {
-      "source": "/",
-      "has": [{ "type": "host", "value": "consultor.autovaleprevencoes.org.br" }],
-      "destination": "https://uniavp.autovaleprevencoes.org.br/captacao",
-      "permanent": true
-    },
-    {
-      "source": "/:path+",
-      "has": [{ "type": "host", "value": "consultor.autovaleprevencoes.org.br" }],
-      "destination": "https://uniavp.autovaleprevencoes.org.br/:path",
-      "permanent": true
-    },
-    {
-      "source": "/",
-      "has": [{ "type": "host", "value": "gestor.autovaleprevencoes.org.br" }],
-      "destination": "https://uniavp.autovaleprevencoes.org.br/gestor",
-      "permanent": true
-    },
-    {
-      "source": "/:path+",
-      "has": [{ "type": "host", "value": "gestor.autovaleprevencoes.org.br" }],
-      "destination": "https://uniavp.autovaleprevencoes.org.br/:path",
-      "permanent": true
-    },
-    {
-      "source": "/",
-      "has": [{ "type": "host", "value": "adm.autovaleprevencoes.org.br" }],
-      "destination": "https://uniavp.autovaleprevencoes.org.br/admin",
-      "permanent": true
-    },
-    {
-      "source": "/:path+",
-      "has": [{ "type": "host", "value": "adm.autovaleprevencoes.org.br" }],
-      "destination": "https://uniavp.autovaleprevencoes.org.br/:path",
-      "permanent": true
-    }
   ]
 }

@@ -122,7 +122,7 @@ export default function AdminsCliente({ adminsIniciais, meuUserId }: { adminsIni
       {showForm && (
         <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24, marginBottom: 24 }}>
           <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Adicionar gerente</h3>
-          <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 20 }}>Esta pessoa poderá logar em <strong style={{ color: 'var(--avp-text)' }}>uniavp.autovaleprevencoes.org.br/login</strong> e terá acesso completo ao painel.</p>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 20 }}>Esta pessoa poderá logar em <strong style={{ color: 'var(--avp-text)' }}>adm.autovaleprevencoes.org.br</strong> e terá acesso completo ao painel.</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div>
               <label style={lbl}>Nome completo *</label>
@@ -145,7 +145,7 @@ export default function AdminsCliente({ adminsIniciais, meuUserId }: { adminsIni
             </div>
           </div>
           <div style={{ background: '#02A15315', border: '1px solid #02A15340', borderRadius: 8, padding: '12px 16px', margin: '16px 0', fontSize: 13, color: 'var(--avp-green)', lineHeight: 1.6 }}>
-            ✅ Após criar, informe o <strong>e-mail</strong> e a <strong>senha</strong> para a pessoa. Ela acessa em <strong>uniavp.autovaleprevencoes.org.br/login</strong> e poderá alterar a senha depois.
+            ✅ Após criar, informe o <strong>e-mail</strong> e a <strong>senha</strong> para a pessoa. Ela acessa em <strong>adm.autovaleprevencoes.org.br</strong> e poderá alterar a senha depois.
           </div>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
             <button onClick={() => setShowForm(false)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
