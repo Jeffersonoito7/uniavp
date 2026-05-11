@@ -14,13 +14,28 @@ export async function POST(req: NextRequest) {
   if (!aluno) return NextResponse.json({ error: 'Aluno não encontrado' }, { status: 404 })
 
   const body = await req.json()
-  const { aula_id, respostas: respostasEnviadas } = body
+  const { aula_id, respostas: respostasEnviadas, pular } = body
 
   const { data: aula } = await (adminClient.from('aulas') as any)
-    .select('id, quiz_qtd_questoes, quiz_aprovacao_minima, espera_horas, modulo_id, liberacao_modo')
+    .select('id, quiz_qtd_questoes, quiz_aprovacao_minima, espera_horas, modulo_id, liberacao_modo, quiz_tipo')
     .eq('id', aula_id)
     .single()
   if (!aula) return NextResponse.json({ error: 'Aula não encontrada' }, { status: 404 })
+
+  // Quiz indicativo — aluno escolheu pular
+  if (pular && aula.quiz_tipo === 'indicativo') {
+    const liberada_em = new Date(Date.now() + (aula.espera_horas ?? 0) * 3600000).toISOString()
+    await (adminClient.from('progresso') as any).insert({
+      aluno_id: aluno.id, aula_id,
+      tentativa_numero: 1, acertos: 0, total_questoes: 0,
+      percentual: 0, aprovado: true, respostas: {},
+      proxima_aula_liberada_em: liberada_em, pendente_liberacao: false,
+    })
+    await (adminClient.from('aluno_pontos') as any).insert({
+      aluno_id: aluno.id, quantidade: 5, motivo: `Quiz indicativo visto - aula ${aula_id}`,
+    })
+    return NextResponse.json({ ok: true, pulado: true, aprovado: true })
+  }
 
   const { data: questoes } = await (adminClient.from('questoes') as any)
     .select('id, alternativas')

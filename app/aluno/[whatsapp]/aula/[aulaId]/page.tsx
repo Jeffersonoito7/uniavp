@@ -144,6 +144,7 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
             aprovacaoMinima={aula.quiz_aprovacao_minima}
             jaAprovado={jaAprovado}
             tentativasAnteriores={tentativasAnteriores}
+            quizTipo={aula.quiz_tipo ?? 'obrigatorio'}
           />
         )}
 

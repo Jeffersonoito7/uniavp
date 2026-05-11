@@ -10,12 +10,13 @@ type Props = {
   aprovacaoMinima: number
   jaAprovado: boolean
   tentativasAnteriores: number
+  quizTipo: 'obrigatorio' | 'indicativo'
 }
 
-export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, tentativasAnteriores }: Props) {
+export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, tentativasAnteriores, quizTipo }: Props) {
   const [respostas, setRespostas] = useState<Record<string, number>>({})
   const [enviando, setEnviando] = useState(false)
-  const [resultado, setResultado] = useState<{ acertos: number; total: number; percentual: number; aprovado: boolean } | null>(null)
+  const [resultado, setResultado] = useState<{ acertos: number; total: number; percentual: number; aprovado: boolean; pulado?: boolean } | null>(null)
   const [iniciado, setIniciado] = useState(false)
   const [pendenteLiberacao, setPendenteLiberacao] = useState(false)
   const [modoLiberacao, setModoLiberacao] = useState('')
@@ -24,6 +25,18 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
 
   const letraAlt = (i: number) => ['A', 'B', 'C', 'D', 'E', 'F'][i]
   const todasRespondidas = questoes.every(q => respostas[q.id] !== undefined)
+
+  async function pular() {
+    setEnviando(true)
+    const res = await fetch('/api/quiz', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ aula_id: aulaId, pular: true }),
+    })
+    const data = await res.json()
+    setResultado({ acertos: 0, total: questoes.length, percentual: 0, aprovado: true, pulado: true })
+    setEnviando(false)
+  }
 
   async function enviar() {
     if (!todasRespondidas) return
@@ -50,6 +63,19 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
         <div>
           <p style={{ fontWeight: 700, color: 'var(--avp-green)', fontSize: 16, marginBottom: 4 }}>Quiz concluído com aprovação!</p>
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Você já foi aprovado nesta aula. Continue para a próxima!</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Quiz pulado (indicativo)
+  if (resultado?.pulado) {
+    return (
+      <div style={{ background: '#02A15310', border: '1px solid var(--avp-green)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
+        <span style={{ fontSize: 32 }}>🙏</span>
+        <div>
+          <p style={{ fontWeight: 700, color: 'var(--avp-green)', fontSize: 16, marginBottom: 4 }}>Tudo bem!</p>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Você pode continuar para a próxima aula. O quiz ficou registrado como não realizado.</p>
         </div>
       </div>
     )
@@ -117,10 +143,18 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, maxWidth: 400 }}>
           Responda todas as perguntas abaixo. Se for aprovado, a próxima aula será liberada automaticamente.
         </p>
-        <button onClick={() => setIniciado(true)}
-          style={{ background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 32px', fontWeight: 800, fontSize: 16, cursor: 'pointer' }}>
-          Iniciar quiz
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+          <button onClick={() => setIniciado(true)}
+            style={{ background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 32px', fontWeight: 800, fontSize: 16, cursor: 'pointer' }}>
+            Iniciar quiz
+          </button>
+          {quizTipo === 'indicativo' && (
+            <button onClick={pular} disabled={enviando}
+              style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', fontSize: 13, cursor: 'pointer', textDecoration: 'underline', padding: '4px 8px' }}>
+              {enviando ? 'Aguarde...' : 'Não, obrigado — pular quiz'}
+            </button>
+          )}
+        </div>
       </div>
     )
   }

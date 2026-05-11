@@ -21,6 +21,7 @@ type Aula = {
   capa_url: string | null
   video_url: string | null
   liberacao_modo: 'automatico' | 'manual_gestor' | 'manual_admin'
+  quiz_tipo: 'obrigatorio' | 'indicativo'
 }
 
 function extrairIdYoutube(input: string): string {
@@ -169,6 +170,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
     quiz_qtd_questoes: 5, quiz_aprovacao_minima: 80, espera_horas: 0,
     ao_vivo_link: '', ao_vivo_data: '', ao_vivo_plataforma: 'zoom',
     validade_meses: '', liberacao_modo: 'automatico' as 'automatico' | 'manual_gestor' | 'manual_admin',
+    quiz_tipo: 'obrigatorio' as 'obrigatorio' | 'indicativo',
   })
   const [capaPreview, setCapaPreview] = useState<string | null>(null)
   const [capaBase64, setCapaBase64] = useState<string | null>(null)
@@ -182,8 +184,9 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
     quiz_qtd_questoes: number; quiz_aprovacao_minima: number; espera_horas: number;
     validade_meses: string; ao_vivo_link: string; ao_vivo_data: string; ao_vivo_plataforma: string;
     liberacao_modo: 'automatico' | 'manual_gestor' | 'manual_admin';
+    quiz_tipo: 'obrigatorio' | 'indicativo';
     capaPreview: string | null; capaBase64: string | null;
-  }>({ titulo: '', descricao: '', youtube_url: '', duracao_minutos: '', quiz_qtd_questoes: 5, quiz_aprovacao_minima: 80, espera_horas: 0, validade_meses: '', ao_vivo_link: '', ao_vivo_data: '', ao_vivo_plataforma: 'zoom', liberacao_modo: 'automatico', capaPreview: null, capaBase64: null })
+  }>({ titulo: '', descricao: '', youtube_url: '', duracao_minutos: '', quiz_qtd_questoes: 5, quiz_aprovacao_minima: 80, espera_horas: 0, validade_meses: '', ao_vivo_link: '', ao_vivo_data: '', ao_vivo_plataforma: 'zoom', liberacao_modo: 'automatico', quiz_tipo: 'obrigatorio', capaPreview: null, capaBase64: null })
   const [editTipoVideo, setEditTipoVideo] = useState<'youtube' | 'arquivo' | 'url'>('youtube')
   const [editVideoUrl, setEditVideoUrl] = useState('')
   const [editUploadandoVideo, setEditUploadandoVideo] = useState(false)
@@ -280,6 +283,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
       ao_vivo_link: aula.ao_vivo_link ?? '', ao_vivo_data: aula.ao_vivo_data ?? '',
       ao_vivo_plataforma: aula.ao_vivo_plataforma ?? 'zoom',
       capaPreview: temCapa ? aula.capa_url : null, capaBase64: temCapa ? aula.capa_url : null,
+      quiz_tipo: aula.quiz_tipo ?? 'obrigatorio',
     })
   }
 
@@ -299,6 +303,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
         ao_vivo_plataforma: editForm.ao_vivo_link ? editForm.ao_vivo_plataforma : null,
         capa_url: editForm.capaBase64 || null,
         liberacao_modo: editForm.liberacao_modo,
+        quiz_tipo: editForm.quiz_tipo,
       }),
     })
     const data = await res.json()
@@ -336,6 +341,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
       validade_meses: form.validade_meses ? parseInt(form.validade_meses) : null,
       capa_url: capaBase64 || null,
       liberacao_modo: form.liberacao_modo,
+      quiz_tipo: form.quiz_tipo,
     }
     if (aoVivo && form.ao_vivo_link) {
       body.ao_vivo_link = form.ao_vivo_link
@@ -354,7 +360,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
       setAoVivo(false)
       setCapaPreview(null); setCapaBase64(null)
       setTipoVideo('youtube'); setVideoUrl('')
-      setForm({ titulo: '', descricao: '', youtube_url: '', duracao_minutos: '', quiz_qtd_questoes: 5, quiz_aprovacao_minima: 80, espera_horas: 0, ao_vivo_link: '', ao_vivo_data: '', ao_vivo_plataforma: 'zoom', validade_meses: '', liberacao_modo: 'automatico' })
+      setForm({ titulo: '', descricao: '', youtube_url: '', duracao_minutos: '', quiz_qtd_questoes: 5, quiz_aprovacao_minima: 80, espera_horas: 0, ao_vivo_link: '', ao_vivo_data: '', ao_vivo_plataforma: 'zoom', validade_meses: '', liberacao_modo: 'automatico', quiz_tipo: 'obrigatorio' })
       setMsg('Aula criada com sucesso!')
     }
     setSalvando(false)
@@ -519,6 +525,22 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                 <div><label style={labelStyle}>Qtd. de questões no quiz</label><input type="number" style={inputStyle} value={form.quiz_qtd_questoes} onChange={e => setForm(p => ({ ...p, quiz_qtd_questoes: parseInt(e.target.value) }))} min={1} max={20} /></div>
                 <div><label style={labelStyle}>Aprovação mínima (%)</label><input type="number" style={inputStyle} value={form.quiz_aprovacao_minima} onChange={e => setForm(p => ({ ...p, quiz_aprovacao_minima: parseInt(e.target.value) }))} min={50} max={100} /></div>
                 <div><label style={labelStyle}>Validade (meses)</label><input type="number" style={inputStyle} value={form.validade_meses} onChange={e => setForm(p => ({ ...p, validade_meses: e.target.value }))} min={0} placeholder="0 = sem validade" /></div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={labelStyle}>Tipo do quiz</label>
+                  {(['obrigatorio', 'indicativo'] as const).map(tipo => (
+                    <label key={tipo} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', marginBottom: 8, padding: '8px 10px', borderRadius: 8, border: `1px solid ${form.quiz_tipo === tipo ? 'var(--avp-green)' : 'var(--avp-border)'}`, background: form.quiz_tipo === tipo ? '#02A15315' : 'transparent' }}>
+                      <input type="radio" checked={form.quiz_tipo === tipo} onChange={() => setForm(p => ({ ...p, quiz_tipo: tipo }))} style={{ marginTop: 2, accentColor: 'var(--avp-green)' }} />
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--avp-text)', margin: 0 }}>
+                          {tipo === 'obrigatorio' ? '🔒 Obrigatório' : '💡 Indicativo'}
+                        </p>
+                        <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
+                          {tipo === 'obrigatorio' ? 'Aluno deve passar no quiz para desbloquear a próxima aula' : 'Aluno pode pular o quiz — serve como indicador de participação'}
+                        </p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
                 <div style={{ gridColumn: '1 / -1', background: '#3b82f615', border: '1px solid #3b82f640', borderRadius: 8, padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                   <span style={{ fontSize: 20, flexShrink: 0 }}>💡</span>
                   <div>
