@@ -624,6 +624,22 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                     <div><label style={labelStyle}>Qtd. de questões no quiz</label><input type="number" style={inputStyle} value={editForm.quiz_qtd_questoes} onChange={e => setEditForm(p => ({ ...p, quiz_qtd_questoes: parseInt(e.target.value) }))} min={1} max={20} /></div>
                     <div><label style={labelStyle}>Aprovação mínima (%)</label><input type="number" style={inputStyle} value={editForm.quiz_aprovacao_minima} onChange={e => setEditForm(p => ({ ...p, quiz_aprovacao_minima: parseInt(e.target.value) }))} min={50} max={100} /></div>
                     <div><label style={labelStyle}>Validade (meses)</label><input type="number" style={inputStyle} value={editForm.validade_meses} onChange={e => setEditForm(p => ({ ...p, validade_meses: e.target.value }))} min={0} placeholder="0 = sem validade" /></div>
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label style={labelStyle}>Tipo do quiz</label>
+                      {(['obrigatorio', 'indicativo'] as const).map(tipo => (
+                        <label key={tipo} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', marginBottom: 8, padding: '8px 10px', borderRadius: 8, border: `1px solid ${editForm.quiz_tipo === tipo ? 'var(--avp-green)' : 'var(--avp-border)'}`, background: editForm.quiz_tipo === tipo ? '#02A15315' : 'transparent' }}>
+                          <input type="radio" checked={editForm.quiz_tipo === tipo} onChange={() => setEditForm(p => ({ ...p, quiz_tipo: tipo }))} style={{ marginTop: 2, accentColor: 'var(--avp-green)' }} />
+                          <div>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--avp-text)', margin: 0 }}>
+                              {tipo === 'obrigatorio' ? '🔒 Obrigatório' : '💡 Indicativo'}
+                            </p>
+                            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
+                              {tipo === 'obrigatorio' ? 'Aluno deve passar no quiz para desbloquear a próxima aula' : 'Aluno pode pular o quiz — serve como indicador de participação'}
+                            </p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
                     <div style={{ gridColumn: '1 / -1', background: '#3b82f615', border: '1px solid #3b82f640', borderRadius: 8, padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                       <span style={{ fontSize: 18, flexShrink: 0 }}>💡</span>
                       <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>
