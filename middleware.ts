@@ -18,7 +18,15 @@ export function middleware(request: NextRequest) {
 
   if (hostname.startsWith('gestor.')) {
     // gestor.autovaleprevencoes.org.br — serve /gestor/* transparently
-    if (!path.startsWith('/gestor') && !path.startsWith('/api/') && !path.startsWith('/_next/')) {
+    // Exceções: rotas públicas raiz que devem ser servidas sem prefixo
+    const gestorExcluded =
+      path.startsWith('/gestor') ||
+      path.startsWith('/api/') ||
+      path.startsWith('/_next/') ||
+      path.startsWith('/recuperar-senha') ||
+      path.startsWith('/redefinir-senha') ||
+      path.startsWith('/convite')
+    if (!gestorExcluded) {
       effectivePath = path === '/' ? '/gestor' : `/gestor${path}`
       shouldRewrite = true
     }
