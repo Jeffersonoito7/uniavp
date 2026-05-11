@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp } from '@/lib/whatsapp'
+import { enviarPushParaGestorConsultores } from '@/lib/push'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,6 +48,13 @@ export async function POST(req: NextRequest) {
     for (const c of consultores ?? []) {
       if (c.whatsapp) await enviarWhatsApp(c.whatsapp, msg)
     }
+    // Push notification para consultores que ativaram
+    const dataFormatadaShort = new Date(data_hora).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+    enviarPushParaGestorConsultores(gestor.whatsapp, {
+      title: `📅 Novo evento: ${titulo}`,
+      body: `${dataFormatadaShort}${cidade ? ` · ${cidade}` : ''}`,
+      url: '/',
+    }).catch(() => {})
   }
 
   return NextResponse.json(evento)

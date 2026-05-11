@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { getSiteConfig } from '@/lib/site-config'
+import RegisterSW from './components/RegisterSW'
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfig()
@@ -37,7 +38,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           }
         `}</style>
       </head>
-      <body>{children}</body>
+      <body>
+        <RegisterSW />
+        {children}
+      </body>
     </html>
   )
 }

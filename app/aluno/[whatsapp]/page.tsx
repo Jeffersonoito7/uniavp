@@ -8,6 +8,8 @@ import MuralNoticias from '@/app/components/MuralNoticias'
 import LogoutButton from '@/app/components/LogoutButton'
 import CertificadoWrapper from '@/app/components/CertificadoWrapper'
 import SupportChat from '@/app/components/SupportChat'
+import PushButton from '@/app/components/PushButton'
+import PWAInstallButton from '@/app/components/PWAInstallButton'
 
 type TrilhaItem = {
   modulo_id: string
@@ -136,6 +138,8 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
               className="hide-mobile">Loja</Link>
             <Link href={`/aluno/${params.whatsapp}/artes`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none', fontWeight: 500, padding: '6px 10px', borderRadius: 8 }}
               className="hide-mobile">🎨 Artes</Link>
+            <PushButton />
+            <PWAInstallButton />
             <MuralNoticias />
             <EventosWidget />
             <a href={`/aluno/${params.whatsapp}/perfil`} style={{ display: 'flex', alignItems: 'center', gap: 7, textDecoration: 'none', marginLeft: 4 }}>

@@ -1,13 +1,20 @@
 {
-  "name": "Universidade Digital",
-  "short_name": "Universidade",
-  "description": "Plataforma de formação e treinamento corporativo",
+  "name": "Universidade AVP",
+  "short_name": "Uni AVP",
+  "description": "Plataforma de formação e treinamento em vendas e consultoria",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#08090d",
-  "theme_color": "#6366f1",
+  "theme_color": "#02A153",
+  "categories": ["education", "business"],
   "icons": [
-    { "src": "/logo.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/logo.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/logo.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Minhas Aulas", "short_name": "Aulas", "url": "/", "description": "Ver trilha de aulas" },
+    { "name": "Entrar", "short_name": "Login", "url": "/consultor/login", "description": "Entrar na plataforma" }
   ]
 }

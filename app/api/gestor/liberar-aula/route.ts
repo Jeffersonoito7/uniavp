@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { enviarPushParaAluno } from '@/lib/push'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,6 +27,15 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  // Notifica o aluno via push
+  if (data?.aluno_id) {
+    enviarPushParaAluno(data.aluno_id, {
+      title: '🎓 Nova aula liberada!',
+      body: 'Seu gestor liberou sua próxima aula. Acesse agora!',
+      url: '/',
+    }).catch(() => {})
+  }
 
   return NextResponse.json({ ok: true, liberada_em })
 }
