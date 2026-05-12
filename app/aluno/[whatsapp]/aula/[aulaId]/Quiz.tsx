@@ -12,9 +12,10 @@ type Props = {
   tentativasAnteriores: number
   quizTipo: 'obrigatorio' | 'indicativo' | 'sim_nao'
   simNaoPergunta?: string
+  simNaoNaoMensagem?: string
 }
 
-export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, tentativasAnteriores, quizTipo, simNaoPergunta }: Props) {
+export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, tentativasAnteriores, quizTipo, simNaoPergunta, simNaoNaoMensagem }: Props) {
   const [respostas, setRespostas] = useState<Record<string, number>>({})
   const [enviando, setEnviando] = useState(false)
   const [resultado, setResultado] = useState<{ acertos: number; total: number; percentual: number; aprovado: boolean; pulado?: boolean } | null>(null)
@@ -52,12 +53,14 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
 
     // Respondeu NÃO — bloqueado
     if (simNaoRecusado) {
+      const mensagemNao = simNaoNaoMensagem?.trim()
+        || 'Quando estiver pronto para assumir esse compromisso, volte aqui e responda Sim para continuar.'
       return (
         <div style={{ background: '#e6394610', border: '1px solid rgba(230,57,70,0.3)', borderRadius: 12, padding: 28, textAlign: 'center' }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>🙏</div>
           <p style={{ fontWeight: 700, color: '#f87171', fontSize: 16, marginBottom: 10 }}>Obrigado pela honestidade!</p>
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, lineHeight: 1.7, marginBottom: 20 }}>
-            Quando estiver pronto para assumir esse compromisso, volte aqui e responda <strong style={{ color: 'var(--avp-text)' }}>Sim</strong> para continuar.
+            {mensagemNao}
           </p>
           <button onClick={() => setSimNaoRecusado(false)}
             style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 24px', cursor: 'pointer', fontSize: 14, fontWeight: 600, fontFamily: 'inherit' }}>

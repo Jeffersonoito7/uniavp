@@ -23,11 +23,13 @@ export default function QuestoesAula({
   aprovacaoMinima,
   quizTipoInicial = 'obrigatorio',
   quizSimNaoPerguntaInicial = '',
+  quizSimNaoNaoMensagemInicial = '',
 }: {
   aulaId: string
   aprovacaoMinima: number
   quizTipoInicial?: QuizTipo
   quizSimNaoPerguntaInicial?: string
+  quizSimNaoNaoMensagemInicial?: string
 }) {
   const [questoes, setQuestoes] = useState<Questao[]>([])
   const [carregado, setCarregado] = useState(false)
@@ -40,6 +42,7 @@ export default function QuestoesAula({
   // Configuração do tipo de quiz
   const [quizTipo, setQuizTipo] = useState<QuizTipo>(quizTipoInicial)
   const [simNaoPergunta, setSimNaoPergunta] = useState(quizSimNaoPerguntaInicial)
+  const [simNaoNaoMensagem, setSimNaoNaoMensagem] = useState(quizSimNaoNaoMensagemInicial)
   const [salvandoConfig, setSalvandoConfig] = useState(false)
   const [msgConfig, setMsgConfig] = useState('')
 
@@ -65,12 +68,17 @@ export default function QuestoesAula({
     else setAberto(false)
   }
 
-  async function salvarConfig(novoTipo: QuizTipo, pergunta?: string) {
+  async function salvarConfig(novoTipo: QuizTipo, pergunta?: string, naoMensagem?: string) {
     setSalvandoConfig(true)
     const res = await fetch('/api/admin/aulas', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: aulaId, quiz_tipo: novoTipo, quiz_sim_nao_pergunta: pergunta ?? simNaoPergunta }),
+      body: JSON.stringify({
+        id: aulaId,
+        quiz_tipo: novoTipo,
+        quiz_sim_nao_pergunta: pergunta ?? simNaoPergunta,
+        quiz_sim_nao_nao_mensagem: naoMensagem ?? simNaoNaoMensagem,
+      }),
     })
     if (res.ok) { setMsgConfig('Salvo!'); setTimeout(() => setMsgConfig(''), 2000) }
     else setMsgConfig('Erro ao salvar.')
@@ -186,20 +194,30 @@ export default function QuestoesAula({
           {quizTipo === 'sim_nao' && (
             <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: 16 }}>
               <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Pergunta Sim/Não</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', fontWeight: 600, marginBottom: 6 }}>Pergunta exibida ao aluno *</p>
               <textarea
                 value={simNaoPergunta}
                 onChange={e => setSimNaoPergunta(e.target.value)}
                 placeholder="Ex: Você se compromete a aplicar o que aprendeu nesta aula?"
-                style={{ ...inp, minHeight: 64, resize: 'vertical', marginBottom: 10 }}
+                style={{ ...inp, minHeight: 64, resize: 'vertical', marginBottom: 14 }}
               />
+
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', fontWeight: 600, marginBottom: 6 }}>Mensagem quando responder ❌ Não <span style={{ fontWeight: 400 }}>(personalizada)</span></p>
+              <textarea
+                value={simNaoNaoMensagem}
+                onChange={e => setSimNaoNaoMensagem(e.target.value)}
+                placeholder="Ex: Tudo bem! Quando estiver pronto para esse compromisso, volte aqui e responda Sim para continuar sua jornada."
+                style={{ ...inp, minHeight: 80, resize: 'vertical', marginBottom: 10 }}
+              />
+
               <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                <div style={{ flex: 1, background: '#02A15320', border: '1px solid var(--avp-green)', borderRadius: 8, padding: '10px 14px', textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--avp-green)' }}>✅ Sim</div>
-                <div style={{ flex: 1, background: '#e6394620', border: '1px solid var(--avp-danger)', borderRadius: 8, padding: '10px 14px', textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--avp-danger)' }}>❌ Não</div>
+                <div style={{ flex: 1, background: '#02A15320', border: '1px solid var(--avp-green)', borderRadius: 8, padding: '10px 14px', textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--avp-green)' }}>✅ Sim → avança</div>
+                <div style={{ flex: 1, background: '#e6394620', border: '1px solid var(--avp-danger)', borderRadius: 8, padding: '10px 14px', textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--avp-danger)' }}>❌ Não → bloqueia</div>
               </div>
-              <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 10 }}>O aluno deve responder antes de avançar. Ambas as respostas são aceitas — o objetivo é o comprometimento.</p>
-              <button type="button" onClick={() => salvarConfig(quizTipo, simNaoPergunta)} disabled={salvandoConfig || !simNaoPergunta.trim()}
+              <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 10 }}>O aluno deve responder Sim para avançar. Se responder Não, verá a mensagem personalizada acima.</p>
+              <button type="button" onClick={() => salvarConfig(quizTipo, simNaoPergunta, simNaoNaoMensagem)} disabled={salvandoConfig || !simNaoPergunta.trim()}
                 style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 13, opacity: (salvandoConfig || !simNaoPergunta.trim()) ? 0.6 : 1 }}>
-                {salvandoConfig ? 'Salvando...' : '✓ Salvar pergunta'}
+                {salvandoConfig ? 'Salvando...' : '✓ Salvar configurações'}
               </button>
             </div>
           )}

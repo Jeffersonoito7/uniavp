@@ -23,6 +23,7 @@ type Aula = {
   liberacao_modo: 'automatico' | 'manual_gestor' | 'manual_admin'
   quiz_tipo: 'obrigatorio' | 'indicativo' | 'sim_nao'
   quiz_sim_nao_pergunta?: string | null
+  quiz_sim_nao_nao_mensagem?: string | null
 }
 
 function extrairIdYoutube(input: string): string {
@@ -723,6 +724,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                     aprovacaoMinima={aula.quiz_aprovacao_minima}
                     quizTipoInicial={aula.quiz_tipo ?? 'obrigatorio'}
                     quizSimNaoPerguntaInicial={aula.quiz_sim_nao_pergunta ?? ''}
+                    quizSimNaoNaoMensagemInicial={aula.quiz_sim_nao_nao_mensagem ?? ''}
                   />
                 </>
               )}
