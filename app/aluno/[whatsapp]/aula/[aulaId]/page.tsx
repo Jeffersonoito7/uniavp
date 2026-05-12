@@ -147,6 +147,7 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
             quizTipo={aula.quiz_tipo ?? 'obrigatorio'}
             simNaoPergunta={(aula as any).quiz_sim_nao_pergunta ?? ''}
             simNaoNaoMensagem={(aula as any).quiz_sim_nao_nao_mensagem ?? ''}
+            simNaoPerguntas={(aula as any).quiz_sim_nao_perguntas ?? []}
           />
         )}
 

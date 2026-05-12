@@ -3,6 +3,7 @@ import { useState } from 'react'
 
 type Alternativa = { texto: string; correta: boolean }
 type Questao = { id: string; enunciado: string; alternativas: Alternativa[]; explicacao: string | null }
+type SimNaoItem = { pergunta: string; nao_mensagem?: string }
 
 type Props = {
   aulaId: string
@@ -13,19 +14,32 @@ type Props = {
   quizTipo: 'obrigatorio' | 'indicativo' | 'sim_nao'
   simNaoPergunta?: string
   simNaoNaoMensagem?: string
+  simNaoPerguntas?: SimNaoItem[]
 }
 
-export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, tentativasAnteriores, quizTipo, simNaoPergunta, simNaoNaoMensagem }: Props) {
+export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, tentativasAnteriores, quizTipo, simNaoPergunta, simNaoNaoMensagem, simNaoPerguntas }: Props) {
   const [respostas, setRespostas] = useState<Record<string, number>>({})
   const [enviando, setEnviando] = useState(false)
   const [resultado, setResultado] = useState<{ acertos: number; total: number; percentual: number; aprovado: boolean; pulado?: boolean } | null>(null)
   const [iniciado, setIniciado] = useState(false)
   const [pendenteLiberacao, setPendenteLiberacao] = useState(false)
   const [modoLiberacao, setModoLiberacao] = useState('')
+  const [simNaoIndex, setSimNaoIndex] = useState(0)
   const [simNaoRecusado, setSimNaoRecusado] = useState(false)
 
   // ── Quiz Sim/Não ──
   if (quizTipo === 'sim_nao') {
+    // Normaliza: usa array novo se disponível, senão legado
+    const lista: SimNaoItem[] = simNaoPerguntas?.length
+      ? simNaoPerguntas
+      : simNaoPergunta
+        ? [{ pergunta: simNaoPergunta, nao_mensagem: simNaoNaoMensagem }]
+        : [{ pergunta: 'Você se compromete a aplicar o que aprendeu nesta aula?' }]
+
+    const total = lista.length
+    const perguntaAtual = lista[simNaoIndex]
+    const isUltima = simNaoIndex === total - 1
+
     if (jaAprovado) {
       return (
         <div style={{ background: '#02A15310', border: '1px solid var(--avp-green)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -38,7 +52,6 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
       )
     }
 
-    // Respondeu SIM — aprovado
     if (resultado?.aprovado) {
       return (
         <div style={{ background: '#02A15310', border: '1px solid var(--avp-green)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -51,9 +64,8 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
       )
     }
 
-    // Respondeu NÃO — bloqueado
     if (simNaoRecusado) {
-      const mensagemNao = simNaoNaoMensagem?.trim()
+      const mensagemNao = perguntaAtual?.nao_mensagem?.trim()
         || 'Quando estiver pronto para assumir esse compromisso, volte aqui e responda Sim para continuar.'
       return (
         <div style={{ background: '#e6394610', border: '1px solid rgba(230,57,70,0.3)', borderRadius: 12, padding: 28, textAlign: 'center' }}>
@@ -70,16 +82,39 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
       )
     }
 
+    async function simNaoSim() {
+      if (!isUltima) {
+        setSimNaoIndex(i => i + 1)
+      } else {
+        setEnviando(true)
+        await fetch('/api/quiz', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ aula_id: aulaId, pular: true }),
+        })
+        setResultado({ acertos: 0, total: 0, percentual: 0, aprovado: true, pulado: true })
+        setEnviando(false)
+      }
+    }
+
     return (
       <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 28 }}>
+        {total > 1 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            {lista.map((_, i) => (
+              <div key={i} style={{ height: 4, flex: 1, borderRadius: 4, background: i < simNaoIndex ? 'var(--avp-green)' : i === simNaoIndex ? 'var(--avp-blue)' : 'var(--avp-border)', transition: 'all 0.3s' }} />
+            ))}
+            <span style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>{simNaoIndex + 1}/{total}</span>
+          </div>
+        )}
         <p style={{ fontWeight: 800, fontSize: 17, marginBottom: 12, lineHeight: 1.4 }}>
-          ✋ {simNaoPergunta || 'Você se compromete a aplicar o que aprendeu nesta aula?'}
+          ✋ {perguntaAtual.pergunta}
         </p>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 20 }}>
           Resposta obrigatória para continuar para a próxima aula.
         </p>
         <div style={{ display: 'flex', gap: 12 }}>
-          <button onClick={() => pular()} disabled={enviando}
+          <button onClick={simNaoSim} disabled={enviando}
             style={{ flex: 1, background: '#02A15320', border: '2px solid var(--avp-green)', color: 'var(--avp-green)', borderRadius: 10, padding: '18px', fontWeight: 800, fontSize: 17, cursor: 'pointer', opacity: enviando ? 0.7 : 1, fontFamily: 'inherit', transition: 'all 0.2s' }}>
             {enviando ? '...' : '✅ Sim'}
           </button>
@@ -99,12 +134,11 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
 
   async function pular() {
     setEnviando(true)
-    const res = await fetch('/api/quiz', {
+    await fetch('/api/quiz', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ aula_id: aulaId, pular: true }),
     })
-    const data = await res.json()
     setResultado({ acertos: 0, total: questoes.length, percentual: 0, aprovado: true, pulado: true })
     setEnviando(false)
   }
@@ -126,7 +160,6 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
     setEnviando(false)
   }
 
-  // Já aprovado anteriormente
   if (jaAprovado) {
     return (
       <div style={{ background: '#02A15310', border: '1px solid var(--avp-green)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -139,7 +172,6 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
     )
   }
 
-  // Quiz pulado (indicativo)
   if (resultado?.pulado) {
     return (
       <div style={{ background: '#02A15310', border: '1px solid var(--avp-green)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -152,7 +184,6 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
     )
   }
 
-  // Resultado após envio
   if (resultado) {
     const cor = resultado.aprovado ? 'var(--avp-green)' : 'var(--avp-danger)'
     const bg = resultado.aprovado ? '#02A15315' : '#e6394615'
@@ -197,7 +228,6 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
     )
   }
 
-  // Tela inicial (antes de iniciar)
   if (!iniciado) {
     return (
       <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 28, display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center', textAlign: 'center' }}>
@@ -230,7 +260,6 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
     )
   }
 
-  // Quiz em andamento
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

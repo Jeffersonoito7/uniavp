@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 type Alternativa = { texto: string; correta: boolean }
 type Questao = { id: string; enunciado: string; alternativas: Alternativa[]; explicacao: string | null; ordem: number }
 type QuizTipo = 'obrigatorio' | 'indicativo' | 'sim_nao'
+type SimNaoItem = { pergunta: string; nao_mensagem: string }
 
 const ALT_VAZIAS: Alternativa[] = [
   { texto: '', correta: true },
@@ -15,7 +16,7 @@ const ALT_VAZIAS: Alternativa[] = [
 const TIPOS: { id: QuizTipo; label: string; desc: string }[] = [
   { id: 'obrigatorio',  label: '🔒 Quiz obrigatório', desc: 'Aluno deve passar no quiz para avançar' },
   { id: 'indicativo',   label: '💡 Quiz indicativo',  desc: 'Aluno pode pular — serve como indicador' },
-  { id: 'sim_nao',      label: '✋ Sim ou Não',       desc: 'Pergunta obrigatória — aluno deve responder antes de continuar' },
+  { id: 'sim_nao',      label: '✋ Sim ou Não',       desc: 'Perguntas obrigatórias — aluno deve responder Sim em todas para continuar' },
 ]
 
 export default function QuestoesAula({
@@ -24,12 +25,14 @@ export default function QuestoesAula({
   quizTipoInicial = 'obrigatorio',
   quizSimNaoPerguntaInicial = '',
   quizSimNaoNaoMensagemInicial = '',
+  quizSimNaoPerguntasInicial,
 }: {
   aulaId: string
   aprovacaoMinima: number
   quizTipoInicial?: QuizTipo
   quizSimNaoPerguntaInicial?: string
   quizSimNaoNaoMensagemInicial?: string
+  quizSimNaoPerguntasInicial?: SimNaoItem[]
 }) {
   const [questoes, setQuestoes] = useState<Questao[]>([])
   const [carregado, setCarregado] = useState(false)
@@ -41,8 +44,11 @@ export default function QuestoesAula({
 
   // Configuração do tipo de quiz
   const [quizTipo, setQuizTipo] = useState<QuizTipo>(quizTipoInicial)
-  const [simNaoPergunta, setSimNaoPergunta] = useState(quizSimNaoPerguntaInicial)
-  const [simNaoNaoMensagem, setSimNaoNaoMensagem] = useState(quizSimNaoNaoMensagemInicial)
+  const [simNaoPerguntas, setSimNaoPerguntas] = useState<SimNaoItem[]>(() => {
+    if (quizSimNaoPerguntasInicial?.length) return quizSimNaoPerguntasInicial
+    if (quizSimNaoPerguntaInicial) return [{ pergunta: quizSimNaoPerguntaInicial, nao_mensagem: quizSimNaoNaoMensagemInicial ?? '' }]
+    return []
+  })
   const [salvandoConfig, setSalvandoConfig] = useState(false)
   const [msgConfig, setMsgConfig] = useState('')
 
@@ -68,7 +74,8 @@ export default function QuestoesAula({
     else setAberto(false)
   }
 
-  async function salvarConfig(novoTipo: QuizTipo, pergunta?: string, naoMensagem?: string) {
+  async function salvarConfig(novoTipo: QuizTipo, perguntas?: SimNaoItem[]) {
+    const lista = perguntas ?? simNaoPerguntas
     setSalvandoConfig(true)
     const res = await fetch('/api/admin/aulas', {
       method: 'PATCH',
@@ -76,8 +83,9 @@ export default function QuestoesAula({
       body: JSON.stringify({
         id: aulaId,
         quiz_tipo: novoTipo,
-        quiz_sim_nao_pergunta: pergunta ?? simNaoPergunta,
-        quiz_sim_nao_nao_mensagem: naoMensagem ?? simNaoNaoMensagem,
+        quiz_sim_nao_perguntas: lista,
+        quiz_sim_nao_pergunta: lista[0]?.pergunta ?? null,
+        quiz_sim_nao_nao_mensagem: lista[0]?.nao_mensagem ?? null,
       }),
     })
     if (res.ok) { setMsgConfig('Salvo!'); setTimeout(() => setMsgConfig(''), 2000) }
@@ -88,6 +96,18 @@ export default function QuestoesAula({
   function mudarTipo(tipo: QuizTipo) {
     setQuizTipo(tipo)
     salvarConfig(tipo)
+  }
+
+  function adicionarPergunta() {
+    setSimNaoPerguntas(prev => [...prev, { pergunta: '', nao_mensagem: '' }])
+  }
+
+  function removerPergunta(idx: number) {
+    setSimNaoPerguntas(prev => prev.filter((_, i) => i !== idx))
+  }
+
+  function atualizarPergunta(idx: number, campo: keyof SimNaoItem, valor: string) {
+    setSimNaoPerguntas(prev => prev.map((p, i) => i === idx ? { ...p, [campo]: valor } : p))
   }
 
   useEffect(() => { carregar() }, [])
@@ -133,12 +153,11 @@ export default function QuestoesAula({
 
   const letraAlt = (i: number) => ['A', 'B', 'C', 'D', 'E', 'F'][i]
   const semQuestoes = carregado && questoes.length === 0 && quizTipo !== 'sim_nao'
-
   const tipoAtual = TIPOS.find(t => t.id === quizTipo)
+  const podeSalvarSimNao = simNaoPerguntas.length > 0 && simNaoPerguntas.every(p => p.pergunta.trim())
 
   return (
     <div style={{ marginTop: 14 }}>
-      {/* Alerta quando não tem questões (só para quiz obrigatório/indicativo) */}
       {semQuestoes && !aberto && (
         <div style={{ background: '#f59e0b15', border: '1px solid #f59e0b50', borderRadius: 8, padding: '10px 14px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 18 }}>⚠️</span>
@@ -163,7 +182,7 @@ export default function QuestoesAula({
           {semQuestoes
             ? 'Clique aqui para configurar o quiz'
             : quizTipo === 'sim_nao'
-              ? `Sim ou Não${simNaoPergunta ? `: "${simNaoPergunta.slice(0, 40)}${simNaoPergunta.length > 40 ? '...' : ''}"` : ' — configure a pergunta'}`
+              ? `Sim ou Não · ${simNaoPerguntas.length} pergunta${simNaoPerguntas.length !== 1 ? 's' : ''} configurada${simNaoPerguntas.length !== 1 ? 's' : ''}`
               : `Quiz: ${questoes.length} questão${questoes.length !== 1 ? 'ões' : ''} · Aprovação mínima: ${aprovacaoMinima}%`
           }
         </span>
@@ -190,35 +209,70 @@ export default function QuestoesAula({
             {msgConfig && <p style={{ fontSize: 11, color: 'var(--avp-green)', marginTop: 6 }}>{msgConfig}</p>}
           </div>
 
-          {/* ── Sim ou Não: campo da pergunta ── */}
+          {/* ── Sim ou Não: lista de perguntas ── */}
           {quizTipo === 'sim_nao' && (
             <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: 16 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Pergunta Sim/Não</p>
-              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', fontWeight: 600, marginBottom: 6 }}>Pergunta exibida ao aluno *</p>
-              <textarea
-                value={simNaoPergunta}
-                onChange={e => setSimNaoPergunta(e.target.value)}
-                placeholder="Ex: Você se compromete a aplicar o que aprendeu nesta aula?"
-                style={{ ...inp, minHeight: 64, resize: 'vertical', marginBottom: 14 }}
-              />
-
-              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', fontWeight: 600, marginBottom: 6 }}>Mensagem quando responder ❌ Não <span style={{ fontWeight: 400 }}>(personalizada)</span></p>
-              <textarea
-                value={simNaoNaoMensagem}
-                onChange={e => setSimNaoNaoMensagem(e.target.value)}
-                placeholder="Ex: Tudo bem! Quando estiver pronto para esse compromisso, volte aqui e responda Sim para continuar sua jornada."
-                style={{ ...inp, minHeight: 80, resize: 'vertical', marginBottom: 10 }}
-              />
-
-              <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                <div style={{ flex: 1, background: '#02A15320', border: '1px solid var(--avp-green)', borderRadius: 8, padding: '10px 14px', textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--avp-green)' }}>✅ Sim → avança</div>
-                <div style={{ flex: 1, background: '#e6394620', border: '1px solid var(--avp-danger)', borderRadius: 8, padding: '10px 14px', textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--avp-danger)' }}>❌ Não → bloqueia</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: 1 }}>Perguntas Sim/Não</p>
+                <button type="button" onClick={adicionarPergunta}
+                  style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
+                  + Adicionar pergunta
+                </button>
               </div>
-              <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 10 }}>O aluno deve responder Sim para avançar. Se responder Não, verá a mensagem personalizada acima.</p>
-              <button type="button" onClick={() => salvarConfig(quizTipo, simNaoPergunta, simNaoNaoMensagem)} disabled={salvandoConfig || !simNaoPergunta.trim()}
-                style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 13, opacity: (salvandoConfig || !simNaoPergunta.trim()) ? 0.6 : 1 }}>
-                {salvandoConfig ? 'Salvando...' : '✓ Salvar configurações'}
-              </button>
+
+              {simNaoPerguntas.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 10 }}>Nenhuma pergunta ainda.</p>
+                  <button type="button" onClick={adicionarPergunta}
+                    style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+                    + Adicionar primeira pergunta
+                  </button>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {simNaoPerguntas.map((item, idx) => (
+                  <div key={idx} style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)' }}>
+                        {simNaoPerguntas.length > 1 ? `Pergunta ${idx + 1} de ${simNaoPerguntas.length}` : 'Pergunta'}
+                      </p>
+                      <button type="button" onClick={() => removerPergunta(idx)}
+                        style={{ background: 'none', border: 'none', color: 'var(--avp-danger)', cursor: 'pointer', fontSize: 18, padding: 0, lineHeight: 1 }}>
+                        ×
+                      </button>
+                    </div>
+                    <textarea
+                      value={item.pergunta}
+                      onChange={e => atualizarPergunta(idx, 'pergunta', e.target.value)}
+                      placeholder="Ex: Você se compromete a aplicar o que aprendeu nesta aula?"
+                      style={{ ...inp, minHeight: 56, resize: 'vertical', marginBottom: 8 }}
+                    />
+                    <textarea
+                      value={item.nao_mensagem}
+                      onChange={e => atualizarPergunta(idx, 'nao_mensagem', e.target.value)}
+                      placeholder="Mensagem se responder Não (opcional) — Ex: Tudo bem! Volte quando estiver pronto."
+                      style={{ ...inp, minHeight: 52, resize: 'vertical' }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {simNaoPerguntas.length > 0 && (
+                <>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 12, marginBottom: 8 }}>
+                    <div style={{ flex: 1, background: '#02A15320', border: '1px solid var(--avp-green)', borderRadius: 8, padding: '8px 14px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: 'var(--avp-green)' }}>✅ Sim → avança</div>
+                    <div style={{ flex: 1, background: '#e6394620', border: '1px solid var(--avp-danger)', borderRadius: 8, padding: '8px 14px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: 'var(--avp-danger)' }}>❌ Não → bloqueia</div>
+                  </div>
+                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 12 }}>
+                    O aluno responde uma por vez. Precisa responder Sim em {simNaoPerguntas.length > 1 ? 'todas' : 'ela'} para avançar.
+                  </p>
+                  <button type="button" onClick={() => salvarConfig(quizTipo)} disabled={salvandoConfig || !podeSalvarSimNao}
+                    style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 13, opacity: (salvandoConfig || !podeSalvarSimNao) ? 0.6 : 1 }}>
+                    {salvandoConfig ? 'Salvando...' : '✓ Salvar perguntas'}
+                  </button>
+                </>
+              )}
             </div>
           )}
 

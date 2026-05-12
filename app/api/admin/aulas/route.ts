@@ -55,7 +55,7 @@ export async function PATCH(req: NextRequest) {
   const isAdmin = await verificarAdmin(adminClient, user.id)
   if (!isAdmin) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
-  const { id, quiz_tipo, quiz_sim_nao_pergunta, quiz_sim_nao_nao_mensagem } = await req.json()
+  const { id, quiz_tipo, quiz_sim_nao_pergunta, quiz_sim_nao_nao_mensagem, quiz_sim_nao_perguntas } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
   const { data: aula, error } = await (adminClient.from('aulas') as any)
@@ -63,9 +63,10 @@ export async function PATCH(req: NextRequest) {
       quiz_tipo,
       quiz_sim_nao_pergunta: quiz_sim_nao_pergunta ?? null,
       quiz_sim_nao_nao_mensagem: quiz_sim_nao_nao_mensagem ?? null,
+      quiz_sim_nao_perguntas: quiz_sim_nao_perguntas ?? [],
     })
     .eq('id', id)
-    .select('quiz_tipo, quiz_sim_nao_pergunta, quiz_sim_nao_nao_mensagem')
+    .select('quiz_tipo, quiz_sim_nao_pergunta, quiz_sim_nao_nao_mensagem, quiz_sim_nao_perguntas')
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
