@@ -21,6 +21,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
   const [iniciado, setIniciado] = useState(false)
   const [pendenteLiberacao, setPendenteLiberacao] = useState(false)
   const [modoLiberacao, setModoLiberacao] = useState('')
+  const [simNaoRecusado, setSimNaoRecusado] = useState(false)
 
   // ── Quiz Sim/Não ──
   if (quizTipo === 'sim_nao') {
@@ -29,38 +30,58 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
         <div style={{ background: '#02A15310', border: '1px solid var(--avp-green)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
           <span style={{ fontSize: 32 }}>✅</span>
           <div>
-            <p style={{ fontWeight: 700, color: 'var(--avp-green)', fontSize: 16, marginBottom: 4 }}>Comprometimento registrado!</p>
-            <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Você já respondeu ao comprometimento desta aula.</p>
+            <p style={{ fontWeight: 700, color: 'var(--avp-green)', fontSize: 16, marginBottom: 4 }}>Compromisso assumido!</p>
+            <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Você já confirmou seu comprometimento nesta aula.</p>
           </div>
         </div>
       )
     }
-    if (resultado) {
+
+    // Respondeu SIM — aprovado
+    if (resultado?.aprovado) {
       return (
         <div style={{ background: '#02A15310', border: '1px solid var(--avp-green)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
-          <span style={{ fontSize: 32 }}>🙏</span>
+          <span style={{ fontSize: 32 }}>🎯</span>
           <div>
-            <p style={{ fontWeight: 700, color: 'var(--avp-green)', fontSize: 16, marginBottom: 4 }}>Obrigado pela sua resposta!</p>
-            <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Seu comprometimento foi registrado. Continue para a próxima aula.</p>
+            <p style={{ fontWeight: 700, color: 'var(--avp-green)', fontSize: 16, marginBottom: 4 }}>Ótimo! Compromisso registrado.</p>
+            <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Sua resposta foi salva. A próxima aula está disponível!</p>
           </div>
         </div>
       )
     }
+
+    // Respondeu NÃO — bloqueado
+    if (simNaoRecusado) {
+      return (
+        <div style={{ background: '#e6394610', border: '1px solid rgba(230,57,70,0.3)', borderRadius: 12, padding: 28, textAlign: 'center' }}>
+          <div style={{ fontSize: 40, marginBottom: 16 }}>🙏</div>
+          <p style={{ fontWeight: 700, color: '#f87171', fontSize: 16, marginBottom: 10 }}>Obrigado pela honestidade!</p>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, lineHeight: 1.7, marginBottom: 20 }}>
+            Quando estiver pronto para assumir esse compromisso, volte aqui e responda <strong style={{ color: 'var(--avp-text)' }}>Sim</strong> para continuar.
+          </p>
+          <button onClick={() => setSimNaoRecusado(false)}
+            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 24px', cursor: 'pointer', fontSize: 14, fontWeight: 600, fontFamily: 'inherit' }}>
+            ← Voltar para a pergunta
+          </button>
+        </div>
+      )
+    }
+
     return (
       <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 28 }}>
-        <p style={{ fontWeight: 800, fontSize: 17, marginBottom: 16, lineHeight: 1.4 }}>
+        <p style={{ fontWeight: 800, fontSize: 17, marginBottom: 12, lineHeight: 1.4 }}>
           ✋ {simNaoPergunta || 'Você se compromete a aplicar o que aprendeu nesta aula?'}
         </p>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 20 }}>
-          Resposta obrigatória para continuar. Ambas as opções são aceitas.
+          Resposta obrigatória para continuar para a próxima aula.
         </p>
         <div style={{ display: 'flex', gap: 12 }}>
           <button onClick={() => pular()} disabled={enviando}
-            style={{ flex: 1, background: '#02A15320', border: '2px solid var(--avp-green)', color: 'var(--avp-green)', borderRadius: 10, padding: '16px', fontWeight: 800, fontSize: 16, cursor: 'pointer', opacity: enviando ? 0.7 : 1 }}>
-            ✅ Sim
+            style={{ flex: 1, background: '#02A15320', border: '2px solid var(--avp-green)', color: 'var(--avp-green)', borderRadius: 10, padding: '18px', fontWeight: 800, fontSize: 17, cursor: 'pointer', opacity: enviando ? 0.7 : 1, fontFamily: 'inherit', transition: 'all 0.2s' }}>
+            {enviando ? '...' : '✅ Sim'}
           </button>
-          <button onClick={() => pular()} disabled={enviando}
-            style={{ flex: 1, background: '#e6394615', border: '2px solid var(--avp-danger)', color: 'var(--avp-danger)', borderRadius: 10, padding: '16px', fontWeight: 800, fontSize: 16, cursor: 'pointer', opacity: enviando ? 0.7 : 1 }}>
+          <button onClick={() => setSimNaoRecusado(true)} disabled={enviando}
+            style={{ flex: 1, background: '#e6394615', border: '2px solid var(--avp-danger)', color: 'var(--avp-danger)', borderRadius: 10, padding: '18px', fontWeight: 800, fontSize: 17, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}>
             ❌ Não
           </button>
         </div>
