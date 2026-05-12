@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 
 export default function ConsultorLoginPage() {
@@ -7,6 +7,15 @@ export default function ConsultorLoginPage() {
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const [verSenha, setVerSenha] = useState(false)
+  const [logoUrl, setLogoUrl] = useState('')
+  const [siteNome, setSiteNome] = useState('')
+
+  useEffect(() => {
+    fetch('/api/site-config').then(r => r.json()).then(d => {
+      setLogoUrl(d.logoUrl || '')
+      setSiteNome(d.nome || '')
+    }).catch(() => {})
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -47,7 +56,13 @@ export default function ConsultorLoginPage() {
 
       <div style={{ width: 400, maxWidth: '100%', position: 'relative', zIndex: 1 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>🎓</div>
+          {logoUrl ? (
+            <img src={logoUrl} alt={siteNome} style={{ height: 52, objectFit: 'contain', marginBottom: 12, display: 'block', margin: '0 auto 12px' }} />
+          ) : (
+            <div style={{ fontSize: 32, fontWeight: 900, background: 'linear-gradient(135deg, #60a5fa, #34d399)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 12 }}>
+              {siteNome || 'Universidade AVP'}
+            </div>
+          )}
           <div style={{ background: 'linear-gradient(135deg, #1e40af, #3b82f6)', borderRadius: 8, padding: '4px 14px', fontSize: 12, fontWeight: 700, color: '#fff', letterSpacing: 1, textTransform: 'uppercase', display: 'inline-block' }}>
             Área do Consultor
           </div>

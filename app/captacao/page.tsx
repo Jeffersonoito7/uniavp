@@ -89,8 +89,10 @@ export default function CaptacaoPage() {
             <button onClick={scrollToForm} style={{ background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 12, padding: '16px 40px', fontWeight: 800, fontSize: 17, cursor: 'pointer', boxShadow: '0 8px 32px rgba(51,54,135,0.4)', letterSpacing: 0.5 }}>
               🚀 Quero me formar agora
             </button>
-            <a href="/consultor/login" style={{ background: 'transparent', color: 'var(--avp-text-dim)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '16px 28px', fontWeight: 600, fontSize: 15, cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-              Já tenho conta
+            <a href="/consultor/login" style={{ background: 'rgba(59,130,246,0.15)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.4)', borderRadius: 12, padding: '16px 28px', fontWeight: 700, fontSize: 15, cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(59,130,246,0.25)'; (e.currentTarget as HTMLAnchorElement).style.borderColor = '#3b82f6' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(59,130,246,0.15)'; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(59,130,246,0.4)' }}>
+              🎓 Já sou consultor →
             </a>
           </div>
         </div>
