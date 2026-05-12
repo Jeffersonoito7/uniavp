@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
     .single()
   if (!aula) return NextResponse.json({ error: 'Aula não encontrada' }, { status: 404 })
 
-  // Quiz indicativo — aluno escolheu pular
-  if (pular && aula.quiz_tipo === 'indicativo') {
+  // Quiz indicativo ou sim_nao — aluno escolheu pular ou respondeu sim/nao
+  if (pular && (aula.quiz_tipo === 'indicativo' || aula.quiz_tipo === 'sim_nao')) {
     const liberada_em = new Date(Date.now() + (aula.espera_horas ?? 0) * 3600000).toISOString()
     await (adminClient.from('progresso') as any).insert({
       aluno_id: aluno.id, aula_id,

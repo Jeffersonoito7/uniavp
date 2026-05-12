@@ -10,16 +10,63 @@ type Props = {
   aprovacaoMinima: number
   jaAprovado: boolean
   tentativasAnteriores: number
-  quizTipo: 'obrigatorio' | 'indicativo'
+  quizTipo: 'obrigatorio' | 'indicativo' | 'sim_nao'
+  simNaoPergunta?: string
 }
 
-export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, tentativasAnteriores, quizTipo }: Props) {
+export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, tentativasAnteriores, quizTipo, simNaoPergunta }: Props) {
   const [respostas, setRespostas] = useState<Record<string, number>>({})
   const [enviando, setEnviando] = useState(false)
   const [resultado, setResultado] = useState<{ acertos: number; total: number; percentual: number; aprovado: boolean; pulado?: boolean } | null>(null)
   const [iniciado, setIniciado] = useState(false)
   const [pendenteLiberacao, setPendenteLiberacao] = useState(false)
   const [modoLiberacao, setModoLiberacao] = useState('')
+
+  // ── Quiz Sim/Não ──
+  if (quizTipo === 'sim_nao') {
+    if (jaAprovado) {
+      return (
+        <div style={{ background: '#02A15310', border: '1px solid var(--avp-green)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
+          <span style={{ fontSize: 32 }}>✅</span>
+          <div>
+            <p style={{ fontWeight: 700, color: 'var(--avp-green)', fontSize: 16, marginBottom: 4 }}>Comprometimento registrado!</p>
+            <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Você já respondeu ao comprometimento desta aula.</p>
+          </div>
+        </div>
+      )
+    }
+    if (resultado) {
+      return (
+        <div style={{ background: '#02A15310', border: '1px solid var(--avp-green)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
+          <span style={{ fontSize: 32 }}>🙏</span>
+          <div>
+            <p style={{ fontWeight: 700, color: 'var(--avp-green)', fontSize: 16, marginBottom: 4 }}>Obrigado pela sua resposta!</p>
+            <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Seu comprometimento foi registrado. Continue para a próxima aula.</p>
+          </div>
+        </div>
+      )
+    }
+    return (
+      <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 28 }}>
+        <p style={{ fontWeight: 800, fontSize: 17, marginBottom: 16, lineHeight: 1.4 }}>
+          ✋ {simNaoPergunta || 'Você se compromete a aplicar o que aprendeu nesta aula?'}
+        </p>
+        <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 20 }}>
+          Resposta obrigatória para continuar. Ambas as opções são aceitas.
+        </p>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button onClick={() => pular()} disabled={enviando}
+            style={{ flex: 1, background: '#02A15320', border: '2px solid var(--avp-green)', color: 'var(--avp-green)', borderRadius: 10, padding: '16px', fontWeight: 800, fontSize: 16, cursor: 'pointer', opacity: enviando ? 0.7 : 1 }}>
+            ✅ Sim
+          </button>
+          <button onClick={() => pular()} disabled={enviando}
+            style={{ flex: 1, background: '#e6394615', border: '2px solid var(--avp-danger)', color: 'var(--avp-danger)', borderRadius: 10, padding: '16px', fontWeight: 800, fontSize: 16, cursor: 'pointer', opacity: enviando ? 0.7 : 1 }}>
+            ❌ Não
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   if (questoes.length === 0) return null
 

@@ -137,7 +137,7 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
         )}
 
         {/* Quiz */}
-        {questoes.length > 0 && (
+        {(questoes.length > 0 || aula.quiz_tipo === 'sim_nao') && (
           <Quiz
             aulaId={params.aulaId}
             questoes={questoes}
@@ -145,6 +145,7 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
             jaAprovado={jaAprovado}
             tentativasAnteriores={tentativasAnteriores}
             quizTipo={aula.quiz_tipo ?? 'obrigatorio'}
+            simNaoPergunta={(aula as any).quiz_sim_nao_pergunta ?? ''}
           />
         )}
 

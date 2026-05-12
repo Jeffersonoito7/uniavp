@@ -21,7 +21,8 @@ type Aula = {
   capa_url: string | null
   video_url: string | null
   liberacao_modo: 'automatico' | 'manual_gestor' | 'manual_admin'
-  quiz_tipo: 'obrigatorio' | 'indicativo'
+  quiz_tipo: 'obrigatorio' | 'indicativo' | 'sim_nao'
+  quiz_sim_nao_pergunta?: string | null
 }
 
 function extrairIdYoutube(input: string): string {
@@ -184,7 +185,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
     quiz_qtd_questoes: number; quiz_aprovacao_minima: number; espera_horas: number;
     validade_meses: string; ao_vivo_link: string; ao_vivo_data: string; ao_vivo_plataforma: string;
     liberacao_modo: 'automatico' | 'manual_gestor' | 'manual_admin';
-    quiz_tipo: 'obrigatorio' | 'indicativo';
+    quiz_tipo: 'obrigatorio' | 'indicativo' | 'sim_nao';
     capaPreview: string | null; capaBase64: string | null;
   }>({ titulo: '', descricao: '', youtube_url: '', duracao_minutos: '', quiz_qtd_questoes: 5, quiz_aprovacao_minima: 80, espera_horas: 0, validade_meses: '', ao_vivo_link: '', ao_vivo_data: '', ao_vivo_plataforma: 'zoom', liberacao_modo: 'automatico', quiz_tipo: 'obrigatorio', capaPreview: null, capaBase64: null })
   const [editTipoVideo, setEditTipoVideo] = useState<'youtube' | 'arquivo' | 'url'>('youtube')
@@ -717,7 +718,12 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                     </div>
                   </div>
                   <ArquivosAula aulaId={aula.id} />
-                  <QuestoesAula aulaId={aula.id} aprovacaoMinima={aula.quiz_aprovacao_minima} />
+                  <QuestoesAula
+                    aulaId={aula.id}
+                    aprovacaoMinima={aula.quiz_aprovacao_minima}
+                    quizTipoInicial={aula.quiz_tipo ?? 'obrigatorio'}
+                    quizSimNaoPerguntaInicial={aula.quiz_sim_nao_pergunta ?? ''}
+                  />
                 </>
               )}
             </div>

@@ -46,6 +46,28 @@ export async function PUT(req: NextRequest) {
   return NextResponse.json({ aula })
 }
 
+export async function PATCH(req: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+
+  const adminClient = createServiceRoleClient()
+  const isAdmin = await verificarAdmin(adminClient, user.id)
+  if (!isAdmin) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+
+  const { id, quiz_tipo, quiz_sim_nao_pergunta } = await req.json()
+  if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
+
+  const { data: aula, error } = await (adminClient.from('aulas') as any)
+    .update({ quiz_tipo, quiz_sim_nao_pergunta: quiz_sim_nao_pergunta ?? null })
+    .eq('id', id)
+    .select('quiz_tipo, quiz_sim_nao_pergunta')
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  return NextResponse.json({ ok: true, aula })
+}
+
 export async function DELETE(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

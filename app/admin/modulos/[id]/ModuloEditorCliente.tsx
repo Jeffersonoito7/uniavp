@@ -5,7 +5,7 @@ import Link from 'next/link'
 import AulasCliente from './AulasCliente'
 
 type Modulo = { id: string; titulo: string; descricao: string | null; capa_url: string | null; ordem: number; publicado: boolean }
-type Aula = { id: string; titulo: string; descricao: string | null; ordem: number; youtube_video_id: string; duracao_minutos: number | null; quiz_qtd_questoes: number; quiz_aprovacao_minima: number; espera_horas: number; publicado: boolean; ao_vivo_link: string | null; ao_vivo_data: string | null; ao_vivo_plataforma: string | null; validade_meses: number | null; capa_url: string | null; video_url: string | null; liberacao_modo: 'automatico' | 'manual_gestor' | 'manual_admin'; quiz_tipo: 'obrigatorio' | 'indicativo' }
+type Aula = { id: string; titulo: string; descricao: string | null; ordem: number; youtube_video_id: string; duracao_minutos: number | null; quiz_qtd_questoes: number; quiz_aprovacao_minima: number; espera_horas: number; publicado: boolean; ao_vivo_link: string | null; ao_vivo_data: string | null; ao_vivo_plataforma: string | null; validade_meses: number | null; capa_url: string | null; video_url: string | null; liberacao_modo: 'automatico' | 'manual_gestor' | 'manual_admin'; quiz_tipo: 'obrigatorio' | 'indicativo' | 'sim_nao'; quiz_sim_nao_pergunta?: string | null }
 
 type Aba = 'geral' | 'aulas' | 'configuracoes'
 
