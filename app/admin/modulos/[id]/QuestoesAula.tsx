@@ -152,7 +152,7 @@ export default function QuestoesAula({
   }
 
   const letraAlt = (i: number) => ['A', 'B', 'C', 'D', 'E', 'F'][i]
-  const semQuestoes = carregado && questoes.length === 0 && quizTipo !== 'sim_nao'
+  const semQuestoes = carregado && questoes.length === 0 && quizTipo === 'obrigatorio'
   const tipoAtual = TIPOS.find(t => t.id === quizTipo)
   const podeSalvarSimNao = simNaoPerguntas.length > 0 && simNaoPerguntas.every(p => p.pergunta.trim())
 
@@ -276,8 +276,8 @@ export default function QuestoesAula({
             </div>
           )}
 
-          {/* ── Questões normais (obrigatório / indicativo) ── */}
-          {quizTipo !== 'sim_nao' && (
+          {/* ── Questões (disponível em todos os tipos) ── */}
+          {true && (
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: 1 }}>QUESTÕES DO QUIZ</p>
