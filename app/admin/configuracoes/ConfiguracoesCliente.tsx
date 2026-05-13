@@ -384,38 +384,15 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       {/* CERTIFICADO */}
       <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
         <p style={{ fontWeight: 800, fontSize: 16 }}>🎓 Certificado de Conclusão</p>
-        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>Template PNG em alta resolução (mínimo 2480×1748px — A4 paisagem)</p>
-        <LogoCard label="Template do certificado" campo="certUrl" value={certUrl} desc="PNG com espaço em branco para o nome" rec="2480×1748px" fileRef={certUrlRef} uploading={uploading} onUpload={uploadImagem} />
-        <div>
-          <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>📝 Posição do nome</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-            {[['X (%)', certNomeX, setCertNomeX], ['Y (%)', certNomeY, setCertNomeY], ['Tamanho px', certNomeTamanho, setCertNomeTamanho], ['Cor', certNomeCor, setCertNomeCor]].map(([label, val, set]) => (
-              <div key={label as string}>
-                <label style={lbl}>{label as string}</label>
-                {label === 'Cor'
-                  ? <div style={{ display: 'flex', gap: 4 }}><input type="color" value={val as string} onChange={e => (set as (v: string) => void)(e.target.value)} style={{ width: 38, height: 38, border: 'none', borderRadius: 6, cursor: 'pointer', padding: 2 }} /><input style={inp} value={val as string} onChange={e => (set as (v: string) => void)(e.target.value)} /></div>
-                  : <input type="number" style={inp} value={val as string} onChange={e => (set as (v: string) => void)(e.target.value)} />
-                }
-              </div>
-            ))}
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
+          Suba o PNG do certificado em alta resolução. Ele será exibido e disponibilizado para download exatamente como está — sem dados do aluno.
+        </p>
+        <LogoCard label="Template do certificado" campo="certUrl" value={certUrl} desc="PNG em alta resolução — A4 paisagem" rec="2480×1748px (mín.)" fileRef={certUrlRef} uploading={uploading} onUpload={uploadImagem} />
+        {certUrl && certUrl.startsWith('http') && (
+          <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid var(--avp-border)' }}>
+            <img src={certUrl} alt="Preview certificado" style={{ width: '100%', display: 'block', objectFit: 'contain' }} />
           </div>
-        </div>
-        <div>
-          <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>📅 Cidade e data</p>
-          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 10 }}>Aparece como: <strong style={{ color: 'var(--avp-text)' }}>Juazeiro do Norte - CE, 09 de maio de 2026</strong></p>
-          <input style={{ ...inp, marginBottom: 12 }} value={certCidade} onChange={e => setCertCidade(e.target.value)} placeholder="Ex: Juazeiro do Norte - CE" />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-            {[['X (%)', certDataX, setCertDataX], ['Y (%)', certDataY, setCertDataY], ['Tamanho px', certDataTamanho, setCertDataTamanho], ['Cor', certDataCor, setCertDataCor]].map(([label, val, set]) => (
-              <div key={label as string}>
-                <label style={lbl}>{label as string}</label>
-                {label === 'Cor'
-                  ? <div style={{ display: 'flex', gap: 4 }}><input type="color" value={val as string} onChange={e => (set as (v: string) => void)(e.target.value)} style={{ width: 38, height: 38, border: 'none', borderRadius: 6, cursor: 'pointer', padding: 2 }} /><input style={inp} value={val as string} onChange={e => (set as (v: string) => void)(e.target.value)} /></div>
-                  : <input type="number" style={inp} value={val as string} onChange={e => (set as (v: string) => void)(e.target.value)} />
-                }
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
 
       {msg && (

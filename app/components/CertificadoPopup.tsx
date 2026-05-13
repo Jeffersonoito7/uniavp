@@ -1,151 +1,57 @@
 'use client'
-import { useRef, useState } from 'react'
 
 type Props = {
   nomeAluno: string
   templateUrl: string
-  nomeX: number
-  nomeY: number
-  nomeTamanho: number
-  nomeCor: string
-  cidade?: string
-  dataX?: number
-  dataY?: number
-  dataTamanho?: number
-  dataCor?: string
   onClose: () => void
 }
 
-function carregarImagem(src: string, crossOrigin?: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    if (crossOrigin) img.crossOrigin = crossOrigin
-    img.onload = () => resolve(img)
-    img.onerror = reject
-    img.src = src
-  })
-}
-
-export default function CertificadoPopup({ nomeAluno, templateUrl, nomeX, nomeY, nomeTamanho, nomeCor, cidade, dataX, dataY, dataTamanho, dataCor, onClose }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [gerado, setGerado] = useState(false)
-  const [gerando, setGerando] = useState(false)
-  const [erro, setErro] = useState('')
-
-  async function gerar() {
-    setGerando(true); setErro('')
-    const canvas = canvasRef.current!
-    const ctx = canvas.getContext('2d')!
-
-    try {
-      let template: HTMLImageElement
-      try { template = await carregarImagem(templateUrl, 'anonymous') }
-      catch { template = await carregarImagem(templateUrl) }
-
-      canvas.width = template.width || 2480
-      canvas.height = template.height || 1748
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      ctx.drawImage(template, 0, 0, canvas.width, canvas.height)
-
-      // Nome do aluno
-      const x = canvas.width * (nomeX / 100)
-      const y = canvas.height * (nomeY / 100)
-      const fontSize = nomeTamanho || 72
-      ctx.font = `bold ${fontSize}px 'Inter', 'Arial', sans-serif`
-      ctx.fillStyle = nomeCor || '#1a1a2e'
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.fillText(nomeAluno, x, y)
-
-      // Data e cidade
-      if (cidade || dataX) {
-        const hoje = new Date()
-        const dataFormatada = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
-        const textoCidade = cidade ? `${cidade}, ${dataFormatada}` : dataFormatada
-        const dx = canvas.width * ((dataX || 50) / 100)
-        const dy = canvas.height * ((dataY || 72) / 100)
-        const dfontSize = dataTamanho || 36
-        ctx.font = `${dfontSize}px 'Inter', 'Arial', sans-serif`
-        ctx.fillStyle = dataCor || '#1a1a2e'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.fillText(textoCidade, dx, dy)
-      }
-
-      setGerado(true)
-    } catch {
-      setErro('Erro ao gerar certificado. Verifique se o template está configurado.')
-    }
-    setGerando(false)
-  }
-
+export default function CertificadoPopup({ nomeAluno, templateUrl, onClose }: Props) {
   function baixar() {
-    const canvas = canvasRef.current!
     const link = document.createElement('a')
-    link.download = `certificado-${nomeAluno.replace(/\s+/g, '-').toLowerCase()}.png`
-    link.href = canvas.toDataURL('image/png')
+    link.href = templateUrl
+    link.download = `certificado-avp.png`
+    link.target = '_blank'
     link.click()
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-      <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 20, padding: 32, maxWidth: 700, width: '100%', textAlign: 'center' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 20, padding: 32, maxWidth: 780, width: '100%', textAlign: 'center' }}>
 
-        {/* Celebração */}
         <div style={{ fontSize: 56, marginBottom: 8 }}>🎓</div>
         <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 8, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
           Parabéns, {nomeAluno.split(' ')[0]}!
         </h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 16, marginBottom: 24, lineHeight: 1.6 }}>
           Você concluiu 100% da formação! 🏆✨<br />
-          <strong style={{ color: 'var(--avp-text)' }}>O sucesso te espera!</strong>
+          <strong style={{ color: 'var(--avp-text)' }}>Baixe seu certificado abaixo.</strong>
         </p>
 
-        <canvas ref={canvasRef} style={{ display: 'none' }} />
+        {/* Preview do certificado */}
+        <div style={{ marginBottom: 20, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--avp-border)' }}>
+          <img
+            src={templateUrl}
+            alt="Certificado de Conclusão"
+            style={{ width: '100%', display: 'block', objectFit: 'contain' }}
+          />
+        </div>
 
-        {!gerado && !gerando && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <button onClick={gerar}
-              style={{ background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 12, padding: '14px 32px', fontWeight: 800, fontSize: 16, cursor: 'pointer' }}>
-              🎓 Gerar meu Certificado
-            </button>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 14 }}>
-              Fechar
-            </button>
-          </div>
-        )}
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={baixar}
+            style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontWeight: 800, fontSize: 15, cursor: 'pointer' }}>
+            ⬇️ Baixar Certificado
+          </button>
+          <button onClick={onClose}
+            style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 10, padding: '12px 20px', cursor: 'pointer', fontSize: 14 }}>
+            Fechar
+          </button>
+        </div>
 
-        {gerando && (
-          <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>⏳ Gerando seu certificado...</p>
-        )}
-
-        {erro && (
-          <div style={{ background: '#e6394620', border: '1px solid var(--avp-danger)', borderRadius: 8, padding: '12px 16px', color: 'var(--avp-danger)', fontSize: 14, marginBottom: 12 }}>
-            {erro}
-          </div>
-        )}
-
-        {gerado && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <canvas ref={canvasRef}
-              style={{ width: '100%', maxHeight: 380, objectFit: 'contain', borderRadius: 10, border: '1px solid var(--avp-border)', display: 'block' }}
-            />
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button onClick={baixar}
-                style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontWeight: 800, fontSize: 15, cursor: 'pointer' }}>
-                ⬇️ Baixar Certificado (PNG)
-              </button>
-              <button onClick={onClose}
-                style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 10, padding: '12px 20px', cursor: 'pointer', fontSize: 14 }}>
-                Fechar
-              </button>
-            </div>
-            <p style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>
-              💡 Alta resolução — ideal para imprimir em A4 paisagem e porta-retrato
-            </p>
-          </div>
-        )}
+        <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 14 }}>
+          💡 Alta resolução — ideal para imprimir em A4 paisagem
+        </p>
       </div>
     </div>
   )
