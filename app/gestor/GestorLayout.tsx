@@ -1,7 +1,7 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen } from 'lucide-react'
+import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen, UserCircle } from 'lucide-react'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import SupportChat from '@/app/components/SupportChat'
 
@@ -11,7 +11,7 @@ const navItems = [
   { id: 'aulas',       label: 'Aulas',       icon: BookOpen },
   { id: 'eventos',     label: 'Eventos',     icon: Calendar },
   { id: 'whatsapp',    label: 'WhatsApp',    icon: Smartphone },
-
+  { id: 'perfil',      label: 'Meu Perfil',  icon: UserCircle },
 ]
 
 export default function GestorLayout({
@@ -29,22 +29,7 @@ export default function GestorLayout({
 }) {
   const [siteNome, setSiteNome] = useState('')
   const [siteLogoUrl, setSiteLogoUrl] = useState('')
-  const [fotoPerfil, setFotoPerfil] = useState<string | null>(fotoPerfilInicial ?? null)
-  const [uploadandoFoto, setUploadandoFoto] = useState(false)
-  const fotoGestorRef = useRef<HTMLInputElement>(null)
-
-  async function handleFotoGestor(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setFotoPerfil(URL.createObjectURL(file))
-    setUploadandoFoto(true)
-    const fd = new FormData()
-    fd.append('foto', file)
-    const res = await fetch('/api/gestor/foto-perfil', { method: 'POST', body: fd })
-    const data = await res.json()
-    if (data.url) setFotoPerfil(data.url)
-    setUploadandoFoto(false)
-  }
+  const [fotoPerfil] = useState<string | null>(fotoPerfilInicial ?? null)
   const [logoError, setLogoError] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [menuAberto, setMenuAberto] = useState(false)
