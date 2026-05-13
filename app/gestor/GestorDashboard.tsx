@@ -54,9 +54,10 @@ export default function GestorDashboard({
   const [verSenhaNovo, setVerSenhaNovo] = useState(false)
   const [eventos, setEventos] = useState<Evento[]>([])
   const [eventosCarregados, setEventosCarregados] = useState(false)
-  const [modulosAulas, setModulosAulas] = useState<{ id: string; titulo: string; ordem: number; aulas: { id: string; titulo: string; descricao: string | null; youtube_video_id: string; duracao_minutos: number | null; ordem: number }[] }[]>([])
+  type AulaGestor = { id: string; titulo: string; descricao: string | null; youtube_video_id: string | null; video_url: string | null; duracao_minutos: number | null; capa_url: string | null; ordem: number; modulo_id: string; publicado: boolean }
+  const [modulosAulas, setModulosAulas] = useState<{ id: string; titulo: string; ordem: number; capa_url?: string | null; aulas: AulaGestor[] }[]>([])
   const [aulasCarregadas, setAulasCarregadas] = useState(false)
-  const [aulaAberta, setAulaAberta] = useState<{ id: string; titulo: string; youtube_video_id: string; descricao: string | null } | null>(null)
+  const [aulaAberta, setAulaAberta] = useState<AulaGestor | null>(null)
   const [eventoForm, setEventoForm] = useState({ titulo: '', descricao: '', cidade: '', data_hora: '', notificar: true })
   const [salvandoEvento, setSalvandoEvento] = useState(false)
   const [showEvento, setShowEvento] = useState(false)
@@ -137,8 +138,8 @@ export default function GestorDashboard({
     if (aulasCarregadas) return
     const res = await fetch('/api/gestor/aulas')
     const data = await res.json()
-    const mods = (data.modulos ?? []) as { id: string; titulo: string; ordem: number }[]
-    const auls = (data.aulas ?? []) as { id: string; titulo: string; descricao: string | null; youtube_video_id: string; duracao_minutos: number | null; ordem: number; modulo_id: string }[]
+    const mods = (data.modulos ?? []) as { id: string; titulo: string; ordem: number; capa_url?: string | null }[]
+    const auls = (data.aulas ?? []) as AulaGestor[]
     const agrupado = mods.map(m => ({
       ...m,
       aulas: auls.filter(a => a.modulo_id === m.id).sort((a, b) => a.ordem - b.ordem),
@@ -390,34 +391,49 @@ export default function GestorDashboard({
 
           {modulosAulas.map(mod => (
             <div key={mod.id} style={{ marginBottom: 36 }}>
-              <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 16, paddingBottom: 10, borderBottom: '1px solid var(--avp-border)' }}>
-                {mod.titulo}
-              </h2>
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                {mod.aulas.map(aula => (
-                  <div key={aula.id}
-                    onClick={() => setAulaAberta(aula)}
-                    style={{ width: 200, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.15s, border-color 0.15s' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--avp-green)' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--avp-border)' }}
-                  >
-                    <div style={{ height: 100, background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, position: 'relative' }}>
-                      {aula.youtube_video_id
-                        ? <img src={`https://img.youtube.com/vi/${aula.youtube_video_id}/mqdefault.jpg`} alt={aula.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
-                        : '▶️'}
-                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>▶</div>
-                      </div>
-                    </div>
-                    <div style={{ padding: '10px 12px' }}>
-                      <p style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.3, marginBottom: 4 }}>{aula.titulo}</p>
-                      {aula.duracao_minutos && (
-                        <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>⏱ {aula.duracao_minutos} min</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid var(--avp-border)' }}>
+                {mod.capa_url && (
+                  <img src={mod.capa_url} alt={mod.titulo} style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+                )}
+                <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0 }}>{mod.titulo}</h2>
+                <span style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginLeft: 'auto' }}>{mod.aulas.length} aula{mod.aulas.length !== 1 ? 's' : ''}</span>
               </div>
+
+              {mod.aulas.length === 0 ? (
+                <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, padding: '12px 0' }}>Nenhuma aula neste módulo.</p>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
+                  {mod.aulas.map(aula => {
+                    const thumb = aula.capa_url || (aula.youtube_video_id ? `https://img.youtube.com/vi/${aula.youtube_video_id}/mqdefault.jpg` : null)
+                    return (
+                      <div key={aula.id}
+                        onClick={() => aula.youtube_video_id || aula.video_url ? setAulaAberta(aula) : undefined}
+                        style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden', cursor: aula.youtube_video_id || aula.video_url ? 'pointer' : 'default', transition: 'transform 0.15s, border-color 0.15s', opacity: aula.publicado ? 1 : 0.6 }}
+                        onMouseEnter={e => { if (aula.youtube_video_id || aula.video_url) { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--avp-green)' } }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--avp-border)' }}
+                      >
+                        <div style={{ height: 110, background: 'var(--grad-brand)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {thumb && <img src={thumb} alt={aula.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />}
+                          {!aula.publicado && (
+                            <div style={{ position: 'absolute', top: 6, right: 6, background: '#f59e0b', borderRadius: 4, padding: '2px 7px', fontSize: 9, fontWeight: 700, color: '#fff', zIndex: 2 }}>NÃO PUBLICADA</div>
+                          )}
+                          {(aula.youtube_video_id || aula.video_url) && (
+                            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(255,255,255,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>▶</div>
+                            </div>
+                          )}
+                        </div>
+                        <div style={{ padding: '10px 12px' }}>
+                          <p style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.3, marginBottom: 4 }}>{aula.titulo}</p>
+                          {aula.duracao_minutos && (
+                            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>⏱ {aula.duracao_minutos} min</p>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           ))}
 
@@ -446,7 +462,15 @@ export default function GestorDashboard({
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
-                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: '0 0 0 0' }}
+                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                      />
+                    </div>
+                  ) : aulaAberta.video_url ? (
+                    <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+                      <video
+                        src={aulaAberta.video_url}
+                        controls autoPlay
+                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: '#000' }}
                       />
                     </div>
                   ) : (
