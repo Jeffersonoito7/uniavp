@@ -229,24 +229,19 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
                     <div>
                       <label style={labelStyle}>Arte PNG (fundo transparente) — {aba === 'feed' ? '1080×1080px' : '1080×1920px'}</label>
                       <div style={{ display: 'flex', gap: 8 }}>
-                        <input style={{ ...inputStyle, flex: 1, opacity: isAdmin ? 0.6 : 1 }}
+                        <input style={{ ...inputStyle, flex: 1 }}
                           value={t.arte_url}
-                          readOnly={isAdmin}
-                          onChange={e => !isAdmin && atualizar(t.id, 'arte_url', e.target.value)}
+                          onChange={e => atualizar(t.id, 'arte_url', e.target.value)}
                           placeholder="Cole a URL ou use o botão para fazer upload" />
-                        {!isAdmin && (
-                          <>
-                            <input type="file" accept="image/png,image/webp,image/jpeg"
-                              style={{ display: 'none' }}
-                              ref={el => { inputRefs.current[t.id] = el }}
-                              onChange={e => { const f = e.target.files?.[0]; if (f) uploadArte(t.id, f); e.target.value = '' }} />
-                            <button onClick={() => inputRefs.current[t.id]?.click()}
-                              disabled={uploading === t.id}
-                              style={{ background: uploading === t.id ? 'var(--avp-border)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '0 14px', cursor: uploading === t.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap' }}>
-                              {uploading === t.id ? '⏳ Enviando...' : '📤 Subir Arte'}
-                            </button>
-                          </>
-                        )}
+                        <input type="file" accept="image/png,image/webp,image/jpeg"
+                          style={{ display: 'none' }}
+                          ref={el => { inputRefs.current[t.id] = el }}
+                          onChange={e => { const f = e.target.files?.[0]; if (f) uploadArte(t.id, f); e.target.value = '' }} />
+                        <button onClick={() => inputRefs.current[t.id]?.click()}
+                          disabled={uploading === t.id}
+                          style={{ background: uploading === t.id ? 'var(--avp-border)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '0 14px', cursor: uploading === t.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap' }}>
+                          {uploading === t.id ? '⏳ Enviando...' : '📤 Subir Arte'}
+                        </button>
                       </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
@@ -274,22 +269,16 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
                       <img src={t.arte_url} alt={t.titulo}
                         style={{ width: aba === 'stories' ? 45 : 72, height: aba === 'stories' ? 80 : 72, objectFit: 'contain', borderRadius: 6, border: '1px solid var(--avp-border)' }}
                         onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-                      {!isAdmin && (
-                        <button onClick={() => inputRefs.current[t.id]?.click()}
-                          style={{ background: 'none', border: '1px solid var(--avp-border)', borderRadius: 6, padding: '3px 8px', fontSize: 11, color: 'var(--avp-text-dim)', cursor: 'pointer' }}>
-                          Trocar
-                        </button>
-                      )}
+                      <button onClick={() => inputRefs.current[t.id]?.click()}
+                        style={{ background: 'none', border: '1px solid var(--avp-border)', borderRadius: 6, padding: '3px 8px', fontSize: 11, color: 'var(--avp-text-dim)', cursor: 'pointer' }}>
+                        Trocar
+                      </button>
                     </div>
                   ) : (
-                    !isAdmin ? (
-                      <button onClick={() => inputRefs.current[t.id]?.click()}
-                        style={{ width: 72, height: 72, background: 'var(--avp-black)', border: '2px dashed var(--avp-border)', borderRadius: 8, cursor: 'pointer', color: 'var(--avp-text-dim)', fontSize: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        +
-                      </button>
-                    ) : (
-                      <div style={{ width: 72, height: 72, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🎨</div>
-                    )
+                    <button onClick={() => inputRefs.current[t.id]?.click()}
+                      style={{ width: 72, height: 72, background: 'var(--avp-black)', border: '2px dashed var(--avp-border)', borderRadius: 8, cursor: 'pointer', color: 'var(--avp-text-dim)', fontSize: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      +
+                    </button>
                   )}
                 </div>
               </div>
