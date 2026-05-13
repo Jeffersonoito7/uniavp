@@ -72,6 +72,10 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const [carteiraAssinaturaEmpresa, setCarteiraAssinaturaEmpresa] = useState(get('carteira_assinatura_empresa'))
   const [carteiraUrlVerificacao, setCarteiraUrlVerificacao] = useState(get('carteira_url_verificacao'))
   const [carteiraTagline, setCarteiraTagline] = useState(get('carteira_tagline'))
+  const [boletoMensagem, setBoletoMensagem] = useState(get('boleto_mensagem'))
+  const [boletoInstrucoes, setBoletoInstrucoes] = useState(get('boleto_instrucoes'))
+  const [boletoMulta, setBoletoMulta] = useState(get('boleto_multa') || '2')
+  const [boletoJuros, setBoletoJuros] = useState(get('boleto_juros') || '1')
   const [certUrl, setCertUrl] = useState(get('certificado_template_url'))
   const [certNomeX, setCertNomeX] = useState(get('certificado_nome_x') || '50')
   const [certNomeY, setCertNomeY] = useState(get('certificado_nome_y') || '62')
@@ -201,6 +205,10 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
         { chave: 'carteira_assinatura_empresa', valor: carteiraAssinaturaEmpresa },
         { chave: 'carteira_url_verificacao', valor: carteiraUrlVerificacao },
         { chave: 'carteira_tagline', valor: carteiraTagline },
+        { chave: 'boleto_mensagem', valor: boletoMensagem },
+        { chave: 'boleto_instrucoes', valor: boletoInstrucoes },
+        { chave: 'boleto_multa', valor: boletoMulta },
+        { chave: 'boleto_juros', valor: boletoJuros },
         ...(urlSafe(certUrl) ? [{ chave: 'certificado_template_url', valor: certUrl }] : []),
         { chave: 'certificado_nome_x', valor: certNomeX },
         { chave: 'certificado_nome_y', valor: certNomeY },
@@ -349,6 +357,43 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       <div style={card}>
         <p style={{ fontWeight: 700, fontSize: 15 }}>⚙️ Outros</p>
         <div><label style={lbl}>WhatsApp suporte</label><PhoneInput value={whatsapp} onChange={setWhatsapp} placeholder="suporte da empresa" /></div>
+      </div>
+
+      {/* BOLETO */}
+      <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
+        <p style={{ fontWeight: 800, fontSize: 16 }}>🧾 Boleto Bancário (Efí)</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
+          Configure a mensagem e as instruções que aparecem no boleto. A logo da empresa é configurada diretamente no painel da Efí em <strong style={{ color: 'var(--avp-text)' }}>app.efipay.com.br → Minha Conta → Personalização</strong>.
+        </p>
+        <div>
+          <label style={lbl}>Mensagem no boleto</label>
+          <input style={inp} value={boletoMensagem} onChange={e => setBoletoMensagem(e.target.value)}
+            placeholder="Ex: Obrigado por fazer parte da nossa plataforma!" />
+        </div>
+        <div>
+          <label style={lbl}>Instruções ao caixa <span style={{ color: 'var(--avp-text-dim)', fontWeight: 400 }}>(uma por linha, máx. 4)</span></label>
+          <textarea style={{ ...inp, minHeight: 90, resize: 'vertical' as const }}
+            value={boletoInstrucoes} onChange={e => setBoletoInstrucoes(e.target.value)}
+            placeholder={'Ex:\nNão receber após o vencimento\nCobrar multa de 2% após vencimento'} />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div>
+            <label style={lbl}>Multa por atraso (%)</label>
+            <input type="number" style={inp} value={boletoMulta} onChange={e => setBoletoMulta(e.target.value)}
+              min={0} max={10} step={0.5} placeholder="2" />
+          </div>
+          <div>
+            <label style={lbl}>Juros ao mês (%)</label>
+            <input type="number" style={inp} value={boletoJuros} onChange={e => setBoletoJuros(e.target.value)}
+              min={0} max={5} step={0.1} placeholder="1" />
+          </div>
+        </div>
+        <div style={{ background: '#3b82f615', border: '1px solid #3b82f640', borderRadius: 8, padding: '12px 16px', display: 'flex', gap: 10 }}>
+          <span style={{ fontSize: 18, flexShrink: 0 }}>💡</span>
+          <div style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>
+            O boleto gerado também serve como <strong style={{ color: 'var(--avp-text)' }}>recibo</strong>. Após o pagamento, o recibo é acessível em <strong style={{ color: 'var(--avp-text)' }}>/recibo/[id]</strong> com logo, dados do cliente e status de pagamento.
+          </div>
+        </div>
       </div>
 
       {/* CARTEIRA */}
