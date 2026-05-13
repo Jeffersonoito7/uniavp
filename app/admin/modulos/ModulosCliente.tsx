@@ -190,16 +190,38 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
                   </div>
                 </div>
               ) : (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
-                  {temCapa && <img src={m.capa_url!} alt={m.titulo} style={{ width: 80, height: 62, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }} />}
-                  <Link href={`/admin/modulos/${m.id}`} style={{ textDecoration: 'none', flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                      <span style={{ background: 'var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>Módulo {m.ordem}</span>
-                      <h3 style={{ fontWeight: 700, fontSize: 16, color: 'var(--avp-text)' }}>{m.titulo}</h3>
+                <div style={{ display: 'flex', gap: 0, alignItems: 'stretch' }}>
+                  {/* Área clicável principal */}
+                  <Link href={`/admin/modulos/${m.id}`} style={{ textDecoration: 'none', flex: 1, display: 'flex', alignItems: 'center', gap: 16, padding: '4px 0', borderRadius: 8, transition: 'background 0.15s' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                    {/* Capa ou ícone */}
+                    <div style={{ width: 80, height: 62, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {temCapa
+                        ? <img src={m.capa_url!} alt={m.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <span style={{ fontSize: 28 }}>📚</span>}
                     </div>
-                    {m.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>{m.descricao}</p>}
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ background: 'var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>Módulo {m.ordem}</span>
+                        {!m.publicado && <span style={{ background: '#f59e0b20', color: '#f59e0b', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>Rascunho</span>}
+                      </div>
+                      <h3 style={{ fontWeight: 700, fontSize: 16, color: 'var(--avp-text)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.titulo}</h3>
+                      {m.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: '3px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.descricao}</p>}
+                    </div>
+                    {/* Seta de navegação */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, color: 'var(--avp-blue)', fontWeight: 700, fontSize: 13 }}>
+                      <span>Ver aulas</span>
+                      <span style={{ fontSize: 18 }}>→</span>
+                    </div>
                   </Link>
-                  <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+
+                  {/* Separador */}
+                  <div style={{ width: 1, background: 'var(--avp-border)', margin: '0 16px', flexShrink: 0 }} />
+
+                  {/* Ações secundárias */}
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
                     <button onClick={() => abrirEdicao(m)}
                       style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                       Editar
