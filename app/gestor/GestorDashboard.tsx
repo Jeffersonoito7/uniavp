@@ -197,6 +197,7 @@ export default function GestorDashboard({
   const [modulosAulas, setModulosAulas] = useState<{ id: string; titulo: string; ordem: number; capa_url?: string | null; aulas: AulaGestor[] }[]>([])
   const [aulasCarregadas, setAulasCarregadas] = useState(false)
   const [aulaAberta, setAulaAberta] = useState<AulaGestor | null>(null)
+  const [moduloAberto, setModuloAberto] = useState<{ id: string; titulo: string; ordem: number; capa_url?: string | null; aulas: AulaGestor[] } | null>(null)
   const [eventoForm, setEventoForm] = useState({ titulo: '', descricao: '', cidade: '', data_hora: '', notificar: true })
   const [salvandoEvento, setSalvandoEvento] = useState(false)
   const [showEvento, setShowEvento] = useState(false)
@@ -519,53 +520,111 @@ export default function GestorDashboard({
       {/* ── AULAS ── */}
       {aba === 'aulas' && (
         <>
-          <div style={{ marginBottom: 24 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 800 }}>Aulas</h1>
-            <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Assista a todos os módulos e aulas da plataforma</p>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
+            {moduloAberto && (
+              <button onClick={() => setModuloAberto(null)}
+                style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '7px 14px', cursor: 'pointer', color: 'var(--avp-text-dim)', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                ← Voltar
+              </button>
+            )}
+            <div>
+              <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>
+                {moduloAberto ? moduloAberto.titulo : 'Módulos'}
+              </h1>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: '3px 0 0' }}>
+                {moduloAberto
+                  ? `${moduloAberto.aulas.length} aula${moduloAberto.aulas.length !== 1 ? 's' : ''} neste módulo`
+                  : 'Selecione um módulo para ver as aulas'}
+              </p>
+            </div>
           </div>
 
           {!aulasCarregadas && (
-            <p style={{ color: 'var(--avp-text-dim)', textAlign: 'center', padding: 48 }}>Carregando aulas...</p>
+            <div style={{ textAlign: 'center', padding: 64, color: 'var(--avp-text-dim)' }}>
+              <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
+              <p>Carregando módulos...</p>
+            </div>
           )}
 
-          {modulosAulas.map(mod => (
-            <div key={mod.id} style={{ marginBottom: 36 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid var(--avp-border)' }}>
-                {mod.capa_url && (
-                  <img src={mod.capa_url} alt={mod.titulo} style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
-                )}
-                <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0 }}>{mod.titulo}</h2>
-                <span style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginLeft: 'auto' }}>{mod.aulas.length} aula{mod.aulas.length !== 1 ? 's' : ''}</span>
-              </div>
-
-              {mod.aulas.length === 0 ? (
-                <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, padding: '12px 0' }}>Nenhuma aula neste módulo.</p>
+          {/* ── LISTA DE MÓDULOS (pasta) ── */}
+          {aulasCarregadas && !moduloAberto && (
+            <>
+              {modulosAulas.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 64, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', borderRadius: 12, border: '1px solid var(--avp-border)' }}>
+                  <p style={{ fontSize: 40, marginBottom: 12 }}>📚</p>
+                  <p>Nenhum módulo disponível ainda.</p>
+                </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
-                  {mod.aulas.map(aula => {
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
+                  {modulosAulas.map(mod => (
+                    <div key={mod.id} onClick={() => setModuloAberto(mod)}
+                      style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.15s, border-color 0.15s, box-shadow 0.15s' }}
+                      onMouseEnter={e => { const el = e.currentTarget as HTMLDivElement; el.style.transform = 'translateY(-3px)'; el.style.borderColor = 'var(--avp-green)'; el.style.boxShadow = '0 8px 24px rgba(2,161,83,0.15)' }}
+                      onMouseLeave={e => { const el = e.currentTarget as HTMLDivElement; el.style.transform = ''; el.style.borderColor = 'var(--avp-border)'; el.style.boxShadow = '' }}
+                    >
+                      {/* Capa do módulo */}
+                      <div style={{ height: 130, background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {mod.capa_url
+                          ? <img src={mod.capa_url} alt={mod.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                          : <span style={{ fontSize: 48 }}>📁</span>
+                        }
+                        {/* Badge de quantidade */}
+                        <div style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(0,0,0,0.65)', borderRadius: 20, padding: '3px 10px', fontSize: 11, color: '#fff', fontWeight: 600, backdropFilter: 'blur(4px)' }}>
+                          {mod.aulas.length} aula{mod.aulas.length !== 1 ? 's' : ''}
+                        </div>
+                      </div>
+                      <div style={{ padding: '14px 16px' }}>
+                        <p style={{ fontWeight: 700, fontSize: 15, margin: '0 0 4px', lineHeight: 1.3 }}>{mod.titulo}</p>
+                        <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span>📂</span> Clique para abrir
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ── AULAS DENTRO DO MÓDULO ── */}
+          {aulasCarregadas && moduloAberto && (
+            <>
+              {moduloAberto.aulas.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 48, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', borderRadius: 12, border: '1px solid var(--avp-border)' }}>
+                  <p style={{ fontSize: 36, marginBottom: 10 }}>📭</p>
+                  <p>Nenhuma aula neste módulo.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
+                  {moduloAberto.aulas.map((aula, idx) => {
                     const thumb = aula.capa_url || (aula.youtube_video_id ? `https://img.youtube.com/vi/${aula.youtube_video_id}/mqdefault.jpg` : null)
+                    const temVideo = !!(aula.youtube_video_id || aula.video_url)
                     return (
                       <div key={aula.id}
-                        onClick={() => aula.youtube_video_id || aula.video_url ? setAulaAberta(aula) : undefined}
-                        style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden', cursor: aula.youtube_video_id || aula.video_url ? 'pointer' : 'default', transition: 'transform 0.15s, border-color 0.15s', opacity: aula.publicado ? 1 : 0.6 }}
-                        onMouseEnter={e => { if (aula.youtube_video_id || aula.video_url) { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--avp-green)' } }}
+                        onClick={() => temVideo ? setAulaAberta(aula) : undefined}
+                        style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden', cursor: temVideo ? 'pointer' : 'default', transition: 'transform 0.15s, border-color 0.15s', opacity: aula.publicado ? 1 : 0.6 }}
+                        onMouseEnter={e => { if (temVideo) { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--avp-green)' } }}
                         onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--avp-border)' }}
                       >
-                        <div style={{ height: 110, background: 'var(--grad-brand)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ height: 120, background: 'var(--grad-brand)', position: 'relative' }}>
                           {thumb && <img src={thumb} alt={aula.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />}
+                          <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(0,0,0,0.55)', borderRadius: 6, padding: '2px 8px', fontSize: 11, color: '#fff', fontWeight: 700 }}>
+                            #{idx + 1}
+                          </div>
                           {!aula.publicado && (
-                            <div style={{ position: 'absolute', top: 6, right: 6, background: '#f59e0b', borderRadius: 4, padding: '2px 7px', fontSize: 9, fontWeight: 700, color: '#fff', zIndex: 2 }}>NÃO PUBLICADA</div>
+                            <div style={{ position: 'absolute', top: 8, right: 8, background: '#f59e0b', borderRadius: 4, padding: '2px 7px', fontSize: 9, fontWeight: 700, color: '#fff' }}>RASCUNHO</div>
                           )}
-                          {(aula.youtube_video_id || aula.video_url) && (
-                            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(255,255,255,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>▶</div>
+                          {temVideo && (
+                            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>▶</div>
                             </div>
                           )}
                         </div>
-                        <div style={{ padding: '10px 12px' }}>
-                          <p style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.3, marginBottom: 4 }}>{aula.titulo}</p>
+                        <div style={{ padding: '12px 14px' }}>
+                          <p style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.3, marginBottom: 4 }}>{aula.titulo}</p>
                           {aula.duracao_minutos && (
-                            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>⏱ {aula.duracao_minutos} min</p>
+                            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>⏱ {aula.duracao_minutos} min</p>
                           )}
                         </div>
                       </div>
@@ -573,54 +632,36 @@ export default function GestorDashboard({
                   })}
                 </div>
               )}
-            </div>
-          ))}
-
-          {aulasCarregadas && modulosAulas.length === 0 && (
-            <div style={{ textAlign: 'center', padding: 64, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', borderRadius: 12, border: '1px solid var(--avp-border)' }}>
-              <p style={{ fontSize: 40, marginBottom: 12 }}>📚</p>
-              <p>Nenhuma aula publicada ainda.</p>
-            </div>
+            </>
           )}
 
-          {/* Modal player aula */}
+          {/* Modal player */}
           {aulaAberta && (
-            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: 16 }}
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: 16 }}
               onClick={e => e.target === e.currentTarget && setAulaAberta(null)}>
               <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, width: '100%', maxWidth: 860, maxHeight: '90vh', overflow: 'auto' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--avp-border)' }}>
-                  <h3 style={{ fontSize: 16, fontWeight: 700 }}>{aulaAberta.titulo}</h3>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>{aulaAberta.titulo}</h3>
                   <button onClick={() => setAulaAberta(null)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 24 }}>×</button>
                 </div>
-                <div style={{ padding: '0' }}>
-                  {aulaAberta.youtube_video_id ? (
-                    <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
-                      <iframe
-                        src={`https://www.youtube.com/embed/${aulaAberta.youtube_video_id}?autoplay=1&rel=0`}
-                        title={aulaAberta.titulo}
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-                      />
-                    </div>
-                  ) : aulaAberta.video_url ? (
-                    <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
-                      <video
-                        src={aulaAberta.video_url}
-                        controls autoPlay
-                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: '#000' }}
-                      />
-                    </div>
-                  ) : (
-                    <div style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Vídeo não disponível</div>
-                  )}
-                  {aulaAberta.descricao && (
-                    <div style={{ padding: '16px 20px' }}>
-                      <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, lineHeight: 1.6 }}>{aulaAberta.descricao}</p>
-                    </div>
-                  )}
-                </div>
+                {aulaAberta.youtube_video_id ? (
+                  <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+                    <iframe src={`https://www.youtube.com/embed/${aulaAberta.youtube_video_id}?autoplay=1&rel=0`} title={aulaAberta.titulo}
+                      frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} />
+                  </div>
+                ) : aulaAberta.video_url ? (
+                  <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+                    <video src={aulaAberta.video_url} controls autoPlay style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: '#000' }} />
+                  </div>
+                ) : (
+                  <div style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Vídeo não disponível</div>
+                )}
+                {aulaAberta.descricao && (
+                  <div style={{ padding: '16px 20px' }}>
+                    <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, lineHeight: 1.6 }}>{aulaAberta.descricao}</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
