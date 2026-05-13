@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
           await (adminClient.from('aluno_medalhas') as any).upsert({ aluno_id: aluno.id, medalha_id: medalhaGraduado.id }, { onConflict: 'aluno_id,medalha_id' })
         }
         await (adminClient.from('alunos') as any)
-          .update({ status: 'concluido' })
+          .update({ status: 'concluido', data_formacao: new Date().toISOString().split('T')[0] })
           .eq('id', aluno.id)
       }
     }

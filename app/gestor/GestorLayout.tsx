@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen } from 'lucide-react'
 import ThemeToggle from '@/app/components/ThemeToggle'
@@ -18,14 +18,32 @@ export default function GestorLayout({
   aba,
   setAba,
   nomeGestor,
+  fotoPerfilInicial,
 }: {
   children: React.ReactNode
   aba: string
   setAba: (a: string) => void
   nomeGestor: string
+  fotoPerfilInicial?: string | null
 }) {
   const [siteNome, setSiteNome] = useState('')
   const [siteLogoUrl, setSiteLogoUrl] = useState('')
+  const [fotoPerfil, setFotoPerfil] = useState<string | null>(fotoPerfilInicial ?? null)
+  const [uploadandoFoto, setUploadandoFoto] = useState(false)
+  const fotoGestorRef = useRef<HTMLInputElement>(null)
+
+  async function handleFotoGestor(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setFotoPerfil(URL.createObjectURL(file))
+    setUploadandoFoto(true)
+    const fd = new FormData()
+    fd.append('foto', file)
+    const res = await fetch('/api/gestor/foto-perfil', { method: 'POST', body: fd })
+    const data = await res.json()
+    if (data.url) setFotoPerfil(data.url)
+    setUploadandoFoto(false)
+  }
   const [logoError, setLogoError] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [menuAberto, setMenuAberto] = useState(false)
@@ -125,12 +143,26 @@ export default function GestorLayout({
         {(!colapsada || isMobile) && (
           <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--avp-border)', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, flexShrink: 0 }}>
-                {nomeGestor.charAt(0).toUpperCase()}
+              <div
+                onClick={() => fotoGestorRef.current?.click()}
+                style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, cursor: 'pointer', background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15, border: '2px solid var(--avp-border)', position: 'relative' }}
+                title="Clique para trocar foto de perfil"
+              >
+                {fotoPerfil ? (
+                  <img src={fotoPerfil} alt={nomeGestor} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ color: '#fff' }}>{nomeGestor.charAt(0).toUpperCase()}</span>
+                )}
+                {uploadandoFoto && (
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: 8, color: '#fff' }}>...</span>
+                  </div>
+                )}
               </div>
+              <input ref={fotoGestorRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFotoGestor} />
               <div style={{ minWidth: 0 }}>
                 <p style={{ fontWeight: 600, fontSize: 13, color: 'var(--avp-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nomeGestor}</p>
-                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>Painel Gestor</p>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', cursor: 'pointer' }} onClick={() => fotoGestorRef.current?.click()}>📷 Trocar foto</p>
               </div>
             </div>
           </div>

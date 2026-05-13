@@ -139,6 +139,8 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
               className="hide-mobile">Loja</Link>
             <Link href={`/aluno/${params.whatsapp}/artes`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none', fontWeight: 500, padding: '6px 10px', borderRadius: 8 }}
               className="hide-mobile">🎨 Artes</Link>
+            <Link href={`/aluno/${params.whatsapp}/carteira`} style={{ color: aluno.status === 'concluido' ? '#fbbf24' : 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none', fontWeight: aluno.status === 'concluido' ? 700 : 500, padding: '6px 10px', borderRadius: 8 }}
+              className="hide-mobile" title="Minha Carteira de Formação">🎓 Carteira</Link>
             <PushButton />
             <PWAInstallButton />
             <MuralNoticias />

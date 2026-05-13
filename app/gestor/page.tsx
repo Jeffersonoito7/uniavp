@@ -10,7 +10,7 @@ export default async function GestorPage() {
   const adminClient = createServiceRoleClient()
 
   const { data: gestor } = await (adminClient.from('gestores') as any)
-    .select('id, nome, email, whatsapp')
+    .select('id, nome, email, whatsapp, foto_perfil')
     .eq('user_id', user.id)
     .eq('ativo', true)
     .maybeSingle()

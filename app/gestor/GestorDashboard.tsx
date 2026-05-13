@@ -15,7 +15,7 @@ type Modulo = {
   titulo: string; ordem: number; aulas_total: number; aulas_concluidas: number; percentual: number
 }
 type Evento = { id: string; titulo: string; descricao: string; cidade: string; data_hora: string }
-type Gestor = { id: string; nome: string; email: string; whatsapp: string }
+type Gestor = { id: string; nome: string; email: string; whatsapp: string; foto_perfil?: string | null }
 
 const badgeStatus: Record<string, { label: string; color: string; bg: string }> = {
   ativo: { label: 'Ativo', color: 'var(--avp-green)', bg: '#02A15320' },
@@ -257,7 +257,7 @@ export default function GestorDashboard({
       </div>
     )}
 
-    <GestorLayout aba={aba} setAba={handleSetAba} nomeGestor={gestor.nome}>
+    <GestorLayout aba={aba} setAba={handleSetAba} nomeGestor={gestor.nome} fotoPerfilInicial={gestor.foto_perfil}>
 
       {/* ── DASHBOARD ── */}
       {(aba === 'dashboard' || aba === 'consultores') && (
