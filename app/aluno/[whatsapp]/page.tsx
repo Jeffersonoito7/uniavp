@@ -150,8 +150,11 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
               className="hide-mobile">Loja</Link>
             <Link href={`/aluno/${params.whatsapp}/artes`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none', fontWeight: 500, padding: '6px 10px', borderRadius: 8 }}
               className="hide-mobile">🎨 Artes</Link>
-            <Link href={`/aluno/${params.whatsapp}/carteira`} style={{ color: aluno.status === 'concluido' ? '#fbbf24' : 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none', fontWeight: aluno.status === 'concluido' ? 700 : 500, padding: '6px 10px', borderRadius: 8 }}
-              className="hide-mobile" title="Minha Carteira de Formação">🎓 Carteira</Link>
+            {aluno.status === 'concluido' && (
+              <Link href={`/aluno/${params.whatsapp}/carteira`}
+                style={{ color: '#fbbf24', fontSize: 13, textDecoration: 'none', fontWeight: 700, padding: '6px 10px', borderRadius: 8, background: '#fbbf2415', border: '1px solid #fbbf2440' }}
+                title="Minha Carteira de Formação">🎓 Carteira</Link>
+            )}
             <PushButton />
             <PWAInstallButton />
             <MuralNoticias />
@@ -290,12 +293,34 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
                   { href: `/aluno/${params.whatsapp}/loja`, label: '🛍️ Loja' },
                   { href: `/aluno/${params.whatsapp}/artes`, label: '🎨 Artes' },
                   { href: `/aluno/${params.whatsapp}/perfil`, label: '👤 Perfil' },
+                  ...(aluno.status === 'concluido' ? [{ href: `/aluno/${params.whatsapp}/carteira`, label: '🎓 Carteira' }] : []),
                 ].map(l => (
                   <a key={l.href} href={l.href} style={{ color: 'var(--avp-text)', fontSize: 13, textDecoration: 'none', fontWeight: 500 }}>{l.label}</a>
                 ))}
               </div>
             </div>
           </div>
+
+          {/* ── BANNER DE FORMAÇÃO ── */}
+          {aluno.status === 'concluido' && (
+            <div style={{ background: 'linear-gradient(135deg, #1a1a3e, #2d1b69)', border: '1px solid #6366f140', borderRadius: 16, padding: '24px 28px', marginBottom: 28, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+              <div style={{ fontSize: 52, flexShrink: 0 }}>🎓</div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontWeight: 900, fontSize: 18, color: '#fff', margin: '0 0 4px' }}>Parabéns, {aluno.nome.split(' ')[0]}! Você é um Consultor Certificado!</p>
+                <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 14, margin: 0 }}>Você concluiu 100% da formação. Acesse seus documentos abaixo.</p>
+              </div>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <Link href={`/aluno/${params.whatsapp}/carteira`}
+                  style={{ background: '#fbbf24', color: '#1a1a1a', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  🪪 Carteira
+                </Link>
+                <Link href={`/aluno/${params.whatsapp}/artes`}
+                  style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 10, padding: '10px 20px', fontWeight: 700, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  🎨 Artes
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* ── TRILHA DE AULAS ── */}
           {modulos.map(mod => (
