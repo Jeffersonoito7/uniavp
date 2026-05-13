@@ -1,16 +1,17 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen } from 'lucide-react'
+import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen, UserCircle } from 'lucide-react'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import SupportChat from '@/app/components/SupportChat'
 
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'dashboard',   label: 'Dashboard',  icon: LayoutDashboard },
   { id: 'consultores', label: 'Consultores', icon: Users },
-  { id: 'aulas', label: 'Aulas', icon: BookOpen },
-  { id: 'eventos', label: 'Eventos', icon: Calendar },
-  { id: 'whatsapp', label: 'WhatsApp', icon: Smartphone },
+  { id: 'aulas',       label: 'Aulas',       icon: BookOpen },
+  { id: 'eventos',     label: 'Eventos',     icon: Calendar },
+  { id: 'whatsapp',    label: 'WhatsApp',    icon: Smartphone },
+  { id: 'perfil',      label: 'Meu Perfil',  icon: UserCircle },
 ]
 
 export default function GestorLayout({

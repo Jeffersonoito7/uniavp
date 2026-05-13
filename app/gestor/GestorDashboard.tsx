@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import GestorLayout from './GestorLayout'
 import LiberacoesPendentes from './LiberacoesPendentes'
@@ -7,6 +7,145 @@ import WhatsAppConectar from '@/app/components/WhatsAppConectar'
 import PhoneInput from '@/app/components/PhoneInput'
 import EventosWidget from '@/app/components/EventosWidget'
 import MuralNoticias from '@/app/components/MuralNoticias'
+import ImageCropModal from '@/app/components/ImageCropModal'
+
+// ── Componente de Perfil do Gestor ──────────────────────────────────────────
+function PerfilGestor({ gestor, onNomeAtualizado }: { gestor: Gestor; onNomeAtualizado: (n: string) => void }) {
+  const [nome, setNome]         = useState(gestor.nome)
+  const [fotoUrl, setFotoUrl]   = useState<string | null>(gestor.foto_perfil ?? null)
+  const [cropSrc, setCropSrc]   = useState<string | null>(null)
+  const [showCrop, setShowCrop] = useState(false)
+  const [salvando, setSalvando] = useState(false)
+  const [msg, setMsg]           = useState<{ tipo: 'ok' | 'err'; texto: string } | null>(null)
+  const fotoRef = useRef<HTMLInputElement>(null)
+
+  function handleFotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCropSrc(URL.createObjectURL(file))
+    setShowCrop(true)
+    e.target.value = ''
+  }
+
+  async function handleCropSave(_dataUrl: string, blob: Blob) {
+    setShowCrop(false)
+    setFotoUrl(_dataUrl)
+    const fd = new FormData()
+    fd.append('foto', blob, 'foto.jpg')
+    const res = await fetch('/api/gestor/foto-perfil', { method: 'POST', body: fd })
+    const data = await res.json()
+    if (data.url) setFotoUrl(data.url)
+    setMsg({ tipo: data.url ? 'ok' : 'err', texto: data.url ? 'Foto atualizada!' : 'Erro ao salvar foto.' })
+    setTimeout(() => setMsg(null), 3000)
+  }
+
+  async function salvar(e: React.FormEvent) {
+    e.preventDefault()
+    setSalvando(true)
+    const res = await fetch('/api/gestor/perfil', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome }),
+    })
+    const data = await res.json()
+    if (data.ok) { setMsg({ tipo: 'ok', texto: 'Perfil atualizado!' }); onNomeAtualizado(nome) }
+    else setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao salvar.' })
+    setSalvando(false)
+    setTimeout(() => setMsg(null), 4000)
+  }
+
+  const inp: React.CSSProperties = { width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '11px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const, fontFamily: 'Inter, sans-serif' }
+
+  return (
+    <>
+      {showCrop && cropSrc && (
+        <ImageCropModal src={cropSrc} circular title="Ajustar foto de perfil" onSave={handleCropSave} onCancel={() => setShowCrop(false)} />
+      )}
+      <div style={{ maxWidth: 640, margin: '0 auto' }}>
+        <div style={{ marginBottom: 28 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 800 }}>Meu Perfil</h1>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Edite seus dados e foto de perfil</p>
+        </div>
+
+        {msg && (
+          <div style={{ padding: '12px 16px', background: msg.tipo === 'ok' ? '#02A15320' : '#e6394620', border: `1px solid ${msg.tipo === 'ok' ? 'var(--avp-green)' : 'var(--avp-danger)'}`, borderRadius: 10, color: msg.tipo === 'ok' ? 'var(--avp-green)' : 'var(--avp-danger)', fontSize: 14, marginBottom: 20 }}>
+            {msg.texto}
+          </div>
+        )}
+
+        {/* Foto */}
+        <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: '24px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 24 }}>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div onClick={() => fotoRef.current?.click()}
+              style={{ width: 96, height: 96, borderRadius: '50%', overflow: 'hidden', background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '3px solid var(--avp-border)' }}>
+              {fotoUrl
+                ? <img src={fotoUrl} alt={nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ fontSize: 36, fontWeight: 800, color: '#fff' }}>{nome.charAt(0).toUpperCase()}</span>}
+            </div>
+            <button onClick={() => fotoRef.current?.click()}
+              style={{ position: 'absolute', bottom: 2, right: 2, width: 26, height: 26, borderRadius: '50%', background: 'var(--avp-green)', border: '2px solid var(--avp-black)', color: '#fff', cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              📷
+            </button>
+            <input ref={fotoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFotoChange} />
+          </div>
+          <div>
+            <p style={{ fontWeight: 700, fontSize: 16, margin: '0 0 4px' }}>{gestor.nome}</p>
+            <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: '0 0 10px' }}>Painel Gestor</p>
+            <button onClick={() => fotoRef.current?.click()}
+              style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+              📷 Trocar foto
+            </button>
+          </div>
+        </div>
+
+        {/* Dados */}
+        <form onSubmit={salvar} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, overflow: 'hidden' }}>
+          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--avp-border)' }}>
+            <h2 style={{ fontWeight: 800, fontSize: 16, margin: 0 }}>Dados cadastrais</h2>
+          </div>
+          <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>Nome *</label>
+              <input style={inp} value={nome} onChange={e => setNome(e.target.value)} required />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>WhatsApp</label>
+                <input style={{ ...inp, opacity: 0.6, cursor: 'not-allowed' }} value={gestor.whatsapp} readOnly />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>E-mail</label>
+                <input style={{ ...inp, opacity: 0.6, cursor: 'not-allowed' }} value={gestor.email} readOnly />
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 4, borderTop: '1px solid var(--avp-border)' }}>
+              <button type="submit" disabled={salvando}
+                style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 28px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: salvando ? 0.7 : 1 }}>
+                {salvando ? 'Salvando...' : '✓ Salvar'}
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, overflow: 'hidden', marginTop: 20 }}>
+          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--avp-border)' }}>
+            <h2 style={{ fontWeight: 800, fontSize: 16, margin: 0 }}>🔐 Segurança</h2>
+          </div>
+          <div style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <p style={{ fontWeight: 600, fontSize: 14, margin: '0 0 4px' }}>Senha</p>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0 }}>Altere sua senha de acesso</p>
+            </div>
+            <a href="/recuperar-senha"
+              style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', color: 'var(--avp-text)', borderRadius: 8, padding: '8px 18px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+              Alterar senha
+            </a>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
 
 type Consultor = {
   id: string; nome: string; whatsapp: string; email: string; status: string; created_at: string
@@ -612,6 +751,11 @@ export default function GestorDashboard({
           </div>
         </div>
       )}
+      {/* ── PERFIL DO GESTOR ── */}
+      {aba === 'perfil' && (
+        <PerfilGestor gestor={gestor} onNomeAtualizado={(nome) => {/* gestor.nome is read-only prop */}} />
+      )}
+
     </GestorLayout>
     </>
   )

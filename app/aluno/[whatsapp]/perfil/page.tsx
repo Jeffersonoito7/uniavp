@@ -9,7 +9,7 @@ export default async function PerfilPage({ params }: { params: { whatsapp: strin
 
   const adminClient = createServiceRoleClient()
   const { data: aluno } = await (adminClient.from('alunos') as any)
-    .select('id, nome, whatsapp, email, foto_url, bio, status')
+    .select('id, nome, whatsapp, email, foto_url, bio, status, numero_registro, data_formacao')
     .eq('user_id', user.id)
     .maybeSingle()
 
