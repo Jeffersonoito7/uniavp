@@ -11,19 +11,13 @@ export default async function GestorPage() {
   const adminClient = createServiceRoleClient()
 
   const { data: gestor } = await (adminClient.from('gestores') as any)
-    .select('id, nome, email, whatsapp')
+    .select('id, nome, email, whatsapp, foto_perfil')
     .eq('user_id', user.id)
     .eq('ativo', true)
     .maybeSingle()
   if (!gestor) redirect('/gestor/login')
 
-  // foto_perfil buscada separadamente (coluna pode não existir ainda)
-  let gestorFoto: string | null = null
-  try {
-    const { data: gf } = await (adminClient.from('gestores') as any)
-      .select('foto_perfil').eq('id', gestor.id).maybeSingle()
-    gestorFoto = gf?.foto_perfil ?? null
-  } catch { /* coluna ainda não existe */ }
+  const gestorFoto: string | null = gestor.foto_perfil ?? null
 
   const { data: consultores } = await (adminClient.from('alunos') as any)
     .select('id, nome, whatsapp, email, status, created_at')
