@@ -10,7 +10,11 @@ export async function GET(req: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ tipo: null })
 
-  const from = new URL(req.url).searchParams.get('from')
+  const url = new URL(req.url)
+  const from = url.searchParams.get('from')
+  const host = req.headers.get('host') ?? ''
+  const isDominioAdmin = host.startsWith('adm.')
+
   const admin = createServiceRoleClient()
 
   // Se veio do painel gestor, verifica gestor primeiro
@@ -30,6 +34,11 @@ export async function GET(req: Request) {
   const { data: superRecord } = await (admin.from('super_admins') as any)
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (superRecord) return NextResponse.json({ tipo: 'super', redirect: '/super' })
+
+  // Bloqueia gestor e aluno no domínio adm.
+  if (isDominioAdmin) {
+    return NextResponse.json({ tipo: 'acesso_negado' })
+  }
 
   const { data: gestorRecord } = await (admin.from('gestores') as any)
     .select('id, ativo').eq('user_id', user.id).maybeSingle()

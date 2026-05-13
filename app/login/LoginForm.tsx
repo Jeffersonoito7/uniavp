@@ -53,6 +53,13 @@ export default function LoginForm({ logoUrl, siteNome, isDominioMaster }: { logo
       return
     }
 
+    if (perfil.tipo === 'acesso_negado') {
+      await supabase.auth.signOut()
+      setErro('Acesso negado. Este painel é exclusivo para administradores.')
+      setLoading(false)
+      return
+    }
+
     await supabase.auth.signOut()
     setErro('Usuário sem perfil cadastrado. Entre em contato com a empresa.')
     setLoading(false)
