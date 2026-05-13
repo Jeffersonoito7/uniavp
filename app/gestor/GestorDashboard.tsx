@@ -556,7 +556,7 @@ export default function GestorDashboard({
                   <p>Nenhum módulo disponível ainda.</p>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 14 }}>
                   {modulosAulas.map(mod => (
                     <div key={mod.id} onClick={() => setModuloAberto(mod)}
                       style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.15s, border-color 0.15s, box-shadow 0.15s' }}
@@ -596,7 +596,7 @@ export default function GestorDashboard({
                   <p>Nenhuma aula neste módulo.</p>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
                   {moduloAberto.aulas.map((aula, idx) => {
                     const thumb = aula.capa_url || (aula.youtube_video_id ? `https://img.youtube.com/vi/${aula.youtube_video_id}/mqdefault.jpg` : null)
                     const temVideo = !!(aula.youtube_video_id || aula.video_url)
