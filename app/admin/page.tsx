@@ -14,9 +14,56 @@ export default async function AdminDashboard() {
   const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/login')
 
-  const { count: totalAlunos } = await (adminClient.from('alunos') as any).select('id', { count: 'exact', head: true })
-  const { count: totalModulos } = await (adminClient.from('modulos') as any).select('id', { count: 'exact', head: true })
-  const { count: totalAulas } = await (adminClient.from('aulas') as any).select('id', { count: 'exact', head: true })
+  const [
+    { count: totalAlunos },
+    { count: alunosAtivos },
+    { count: alunosConcluidos },
+    { count: totalModulos },
+    { count: totalAulas },
+    { count: aulasPublicadas },
+    { count: totalGestores },
+    { count: gestoresAtivos },
+  ] = await Promise.all([
+    (adminClient.from('alunos') as any).select('id', { count: 'exact', head: true }),
+    (adminClient.from('alunos') as any).select('id', { count: 'exact', head: true }).eq('status', 'ativo'),
+    (adminClient.from('alunos') as any).select('id', { count: 'exact', head: true }).eq('status', 'concluido'),
+    (adminClient.from('modulos') as any).select('id', { count: 'exact', head: true }),
+    (adminClient.from('aulas') as any).select('id', { count: 'exact', head: true }),
+    (adminClient.from('aulas') as any).select('id', { count: 'exact', head: true }).eq('publicado', true),
+    (adminClient.from('gestores') as any).select('id', { count: 'exact', head: true }),
+    (adminClient.from('gestores') as any).select('id', { count: 'exact', head: true }).eq('ativo', true),
+  ])
+
+  // Taxa de conclusão
+  const taxaConclusao = totalAlunos ? Math.round(((alunosConcluidos ?? 0) / (totalAlunos ?? 1)) * 100) : 0
+
+  // Progresso médio (alunos ativos)
+  const { data: progressoRows } = await (adminClient.from('progresso') as any)
+    .select('aluno_id').eq('aprovado', true)
+  const totalAulasPublicadasN = aulasPublicadas ?? 1
+  const progressoPorAluno: Record<string, number> = {}
+  for (const p of progressoRows ?? []) {
+    progressoPorAluno[p.aluno_id] = (progressoPorAluno[p.aluno_id] ?? 0) + 1
+  }
+  const vals = Object.values(progressoPorAluno) as number[]
+  const mediaProgresso = vals.length > 0
+    ? Math.round(vals.reduce((s, v) => s + Math.min(100, Math.round((v / totalAulasPublicadasN) * 100)), 0) / vals.length)
+    : 0
+
+  // Novos cadastros nos últimos 7 dias
+  const seteAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const { count: novosAlunos } = await (adminClient.from('alunos') as any)
+    .select('id', { count: 'exact', head: true })
+    .gte('created_at', seteAtras)
+
+  const stats = [
+    { label: 'Total de Alunos', value: totalAlunos ?? 0, sub: `${alunosAtivos ?? 0} ativos`, cor: '#3b82f6', icon: '👥' },
+    { label: 'Concluíram', value: alunosConcluidos ?? 0, sub: `${taxaConclusao}% de conclusão`, cor: '#22c55e', icon: '🎓' },
+    { label: 'Progresso Médio', value: `${mediaProgresso}%`, sub: 'entre alunos ativos', cor: '#f59e0b', icon: '📈' },
+    { label: 'Novos (7 dias)', value: novosAlunos ?? 0, sub: 'novos cadastros', cor: '#8b5cf6', icon: '✨' },
+    { label: 'Gestores Ativos', value: gestoresAtivos ?? 0, sub: `de ${totalGestores ?? 0} cadastrados`, cor: '#06b6d4', icon: '🏢' },
+    { label: 'Aulas Publicadas', value: aulasPublicadas ?? 0, sub: `de ${totalAulas ?? 0} criadas`, cor: '#f97316', icon: '🎬' },
+  ]
 
   return (
     <AdminLayout>
@@ -24,20 +71,23 @@ export default async function AdminDashboard() {
         <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Dashboard</h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Visão geral da plataforma</p>
       </div>
+
       <LinksTeste />
       <LiberacoesPendentes />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16 }}>
-        {[
-          { label: 'Alunos', value: totalAlunos ?? 0 },
-          { label: 'Módulos', value: totalModulos ?? 0 },
-          { label: 'Aulas', value: totalAulas ?? 0 },
-        ].map(stat => (
-          <div key={stat.label} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24 }}>
-            <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 8 }}>{stat.label}</p>
-            <p style={{ fontSize: 36, fontWeight: 800, color: 'var(--avp-text)' }}>{stat.value}</p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 28 }}>
+        {stats.map(s => (
+          <div key={s.label} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: '20px 20px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 }}>{s.label}</p>
+              <span style={{ fontSize: 20 }}>{s.icon}</span>
+            </div>
+            <p style={{ fontSize: 32, fontWeight: 800, color: s.cor, margin: '0 0 4px' }}>{s.value}</p>
+            <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>{s.sub}</p>
           </div>
         ))}
       </div>
+
       <LinksCaptacao />
     </AdminLayout>
   )
