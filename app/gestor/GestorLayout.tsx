@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen, UserCircle } from 'lucide-react'
+import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen, UserCircle, Palette } from 'lucide-react'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import SupportChat from '@/app/components/SupportChat'
 
@@ -11,6 +11,7 @@ const navItems = [
   { id: 'aulas',       label: 'Aulas',       icon: BookOpen },
   { id: 'eventos',     label: 'Eventos',     icon: Calendar },
   { id: 'whatsapp',    label: 'WhatsApp',    icon: Smartphone },
+  { id: 'artes',       label: 'Artes',        icon: Palette },
   { id: 'perfil',      label: 'Meu Perfil',  icon: UserCircle },
 ]
 

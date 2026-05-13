@@ -793,9 +793,50 @@ export default function GestorDashboard({
           </div>
         </div>
       )}
+      {/* ── ARTES ── */}
+      {aba === 'artes' && (
+        <>
+          <div style={{ marginBottom: 28 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 800 }}>🎨 Artes</h1>
+            <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Gere artes personalizadas para cada consultor</p>
+          </div>
+
+          {listaConsultores.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 64, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', borderRadius: 12, border: '1px solid var(--avp-border)' }}>
+              <p style={{ fontSize: 40, marginBottom: 12 }}>🎨</p>
+              <p>Você ainda não tem consultores cadastrados.</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
+              {listaConsultores.map(c => {
+                const statusInfo = badgeStatus[c.status] ?? badgeStatus.ativo
+                return (
+                  <a key={c.id} href={`/gestor/artes/${c.whatsapp}`}
+                    style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, overflow: 'hidden', textDecoration: 'none', color: 'var(--avp-text)', display: 'block', transition: 'transform 0.15s, border-color 0.15s' }}
+                    onMouseEnter={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = 'translateY(-2px)'; el.style.borderColor = '#8b5cf6' }}
+                    onMouseLeave={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = ''; el.style.borderColor = 'var(--avp-border)' }}
+                  >
+                    <div style={{ height: 80, background: 'linear-gradient(135deg, #4c1d95, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>
+                      🎨
+                    </div>
+                    <div style={{ padding: '12px 14px' }}>
+                      <p style={{ fontWeight: 700, fontSize: 14, margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.nome}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: 11, color: statusInfo.color, fontWeight: 600 }}>{statusInfo.label}</span>
+                        <span style={{ fontSize: 12, color: '#a78bfa', fontWeight: 700 }}>Gerar →</span>
+                      </div>
+                    </div>
+                  </a>
+                )
+              })}
+            </div>
+          )}
+        </>
+      )}
+
       {/* ── PERFIL DO GESTOR ── */}
       {aba === 'perfil' && (
-        <PerfilGestor gestor={gestor} onNomeAtualizado={(nome) => {/* gestor.nome is read-only prop */}} />
+        <PerfilGestor gestor={gestor} onNomeAtualizado={(_nome) => { /* update handled internally */ }} />
       )}
 
     </GestorLayout>
