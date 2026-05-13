@@ -199,6 +199,8 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
   const editCapaRef = useRef<HTMLInputElement>(null)
 
   const [msg, setMsg] = useState('')
+  const dragAulaIndex = useRef<number | null>(null)
+  const [dragAulaOver, setDragAulaOver] = useState<number | null>(null)
 
   function selecionarCapa(file: File, isEdit = false) {
     if (file.size > 3 * 1024 * 1024) { setMsg('Imagem muito grande. Use até 3MB.'); return }
@@ -326,6 +328,24 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
       body: JSON.stringify({ id: aula.id }),
     })
     if (res.ok) setAulas(prev => prev.filter(a => a.id !== aula.id))
+  }
+
+  async function onDropAula(targetIdx: number) {
+    const from = dragAulaIndex.current
+    if (from === null || from === targetIdx) { dragAulaIndex.current = null; setDragAulaOver(null); return }
+    const lista = [...aulas].sort((a, b) => a.ordem - b.ordem)
+    const [moved] = lista.splice(from, 1)
+    lista.splice(targetIdx, 0, moved)
+    const reordenadas = lista.map((a, i) => ({ ...a, ordem: i + 1 }))
+    setAulas(reordenadas)
+    dragAulaIndex.current = null
+    setDragAulaOver(null)
+    await Promise.all(reordenadas.map(a =>
+      fetch(`/api/admin/modulos/${moduloId}/aulas`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: a.id, ordem: a.ordem }),
+      })
+    ))
   }
 
   async function salvarAula(e: React.FormEvent) {
@@ -560,11 +580,25 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {aulas.sort((a, b) => a.ordem - b.ordem).map(aula => {
+        {[...aulas].sort((a, b) => a.ordem - b.ordem).map((aula, aulaIdx) => {
           const isEditing = editandoId === aula.id
           const temCapa = aula.capa_url?.startsWith('data:') || aula.capa_url?.startsWith('blob:')
           return (
-            <div key={aula.id} style={cardStyle}>
+            <div key={aula.id}
+              draggable={!isEditing}
+              onDragStart={() => { dragAulaIndex.current = aulaIdx }}
+              onDragEnter={() => setDragAulaOver(aulaIdx)}
+              onDragOver={e => e.preventDefault()}
+              onDrop={() => onDropAula(aulaIdx)}
+              onDragEnd={() => setDragAulaOver(null)}
+              style={{
+                ...cardStyle,
+                border: `1px solid ${dragAulaOver === aulaIdx ? 'var(--avp-blue)' : 'var(--avp-border)'}`,
+                boxShadow: dragAulaOver === aulaIdx ? '0 0 0 2px rgba(59,130,246,0.3)' : 'none',
+                opacity: dragAulaIndex.current === aulaIdx ? 0.4 : 1,
+                cursor: isEditing ? 'default' : 'grab',
+                transition: 'border-color 0.15s, opacity 0.15s',
+              }}>
               {isEditing ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -677,6 +711,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
                     <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flex: 1 }}>
+                      <span style={{ fontSize: 18, color: 'var(--avp-text-dim)', cursor: 'grab', flexShrink: 0, marginTop: 2 }} title="Arraste para reordenar">⠿</span>
                       {temCapa && <img src={aula.capa_url!} alt={aula.titulo} style={{ width: 72, height: 56, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }} />}
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
