@@ -61,7 +61,7 @@ export default function ImageCropModal({
     setZoom(newZoom)
   }
 
-  function save() {
+  async function save() {
     const canvas = canvasRef.current!
     const ctx = canvas.getContext('2d')!
     canvas.width = CROP_W
@@ -80,9 +80,22 @@ export default function ImageCropModal({
 
     ctx.drawImage(imgRef.current!, srcX, srcY, srcW, srcH, 0, 0, CROP_W, CROP_H)
 
-    canvas.toBlob(blob => {
-      if (blob) onSave(canvas.toDataURL('image/jpeg', 0.92), blob)
-    }, 'image/jpeg', 0.92)
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92)
+
+    // Gera blob com fallback garantido
+    const blob = await new Promise<Blob>(resolve => {
+      canvas.toBlob(b => {
+        if (b) { resolve(b); return }
+        // fallback: converte dataUrl → Blob manualmente
+        const arr = dataUrl.split(',')
+        const bstr = atob(arr[1])
+        const u8 = new Uint8Array(bstr.length)
+        for (let i = 0; i < bstr.length; i++) u8[i] = bstr.charCodeAt(i)
+        resolve(new Blob([u8], { type: 'image/jpeg' }))
+      }, 'image/jpeg', 0.92)
+    })
+
+    onSave(dataUrl, blob) // parent chama setShowCrop(false) aqui
   }
 
   // Prevent body scroll while modal open

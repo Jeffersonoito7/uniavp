@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen, UserCircle } from 'lucide-react'
+import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen } from 'lucide-react'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import SupportChat from '@/app/components/SupportChat'
 
@@ -11,7 +11,7 @@ const navItems = [
   { id: 'aulas',       label: 'Aulas',       icon: BookOpen },
   { id: 'eventos',     label: 'Eventos',     icon: Calendar },
   { id: 'whatsapp',    label: 'WhatsApp',    icon: Smartphone },
-  { id: 'perfil',      label: 'Meu Perfil',  icon: UserCircle },
+
 ]
 
 export default function GestorLayout({
@@ -140,33 +140,25 @@ export default function GestorLayout({
           )}
         </div>
 
-        {/* Perfil do gestor */}
+        {/* Perfil do gestor — clicável para abrir aba Perfil */}
         {(!colapsada || isMobile) && (
-          <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--avp-border)', flexShrink: 0 }}>
+          <button
+            onClick={() => { setAba('perfil'); if (isMobile) setMenuAberto(false) }}
+            style={{ padding: '14px 20px', borderBottom: '1px solid var(--avp-border)', flexShrink: 0, background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' as const }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div
-                onClick={() => fotoGestorRef.current?.click()}
-                style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, cursor: 'pointer', background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15, border: '2px solid var(--avp-border)', position: 'relative' }}
-                title="Clique para trocar foto de perfil"
-              >
-                {fotoPerfil ? (
-                  <img src={fotoPerfil} alt={nomeGestor} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <span style={{ color: '#fff' }}>{nomeGestor.charAt(0).toUpperCase()}</span>
-                )}
-                {uploadandoFoto && (
-                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: 8, color: '#fff' }}>...</span>
-                  </div>
-                )}
+              <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15, border: '2px solid var(--avp-border)' }}>
+                {fotoPerfil
+                  ? <img src={fotoPerfil} alt={nomeGestor} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <span style={{ color: '#fff' }}>{nomeGestor.charAt(0).toUpperCase()}</span>
+                }
               </div>
-              <input ref={fotoGestorRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFotoGestor} />
               <div style={{ minWidth: 0 }}>
-                <p style={{ fontWeight: 600, fontSize: 13, color: 'var(--avp-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nomeGestor}</p>
-                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', cursor: 'pointer' }} onClick={() => fotoGestorRef.current?.click()}>📷 Trocar foto</p>
+                <p style={{ fontWeight: 600, fontSize: 13, color: 'var(--avp-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{nomeGestor}</p>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>👤 Ver perfil</p>
               </div>
             </div>
-          </div>
+          </button>
         )}
 
         {/* Nav */}
