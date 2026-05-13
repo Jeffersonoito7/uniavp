@@ -58,7 +58,7 @@ export async function PUT(req: NextRequest) {
   if (!ctx) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
   const { gestor, adminClient } = ctx
 
-  const body: { id: string; arte_url: string; foto_x: number; foto_y: number; foto_largura: number; foto_altura: number; foto_redondo: boolean; ativo: boolean; titulo: string; tipo: string }[] = await req.json()
+  const body: { id: string; gestor_id: string | null; arte_url: string; foto_x: number; foto_y: number; foto_largura: number; foto_altura: number; foto_redondo: boolean; ativo: boolean; titulo: string; tipo: string }[] = await req.json()
 
   for (const t of body) {
     if (t.gestor_id === gestor.id) {

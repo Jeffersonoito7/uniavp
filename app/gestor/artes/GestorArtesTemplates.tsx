@@ -98,10 +98,9 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
 
   async function salvar() {
     setSalvando(true); setMsg('')
-    const meusTpl = templates.filter(t => meu(t))
     const res = await fetch('/api/gestor/artes', {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(meusTpl),
+      body: JSON.stringify(templates),
     })
     setSalvando(false)
     setMsg(res.ok ? '✅ Templates salvos com sucesso!' : '❌ Erro ao salvar.')
