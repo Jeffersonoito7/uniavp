@@ -5,7 +5,7 @@ export default async function RecuperarSenhaPage() {
   const config = await getSiteConfig()
   return (
     <RecuperarSenhaForm
-      logoUrl={config.logoPaginaUrl || config.logoUrl || '/logo.png'}
+      logoUrl={config.logoPaginaUrl || config.logoUrl }
       siteNome={config.isDominioMaster ? '' : config.nome}
     />
   )

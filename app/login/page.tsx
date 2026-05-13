@@ -15,7 +15,7 @@ export default async function LoginPage() {
   const config = await getSiteConfig()
   return (
     <LoginForm
-      logoUrl={config.logoPaginaUrl || config.logoUrl || '/logo.png'}
+      logoUrl={config.logoPaginaUrl || config.logoUrl }
       siteNome={config.nome}
       isDominioMaster={config.isDominioMaster}
     />

@@ -8,6 +8,7 @@ import PhoneInput from '@/app/components/PhoneInput'
 import EventosWidget from '@/app/components/EventosWidget'
 import MuralNoticias from '@/app/components/MuralNoticias'
 import ImageCropModal from '@/app/components/ImageCropModal'
+import GestorArtesTemplates from './artes/GestorArtesTemplates'
 
 // ── Componente de Perfil do Gestor ──────────────────────────────────────────
 function PerfilGestor({ gestor, onNomeAtualizado }: { gestor: Gestor; onNomeAtualizado: (n: string) => void }) {
@@ -175,10 +176,12 @@ function BarraProgresso({ pct }: { pct: number }) {
   )
 }
 
+type ArteTemplate = { id: string; tipo: string; titulo: string; arte_url: string; foto_x: number; foto_y: number; foto_largura: number; foto_altura: number; foto_redondo: boolean; ativo: boolean; formato: string; gestor_id: string | null }
+
 export default function GestorDashboard({
-  gestor, consultores, progressoMap,
+  gestor, consultores, progressoMap, artesTemplatesIniciais, baseUrl,
 }: {
-  gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>
+  gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string
 }) {
   const [aba, setAba] = useState('dashboard')
   const [listaConsultores, setListaConsultores] = useState(consultores)
@@ -202,6 +205,8 @@ export default function GestorDashboard({
   const [salvandoEvento, setSalvandoEvento] = useState(false)
   const [showEvento, setShowEvento] = useState(false)
   const [msgEvento, setMsgEvento] = useState('')
+  const [artesSubAba, setArtesSubAba] = useState<'templates' | 'consultores'>('templates')
+  const [artesTemplates] = useState<ArteTemplate[]>(artesTemplatesIniciais)
 
   const ativos = listaConsultores.filter(c => c.status !== 'concluido')
   const emAndamento = listaConsultores.filter(c => c.status === 'ativo' && progressoMap[c.id] > 0).length
@@ -210,8 +215,7 @@ export default function GestorDashboard({
   const vagasLivres = 50 - vagasUsadas
 
   function copiarLink() {
-    const base = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
-    navigator.clipboard.writeText(`${base}/g/${gestor.whatsapp}`)
+    navigator.clipboard.writeText(`${baseUrl}/g/${gestor.whatsapp}`)
     setLinkCopiado(true)
     setTimeout(() => setLinkCopiado(false), 2000)
   }
@@ -329,7 +333,8 @@ export default function GestorDashboard({
     {showNovoConsultor && (
       <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: 16 }}
         onClick={e => e.target === e.currentTarget && setShowNovoConsultor(false)}>
-        <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 20, width: '100%', maxWidth: 540, maxHeight: '90vh', overflow: 'auto' }}>
+        <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 20, width: '100%', maxWidth: 540, maxHeight: '90vh', overflow: 'auto' }}
+          onMouseDown={e => e.stopPropagation()}>
           <div style={{ padding: '24px 28px', borderBottom: '1px solid var(--avp-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 style={{ fontSize: 18, fontWeight: 700 }}>Novo Consultor</h2>
             <button onClick={() => setShowNovoConsultor(false)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 24 }}>×</button>
@@ -339,7 +344,8 @@ export default function GestorDashboard({
             <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
               <div style={{ flex: 1, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
                 <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>🔗 Link de cadastro</p>
-                <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 10, lineHeight: 1.5 }}>Envie este link para o consultor se cadastrar sozinho</p>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 4, lineHeight: 1.5 }}>Envie este link para o consultor se cadastrar sozinho</p>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', borderRadius: 6, padding: '6px 8px', marginBottom: 10, wordBreak: 'break-all' as const, fontFamily: 'monospace' }}>{baseUrl}/g/{gestor.whatsapp}</p>
                 <button onClick={() => { copiarLink(); }}
                   style={{ width: '100%', background: linkCopiado ? 'var(--avp-green)' : 'var(--avp-border)', color: linkCopiado ? '#fff' : 'var(--avp-text)', border: 'none', borderRadius: 8, padding: '9px', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s' }}>
                   {linkCopiado ? '✓ Link copiado!' : '📋 Copiar link'}
@@ -796,40 +802,64 @@ export default function GestorDashboard({
       {/* ── ARTES ── */}
       {aba === 'artes' && (
         <>
-          <div style={{ marginBottom: 28 }}>
+          <div style={{ marginBottom: 24 }}>
             <h1 style={{ fontSize: 22, fontWeight: 800 }}>🎨 Artes</h1>
-            <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Gere artes personalizadas para cada consultor</p>
           </div>
 
-          {listaConsultores.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 64, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', borderRadius: 12, border: '1px solid var(--avp-border)' }}>
-              <p style={{ fontSize: 40, marginBottom: 12 }}>🎨</p>
-              <p>Você ainda não tem consultores cadastrados.</p>
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
-              {listaConsultores.map(c => {
-                const statusInfo = badgeStatus[c.status] ?? badgeStatus.ativo
-                return (
-                  <a key={c.id} href={`/gestor/artes/${c.whatsapp}`}
-                    style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, overflow: 'hidden', textDecoration: 'none', color: 'var(--avp-text)', display: 'block', transition: 'transform 0.15s, border-color 0.15s' }}
-                    onMouseEnter={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = 'translateY(-2px)'; el.style.borderColor = '#8b5cf6' }}
-                    onMouseLeave={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = ''; el.style.borderColor = 'var(--avp-border)' }}
-                  >
-                    <div style={{ height: 80, background: 'linear-gradient(135deg, #4c1d95, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>
-                      🎨
-                    </div>
-                    <div style={{ padding: '12px 14px' }}>
-                      <p style={{ fontWeight: 700, fontSize: 14, margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.nome}</p>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 11, color: statusInfo.color, fontWeight: 600 }}>{statusInfo.label}</span>
-                        <span style={{ fontSize: 12, color: '#a78bfa', fontWeight: 700 }}>Gerar →</span>
+          {/* Sub-abas */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 24, borderBottom: '1px solid var(--avp-border)', paddingBottom: 0 }}>
+            {([['templates', '🖼️ Templates'], ['consultores', '👥 Gerar para Consultor']] as const).map(([id, label]) => (
+              <button key={id}
+                onClick={() => setArtesSubAba(id)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  padding: '10px 16px', fontWeight: 700, fontSize: 14,
+                  color: artesSubAba === id ? 'var(--avp-text)' : 'var(--avp-text-dim)',
+                  borderBottom: artesSubAba === id ? '2px solid #8b5cf6' : '2px solid transparent',
+                  marginBottom: -1, transition: 'all 0.15s',
+                }}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Templates */}
+          {artesSubAba === 'templates' && (
+            <GestorArtesTemplates inicial={artesTemplates} gestorId={gestor.id} />
+          )}
+
+          {/* Consultores */}
+          {artesSubAba === 'consultores' && (
+            listaConsultores.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: 64, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', borderRadius: 12, border: '1px solid var(--avp-border)' }}>
+                <p style={{ fontSize: 40, marginBottom: 12 }}>🎨</p>
+                <p>Você ainda não tem consultores cadastrados.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
+                {listaConsultores.map(c => {
+                  const statusInfo = badgeStatus[c.status] ?? badgeStatus.ativo
+                  return (
+                    <a key={c.id} href={`/gestor/artes/${c.whatsapp}`}
+                      style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, overflow: 'hidden', textDecoration: 'none', color: 'var(--avp-text)', display: 'block', transition: 'transform 0.15s, border-color 0.15s' }}
+                      onMouseEnter={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = 'translateY(-2px)'; el.style.borderColor = '#8b5cf6' }}
+                      onMouseLeave={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = ''; el.style.borderColor = 'var(--avp-border)' }}
+                    >
+                      <div style={{ height: 80, background: 'linear-gradient(135deg, #4c1d95, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>
+                        🎨
                       </div>
-                    </div>
-                  </a>
-                )
-              })}
-            </div>
+                      <div style={{ padding: '12px 14px' }}>
+                        <p style={{ fontWeight: 700, fontSize: 14, margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.nome}</p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: 11, color: statusInfo.color, fontWeight: 600 }}>{statusInfo.label}</span>
+                          <span style={{ fontSize: 12, color: '#a78bfa', fontWeight: 700 }}>Gerar →</span>
+                        </div>
+                      </div>
+                    </a>
+                  )
+                })}
+              </div>
+            )
           )}
         </>
       )}

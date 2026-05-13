@@ -9,5 +9,6 @@ export async function GET() {
     nome: config.nome,
     logoUrl: config.logoMenuUrl || config.logoUrl,
     isDominioMaster: config.isDominioMaster,
+    dominioCustomizado: config.dominioCustomizado,
   })
 }

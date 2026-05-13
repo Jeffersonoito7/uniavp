@@ -21,8 +21,13 @@ export default async function GestorArtesPage({ params }: { params: { whatsapp: 
     .maybeSingle()
   if (!consultor) redirect('/gestor')
 
-  const { data: templates } = await (adminClient.from('artes_templates') as any)
-    .select('*').eq('ativo', true).neq('arte_url', '').order('created_at')
+  const { data: templatesRaw } = await (adminClient.from('artes_templates') as any)
+    .select('*')
+    .eq('ativo', true)
+    .neq('arte_url', '')
+    .order('created_at')
+
+  const templates = (templatesRaw ?? []).filter((t: any) => !t.gestor_id || t.gestor_id === gestor.id)
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>

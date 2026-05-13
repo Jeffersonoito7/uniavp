@@ -19,7 +19,7 @@ export default async function GestorCaptacaoPage({ params }: { params: { gestorW
     <GestorCaptacaoForm
       gestor={gestor}
       siteNome={config.nome}
-      logoUrl={config.logoPaginaUrl || config.logoUrl || '/logo.png'}
+      logoUrl={config.logoPaginaUrl || config.logoUrl }
     />
   )
 }

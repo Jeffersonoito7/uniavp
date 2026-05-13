@@ -148,8 +148,6 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
               className="hide-mobile">Fórum</Link>
             <Link href={`/aluno/${params.whatsapp}/loja`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none', fontWeight: 500, padding: '6px 10px', borderRadius: 8 }}
               className="hide-mobile">Loja</Link>
-            <Link href={`/aluno/${params.whatsapp}/artes`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none', fontWeight: 500, padding: '6px 10px', borderRadius: 8 }}
-              className="hide-mobile">🎨 Artes</Link>
             {aluno.status === 'concluido' && (
               <Link href={`/aluno/${params.whatsapp}/carteira`}
                 style={{ color: '#fbbf24', fontSize: 13, textDecoration: 'none', fontWeight: 700, padding: '6px 10px', borderRadius: 8, background: '#fbbf2415', border: '1px solid #fbbf2440' }}
@@ -291,7 +289,6 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
                 {[
                   { href: `/aluno/${params.whatsapp}/forum`, label: '💬 Fórum' },
                   { href: `/aluno/${params.whatsapp}/loja`, label: '🛍️ Loja' },
-                  { href: `/aluno/${params.whatsapp}/artes`, label: '🎨 Artes' },
                   { href: `/aluno/${params.whatsapp}/perfil`, label: '👤 Perfil' },
                   ...(aluno.status === 'concluido' ? [{ href: `/aluno/${params.whatsapp}/carteira`, label: '🎓 Carteira' }] : []),
                 ].map(l => (
@@ -313,10 +310,6 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
                 <Link href={`/aluno/${params.whatsapp}/carteira`}
                   style={{ background: '#fbbf24', color: '#1a1a1a', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                   🪪 Carteira
-                </Link>
-                <Link href={`/aluno/${params.whatsapp}/artes`}
-                  style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 10, padding: '10px 20px', fontWeight: 700, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  🎨 Artes
                 </Link>
               </div>
             </div>

@@ -60,6 +60,11 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const [slogan, setSlogan] = useState(get('site_slogan'))
   const [corPrimaria, setCorPrimaria] = useState(get('site_cor_primaria') || '#333687')
   const [corSecundaria, setCorSecundaria] = useState(get('site_cor_secundaria') || '#02A153')
+  const [corFundo, setCorFundo] = useState(get('cor_fundo') || '#08090d')
+  const [corCard, setCorCard] = useState(get('cor_card') || '#181b24')
+  const [corBorda, setCorBorda] = useState(get('cor_borda') || '#252836')
+  const [corTexto, setCorTexto] = useState(get('cor_texto') || '#f0f1f5')
+  const [corSidebar, setCorSidebar] = useState(get('cor_sidebar') || '#181b24')
   const [whatsapp, setWhatsapp] = useState(get('whatsapp_suporte'))
   const [dominio, setDominio] = useState(get('dominio_customizado'))
   const [certUrl, setCertUrl] = useState(get('certificado_template_url'))
@@ -179,6 +184,11 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
         ...(urlSafe(logoMobileUrl) ? [{ chave: 'logo_mobile_url', valor: logoMobileUrl }] : []),
         { chave: 'site_cor_primaria', valor: corPrimaria },
         { chave: 'site_cor_secundaria', valor: corSecundaria },
+        { chave: 'cor_fundo', valor: corFundo },
+        { chave: 'cor_card', valor: corCard },
+        { chave: 'cor_borda', valor: corBorda },
+        { chave: 'cor_texto', valor: corTexto },
+        { chave: 'cor_sidebar', valor: corSidebar },
         { chave: 'whatsapp_suporte', valor: whatsapp },
         { chave: 'dominio_customizado', valor: dominio },
         ...(urlSafe(certUrl) ? [{ chave: 'certificado_template_url', valor: certUrl }] : []),
@@ -240,20 +250,69 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
 
       {/* CORES */}
       <div style={card}>
-        <p style={{ fontWeight: 700, fontSize: 15 }}>🎨 Cores</p>
-        <div style={{ display: 'flex', gap: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <p style={{ fontWeight: 800, fontSize: 16 }}>🎨 Tema de Cores</p>
+          <button
+            type="button"
+            onClick={() => { setCorPrimaria('#333687'); setCorSecundaria('#02A153'); setCorFundo('#08090d'); setCorCard('#181b24'); setCorBorda('#252836'); setCorTexto('#f0f1f5'); setCorSidebar('#181b24') }}
+            style={{ background: 'none', border: '1px solid var(--avp-border)', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600 }}>
+            ↺ Restaurar padrão
+          </button>
+        </div>
+
+        {/* Preview ao vivo */}
+        <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid var(--avp-border)', display: 'flex', height: 160 }}>
+          {/* Sidebar preview */}
+          <div style={{ width: 110, background: corSidebar, borderRight: `1px solid ${corBorda}`, padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ height: 8, borderRadius: 4, background: `linear-gradient(90deg,${corPrimaria},${corSecundaria})`, marginBottom: 8 }} />
+            {['Dashboard','Consultores','Aulas'].map((item, i) => (
+              <div key={item} style={{ borderRadius: 6, padding: '5px 8px', background: i === 0 ? `linear-gradient(135deg,${corPrimaria},${corSecundaria})` : 'transparent', color: i === 0 ? '#fff' : corTexto, fontSize: 10, fontWeight: i === 0 ? 700 : 400, opacity: i === 0 ? 1 : 0.6 }}>
+                {item}
+              </div>
+            ))}
+          </div>
+          {/* Main area preview */}
+          <div style={{ flex: 1, background: corFundo, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ height: 36, background: corCard, borderRadius: 8, border: `1px solid ${corBorda}`, display: 'flex', alignItems: 'center', padding: '0 12px', gap: 8 }}>
+              <div style={{ flex: 1, height: 8, borderRadius: 4, background: corBorda }} />
+              <div style={{ width: 24, height: 24, borderRadius: '50%', background: `linear-gradient(135deg,${corPrimaria},${corSecundaria})` }} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, flex: 1 }}>
+              {[0,1,2].map(i => (
+                <div key={i} style={{ background: corCard, borderRadius: 8, border: `1px solid ${corBorda}`, padding: 8 }}>
+                  <div style={{ height: 6, borderRadius: 3, background: corBorda, marginBottom: 6 }} />
+                  <div style={{ height: 20, borderRadius: 4, background: i === 0 ? `linear-gradient(135deg,${corPrimaria},${corSecundaria})` : corBorda }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Pickers */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           {[
-            { label: 'Cor primária', value: corPrimaria, set: setCorPrimaria },
-            { label: 'Cor secundária', value: corSecundaria, set: setCorSecundaria },
-          ].map(({ label, value, set }) => (
-            <div key={label} style={{ flex: 1 }}>
-              <label style={lbl}>{label}</label>
+            { label: '🎯 Cor primária', desc: 'Botões, menu ativo, gradiente', value: corPrimaria, set: setCorPrimaria },
+            { label: '🟢 Cor secundária', desc: 'Botão verde, segundo tom do gradiente', value: corSecundaria, set: setCorSecundaria },
+            { label: '🌑 Cor do fundo', desc: 'Background principal das telas', value: corFundo, set: setCorFundo },
+            { label: '📦 Cor dos cards', desc: 'Cards e cabeçalhos', value: corCard, set: setCorCard },
+            { label: '📌 Cor do menu lateral', desc: 'Sidebar e nav', value: corSidebar, set: setCorSidebar },
+            { label: '━━ Cor das bordas', desc: 'Linhas divisórias e contornos', value: corBorda, set: setCorBorda },
+            { label: '📝 Cor do texto', desc: 'Texto principal', value: corTexto, set: setCorTexto },
+          ].map(({ label, desc, value, set }) => (
+            <div key={label}>
+              <label style={{ ...lbl, marginBottom: 2 }}>{label}</label>
+              <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 6 }}>{desc}</p>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <input type="color" value={value} onChange={e => set(e.target.value)} style={{ width: 44, height: 40, border: 'none', borderRadius: 6, cursor: 'pointer', padding: 2, background: 'transparent' }} />
-                <input style={inp} value={value} onChange={e => set(e.target.value)} />
+                <input type="color" value={value} onChange={e => set(e.target.value)}
+                  style={{ width: 44, height: 40, border: '2px solid var(--avp-border)', borderRadius: 8, cursor: 'pointer', padding: 2, background: 'transparent', flexShrink: 0 }} />
+                <input style={inp} value={value} onChange={e => set(e.target.value)} placeholder="#000000" />
               </div>
             </div>
           ))}
+        </div>
+
+        <div style={{ background: 'var(--avp-black)', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--avp-text-dim)' }}>
+          💡 As cores são aplicadas em todos os painéis (admin, gestor e consultor) após salvar e recarregar a página.
         </div>
       </div>
 
@@ -270,7 +329,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
             <div style={{ fontFamily: 'monospace', display: 'flex', flexDirection: 'column', gap: 4 }}>
               <span><span style={{ color: 'var(--avp-text-dim)' }}>Tipo:</span> <strong style={{ color: 'var(--avp-green)' }}>CNAME</strong></span>
               <span><span style={{ color: 'var(--avp-text-dim)' }}>Nome:</span> <strong>{dominio.split('.')[0]}</strong></span>
-              <span><span style={{ color: 'var(--avp-text-dim)' }}>Destino:</span> <strong>universidade.oito7digital.com.br</strong></span>
+              <span><span style={{ color: 'var(--avp-text-dim)' }}>Destino:</span> <strong>cname.vercel-dns.com</strong></span>
             </div>
           </div>
         )}

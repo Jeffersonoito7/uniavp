@@ -94,7 +94,8 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
 
       {showCadastro && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={e => e.target === e.currentTarget && setShowCadastro(false)}>
-          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32, width: 520, maxWidth: '95vw' }}>
+          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32, width: 520, maxWidth: '95vw' }}
+            onMouseDown={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--avp-text)' }}>Cadastrar Consultor</h2>
               <button onClick={() => setShowCadastro(false)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 22 }}>×</button>

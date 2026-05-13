@@ -235,7 +235,8 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
       {editando && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 }}
           onClick={e => e.target === e.currentTarget && setEditando(null)}>
-          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32, width: 520, maxWidth: '100%' }}>
+          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32, width: 520, maxWidth: '100%' }}
+            onMouseDown={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <h2 style={{ fontSize: 18, fontWeight: 700 }}>
                 ✏️ Editar {editando.tipo === 'consultor' ? 'Consultor' : 'Gestor'}
@@ -286,7 +287,8 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
       {resetando && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 }}
           onClick={e => e.target === e.currentTarget && setResetando(null)}>
-          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32, width: 420, maxWidth: '100%' }}>
+          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32, width: 420, maxWidth: '100%' }}
+            onMouseDown={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <h2 style={{ fontSize: 18, fontWeight: 700 }}>🔑 Redefinir Senha</h2>
               <button onClick={() => setResetando(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--avp-text-dim)', fontSize: 22 }}>×</button>

@@ -1,5 +1,4 @@
 import { createServiceRoleClient } from '@/lib/supabase-server'
-import { headers } from 'next/headers'
 
 export type SiteConfig = {
   nome: string
@@ -10,40 +9,19 @@ export type SiteConfig = {
   logoFaviconUrl: string
   corPrimaria: string
   corSecundaria: string
+  corFundo: string
+  corCard: string
+  corBorda: string
+  corTexto: string
+  corSidebar: string
   whatsappSuporte: string
+  dominioCustomizado: string
   planosAtivo: boolean
   isDominioMaster: boolean
 }
 
-// Domínio principal da Oito7 Digital (plataforma mãe)
-const DOMINIO_MASTER = 'universidade.oito7digital.com.br'
-
-const CONFIG_MASTER: SiteConfig = {
-  nome: 'Oito7 Digital',
-  slogan: 'Plataforma de Formação e Treinamento Corporativo',
-  logoUrl: '/oito7-logo.png',
-  logoMenuUrl: '/oito7-logo.png',
-  logoPaginaUrl: '/oito7-logo.png',
-  logoFaviconUrl: '/oito7-logo.png',
-  corPrimaria: '#6366f1',
-  corSecundaria: '#8b5cf6',
-  whatsappSuporte: '',
-  planosAtivo: false,
-  isDominioMaster: true,
-}
-
 export async function getSiteConfig(): Promise<SiteConfig> {
-  // Detecta o domínio atual
-  const headersList = headers()
-  const host = headersList.get('host') || ''
-  const dominio = host.replace(/:\d+$/, '') // remove porta se houver
-
-  // Se for o domínio master, retorna config da Oito7 Digital
-  if (dominio === DOMINIO_MASTER || dominio === 'localhost') {
-    return CONFIG_MASTER
-  }
-
-  // Para domínios de clientes, busca configurações no banco
+  // Sempre busca do banco — todos os clientes usam o mesmo domínio
   const client = createServiceRoleClient()
   const { data } = await (client.from('configuracoes') as any)
     .select('chave, valor')
@@ -51,7 +29,8 @@ export async function getSiteConfig(): Promise<SiteConfig> {
       'site_nome', 'site_slogan', 'site_logo_url',
       'logo_menu_url', 'logo_pagina_url', 'logo_favicon_url',
       'site_cor_primaria', 'site_cor_secundaria',
-      'whatsapp_suporte', 'planos_ativo',
+      'cor_fundo', 'cor_card', 'cor_borda', 'cor_texto', 'cor_sidebar',
+      'whatsapp_suporte', 'dominio_customizado', 'planos_ativo',
     ])
 
   const map: Record<string, string> = {}
@@ -62,13 +41,19 @@ export async function getSiteConfig(): Promise<SiteConfig> {
   return {
     nome: map['site_nome'] || 'Universidade',
     slogan: map['site_slogan'] || 'Plataforma de Formação e Treinamento Corporativo',
-    logoUrl: map['site_logo_url'] || '/logo.png',
-    logoMenuUrl: map['logo_menu_url'] || map['site_logo_url'] || '/logo.png',
-    logoPaginaUrl: map['logo_pagina_url'] || map['site_logo_url'] || '/logo.png',
-    logoFaviconUrl: map['logo_favicon_url'] || map['site_logo_url'] || '/logo.png',
+    logoUrl: map['site_logo_url'] || '',
+    logoMenuUrl: map['logo_menu_url'] || map['site_logo_url'] || '',
+    logoPaginaUrl: map['logo_pagina_url'] || map['site_logo_url'] || '',
+    logoFaviconUrl: map['logo_favicon_url'] || map['site_logo_url'] || '',
     corPrimaria: map['site_cor_primaria'] || '#333687',
     corSecundaria: map['site_cor_secundaria'] || '#02A153',
+    corFundo: map['cor_fundo'] || '#08090d',
+    corCard: map['cor_card'] || '#181b24',
+    corBorda: map['cor_borda'] || '#252836',
+    corTexto: map['cor_texto'] || '#f0f1f5',
+    corSidebar: map['cor_sidebar'] || map['cor_card'] || '#181b24',
     whatsappSuporte: map['whatsapp_suporte'] || '',
+    dominioCustomizado: map['dominio_customizado'] || '',
     planosAtivo: map['planos_ativo'] === 'true',
     isDominioMaster: false,
   }

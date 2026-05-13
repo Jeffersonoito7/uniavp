@@ -1,8 +1,14 @@
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import SuperDashboard from './SuperDashboard'
 
+const DOMINIO_MASTER = 'universidade.oito7digital.com.br'
+
 export default async function SuperPage() {
+  const host = headers().get('host')?.replace(/:\d+$/, '') ?? ''
+  if (host !== DOMINIO_MASTER && host !== 'localhost') redirect('/login')
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/super/login')

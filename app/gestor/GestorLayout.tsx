@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen, UserCircle, Palette } from 'lucide-react'
+import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen, Palette, UserCircle } from 'lucide-react'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import SupportChat from '@/app/components/SupportChat'
 
@@ -11,7 +11,7 @@ const navItems = [
   { id: 'aulas',       label: 'Aulas',       icon: BookOpen },
   { id: 'eventos',     label: 'Eventos',     icon: Calendar },
   { id: 'whatsapp',    label: 'WhatsApp',    icon: Smartphone },
-  { id: 'artes',       label: 'Artes',        icon: Palette },
+  { id: 'artes',       label: 'Artes',       icon: Palette },
   { id: 'perfil',      label: 'Meu Perfil',  icon: UserCircle },
 ]
 
@@ -141,7 +141,7 @@ export default function GestorLayout({
               </div>
               <div style={{ minWidth: 0 }}>
                 <p style={{ fontWeight: 600, fontSize: 13, color: 'var(--avp-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{nomeGestor}</p>
-                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>👤 Ver perfil</p>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>Gestor</p>
               </div>
             </div>
           </button>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp, getInstanciaGestorPorNome } from '@/lib/whatsapp'
+import { getAppUrl } from '@/lib/get-app-url'
 
 export const dynamic = 'force-dynamic'
 
@@ -217,10 +218,10 @@ export async function POST(req: NextRequest) {
           const { data: alunoInfo } = await (adminClient.from('alunos') as any)
             .select('whatsapp, nome').eq('id', aluno.id).maybeSingle()
           if (alunoInfo?.whatsapp) {
-            const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://universidade.oito7digital.com.br'
+            const appUrl = await getAppUrl()
             await enviarWhatsApp(
               alunoInfo.whatsapp,
-              `🎉 Parabéns, *${alunoInfo.nome}*!\n\nVocê concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🏆\n\nCrie sua arte comemorativa e compartilhe com sua rede:\n👉 ${appUrl}/aluno/${alunoInfo.whatsapp}/artes`
+              `🎉 Parabéns, *${alunoInfo.nome}*!\n\nVocê concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🏆\n\nContinue acessando a plataforma:\n👉 ${appUrl}/aluno/${alunoInfo.whatsapp}`
             )
           }
         }
@@ -233,7 +234,7 @@ export async function POST(req: NextRequest) {
       .maybeSingle()
 
     if (alunoAtualizado?.status === 'concluido') {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://universidade.oito7digital.com.br'
+      const appUrl = await getAppUrl()
       const instanciaGestor = alunoAtualizado?.gestor_nome
         ? await getInstanciaGestorPorNome(alunoAtualizado.gestor_nome, adminClient)
         : null

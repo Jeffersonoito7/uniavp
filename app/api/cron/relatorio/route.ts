@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp, getInstanciaGestorPorNome } from '@/lib/whatsapp'
+import { getAppUrl } from '@/lib/get-app-url'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,7 +60,7 @@ async function enviarEmailRelatorio(para: string, nomeGestor: string, stats: {
 
     <!-- CTA -->
     <div style="padding:0 32px 32px;text-align:center">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/gestor"
+      <a href="${await getAppUrl()}/gestor"
         style="display:inline-block;background:linear-gradient(135deg,#333687,#02A153);color:#fff;text-decoration:none;border-radius:10px;padding:14px 32px;font-weight:700;font-size:15px">
         Ver painel completo →
       </a>
@@ -130,7 +131,7 @@ export async function GET(req: NextRequest) {
       `🏆 Formados: *${stats.concluidos}*\n` +
       `😴 Parados (+7 dias): *${parados.length}*\n` +
       (parados.length > 0 ? `\n⚠️ Entre em contato:\n${parados.map(n => `• ${n}`).join('\n')}\n` : '') +
-      `\n👉 Ver detalhes: ${process.env.NEXT_PUBLIC_APP_URL}/gestor`
+      `\n👉 Ver detalhes: ${await getAppUrl()}/gestor`
     await enviarWhatsApp(g.whatsapp, msg, instancia)
 
     // E-mail
@@ -158,7 +159,7 @@ export async function GET(req: NextRequest) {
         `🆕 Novos esta semana: *${novosEstaSemana ?? 0}*\n` +
         `👥 Consultores ativos: *${totalAtivos ?? 0}*\n` +
         `🏆 Formados: *${totalConcluidos ?? 0}*\n` +
-        `\n👉 ${process.env.NEXT_PUBLIC_APP_URL}/admin`)
+        `\n👉 ${await getAppUrl()}/admin`)
     }
   }
 

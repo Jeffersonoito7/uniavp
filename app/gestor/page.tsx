@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { getSiteConfig } from '@/lib/site-config'
 import GestorDashboard from './GestorDashboard'
 
 export default async function GestorPage() {
@@ -51,11 +52,22 @@ export default async function GestorPage() {
     }
   }
 
+  const { data: templatesRaw } = await (adminClient.from('artes_templates') as any)
+    .select('*').order('created_at')
+  const artesTemplates = (templatesRaw ?? []).filter((t: any) => !t.gestor_id || t.gestor_id === gestor.id)
+
+  const siteConfig = await getSiteConfig()
+  const baseUrl = siteConfig.dominioCustomizado
+    ? `https://${siteConfig.dominioCustomizado}`
+    : (process.env.NEXT_PUBLIC_APP_URL || 'https://uniavp.autovaleprevencoes.org.br')
+
   return (
     <GestorDashboard
       gestor={{ ...gestor, foto_perfil: gestorFoto }}
       consultores={consultores ?? []}
       progressoMap={progressoMap}
+      artesTemplatesIniciais={artesTemplates}
+      baseUrl={baseUrl}
     />
   )
 }
