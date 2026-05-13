@@ -122,7 +122,23 @@ export default function QuestoesAula({
     setAlts(novas)
   }
   function resetForm() { setEnunciado(''); setAlts(ALT_VAZIAS.map(a => ({ ...a }))); setExplicacao(''); setEditandoId(null); setAdicionando(false) }
-  function abrirEdicao(q: Questao) { setEnunciado(q.enunciado); setAlts(q.alternativas.map(a => ({ ...a }))); setExplicacao(q.explicacao ?? ''); setEditandoId(q.id); setAdicionando(true) }
+  function abrirEdicao(q: Questao) { setEnunciado(q.enunciado); setAlts(q.alternativas.map(a => ({ ...a }))); setExplicacao(q.explicacao ?? ''); setEditandoId(q.id); setAdicionando(false) }
+
+  async function moverQuestao(idx: number, dir: 'up' | 'down') {
+    const target = dir === 'up' ? idx - 1 : idx + 1
+    if (target < 0 || target >= questoes.length) return
+    const q1 = questoes[idx], q2 = questoes[target]
+    const novas = questoes.map((q, i) => {
+      if (i === idx) return { ...q, ordem: q2.ordem }
+      if (i === target) return { ...q, ordem: q1.ordem }
+      return q
+    }).sort((a, b) => a.ordem - b.ordem)
+    setQuestoes(novas)
+    await Promise.all([
+      fetch('/api/admin/questoes', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: q1.id, ordem: q2.ordem }) }),
+      fetch('/api/admin/questoes', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: q2.id, ordem: q1.ordem }) }),
+    ])
+  }
 
   async function salvar() {
     if (!enunciado.trim()) { setMsg('Preencha o enunciado.'); return }
@@ -289,12 +305,56 @@ export default function QuestoesAula({
                 )}
               </div>
 
-              {questoes.map((q, qi) => (
+              {questoes.map((q, qi) => editandoId === q.id ? (
+                // ── Formulário de edição inline ──
+                <div key={q.id} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-blue)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <p style={{ fontWeight: 700, fontSize: 14 }}>Editando questão {qi + 1}</p>
+                    <button type="button" onClick={resetForm} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 20 }}>×</button>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 6, fontWeight: 600 }}>Pergunta *</label>
+                    <textarea style={{ ...inp, minHeight: 64, resize: 'vertical' }} value={enunciado} onChange={e => setEnunciado(e.target.value)} placeholder="Digite a pergunta..." />
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <label style={{ fontSize: 12, color: 'var(--avp-text-dim)', fontWeight: 600 }}>Alternativas * <span style={{ fontWeight: 400 }}>(marque a correta)</span></label>
+                      {alts.length < 6 && <button type="button" onClick={addAlternativa} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 5, padding: '2px 8px', cursor: 'pointer', fontSize: 11 }}>+ Opção</button>}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {alts.map((alt, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <input type="radio" name={`correta-edit-${aulaId}`} checked={alt.correta} onChange={() => setCorreta(i)} style={{ width: 16, height: 16, accentColor: 'var(--avp-green)', flexShrink: 0, cursor: 'pointer' }} />
+                          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', width: 20, flexShrink: 0 }}>{letraAlt(i)})</span>
+                          <input style={{ ...inp, flex: 1 }} value={alt.texto} onChange={e => setTextoAlt(i, e.target.value)} placeholder={`Opção ${letraAlt(i)}`} />
+                          {alts.length > 2 && <button type="button" onClick={() => removeAlternativa(i)} style={{ background: 'none', border: 'none', color: 'var(--avp-danger)', cursor: 'pointer', fontSize: 16, flexShrink: 0, padding: 0 }}>×</button>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 6, fontWeight: 600 }}>Explicação (opcional)</label>
+                    <input style={inp} value={explicacao} onChange={e => setExplicacao(e.target.value)} placeholder="Explique o porquê da resposta correta..." />
+                  </div>
+                  {msg && <p style={{ fontSize: 12, color: msg.includes('atualizada') ? 'var(--avp-green)' : 'var(--avp-danger)' }}>{msg}</p>}
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button type="button" onClick={salvar} disabled={salvando} style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 13, opacity: salvando ? 0.7 : 1 }}>
+                      {salvando ? 'Salvando...' : '✓ Atualizar'}
+                    </button>
+                    <button type="button" onClick={resetForm} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13 }}>Cancelar</button>
+                  </div>
+                </div>
+              ) : (
+                // ── Card de visualização ──
                 <div key={q.id} style={{ background: 'var(--avp-card)', borderRadius: 8, padding: 14, border: '1px solid var(--avp-border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
                     <p style={{ fontSize: 13, fontWeight: 700, flex: 1 }}>{qi + 1}. {q.enunciado}</p>
-                    <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                      <button type="button" onClick={() => abrirEdicao(q)} style={{ background: 'var(--avp-border)', border: 'none', borderRadius: 5, padding: '3px 8px', cursor: 'pointer', fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 600 }}>Editar</button>
+                    <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'center' }}>
+                      <button type="button" onClick={() => moverQuestao(qi, 'up')} disabled={qi === 0}
+                        style={{ background: 'var(--avp-border)', border: 'none', borderRadius: 4, padding: '2px 7px', cursor: qi === 0 ? 'not-allowed' : 'pointer', fontSize: 12, color: qi === 0 ? 'var(--avp-border)' : 'var(--avp-text-dim)', fontWeight: 700, opacity: qi === 0 ? 0.3 : 1 }}>↑</button>
+                      <button type="button" onClick={() => moverQuestao(qi, 'down')} disabled={qi === questoes.length - 1}
+                        style={{ background: 'var(--avp-border)', border: 'none', borderRadius: 4, padding: '2px 7px', cursor: qi === questoes.length - 1 ? 'not-allowed' : 'pointer', fontSize: 12, color: qi === questoes.length - 1 ? 'var(--avp-border)' : 'var(--avp-text-dim)', fontWeight: 700, opacity: qi === questoes.length - 1 ? 0.3 : 1 }}>↓</button>
+                      <button type="button" onClick={() => abrirEdicao(q)} style={{ background: 'var(--avp-blue)', border: 'none', borderRadius: 5, padding: '3px 10px', cursor: 'pointer', fontSize: 11, color: '#fff', fontWeight: 600 }}>Editar</button>
                       <button type="button" onClick={() => excluir(q.id)} style={{ background: '#e6394615', border: '1px solid #e6394630', borderRadius: 5, padding: '3px 8px', cursor: 'pointer', fontSize: 11, color: 'var(--avp-danger)', fontWeight: 600 }}>Excluir</button>
                     </div>
                   </div>
@@ -319,10 +379,11 @@ export default function QuestoesAula({
                 </div>
               )}
 
-              {adicionando && (
+              {/* Form de nova questão (só para adicionar, edição é inline no card) */}
+              {adicionando && !editandoId && (
                 <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-blue)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <p style={{ fontWeight: 700, fontSize: 14 }}>{editandoId ? 'Editar questão' : 'Nova questão'}</p>
+                    <p style={{ fontWeight: 700, fontSize: 14 }}>Nova questão</p>
                     <button type="button" onClick={resetForm} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 18 }}>×</button>
                   </div>
                   <div>
@@ -349,17 +410,17 @@ export default function QuestoesAula({
                     <label style={{ display: 'block', fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 6, fontWeight: 600 }}>Explicação (opcional)</label>
                     <input style={inp} value={explicacao} onChange={e => setExplicacao(e.target.value)} placeholder="Explique o porquê da resposta correta..." />
                   </div>
-                  {msg && <p style={{ fontSize: 12, color: msg.includes('atualizada') || msg.includes('adicionada') ? 'var(--avp-green)' : 'var(--avp-danger)' }}>{msg}</p>}
+                  {msg && <p style={{ fontSize: 12, color: msg.includes('adicionada') ? 'var(--avp-green)' : 'var(--avp-danger)' }}>{msg}</p>}
                   <div style={{ display: 'flex', gap: 10 }}>
                     <button type="button" onClick={salvar} disabled={salvando} style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 13, opacity: salvando ? 0.7 : 1 }}>
-                      {salvando ? 'Salvando...' : editandoId ? '✓ Atualizar' : '✓ Salvar questão'}
+                      {salvando ? 'Salvando...' : '✓ Salvar questão'}
                     </button>
                     <button type="button" onClick={resetForm} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13 }}>Cancelar</button>
                   </div>
                 </div>
               )}
 
-              {msg && !adicionando && <p style={{ fontSize: 12, color: msg.includes('adicionada') || msg.includes('atualizada') ? 'var(--avp-green)' : 'var(--avp-danger)' }}>{msg}</p>}
+              {msg && !adicionando && !editandoId && <p style={{ fontSize: 12, color: msg.includes('adicionada') || msg.includes('atualizada') ? 'var(--avp-green)' : 'var(--avp-danger)' }}>{msg}</p>}
             </>
           )}
         </div>

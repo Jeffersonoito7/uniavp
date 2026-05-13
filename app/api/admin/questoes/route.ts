@@ -84,7 +84,7 @@ export async function PUT(req: NextRequest) {
   if (!isAdmin) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const body = await req.json()
-  const { id, enunciado, alternativas, explicacao, ativa } = body
+  const { id, enunciado, alternativas, explicacao, ativa, ordem } = body
 
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
@@ -93,6 +93,7 @@ export async function PUT(req: NextRequest) {
   if (alternativas !== undefined) updates.alternativas = alternativas
   if (explicacao !== undefined) updates.explicacao = explicacao
   if (ativa !== undefined) updates.ativa = ativa
+  if (ordem !== undefined) updates.ordem = ordem
 
   const { data: questao, error } = await (adminClient.from('questoes') as any)
     .update(updates)
