@@ -24,10 +24,10 @@ function carregarImagem(src: string, crossOrigin?: string): Promise<HTMLImageEle
   })
 }
 
-export default function ArtesCliente({ templates, nomeAluno }: { templates: Template[]; nomeAluno: string }) {
+export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { templates: Template[]; nomeAluno: string; fotoInicial?: string | null }) {
   const [formato, setFormato] = useState<Formato | null>(null)
   const [templateSelecionado, setTemplateSelecionado] = useState<Template | null>(null)
-  const [fotoLocal, setFotoLocal] = useState<string | null>(null)
+  const [fotoLocal, setFotoLocal] = useState<string | null>(fotoInicial ?? null)
   const [gerando, setGerando] = useState(false)
   const [pronto, setPronto] = useState(false)
   const [erro, setErro] = useState('')

@@ -504,6 +504,7 @@ export default function GestorDashboard({
                       <span style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>{new Date(c.created_at).toLocaleDateString('pt-BR')}</span>
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button onClick={() => abrirConsultor(c)} style={{ background: 'var(--avp-border)', color: 'var(--avp-text)', border: 'none', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Ver progresso</button>
+                        <a href={`/gestor/artes/${c.whatsapp}`} style={{ background: '#8b5cf620', border: '1px solid #8b5cf640', color: '#a78bfa', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>🎨 Artes</a>
                         {c.status !== 'concluido' && (
                           <button onClick={() => removerConsultor(c)} style={{ background: '#e6394615', border: '1px solid #e6394630', color: 'var(--avp-danger)', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Remover</button>
                         )}

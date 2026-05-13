@@ -28,6 +28,7 @@ type TrilhaItem = {
   liberada_em: string | null
   validade_meses?: number | null
   progresso_created_at?: string | null
+  quiz_aprovacao_minima?: number | null
 }
 
 function calcularNivel(pontos: number) {
@@ -61,7 +62,17 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
   const { data: trilhaRaw } = await (adminClient as any).rpc('obter_trilha_aluno', { p_aluno_id: aluno.id })
-  const trilha: TrilhaItem[] = (trilhaRaw ?? []) as TrilhaItem[]
+  const trilhaBase: TrilhaItem[] = (trilhaRaw ?? []) as TrilhaItem[]
+
+  // Enriquecer trilha com quiz_aprovacao_minima (não vem na RPC atual)
+  const aulaIds = trilhaBase.map(t => t.aula_id)
+  const { data: aulasConfig } = aulaIds.length > 0
+    ? await (adminClient.from('aulas') as any).select('id, quiz_aprovacao_minima').in('id', aulaIds)
+    : { data: [] }
+  const aprovMinMap: Record<string, number> = {}
+  for (const a of (aulasConfig ?? [])) aprovMinMap[a.id] = a.quiz_aprovacao_minima
+
+  const trilha: TrilhaItem[] = trilhaBase.map(t => ({ ...t, quiz_aprovacao_minima: aprovMinMap[t.aula_id] ?? null }))
 
   const agrupado: Record<string, { modulo_titulo: string; modulo_ordem: number; aulas: TrilhaItem[] }> = {}
   for (const item of trilha) {
@@ -338,20 +349,35 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
                       {/* Info */}
                       <div style={{ padding: '10px 12px' }}>
                         <p style={{ fontSize: 13, fontWeight: 700, marginBottom: 6, lineHeight: 1.35, color: 'var(--avp-text)' }}>{aula.aula_titulo}</p>
+
+                        {/* Nota mínima + melhor pontuação */}
+                        {(isConcluida || isDisponivel) && aula.quiz_aprovacao_minima != null && aula.quiz_aprovacao_minima > 0 && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                            <span style={{ fontSize: 10, color: 'var(--avp-text-dim)' }}>Mínimo: <strong style={{ color: isConcluida ? 'var(--avp-green)' : 'var(--avp-text)' }}>{aula.quiz_aprovacao_minima}%</strong></span>
+                            {aula.melhor_percentual != null && (
+                              <span style={{ fontSize: 10, color: 'var(--avp-text-dim)' }}>· Seu melhor: <strong style={{ color: aula.melhor_percentual >= (aula.quiz_aprovacao_minima ?? 0) ? 'var(--avp-green)' : '#f59e0b' }}>{aula.melhor_percentual}%</strong></span>
+                            )}
+                          </div>
+                        )}
+
+                        {isBloqueada && (
+                          <p style={{ fontSize: 10, color: 'var(--avp-text-dim)', marginBottom: 6 }}>🔒 Complete a aula anterior para desbloquear</p>
+                        )}
+
+                        {aula.status === 'aguardando_tempo' && aula.liberada_em && (
+                          <p style={{ fontSize: 10, color: '#f59e0b', marginBottom: 6 }}>⏳ Disponível em {new Date(aula.liberada_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
+                        )}
+
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: 11, color: cor, fontWeight: 600 }}>
-                            {isConcluida ? (recertNeeded ? '⚠️ Refazer' : '✓ Concluída') : isDisponivel ? 'Disponível' : aula.status === 'aguardando_tempo' ? 'Aguardando' : 'Bloqueada'}
+                            {isConcluida ? (recertNeeded ? '⚠️ Refazer' : '✓ Concluída') : isDisponivel ? '▶ Disponível' : aula.status === 'aguardando_tempo' ? '⏳ Aguardando' : '🔒 Bloqueada'}
                           </span>
-                          {(isDisponivel || isConcluida) ? (
+                          {(isDisponivel || isConcluida) && (
                             <Link href={`/aluno/${params.whatsapp}/aula/${aula.aula_id}`}
-                              style={{ fontSize: 12, color: isConcluida && !recertNeeded ? 'var(--avp-text-dim)' : '#3b82f6', textDecoration: 'none', fontWeight: 600 }}>
+                              style={{ fontSize: 12, background: isConcluida && !recertNeeded ? 'var(--avp-border)' : 'var(--avp-blue)', color: isConcluida && !recertNeeded ? 'var(--avp-text-dim)' : '#fff', textDecoration: 'none', fontWeight: 700, borderRadius: 6, padding: '3px 10px' }}>
                               {isConcluida && !recertNeeded ? 'Rever' : 'Acessar →'}
                             </Link>
-                          ) : aula.status === 'aguardando_tempo' && aula.liberada_em ? (
-                            <span style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>
-                              {new Date(aula.liberada_em).toLocaleDateString('pt-BR')}
-                            </span>
-                          ) : null}
+                          )}
                         </div>
                       </div>
                     </div>

@@ -23,6 +23,13 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
     .select('*, modulo:modulos(titulo)').eq('id', params.aulaId).single()
   if (!aula || !aula.publicado) redirect(`/aluno/${params.whatsapp}`)
 
+  // ── Verificação server-side: aula bloqueada? ──
+  const { data: trilhaRaw } = await (adminClient as any)
+    .rpc('obter_trilha_aluno', { p_aluno_id: aluno.id })
+  const trilhaStatus = ((trilhaRaw ?? []) as { aula_id: string; status: string }[])
+    .find(t => t.aula_id === params.aulaId)
+  if (trilhaStatus?.status === 'bloqueada') redirect(`/aluno/${params.whatsapp}`)
+
   // Curtidas
   const { count: totalCurtidas } = await (adminClient.from('aula_curtidas') as any)
     .select('*', { count: 'exact', head: true }).eq('aula_id', params.aulaId)

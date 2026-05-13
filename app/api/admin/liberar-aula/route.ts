@@ -38,9 +38,8 @@ export async function GET(req: NextRequest) {
   if (!adminRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const { data: pendentes } = await (adminClient.from('progresso') as any)
-    .select('id, aluno_id, aula_id, percentual, created_at, aluno:alunos(nome, whatsapp), aula:aulas(titulo, quiz_aprovacao_minima, liberacao_modo)')
+    .select('id, aluno_id, aula_id, percentual, aprovado, tentativa_numero, created_at, aluno:alunos(nome, whatsapp, gestor_nome), aula:aulas(titulo, quiz_aprovacao_minima, liberacao_modo, modulo:modulos(titulo))')
     .eq('pendente_liberacao', true)
-    .eq('aprovado', true)
     .order('created_at', { ascending: false })
 
   return NextResponse.json({ pendentes: pendentes ?? [] })
