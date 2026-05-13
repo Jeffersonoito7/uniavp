@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 type Alternativa = { texto: string; correta: boolean }
 type Questao = { id: string; enunciado: string; alternativas: Alternativa[]; explicacao: string | null; ordem: number }
@@ -41,6 +41,8 @@ export default function QuestoesAula({
   const [salvando, setSalvando] = useState(false)
   const [editandoId, setEditandoId] = useState<string | null>(null)
   const [msg, setMsg] = useState('')
+  const dragIndex = useRef<number | null>(null)
+  const [dragOver, setDragOver] = useState<number | null>(null)
 
   // Configuração do tipo de quiz
   const [quizTipo, setQuizTipo] = useState<QuizTipo>(quizTipoInicial)
@@ -138,6 +140,29 @@ export default function QuestoesAula({
       fetch('/api/admin/questoes', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: q1.id, ordem: q2.ordem }) }),
       fetch('/api/admin/questoes', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: q2.id, ordem: q1.ordem }) }),
     ])
+  }
+
+  function onDragStart(idx: number) {
+    dragIndex.current = idx
+  }
+
+  function onDragEnter(idx: number) {
+    setDragOver(idx)
+  }
+
+  async function onDrop(targetIdx: number) {
+    const from = dragIndex.current
+    if (from === null || from === targetIdx) { dragIndex.current = null; setDragOver(null); return }
+    const novas = [...questoes]
+    const [moved] = novas.splice(from, 1)
+    novas.splice(targetIdx, 0, moved)
+    const reordenadas = novas.map((q, i) => ({ ...q, ordem: i + 1 }))
+    setQuestoes(reordenadas)
+    dragIndex.current = null
+    setDragOver(null)
+    await Promise.all(reordenadas.map(q =>
+      fetch('/api/admin/questoes', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: q.id, ordem: q.ordem }) })
+    ))
   }
 
   async function salvar() {
@@ -346,14 +371,27 @@ export default function QuestoesAula({
                 </div>
               ) : (
                 // ── Card de visualização ──
-                <div key={q.id} style={{ background: 'var(--avp-card)', borderRadius: 8, padding: 14, border: '1px solid var(--avp-border)' }}>
+                <div key={q.id}
+                  draggable
+                  onDragStart={() => onDragStart(qi)}
+                  onDragEnter={() => onDragEnter(qi)}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={() => onDrop(qi)}
+                  onDragEnd={() => setDragOver(null)}
+                  style={{
+                    background: 'var(--avp-card)', borderRadius: 8, padding: 14,
+                    border: `1px solid ${dragOver === qi ? 'var(--avp-blue)' : 'var(--avp-border)'}`,
+                    cursor: 'grab', userSelect: 'none',
+                    opacity: dragIndex.current === qi ? 0.4 : 1,
+                    transition: 'border-color 0.15s, opacity 0.15s',
+                    boxShadow: dragOver === qi ? '0 0 0 2px rgba(59,130,246,0.3)' : 'none',
+                  }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, flex: 1 }}>{qi + 1}. {q.enunciado}</p>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, flex: 1, minWidth: 0 }}>
+                      <span style={{ fontSize: 16, color: 'var(--avp-text-dim)', flexShrink: 0, marginTop: 1, cursor: 'grab' }} title="Arraste para reordenar">⠿</span>
+                      <p style={{ fontSize: 13, fontWeight: 700, flex: 1, margin: 0 }}>{qi + 1}. {q.enunciado}</p>
+                    </div>
                     <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'center' }}>
-                      <button type="button" onClick={() => moverQuestao(qi, 'up')} disabled={qi === 0}
-                        style={{ background: 'var(--avp-border)', border: 'none', borderRadius: 4, padding: '2px 7px', cursor: qi === 0 ? 'not-allowed' : 'pointer', fontSize: 12, color: qi === 0 ? 'var(--avp-border)' : 'var(--avp-text-dim)', fontWeight: 700, opacity: qi === 0 ? 0.3 : 1 }}>↑</button>
-                      <button type="button" onClick={() => moverQuestao(qi, 'down')} disabled={qi === questoes.length - 1}
-                        style={{ background: 'var(--avp-border)', border: 'none', borderRadius: 4, padding: '2px 7px', cursor: qi === questoes.length - 1 ? 'not-allowed' : 'pointer', fontSize: 12, color: qi === questoes.length - 1 ? 'var(--avp-border)' : 'var(--avp-text-dim)', fontWeight: 700, opacity: qi === questoes.length - 1 ? 0.3 : 1 }}>↓</button>
                       <button type="button" onClick={() => abrirEdicao(q)} style={{ background: 'var(--avp-blue)', border: 'none', borderRadius: 5, padding: '3px 10px', cursor: 'pointer', fontSize: 11, color: '#fff', fontWeight: 600 }}>Editar</button>
                       <button type="button" onClick={() => excluir(q.id)} style={{ background: '#e6394615', border: '1px solid #e6394630', borderRadius: 5, padding: '3px 8px', cursor: 'pointer', fontSize: 11, color: 'var(--avp-danger)', fontWeight: 600 }}>Excluir</button>
                     </div>
