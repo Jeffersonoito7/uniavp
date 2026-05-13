@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 
 const NAVY = '#0D2B6E'
 const GREEN = '#0A7A42'
@@ -39,7 +39,10 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
   const [msgFoto, setMsgFoto] = useState('')
   const fotoRef = useRef<HTMLInputElement>(null)
 
-  const verificacaoUrl = urlVerificacao || 'WWW.SUAEMPRESA.COM.BR'
+  const baseVerificacao = urlVerificacao || (typeof window !== 'undefined' ? window.location.origin : '')
+  const verificacaoUrl = baseVerificacao.replace(/^https?:\/\//, '').replace(/\/$/, '')
+  const verificacaoLink = `${baseVerificacao.startsWith('http') ? baseVerificacao : 'https://' + baseVerificacao}/verificar/${numRegistro}`
+  const qrVerificacao = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(verificacaoLink)}&color=0A7A42&bgcolor=ffffff`
 
   async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -56,7 +59,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
     setTimeout(() => setMsgFoto(''), 3000)
   }
 
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${verificacaoUrl.toLowerCase()}&color=0A7A42&bgcolor=ffffff`
+  const qrUrl = qrVerificacao
 
   // Frente e verso do cartão
   const CardFrente = () => (
@@ -168,7 +171,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
       {/* Rodapé verde */}
       <div style={{ background: GREEN, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
         <p style={{ color: '#fff', fontSize: 8, fontWeight: 700, margin: 0, letterSpacing: 0.8 }}>VÁLIDA EM TODO TERRITÓRIO NACIONAL</p>
-        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 7.5, margin: 0, letterSpacing: 0.3 }}>VERIFIQUE A AUTENTICIDADE EM: {verificacaoUrl}</p>
+        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 7.5, margin: 0, letterSpacing: 0.3 }}>VERIFIQUE EM: {verificacaoUrl}/verificar/{numRegistro}</p>
       </div>
     </div>
   )
@@ -272,11 +275,19 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
         <h1 style={{ fontWeight: 800, fontSize: 16, margin: 0 }}>🎓 Carteira de Formação</h1>
         <div style={{ display: 'flex', gap: 10 }}>
           {msgFoto && <span style={{ color: 'var(--avp-green)', fontSize: 13, alignSelf: 'center' }}>{msgFoto}</span>}
+          <a
+            href={verificacaoLink}
+            target="_blank"
+            rel="noreferrer"
+            style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 700, cursor: 'pointer', fontSize: 13, textDecoration: 'none' }}
+          >
+            🔍 Verificar autenticidade
+          </a>
           <button
             onClick={() => window.print()}
             style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}
           >
-            🖨 Imprimir / Salvar PDF
+            🖨 Imprimir / PDF
           </button>
         </div>
       </header>

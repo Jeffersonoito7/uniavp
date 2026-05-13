@@ -17,7 +17,7 @@ export default function TesteCarteira() {
       assinaturaNome="Albueno"
       assinaturaCargo="PRESIDENTE"
       assinaturaEmpresa="AUTOVALE PREVENÇÕES"
-      urlVerificacao="WWW.AUTOVALEPREVENCOES.COM.BR"
+      urlVerificacao="uniavp.autovaleprevencoes.org.br"
       tagline="PROTEÇÃO VEICULAR DE VERDADE!"
     />
   )
