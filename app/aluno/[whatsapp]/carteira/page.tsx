@@ -35,6 +35,13 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
 
   const numRegistro = String(aluno.numero_registro ?? 1001).padStart(6, '0')
 
+  // Configurações da carteira
+  const { data: cfgRows } = await (adminClient.from('configuracoes') as any)
+    .select('chave, valor')
+    .in('chave', ['site_nome', 'site_logo_url', 'carteira_assinatura_nome', 'carteira_assinatura_cargo', 'carteira_assinatura_empresa', 'carteira_url_verificacao', 'carteira_tagline'])
+  const cfg: Record<string, string> = {}
+  for (const r of cfgRows ?? []) { try { cfg[r.chave] = JSON.parse(r.valor) } catch { cfg[r.chave] = r.valor } }
+
   return (
     <CarteiraDisplay
       nome={aluno.nome}
@@ -46,6 +53,13 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
       turma={turma}
       whatsapp={aluno.whatsapp}
       status={aluno.status}
+      empresaNome={cfg['site_nome'] || 'UNIVERSIDADE'}
+      empresaLogoUrl={cfg['site_logo_url'] || null}
+      assinaturaNome={cfg['carteira_assinatura_nome'] || 'Assinatura'}
+      assinaturaCargo={cfg['carteira_assinatura_cargo'] || 'PRESIDENTE'}
+      assinaturaEmpresa={cfg['carteira_assinatura_empresa'] || cfg['site_nome'] || ''}
+      urlVerificacao={cfg['carteira_url_verificacao'] || ''}
+      tagline={cfg['carteira_tagline'] || ''}
     />
   )
 }

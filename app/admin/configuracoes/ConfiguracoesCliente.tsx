@@ -67,6 +67,11 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const [corSidebar, setCorSidebar] = useState(get('cor_sidebar') || '#181b24')
   const [whatsapp, setWhatsapp] = useState(get('whatsapp_suporte'))
   const [dominio, setDominio] = useState(get('dominio_customizado'))
+  const [carteiraAssinaturaNome, setCarteiraAssinaturaNome] = useState(get('carteira_assinatura_nome'))
+  const [carteiraAssinaturaCargo, setCarteiraAssinaturaCargo] = useState(get('carteira_assinatura_cargo'))
+  const [carteiraAssinaturaEmpresa, setCarteiraAssinaturaEmpresa] = useState(get('carteira_assinatura_empresa'))
+  const [carteiraUrlVerificacao, setCarteiraUrlVerificacao] = useState(get('carteira_url_verificacao'))
+  const [carteiraTagline, setCarteiraTagline] = useState(get('carteira_tagline'))
   const [certUrl, setCertUrl] = useState(get('certificado_template_url'))
   const [certNomeX, setCertNomeX] = useState(get('certificado_nome_x') || '50')
   const [certNomeY, setCertNomeY] = useState(get('certificado_nome_y') || '62')
@@ -191,6 +196,11 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
         { chave: 'cor_sidebar', valor: corSidebar },
         { chave: 'whatsapp_suporte', valor: whatsapp },
         { chave: 'dominio_customizado', valor: dominio },
+        { chave: 'carteira_assinatura_nome', valor: carteiraAssinaturaNome },
+        { chave: 'carteira_assinatura_cargo', valor: carteiraAssinaturaCargo },
+        { chave: 'carteira_assinatura_empresa', valor: carteiraAssinaturaEmpresa },
+        { chave: 'carteira_url_verificacao', valor: carteiraUrlVerificacao },
+        { chave: 'carteira_tagline', valor: carteiraTagline },
         ...(urlSafe(certUrl) ? [{ chave: 'certificado_template_url', valor: certUrl }] : []),
         { chave: 'certificado_nome_x', valor: certNomeX },
         { chave: 'certificado_nome_y', valor: certNomeY },
@@ -339,6 +349,36 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       <div style={card}>
         <p style={{ fontWeight: 700, fontSize: 15 }}>⚙️ Outros</p>
         <div><label style={lbl}>WhatsApp suporte</label><PhoneInput value={whatsapp} onChange={setWhatsapp} placeholder="suporte da empresa" /></div>
+      </div>
+
+      {/* CARTEIRA */}
+      <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
+        <p style={{ fontWeight: 800, fontSize: 16 }}>🪪 Carteira de Formação</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
+          A logo e o nome da empresa são puxados automaticamente das configurações acima. Configure abaixo a assinatura e os textos da carteira.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div>
+            <label style={lbl}>Nome de quem assina</label>
+            <input style={inp} value={carteiraAssinaturaNome} onChange={e => setCarteiraAssinaturaNome(e.target.value)} placeholder="Ex: Albueno" />
+          </div>
+          <div>
+            <label style={lbl}>Cargo</label>
+            <input style={inp} value={carteiraAssinaturaCargo} onChange={e => setCarteiraAssinaturaCargo(e.target.value)} placeholder="Ex: PRESIDENTE" />
+          </div>
+          <div>
+            <label style={lbl}>Nome da empresa (sob assinatura)</label>
+            <input style={inp} value={carteiraAssinaturaEmpresa} onChange={e => setCarteiraAssinaturaEmpresa(e.target.value)} placeholder="Ex: AUTOVALE PREVENÇÕES" />
+          </div>
+          <div>
+            <label style={lbl}>URL de verificação</label>
+            <input style={inp} value={carteiraUrlVerificacao} onChange={e => setCarteiraUrlVerificacao(e.target.value)} placeholder="Ex: WWW.SUAEMPRESA.COM.BR" />
+          </div>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label style={lbl}>Tagline (rodapé)</label>
+            <input style={inp} value={carteiraTagline} onChange={e => setCarteiraTagline(e.target.value)} placeholder="Ex: PROTEÇÃO VEICULAR DE VERDADE!" />
+          </div>
+        </div>
       </div>
 
       {/* CERTIFICADO */}

@@ -15,6 +15,13 @@ type Props = {
   turma: string
   whatsapp: string
   status: string
+  empresaNome?: string
+  empresaLogoUrl?: string | null
+  assinaturaNome?: string
+  assinaturaCargo?: string
+  assinaturaEmpresa?: string
+  urlVerificacao?: string
+  tagline?: string
 }
 
 function Field({ label, value, flex }: { label: string; value: string; flex?: boolean }) {
@@ -26,13 +33,13 @@ function Field({ label, value, flex }: { label: string; value: string; flex?: bo
   )
 }
 
-export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicial, dataFormacao, validade, cargaHoraria, turma, whatsapp, status }: Props) {
+export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicial, dataFormacao, validade, cargaHoraria, turma, whatsapp, status, empresaNome = 'UNIVERSIDADE', empresaLogoUrl, assinaturaNome = 'Assinatura', assinaturaCargo = 'PRESIDENTE', assinaturaEmpresa, urlVerificacao = '', tagline = '' }: Props) {
   const [fotoUrl, setFotoUrl] = useState<string | null>(fotoInicial)
   const [uploadando, setUploadando] = useState(false)
   const [msgFoto, setMsgFoto] = useState('')
   const fotoRef = useRef<HTMLInputElement>(null)
 
-  const verificacaoUrl = 'WWW.AUTOVALEPREVENCOES.COM.BR'
+  const verificacaoUrl = urlVerificacao || 'WWW.SUAEMPRESA.COM.BR'
 
   async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -79,17 +86,14 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
           </div>
         </div>
 
-        {/* Logo Autovale */}
+        {/* Logo empresa */}
         <div style={{ textAlign: 'right' as const, flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
-            <div style={{ display: 'flex', gap: 2 }}>
-              <div style={{ width: 10, height: 20, background: GREEN, clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
-              <div style={{ width: 10, height: 20, background: GREEN, clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
-            </div>
-          </div>
-          <p style={{ color: '#fff', fontWeight: 900, fontSize: 13, margin: '2px 0 0', letterSpacing: 0.5 }}>AUTOVALE</p>
-          <p style={{ color: GREEN, fontWeight: 700, fontSize: 11, margin: 0, letterSpacing: 0.5 }}>PREVENÇÕES</p>
-          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 7, margin: 0, letterSpacing: 0.3 }}>PROTEÇÃO VEICULAR DE VERDADE!</p>
+          {empresaLogoUrl ? (
+            <img src={empresaLogoUrl} alt={empresaNome} style={{ height: 48, maxWidth: 120, objectFit: 'contain' }} />
+          ) : (
+            <p style={{ color: '#fff', fontWeight: 900, fontSize: 13, margin: 0, letterSpacing: 0.5, maxWidth: 120, textAlign: 'right' as const }}>{empresaNome}</p>
+          )}
+          {tagline && <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 7, margin: '3px 0 0', letterSpacing: 0.3 }}>{tagline}</p>}
         </div>
       </div>
 
@@ -149,10 +153,10 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
       {/* Assinatura + badge */}
       <div style={{ background: '#fff', borderTop: '1px solid #e0e0e0', padding: '6px 18px 6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div>
-          <p style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 20, color: '#222', margin: 0, lineHeight: 1 }}>Albueno</p>
+          <p style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 20, color: '#222', margin: 0, lineHeight: 1 }}>{assinaturaNome}</p>
           <div style={{ width: 100, height: 0.8, background: '#555', margin: '3px 0 1px' }} />
-          <p style={{ fontSize: 7.5, color: '#555', margin: 0, letterSpacing: 0.5, fontWeight: 600 }}>PRESIDENTE</p>
-          <p style={{ fontSize: 7, color: '#777', margin: 0, letterSpacing: 0.3 }}>AUTOVALE PREVENÇÕES</p>
+          <p style={{ fontSize: 7.5, color: '#555', margin: 0, letterSpacing: 0.5, fontWeight: 600 }}>{assinaturaCargo}</p>
+          <p style={{ fontSize: 7, color: '#777', margin: 0, letterSpacing: 0.3 }}>{assinaturaEmpresa || empresaNome}</p>
         </div>
         <div style={{ background: GREEN, borderRadius: 5, padding: '5px 14px', textAlign: 'center' as const }}>
           <p style={{ color: '#fff', fontWeight: 900, fontSize: 9.5, margin: 0, letterSpacing: 1.2 }}>CONSULTOR CERTIFICADO</p>
@@ -207,10 +211,10 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
 
           {/* Assinatura */}
           <div>
-            <p style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 24, color: '#222', margin: '0 0 2px' }}>Albueno</p>
+            <p style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 24, color: '#222', margin: '0 0 2px' }}>{assinaturaNome}</p>
             <div style={{ width: 140, height: 0.8, background: '#444', marginBottom: 3 }} />
-            <p style={{ fontSize: 8, color: '#555', margin: 0, fontWeight: 600, letterSpacing: 0.5 }}>PRESIDENTE</p>
-            <p style={{ fontSize: 7.5, color: '#777', margin: 0, letterSpacing: 0.3 }}>AUTOVALE PREVENÇÕES</p>
+            <p style={{ fontSize: 8, color: '#555', margin: 0, fontWeight: 600, letterSpacing: 0.5 }}>{assinaturaCargo}</p>
+            <p style={{ fontSize: 7.5, color: '#777', margin: 0, letterSpacing: 0.3 }}>{assinaturaEmpresa || empresaNome}</p>
           </div>
         </div>
 
@@ -234,15 +238,14 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
       {/* Rodapé verde */}
       <div style={{ background: GREEN, height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 38, height: 38, background: 'rgba(255,255,255,0.15)', borderRadius: 6, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.2)' }}>
-            <span style={{ fontSize: 9, color: '#fff', fontWeight: 900, letterSpacing: 0.5 }}>UNI</span>
-            <span style={{ fontSize: 9, color: '#fff', fontWeight: 900, letterSpacing: 0.5 }}>AVP</span>
-          </div>
-          <div>
-            <p style={{ color: '#fff', fontWeight: 800, fontSize: 10, margin: 0, letterSpacing: 0.5 }}>AUTOVALE</p>
-            <p style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 600, fontSize: 9, margin: 0 }}>PREVENÇÕES</p>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 7, margin: 0 }}>PROTEÇÃO VEICULAR DE VERDADE!</p>
-          </div>
+          {empresaLogoUrl ? (
+            <img src={empresaLogoUrl} alt={empresaNome} style={{ height: 34, maxWidth: 100, objectFit: 'contain' }} />
+          ) : (
+            <div>
+              <p style={{ color: '#fff', fontWeight: 800, fontSize: 11, margin: 0, letterSpacing: 0.5 }}>{empresaNome}</p>
+              {tagline && <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 7, margin: 0 }}>{tagline}</p>}
+            </div>
+          )}
         </div>
         <div style={{ display: 'flex', gap: 3 }}>
           <div style={{ width: 18, height: 32, background: 'rgba(255,255,255,0.3)', clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
