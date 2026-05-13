@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase-server'
 import { consultarVeiculo } from '@/lib/providers'
 import { calcularScore } from '@/lib/score'
 
@@ -6,6 +7,10 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+
     const { placa, chassi } = await req.json()
     const input = placa ?? chassi
     const tipo  = placa ? 'placa' : 'chassi'
@@ -13,10 +18,6 @@ export async function POST(req: NextRequest) {
     if (!input) {
       return NextResponse.json({ error: 'Placa ou chassi obrigatório' }, { status: 400 })
     }
-
-    // TODO: verificar autenticação (Supabase session)
-    // TODO: verificar saldo de consultas do usuário
-    // TODO: debitar 1 consulta do saldo
 
     const { provider, data } = await consultarVeiculo(input, tipo)
 

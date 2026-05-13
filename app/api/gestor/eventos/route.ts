@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   const gestor = await getGestor(user, adminClient)
   if (!gestor) return NextResponse.json([], { status: 403 })
   const { data } = await (adminClient.from('eventos') as any)
-    .select('*').order('data_hora', { ascending: true })
+    .select('*').eq('gestor_id', gestor.id).order('data_hora', { ascending: true })
   return NextResponse.json(data ?? [])
 }
 
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
   const { titulo, descricao, cidade, data_hora, notificar } = await req.json()
   const { data: evento, error } = await (adminClient.from('eventos') as any)
-    .insert({ titulo, descricao: descricao || '', cidade: cidade || '', data_hora })
+    .insert({ titulo, descricao: descricao || '', cidade: cidade || '', data_hora, gestor_id: gestor.id })
     .select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
@@ -68,8 +68,6 @@ export async function DELETE(req: NextRequest) {
   const gestor = await getGestor(user, adminClient)
   if (!gestor) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
   const { id } = await req.json()
-  // TODO: A tabela 'eventos' não possui campo gestor_id ainda. Quando houver,
-  // adicionar .eq('gestor_id', gestor.id) para garantir que apenas o dono possa excluir.
-  await (adminClient.from('eventos') as any).delete().eq('id', id)
+  await (adminClient.from('eventos') as any).delete().eq('id', id).eq('gestor_id', gestor.id)
   return NextResponse.json({ ok: true })
 }
