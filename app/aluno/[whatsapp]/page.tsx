@@ -11,6 +11,7 @@ import SupportChat from '@/app/components/SupportChat'
 import PushButton from '@/app/components/PushButton'
 import PWAInstallButton from '@/app/components/PWAInstallButton'
 import RankingWidget from '@/app/components/RankingWidget'
+import RetomarPopup from '@/app/components/RetomarPopup'
 
 type TrilhaItem = {
   modulo_id: string
@@ -121,6 +122,19 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
   return (
     <>
       <SupportChat painel="Consultor" />
+      {/* Popup Retomar — aparece uma vez por sessão quando há aula em andamento */}
+      {aulaAtual && !moduloSelecionadoId && (
+        <RetomarPopup
+          whatsapp={aluno.whatsapp}
+          aulaId={aulaAtual.aula_id}
+          aulaId_titulo={aulaAtual.aula_titulo}
+          moduloTitulo={aulaAtual.modulo_titulo}
+          descricao={aulaAtual.aula_descricao}
+          thumbUrl={aulaAtual.capa_url || (aulaAtual.youtube_video_id ? `https://img.youtube.com/vi/${aulaAtual.youtube_video_id}/mqdefault.jpg` : null)}
+          totalModulos={modulos.length}
+          totalAulas={trilha.length}
+        />
+      )}
       <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
 
         {/* ── HEADER ── */}

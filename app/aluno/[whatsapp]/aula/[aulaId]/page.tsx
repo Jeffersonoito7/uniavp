@@ -7,6 +7,7 @@ import CurtidasButton from '@/app/components/CurtidasButton'
 import ReacaoAula from './ReacaoAula'
 import VideoPlayer from '@/app/components/VideoPlayer'
 import Quiz from './Quiz'
+import AvaliacaoAula from './AvaliacaoAula'
 
 export default async function AulaPage({ params }: { params: { whatsapp: string; aulaId: string } }) {
   const supabase = await createClient()
@@ -29,6 +30,17 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   const trilhaStatus = ((trilhaRaw ?? []) as { aula_id: string; status: string }[])
     .find(t => t.aula_id === params.aulaId)
   if (trilhaStatus?.status === 'bloqueada') redirect(`/aluno/${params.whatsapp}`)
+
+  // Trilha do módulo para sidebar
+  const { data: trilhaSidebar } = await (adminClient as any)
+    .rpc('obter_trilha_aluno', { p_aluno_id: aluno.id })
+  const aulasModulo: { aula_id: string; aula_titulo: string; aula_ordem: number; status: string; capa_url: string | null; youtube_video_id: string }[] =
+    ((trilhaSidebar ?? []) as any[]).filter((t: any) => t.modulo_id === aula.modulo_id)
+      .sort((a: any, b: any) => a.aula_ordem - b.aula_ordem)
+
+  // Avaliação existente
+  const { data: avaliacaoExistente } = await (adminClient.from('aula_avaliacoes') as any)
+    .select('estrelas, sugestao').eq('aluno_id', aluno.id).eq('aula_id', params.aulaId).maybeSingle()
 
   // Curtidas
   const { count: totalCurtidas } = await (adminClient.from('aula_curtidas') as any)
@@ -79,89 +91,113 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
-      <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href={`/aluno/${params.whatsapp}`} style={{ color: 'var(--avp-text-dim)', fontSize: 14, textDecoration: 'none' }}>
-          ← {aula.modulo?.titulo ?? 'Módulo'}
+      {/* Header */}
+      <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 20px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
+        <Link href={`/aluno/${params.whatsapp}`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+          ← Módulos
         </Link>
-        <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--avp-text-dim)' }}>{aula.titulo}</span>
+        <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--avp-text)', maxWidth: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{aula.titulo}</span>
         <div />
       </header>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>{aula.titulo}</h1>
-          {aula.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>{aula.descricao}</p>}
-        </div>
+      {/* Layout dois painéis */}
+      <div style={{ display: 'flex', height: 'calc(100vh - 56px)' }}>
 
-        {temAoVivo && (
-          <CountdownAoVivo aoVivoData={aula.ao_vivo_data} aoVivoLink={aula.ao_vivo_link} plataforma={aula.ao_vivo_plataforma ?? 'outro'} />
-        )}
+        {/* ── PAINEL PRINCIPAL ── */}
+        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
 
-        {(!temAoVivo || aoVivoPassou) && (
-          <VideoPlayer
-            youtubeId={aula.youtube_video_id}
-            videoUrl={(aula as any).video_url}
-            titulo={aula.titulo}
-          />
-        )}
-
-        {/* Curtidas */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <CurtidasButton
-            aulaId={params.aulaId}
-            alunoId={aluno.id}
-            inicialCurtido={!!minhaCurtida}
-            inicialTotal={totalCurtidas ?? 0}
-          />
-        </div>
-
-        {/* Arquivos para download */}
-        {(arquivos ?? []).length > 0 && (
-          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '20px 24px' }}>
-            <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 14 }}>📎 Materiais para Download</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {(arquivos ?? []).map((arq: { id: string; nome: string; url: string }) => (
-                <a
-                  key={arq.id}
-                  href={arq.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    background: 'var(--avp-black)', border: '1px solid var(--avp-border)',
-                    borderRadius: 8, padding: '12px 16px', textDecoration: 'none',
-                    color: 'var(--avp-text)', fontSize: 14, fontWeight: 500,
-                    transition: 'border-color 0.15s',
-                  }}
-                >
-                  <span style={{ fontSize: 20 }}>{iconeArquivo(arq.url)}</span>
-                  <span style={{ flex: 1 }}>{arq.nome}</span>
-                  <span style={{ fontSize: 12, color: 'var(--avp-green)', fontWeight: 700 }}>⬇ Baixar</span>
-                </a>
-              ))}
+          {/* Vídeo */}
+          {temAoVivo && (
+            <div style={{ padding: '20px 24px' }}>
+              <CountdownAoVivo aoVivoData={aula.ao_vivo_data} aoVivoLink={aula.ao_vivo_link} plataforma={aula.ao_vivo_plataforma ?? 'outro'} />
             </div>
+          )}
+          {(!temAoVivo || aoVivoPassou) && (
+            <VideoPlayer youtubeId={aula.youtube_video_id} videoUrl={(aula as any).video_url} titulo={aula.titulo} />
+          )}
+
+          {/* Info + ações */}
+          <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+              <div>
+                <p style={{ fontSize: 12, color: 'var(--avp-green)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 4px' }}>{aula.modulo?.titulo}</p>
+                <h1 style={{ fontSize: 20, fontWeight: 800, margin: 0 }}>{aula.titulo}</h1>
+                {aula.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 6, lineHeight: 1.6 }}>{aula.descricao}</p>}
+              </div>
+              <CurtidasButton aulaId={params.aulaId} alunoId={aluno.id} inicialCurtido={!!minhaCurtida} inicialTotal={totalCurtidas ?? 0} />
+            </div>
+
+            {/* Arquivos */}
+            {(arquivos ?? []).length > 0 && (
+              <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '16px 20px' }}>
+                <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}>📎 Materiais</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {(arquivos ?? []).map((arq: { id: string; nome: string; url: string }) => (
+                    <a key={arq.id} href={arq.url} target="_blank" rel="noopener noreferrer"
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', textDecoration: 'none', color: 'var(--avp-text)', fontSize: 13 }}>
+                      <span style={{ fontSize: 18 }}>{iconeArquivo(arq.url)}</span>
+                      <span style={{ flex: 1 }}>{arq.nome}</span>
+                      <span style={{ fontSize: 11, color: 'var(--avp-green)', fontWeight: 700 }}>⬇ Baixar</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quiz */}
+            {(questoes.length > 0 || aula.quiz_tipo === 'sim_nao') && (
+              <Quiz aulaId={params.aulaId} questoes={questoes} aprovacaoMinima={aula.quiz_aprovacao_minima} jaAprovado={jaAprovado} tentativasAnteriores={tentativasAnteriores} quizTipo={aula.quiz_tipo ?? 'obrigatorio'} simNaoPergunta={(aula as any).quiz_sim_nao_pergunta ?? ''} simNaoNaoMensagem={(aula as any).quiz_sim_nao_nao_mensagem ?? ''} simNaoPerguntas={(aula as any).quiz_sim_nao_perguntas ?? []} />
+            )}
+
+            {/* Avaliação por estrelas */}
+            <AvaliacaoAula aulaId={params.aulaId} estrelasIniciais={avaliacaoExistente?.estrelas ?? null} sugestaoInicial={avaliacaoExistente?.sugestao ?? null} />
+
+            <ReacaoAula aulaId={params.aulaId} alunoId={aluno.id} jaReagiu={!!minhaReacao} />
+            <Comentarios aulaId={aula.id} alunoId={aluno.id} alunoNome={aluno.nome} />
           </div>
-        )}
+        </div>
 
-        {/* Quiz */}
-        {(questoes.length > 0 || aula.quiz_tipo === 'sim_nao') && (
-          <Quiz
-            aulaId={params.aulaId}
-            questoes={questoes}
-            aprovacaoMinima={aula.quiz_aprovacao_minima}
-            jaAprovado={jaAprovado}
-            tentativasAnteriores={tentativasAnteriores}
-            quizTipo={aula.quiz_tipo ?? 'obrigatorio'}
-            simNaoPergunta={(aula as any).quiz_sim_nao_pergunta ?? ''}
-            simNaoNaoMensagem={(aula as any).quiz_sim_nao_nao_mensagem ?? ''}
-            simNaoPerguntas={(aula as any).quiz_sim_nao_perguntas ?? []}
-          />
-        )}
-
-        {/* Pesquisa de reação */}
-        <ReacaoAula aulaId={params.aulaId} alunoId={aluno.id} jaReagiu={!!minhaReacao} />
-
-        <Comentarios aulaId={aula.id} alunoId={aluno.id} alunoNome={aluno.nome} />
+        {/* ── SIDEBAR DE AULAS ── */}
+        <div style={{ width: 320, borderLeft: '1px solid var(--avp-border)', overflowY: 'auto', background: 'var(--avp-card)', flexShrink: 0 }} className="hide-mobile">
+          <div style={{ padding: '16px 16px 10px', borderBottom: '1px solid var(--avp-border)', position: 'sticky', top: 0, background: 'var(--avp-card)', zIndex: 1 }}>
+            <p style={{ fontWeight: 800, fontSize: 14, margin: 0 }}>Aulas</p>
+            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>{aula.modulo?.titulo}</p>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {aulasModulo.map((a, idx) => {
+              const isAtual = a.aula_id === params.aulaId
+              const isConcluida = a.status === 'concluida'
+              const isBloqueada = a.status === 'bloqueada'
+              const thumb = a.capa_url || (a.youtube_video_id ? `https://img.youtube.com/vi/${a.youtube_video_id}/mqdefault.jpg` : null)
+              const item = (
+                <div style={{ display: 'flex', gap: 10, padding: '12px 14px', borderBottom: '1px solid var(--avp-border)', background: isAtual ? 'rgba(59,130,246,0.1)' : 'transparent', borderLeft: isAtual ? '3px solid #3b82f6' : '3px solid transparent', opacity: isBloqueada ? 0.5 : 1, cursor: isBloqueada ? 'not-allowed' : 'pointer', transition: 'background 0.15s', alignItems: 'flex-start' }}>
+                  {/* Thumb */}
+                  <div style={{ width: 68, height: 44, borderRadius: 6, overflow: 'hidden', flexShrink: 0, position: 'relative', background: '#1e3a8a' }}>
+                    {thumb && <img src={thumb} alt={a.aula_titulo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: 22, height: 22, borderRadius: '50%', background: isConcluida ? '#22c55e' : isAtual ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: isAtual ? '#1e40af' : '#fff' }}>
+                        {isConcluida ? '✓' : isBloqueada ? '🔒' : '▶'}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 12, fontWeight: isAtual ? 700 : 500, color: isAtual ? '#fff' : 'var(--avp-text)', margin: 0, lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {idx + 1}. {a.aula_titulo}
+                    </p>
+                    {isConcluida && <p style={{ fontSize: 10, color: '#22c55e', margin: '3px 0 0', fontWeight: 600 }}>✓ Concluída</p>}
+                    {isAtual && !isConcluida && <p style={{ fontSize: 10, color: '#3b82f6', margin: '3px 0 0', fontWeight: 600 }}>▶ Assistindo</p>}
+                  </div>
+                </div>
+              )
+              return isBloqueada ? <div key={a.aula_id}>{item}</div> : (
+                <Link key={a.aula_id} href={`/aluno/${params.whatsapp}/aula/${a.aula_id}`} style={{ textDecoration: 'none' }}>
+                  {item}
+                </Link>
+              )
+            })}
+          </div>
+        </div>
       </div>
     </div>
   )
