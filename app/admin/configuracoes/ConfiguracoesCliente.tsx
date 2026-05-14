@@ -79,6 +79,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const [boletoInstrucoes, setBoletoInstrucoes] = useState(get('boleto_instrucoes'))
   const [boletoMulta, setBoletoMulta] = useState(get('boleto_multa') || '2')
   const [boletoJuros, setBoletoJuros] = useState(get('boleto_juros') || '1')
+  const [captacaoVideoId, setCaptacaoVideoId] = useState(get('captacao_video_id') || '')
   const [certUrl, setCertUrl] = useState(get('certificado_template_url'))
   const [certNomeX, setCertNomeX] = useState(get('certificado_nome_x') || '50')
   const [certNomeY, setCertNomeY] = useState(get('certificado_nome_y') || '62')
@@ -224,6 +225,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
         { chave: 'boleto_instrucoes', valor: boletoInstrucoes },
         { chave: 'boleto_multa', valor: boletoMulta },
         { chave: 'boleto_juros', valor: boletoJuros },
+        { chave: 'captacao_video_id', valor: captacaoVideoId },
         ...(urlSafe(certUrl) ? [{ chave: 'certificado_template_url', valor: certUrl }] : []),
         { chave: 'certificado_nome_x', valor: certNomeX },
         { chave: 'certificado_nome_y', valor: certNomeY },
@@ -463,6 +465,31 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
             <input style={inp} value={carteiraTagline} onChange={e => setCarteiraTagline(e.target.value)} placeholder="Ex: PROTEÇÃO VEICULAR DE VERDADE!" />
           </div>
         </div>
+      </div>
+
+      {/* VÍDEO DE CAPTAÇÃO */}
+      <div style={{ ...card }}>
+        <p style={{ fontWeight: 800, fontSize: 16 }}>🎬 Vídeo de Captação (funil de cadastro)</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8, lineHeight: 1.6 }}>
+          Este vídeo aparece no funil de cadastro de consultores (<strong>/g/seu-whatsapp</strong>). O candidato precisa assistir até o fim antes de se cadastrar. Cole o ID do YouTube (ex: <code style={{ background: 'var(--avp-black)', padding: '2px 6px', borderRadius: 4 }}>dQw4w9WgXcQ</code>) ou a URL completa.
+        </p>
+        <div>
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>ID ou URL do YouTube *</label>
+          <input
+            value={captacaoVideoId}
+            onChange={e => setCaptacaoVideoId(e.target.value)}
+            placeholder="Ex: dQw4w9WgXcQ  ou  https://youtu.be/dQw4w9WgXcQ"
+            style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '11px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }}
+          />
+          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 6 }}>
+            Deixe em branco para pular a etapa do vídeo e ir direto para o formulário.
+          </p>
+        </div>
+        {captacaoVideoId && (
+          <div style={{ background: '#02A15315', border: '1px solid var(--avp-green)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--avp-green)' }}>
+            ✅ Vídeo configurado — candidatos precisarão assistir antes de se cadastrar
+          </div>
+        )}
       </div>
 
       {/* CERTIFICADO */}
