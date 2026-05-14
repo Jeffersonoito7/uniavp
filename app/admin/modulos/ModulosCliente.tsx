@@ -24,6 +24,13 @@ function CapaUpload({ preview, onSelect, fileRef: ref }: {
   )
 }
 
+const PERFIS = [
+  { id: 'consultor', label: 'Consultor', cor: '#02A153', bg: '#02A15320' },
+  { id: 'gestor',    label: 'Gestor',    cor: '#3b82f6', bg: '#3b82f620' },
+  { id: 'outros',    label: 'Outros',    cor: '#a78bfa', bg: '#a78bfa20' },
+] as const
+type PerfilId = typeof PERFIS[number]['id']
+
 type Modulo = {
   id: string
   titulo: string
@@ -31,16 +38,17 @@ type Modulo = {
   capa_url: string | null
   ordem: number
   publicado: boolean
+  perfis_permitidos: PerfilId[]
 }
 
-type EditForm = { titulo: string; descricao: string; capaPreview: string | null; capaBase64: string | null }
+type EditForm = { titulo: string; descricao: string; capaPreview: string | null; capaBase64: string | null; perfis_permitidos: PerfilId[] }
 
 export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: Modulo[] }) {
   const router = useRouter()
   const [modulos, setModulos] = useState<Modulo[]>(modulosIniciais)
   const [criando, setCriando] = useState(false)
   const [salvando, setSalvando] = useState(false)
-  const [form, setForm] = useState({ titulo: '', descricao: '' })
+  const [form, setForm] = useState({ titulo: '', descricao: '', perfis_permitidos: ['consultor', 'gestor'] as PerfilId[] })
   const [capaPreview, setCapaPreview] = useState<string | null>(null)
   const [capaBase64, setCapaBase64] = useState<string | null>(null)
   const [uploadando, setUploadando] = useState(false)
@@ -49,7 +57,7 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
 
   // Edição
   const [editandoId, setEditandoId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState<EditForm>({ titulo: '', descricao: '', capaPreview: null, capaBase64: null })
+  const [editForm, setEditForm] = useState<EditForm>({ titulo: '', descricao: '', capaPreview: null, capaBase64: null, perfis_permitidos: ['consultor', 'gestor'] })
   const [salvandoEdit, setSalvandoEdit] = useState(false)
   const editFileRef = useRef<HTMLInputElement>(null)
 
@@ -71,13 +79,31 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
     reader.readAsDataURL(file)
   }
 
+  function togglePerfilForm(perfil: PerfilId, isEdit = false) {
+    if (isEdit) {
+      setEditForm(p => ({
+        ...p,
+        perfis_permitidos: p.perfis_permitidos.includes(perfil)
+          ? p.perfis_permitidos.filter(x => x !== perfil)
+          : [...p.perfis_permitidos, perfil],
+      }))
+    } else {
+      setForm(p => ({
+        ...p,
+        perfis_permitidos: p.perfis_permitidos.includes(perfil)
+          ? p.perfis_permitidos.filter(x => x !== perfil)
+          : [...p.perfis_permitidos, perfil],
+      }))
+    }
+  }
+
   async function criarModulo(e: React.FormEvent) {
     e.preventDefault()
     setSalvando(true)
     const res = await fetch('/api/admin/modulos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ titulo: form.titulo, descricao: form.descricao || null, capa_url: capaBase64 || null }),
+      body: JSON.stringify({ titulo: form.titulo, descricao: form.descricao || null, capa_url: capaBase64 || null, perfis_permitidos: form.perfis_permitidos }),
     })
     const data = await res.json()
     if (data.modulo) {
@@ -91,7 +117,7 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
   function abrirEdicao(m: Modulo) {
     setEditandoId(m.id)
     const temCapa = m.capa_url?.startsWith('data:') || m.capa_url?.startsWith('blob:')
-    setEditForm({ titulo: m.titulo, descricao: m.descricao ?? '', capaPreview: temCapa ? m.capa_url : null, capaBase64: temCapa ? m.capa_url : null })
+    setEditForm({ titulo: m.titulo, descricao: m.descricao ?? '', capaPreview: temCapa ? m.capa_url : null, capaBase64: temCapa ? m.capa_url : null, perfis_permitidos: m.perfis_permitidos ?? ['consultor', 'gestor'] })
   }
 
   async function salvarEdicao(id: string) {
@@ -99,7 +125,7 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
     const res = await fetch('/api/admin/modulos', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, titulo: editForm.titulo, descricao: editForm.descricao || null, capa_url: editForm.capaBase64 || null }),
+      body: JSON.stringify({ id, titulo: editForm.titulo, descricao: editForm.descricao || null, capa_url: editForm.capaBase64 || null, perfis_permitidos: editForm.perfis_permitidos }),
     })
     const data = await res.json()
     if (data.modulo) {
@@ -155,6 +181,21 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
             <label style={{ ...lbl, marginBottom: 8 }}>Capa <span style={{ color: 'var(--avp-green)', fontSize: 11, fontWeight: 700 }}>📐 1380×1080px</span></label>
             <CapaUpload preview={capaPreview} onSelect={f => selecionarCapa(f, false)} fileRef={fileRef} />
           </div>
+          <div>
+            <label style={{ ...lbl, marginBottom: 8 }}>🔐 Quem pode ver este módulo?</label>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              {PERFIS.map(p => {
+                const ativo = form.perfis_permitidos.includes(p.id)
+                return (
+                  <button key={p.id} type="button" onClick={() => togglePerfilForm(p.id, false)}
+                    style={{ background: ativo ? p.bg : 'var(--avp-black)', border: `2px solid ${ativo ? p.cor : 'var(--avp-border)'}`, color: ativo ? p.cor : 'var(--avp-text-dim)', borderRadius: 8, padding: '7px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, transition: 'all 0.15s' }}>
+                    {ativo ? '✓ ' : ''}{p.label}
+                  </button>
+                )
+              })}
+            </div>
+            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 6 }}>Selecione quais perfis terão acesso a este módulo</p>
+          </div>
           <button type="submit" disabled={salvando || uploadando} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, cursor: 'pointer', fontSize: 14, alignSelf: 'flex-start', opacity: salvando ? 0.6 : 1 }}>
             {salvando ? 'Criando...' : 'Criar Módulo'}
           </button>
@@ -180,6 +221,21 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
                   <div>
                     <label style={{ ...lbl, marginBottom: 8 }}>Capa <span style={{ color: 'var(--avp-green)', fontSize: 11, fontWeight: 700 }}>📐 1380×1080px</span></label>
                     <CapaUpload preview={editForm.capaPreview} onSelect={f => selecionarCapa(f, true)} fileRef={editFileRef} />
+                  </div>
+                  <div>
+                    <label style={{ ...lbl, marginBottom: 8 }}>🔐 Quem pode ver este módulo?</label>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                      {PERFIS.map(perf => {
+                        const ativo = editForm.perfis_permitidos.includes(perf.id)
+                        return (
+                          <button key={perf.id} type="button" onClick={() => togglePerfilForm(perf.id, true)}
+                            style={{ background: ativo ? perf.bg : 'var(--avp-black)', border: `2px solid ${ativo ? perf.cor : 'var(--avp-border)'}`, color: ativo ? perf.cor : 'var(--avp-text-dim)', borderRadius: 8, padding: '7px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, transition: 'all 0.15s' }}>
+                            {ativo ? '✓ ' : ''}{perf.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 6 }}>Selecione quais perfis terão acesso a este módulo</p>
                   </div>
                   <div style={{ display: 'flex', gap: 10 }}>
                     <button onClick={() => salvarEdicao(m.id)} disabled={salvandoEdit}
@@ -212,11 +268,21 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
 
                     {/* Info */}
                     <div style={{ flex: 1, padding: '16px 20px', minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
                         <h3 style={{ fontWeight: 800, fontSize: 17, color: 'var(--avp-text)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.titulo}</h3>
                         {!m.publicado && <span style={{ background: '#f59e0b20', color: '#f59e0b', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>Rascunho</span>}
                       </div>
-                      {m.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.descricao}</p>}
+                      {m.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: '0 0 8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.descricao}</p>}
+                      {/* Badges de perfis permitidos */}
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        {(m.perfis_permitidos ?? ['consultor', 'gestor']).length === 0
+                          ? <span style={{ fontSize: 11, color: 'var(--avp-danger)', fontWeight: 600 }}>🚫 Nenhum perfil — módulo invisível</span>
+                          : (m.perfis_permitidos ?? ['consultor', 'gestor']).map(pid => {
+                              const perf = PERFIS.find(p => p.id === pid)
+                              if (!perf) return null
+                              return <span key={pid} style={{ background: perf.bg, color: perf.cor, borderRadius: 20, padding: '2px 9px', fontSize: 11, fontWeight: 700 }}>{perf.label}</span>
+                            })}
+                      </div>
                     </div>
 
                     {/* CTA */}

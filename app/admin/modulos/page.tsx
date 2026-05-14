@@ -11,7 +11,7 @@ export default async function ModulosPage() {
   const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/login')
 
-  const { data: modulos } = await (adminClient.from('modulos') as any).select('id, titulo, descricao, ordem, publicado').order('ordem')
+  const { data: modulos } = await (adminClient.from('modulos') as any).select('id, titulo, descricao, ordem, publicado, perfis_permitidos').order('ordem')
 
   return (
     <AdminLayout>

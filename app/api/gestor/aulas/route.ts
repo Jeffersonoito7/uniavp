@@ -14,7 +14,9 @@ export async function GET() {
   if (!gestor) return NextResponse.json({ error: 'Não autorizado' }, { status: 403 })
 
   const { data: modulos } = await (admin.from('modulos') as any)
-    .select('id, titulo, ordem, descricao, capa_url').order('ordem')
+    .select('id, titulo, ordem, descricao, capa_url')
+    .contains('perfis_permitidos', ['gestor'])
+    .order('ordem')
 
   const { data: aulas } = await (admin.from('aulas') as any)
     .select('id, titulo, descricao, youtube_video_id, video_url, duracao_minutos, capa_url, ordem, modulo_id, publicado, quiz_aprovacao_minima, quiz_qtd_questoes, quiz_tipo, espera_horas, liberacao_modo')

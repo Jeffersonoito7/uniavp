@@ -28,8 +28,10 @@ export async function POST(req: NextRequest) {
 
   const ordem = (ultimo?.ordem ?? 0) + 1
 
+  const perfis = body.perfis_permitidos ?? ['consultor', 'gestor']
+
   const { data: modulo, error } = await (adminClient.from('modulos') as any)
-    .insert({ titulo, descricao: descricao ?? null, capa_url: capa_url ?? null, ordem, publicado: false })
+    .insert({ titulo, descricao: descricao ?? null, capa_url: capa_url ?? null, ordem, publicado: false, perfis_permitidos: perfis })
     .select('*')
     .single()
 
@@ -55,7 +57,7 @@ export async function PUT(req: NextRequest) {
   const { id, ...updates } = body
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  const camposPermitidos = ['titulo', 'descricao', 'capa_url', 'publicado', 'ordem']
+  const camposPermitidos = ['titulo', 'descricao', 'capa_url', 'publicado', 'ordem', 'perfis_permitidos']
   const atualizacoes: Record<string, unknown> = {}
   for (const campo of camposPermitidos) {
     if (campo in updates) atualizacoes[campo] = updates[campo]
