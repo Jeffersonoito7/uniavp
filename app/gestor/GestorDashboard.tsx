@@ -404,6 +404,74 @@ export default function GestorDashboard({
       </div>
     )}
 
+    {/* ── MODAL PLAYER AULA (gestor) ── */}
+    {aulaAberta && (
+      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: 16 }}
+        onClick={e => e.target === e.currentTarget && setAulaAberta(null)}>
+        <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, width: '100%', maxWidth: 860, maxHeight: '92vh', overflow: 'auto' }}
+          onMouseDown={e => e.stopPropagation()}>
+          {/* Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--avp-border)' }}>
+            <div>
+              <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: 1 }}>{moduloAberto?.titulo}</p>
+              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>{aulaAberta.titulo}</h2>
+            </div>
+            <button onClick={() => setAulaAberta(null)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 28, lineHeight: 1, padding: '0 4px' }}>×</button>
+          </div>
+
+          {/* Vídeo */}
+          {aulaAberta.youtube_video_id ? (
+            <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, background: '#000' }}>
+              <iframe
+                src={`https://www.youtube.com/embed/${aulaAberta.youtube_video_id}?autoplay=1&rel=0`}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : aulaAberta.video_url ? (
+            <video controls autoPlay src={aulaAberta.video_url} style={{ width: '100%', maxHeight: 480, background: '#000', display: 'block' }} />
+          ) : (
+            <div style={{ padding: 48, textAlign: 'center', color: 'var(--avp-text-dim)' }}>
+              <p style={{ fontSize: 40, marginBottom: 10 }}>📄</p>
+              <p>Esta aula não possui vídeo.</p>
+            </div>
+          )}
+
+          {/* Info */}
+          <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {aulaAberta.descricao && (
+              <p style={{ fontSize: 14, color: 'var(--avp-text-dim)', lineHeight: 1.6, margin: 0 }}>{aulaAberta.descricao}</p>
+            )}
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              {aulaAberta.duracao_minutos && <span style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>⏱ {aulaAberta.duracao_minutos} min</span>}
+              {aulaAberta.quiz_aprovacao_minima != null && <span style={{ fontSize: 12, color: '#f59e0b' }}>📝 Quiz: {aulaAberta.quiz_qtd_questoes || '?'}q · {aulaAberta.quiz_aprovacao_minima}% mín.</span>}
+              {aulaAberta.espera_horas != null && aulaAberta.espera_horas > 0 && <span style={{ fontSize: 12, color: '#60a5fa' }}>⏳ {aulaAberta.espera_horas}h de espera</span>}
+              {(aulaAberta.liberacao_modo === 'manual_gestor' || aulaAberta.liberacao_modo === 'manual_admin') && <span style={{ fontSize: 12, color: '#a78bfa' }}>🔒 Liberação manual</span>}
+            </div>
+            {/* Navegação entre aulas */}
+            {moduloAberto && moduloAberto.aulas.length > 1 && (() => {
+              const idx = moduloAberto.aulas.findIndex(a => a.id === aulaAberta.id)
+              const prev = idx > 0 ? moduloAberto.aulas[idx - 1] : null
+              const next = idx < moduloAberto.aulas.length - 1 ? moduloAberto.aulas[idx + 1] : null
+              return (
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, paddingTop: 10, borderTop: '1px solid var(--avp-border)' }}>
+                  <button onClick={() => prev && setAulaAberta(prev)} disabled={!prev}
+                    style={{ flex: 1, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', color: prev ? 'var(--avp-text)' : 'var(--avp-text-dim)', borderRadius: 8, padding: '9px 14px', cursor: prev ? 'pointer' : 'default', fontSize: 13, fontWeight: 600, opacity: prev ? 1 : 0.4 }}>
+                    ← Aula anterior
+                  </button>
+                  <button onClick={() => next && setAulaAberta(next)} disabled={!next}
+                    style={{ flex: 1, background: next ? 'var(--avp-blue)' : 'var(--avp-black)', border: `1px solid ${next ? 'var(--avp-blue)' : 'var(--avp-border)'}`, color: '#fff', borderRadius: 8, padding: '9px 14px', cursor: next ? 'pointer' : 'default', fontSize: 13, fontWeight: 600, opacity: next ? 1 : 0.4 }}>
+                    Próxima aula →
+                  </button>
+                </div>
+              )
+            })()}
+          </div>
+        </div>
+      </div>
+    )}
+
     <GestorLayout aba={aba} setAba={handleSetAba} nomeGestor={gestor.nome} fotoPerfilInicial={gestor.foto_perfil}>
 
       {/* ── DASHBOARD ── */}
@@ -694,14 +762,30 @@ export default function GestorDashboard({
                   <p>Nenhuma aula neste módulo.</p>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
                   {moduloAberto.aulas.map((aula, idx) => {
                     const thumb = aula.capa_url || (aula.youtube_video_id ? `https://img.youtube.com/vi/${aula.youtube_video_id}/mqdefault.jpg` : null)
+                    const temVideo = !!(aula.youtube_video_id || aula.video_url)
                     return (
-                      <div key={aula.id} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden', opacity: aula.publicado ? 1 : 0.6 }}>
-                        <div style={{ height: 110, background: 'var(--grad-brand)', position: 'relative' }}>
+                      <div key={aula.id}
+                        onClick={() => setAulaAberta(aula)}
+                        style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden', opacity: aula.publicado ? 1 : 0.6, cursor: 'pointer', transition: 'transform 0.15s, border-color 0.15s, box-shadow 0.15s' }}
+                        onMouseEnter={e => { const el = e.currentTarget as HTMLDivElement; el.style.transform = 'translateY(-3px)'; el.style.borderColor = 'var(--avp-blue)'; el.style.boxShadow = '0 8px 24px rgba(59,130,246,0.15)' }}
+                        onMouseLeave={e => { const el = e.currentTarget as HTMLDivElement; el.style.transform = ''; el.style.borderColor = 'var(--avp-border)'; el.style.boxShadow = '' }}
+                      >
+                        <div style={{ height: 120, background: 'var(--grad-brand)', position: 'relative', overflow: 'hidden' }}>
                           {thumb && <img src={thumb} alt={aula.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />}
-                          <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(0,0,0,0.6)', borderRadius: 6, padding: '2px 8px', fontSize: 11, color: '#fff', fontWeight: 700 }}>
+                          {/* Play overlay */}
+                          {temVideo && (
+                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.25)', opacity: 0, transition: 'opacity 0.2s' }}
+                              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.opacity = '1' }}
+                              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.opacity = '0' }}>
+                              <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#1a1a1a"><polygon points="5,3 19,12 5,21"/></svg>
+                              </div>
+                            </div>
+                          )}
+                          <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(0,0,0,0.65)', borderRadius: 6, padding: '2px 8px', fontSize: 11, color: '#fff', fontWeight: 700 }}>
                             #{idx + 1}
                           </div>
                           {!aula.publicado && (
@@ -723,6 +807,7 @@ export default function GestorDashboard({
                             {(aula.liberacao_modo === 'manual_gestor' || aula.liberacao_modo === 'manual_admin') && (
                               <p style={{ fontSize: 11, color: '#a78bfa', margin: 0 }}>🔒 Liberação manual</p>
                             )}
+                            {!temVideo && <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>📄 Sem vídeo</p>}
                           </div>
                         </div>
                       </div>
