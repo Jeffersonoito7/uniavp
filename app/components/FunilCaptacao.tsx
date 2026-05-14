@@ -18,7 +18,7 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
   const router = useRouter()
   const [etapa, setEtapa] = useState<Etapa>('pergunta1')
   const [videoAssistido, setVideoAssistido] = useState(false)
-  const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', senha: '' })
+  const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', senha: '', gestor_nome: '', gestor_whatsapp: '' })
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const [verSenha, setVerSenha] = useState(false)
@@ -223,8 +223,8 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
                 <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 16 }}>
                   <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 14 }}>Gestor que te indicou</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <input type="text" placeholder="Nome do gestor (opcional)" onChange={e => setForm(p => ({ ...p, gestor_nome: e.target.value } as typeof p))} style={inp} />
-                    <PhoneInput value={''} onChange={v => setForm(p => ({ ...p, gestor_whatsapp: v } as typeof p))} placeholder="WhatsApp do gestor (opcional)" />
+                    <input type="text" placeholder="Nome do gestor (opcional)" onChange={e => setForm(p => ({ ...p, gestor_nome: e.target.value }))} style={inp} />
+                    <PhoneInput value={form.gestor_whatsapp} onChange={v => setForm(p => ({ ...p, gestor_whatsapp: v }))} placeholder="WhatsApp do gestor (opcional)" />
                   </div>
                 </div>
               )}
