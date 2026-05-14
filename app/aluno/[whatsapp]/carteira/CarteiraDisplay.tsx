@@ -30,8 +30,8 @@ type Props = {
 function Field({ label, value, flex }: { label: string; value: string; flex?: boolean }) {
   return (
     <div style={{ flex: flex ? 1 : undefined, minWidth: 0 }}>
-      <p style={{ fontSize: 7.5, fontWeight: 700, color: GREEN_LABEL, margin: '0 0 1px', letterSpacing: 0.8, textTransform: 'uppercase' as const }}>{label}</p>
-      <p style={{ fontSize: 13, fontWeight: 600, color: '#1a1a1a', margin: '0 0 6px', borderBottom: '1px solid #bbb', paddingBottom: 2, whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>{value || '—'}</p>
+      <p style={{ fontSize: 7, fontWeight: 700, color: GREEN_LABEL, margin: '0 0 1px', letterSpacing: 0.8, textTransform: 'uppercase' as const }}>{label}</p>
+      <p style={{ fontSize: 11.5, fontWeight: 600, color: '#1a1a1a', margin: '0 0 4px', borderBottom: '1px solid #bbb', paddingBottom: 1, whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>{value || '—'}</p>
     </div>
   )
 }
@@ -69,11 +69,11 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
     <div style={{ width: 620, height: 390, position: 'relative', overflow: 'hidden', fontFamily: '"Arial", "Helvetica", sans-serif', display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
 
       {/* Cabeçalho */}
-      <div style={{ background: NAVY, height: 82, display: 'flex', alignItems: 'center', padding: '0 18px', gap: 12, flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ background: NAVY, height: 76, display: 'flex', alignItems: 'center', padding: '0 18px', gap: 12, flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
         {/* Guilloché sutil no cabeçalho */}
-        <svg style={{ position: 'absolute', inset: 0, opacity: 0.06, pointerEvents: 'none' }} width="620" height="82">
+        <svg style={{ position: 'absolute', inset: 0, opacity: 0.06, pointerEvents: 'none' }} width="620" height="76">
           {Array.from({ length: 8 }).map((_, i) => (
-            <ellipse key={i} cx="310" cy="41" rx={30 + i * 38} ry={12 + i * 5} fill="none" stroke="#fff" strokeWidth="0.5" />
+            <ellipse key={i} cx="310" cy="38" rx={30 + i * 38} ry={10 + i * 4} fill="none" stroke="#fff" strokeWidth="0.5" />
           ))}
         </svg>
 
@@ -122,7 +122,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
       </div>
 
       {/* Corpo */}
-      <div style={{ flex: 1, background: '#fff', display: 'flex', padding: '14px 18px', gap: 16, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ flex: 1, background: '#fff', display: 'flex', padding: '10px 14px', gap: 12, position: 'relative', overflow: 'hidden' }}>
         {/* ── MARCA D'ÁGUA ESTILO CÉDULA ── */}
         <svg style={{ position: 'absolute', inset: 0, opacity: 0.045, pointerEvents: 'none' }} width="620" height="232" xmlns="http://www.w3.org/2000/svg">
           {/* Guilloché centro — elipses concêntricas */}
@@ -159,7 +159,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
         <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
           <div
             onClick={() => fotoRef.current?.click()}
-            style={{ width: 120, height: 160, border: `2.5px solid ${GREEN}`, borderRadius: 4, overflow: 'hidden', background: '#e8e8e8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
+            style={{ width: 144, height: 192, border: `2.5px solid ${GREEN}`, borderRadius: 4, overflow: 'hidden', background: '#e8e8e8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
           >
             {fotoUrl ? (
               <>
@@ -173,9 +173,9 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
               </>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                  <circle cx="20" cy="15" r="9" fill="#bbb" />
-                  <ellipse cx="20" cy="36" rx="18" ry="10" fill="#bbb" />
+                <svg width="56" height="72" viewBox="0 0 56 72" fill="none">
+                  <circle cx="28" cy="24" r="14" fill="#bbb" />
+                  <ellipse cx="28" cy="60" rx="28" ry="17" fill="#bbb" />
                 </svg>
                 <span style={{ fontSize: 9, color: '#888', fontWeight: 600, textAlign: 'center' as const, lineHeight: 1.3, padding: '0 4px' }}>📷 Toque para{'\n'}adicionar foto</span>
               </div>
@@ -190,7 +190,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
           <input ref={fotoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFoto} />
           {/* Botão visível fora do card (no-print) */}
           <button className="no-print" onClick={() => fotoRef.current?.click()}
-            style={{ marginTop: 5, background: GREEN, color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 9, fontWeight: 700, cursor: 'pointer', width: 120 }}>
+            style={{ marginTop: 5, background: GREEN, color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 9, fontWeight: 700, cursor: 'pointer', width: 144 }}>
             {fotoUrl ? '🔄 Trocar foto' : '📷 Adicionar foto'}
           </button>
         </div>
@@ -212,7 +212,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
       </div>
 
       {/* Assinatura + badge */}
-      <div style={{ background: '#fff', borderTop: '1px solid #e0e0e0', padding: '6px 18px 6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+      <div style={{ background: '#fff', borderTop: '1px solid #e0e0e0', padding: '4px 14px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div>
           {assinaturaUrl ? (
             <img src={assinaturaUrl} alt={assinaturaNome} style={{ height: 52, maxWidth: 200, objectFit: 'contain', display: 'block', marginBottom: 2 }} />
@@ -380,8 +380,8 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
             align-items: center !important;
           }
           .card-wrapper > div {
-            width: 170mm !important;
-            height: 107mm !important;
+            width: 130mm !important;
+            height: 82mm !important;
             box-shadow: none !important;
           }
         }
