@@ -25,23 +25,27 @@ export async function POST(req: NextRequest) {
   if (new Date(otp.expira_em) < new Date()) return NextResponse.json({ error: 'Código expirado. Solicite um novo.' }, { status: 400 })
   if (otp.codigo !== String(codigo).trim()) return NextResponse.json({ error: 'Código incorreto.' }, { status: 400 })
 
-  // Marca como usado
   await (adminClient.from('verificacao_otp') as any).update({ usado: true }).eq('id', otp.id)
 
-  // Busca redirect do perfil
-  const perfilRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/perfil`, {
-    headers: { Cookie: req.headers.get('cookie') || '' }
-  })
-  const perfil = await perfilRes.json()
+  // Determina redirect pelo perfil do usuário (sem fetch externo)
+  let redirect = '/'
+  const { data: aluno } = await (adminClient.from('alunos') as any)
+    .select('whatsapp').eq('user_id', user.id).maybeSingle()
+  if (aluno?.whatsapp) {
+    redirect = `/aluno/${aluno.whatsapp}`
+  } else {
+    const { data: gestor } = await (adminClient.from('gestores') as any)
+      .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+    if (gestor) redirect = '/gestor'
+  }
 
-  const response = NextResponse.json({ ok: true, redirect: perfil.redirect })
+  const response = NextResponse.json({ ok: true, redirect })
 
-  // Cookie de sessão OTP verificado — 24h
-  response.cookies.set('otp_ok', `${user.id}`, {
+  response.cookies.set('otp_ok', user.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24, // 24h
+    maxAge: 60 * 60 * 24,
     path: '/'
   })
 
