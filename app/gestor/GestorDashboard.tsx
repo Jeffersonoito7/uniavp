@@ -608,12 +608,12 @@ export default function GestorDashboard({
             )}
             <div>
               <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>
-                {moduloAberto ? moduloAberto.titulo : 'Módulos'}
+                {moduloAberto ? moduloAberto.titulo : 'Estrutura do Curso'}
               </h1>
               <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: '3px 0 0' }}>
                 {moduloAberto
-                  ? `${moduloAberto.aulas.length} aula${moduloAberto.aulas.length !== 1 ? 's' : ''} neste módulo`
-                  : 'Selecione um módulo para ver as aulas'}
+                  ? `${moduloAberto.aulas.length} aula${moduloAberto.aulas.length !== 1 ? 's' : ''} — visão administrativa`
+                  : 'Visão geral do currículo · Os consultores seguem a ordem com quiz obrigatório'}
               </p>
             </div>
           </div>
@@ -697,41 +697,30 @@ export default function GestorDashboard({
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
                   {moduloAberto.aulas.map((aula, idx) => {
                     const thumb = aula.capa_url || (aula.youtube_video_id ? `https://img.youtube.com/vi/${aula.youtube_video_id}/mqdefault.jpg` : null)
-                    const temVideo = !!(aula.youtube_video_id || aula.video_url)
                     return (
-                      <div key={aula.id}
-                        onClick={() => temVideo ? setAulaAberta(aula) : undefined}
-                        style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden', cursor: temVideo ? 'pointer' : 'default', transition: 'transform 0.15s, border-color 0.15s', opacity: aula.publicado ? 1 : 0.6 }}
-                        onMouseEnter={e => { if (temVideo) { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--avp-green)' } }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--avp-border)' }}
-                      >
-                        <div style={{ height: 120, background: 'var(--grad-brand)', position: 'relative' }}>
+                      <div key={aula.id} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden', opacity: aula.publicado ? 1 : 0.6 }}>
+                        <div style={{ height: 110, background: 'var(--grad-brand)', position: 'relative' }}>
                           {thumb && <img src={thumb} alt={aula.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />}
-                          <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(0,0,0,0.55)', borderRadius: 6, padding: '2px 8px', fontSize: 11, color: '#fff', fontWeight: 700 }}>
+                          <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(0,0,0,0.6)', borderRadius: 6, padding: '2px 8px', fontSize: 11, color: '#fff', fontWeight: 700 }}>
                             #{idx + 1}
                           </div>
                           {!aula.publicado && (
                             <div style={{ position: 'absolute', top: 8, right: 8, background: '#f59e0b', borderRadius: 4, padding: '2px 7px', fontSize: 9, fontWeight: 700, color: '#fff' }}>RASCUNHO</div>
                           )}
-                          {temVideo && (
-                            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>▶</div>
-                            </div>
-                          )}
                         </div>
                         <div style={{ padding: '12px 14px' }}>
-                          <p style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.3, marginBottom: 6 }}>{aula.titulo}</p>
+                          <p style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.3, marginBottom: 6 }}>{aula.titulo}</p>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                             {aula.duracao_minutos && (
                               <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>⏱ {aula.duracao_minutos} min</p>
                             )}
                             {aula.quiz_aprovacao_minima != null && (
-                              <p style={{ fontSize: 11, color: '#f59e0b', margin: 0 }}>📝 Quiz: {aula.quiz_qtd_questoes || '?'}q · {aula.quiz_aprovacao_minima}% aprovação</p>
+                              <p style={{ fontSize: 11, color: '#f59e0b', margin: 0 }}>📝 Quiz: {aula.quiz_qtd_questoes || '?'}q · {aula.quiz_aprovacao_minima}% mín.</p>
                             )}
                             {aula.espera_horas != null && aula.espera_horas > 0 && (
-                              <p style={{ fontSize: 11, color: '#60a5fa', margin: 0 }}>⏳ Aguarda {aula.espera_horas}h após anterior</p>
+                              <p style={{ fontSize: 11, color: '#60a5fa', margin: 0 }}>⏳ {aula.espera_horas}h de espera</p>
                             )}
-                            {aula.liberacao_modo === 'manual' && (
+                            {(aula.liberacao_modo === 'manual_gestor' || aula.liberacao_modo === 'manual_admin') && (
                               <p style={{ fontSize: 11, color: '#a78bfa', margin: 0 }}>🔒 Liberação manual</p>
                             )}
                           </div>
@@ -744,36 +733,6 @@ export default function GestorDashboard({
             </>
           )}
 
-          {/* Modal player */}
-          {aulaAberta && (
-            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: 16 }}
-              onClick={e => e.target === e.currentTarget && setAulaAberta(null)}>
-              <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, width: '100%', maxWidth: 860, maxHeight: '90vh', overflow: 'auto' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--avp-border)' }}>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>{aulaAberta.titulo}</h3>
-                  <button onClick={() => setAulaAberta(null)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 24 }}>×</button>
-                </div>
-                {aulaAberta.youtube_video_id ? (
-                  <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
-                    <iframe src={`https://www.youtube.com/embed/${aulaAberta.youtube_video_id}?autoplay=1&rel=0`} title={aulaAberta.titulo}
-                      frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
-                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} />
-                  </div>
-                ) : aulaAberta.video_url ? (
-                  <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
-                    <video src={aulaAberta.video_url} controls autoPlay style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: '#000' }} />
-                  </div>
-                ) : (
-                  <div style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Vídeo não disponível</div>
-                )}
-                {aulaAberta.descricao && (
-                  <div style={{ padding: '16px 20px' }}>
-                    <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, lineHeight: 1.6 }}>{aulaAberta.descricao}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </>
       )}
 
