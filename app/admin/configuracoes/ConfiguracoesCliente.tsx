@@ -74,6 +74,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const [carteiraTagline, setCarteiraTagline] = useState(get('carteira_tagline'))
   const [carteiraLogoEsquerda, setCarteiraLogoEsquerda] = useState(get('carteira_logo_esquerda'))
   const [carteiraLogoDireita, setCarteiraLogoDireita] = useState(get('carteira_logo_direita'))
+  const [carteiraAssinaturaUrl, setCarteiraAssinaturaUrl] = useState(get('carteira_assinatura_url'))
   const [boletoMensagem, setBoletoMensagem] = useState(get('boleto_mensagem'))
   const [boletoInstrucoes, setBoletoInstrucoes] = useState(get('boleto_instrucoes'))
   const [boletoMulta, setBoletoMulta] = useState(get('boleto_multa') || '2')
@@ -100,6 +101,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const certUrlRef = useRef<HTMLInputElement>(null)
   const carteiraLogoEsquerdaRef = useRef<HTMLInputElement>(null)
   const carteiraLogoDireitaRef = useRef<HTMLInputElement>(null)
+  const carteiraAssinaturaUrlRef = useRef<HTMLInputElement>(null)
 
   const setters: Record<string, (v: string) => void> = {
     logoUrl: setLogoUrl,
@@ -110,6 +112,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
     certUrl: setCertUrl,
     carteiraLogoEsquerda: setCarteiraLogoEsquerda,
     carteiraLogoDireita: setCarteiraLogoDireita,
+    carteiraAssinaturaUrl: setCarteiraAssinaturaUrl,
   }
 
   const campoToChave: Record<string, string> = {
@@ -121,6 +124,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
     certUrl: 'certificado_template_url',
     carteiraLogoEsquerda: 'carteira_logo_esquerda',
     carteiraLogoDireita: 'carteira_logo_direita',
+    carteiraAssinaturaUrl: 'carteira_assinatura_url',
   }
 
   async function uploadImagem(campo: string, file: File) {
@@ -215,6 +219,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
         { chave: 'carteira_tagline', valor: carteiraTagline },
         ...(urlSafe(carteiraLogoEsquerda) ? [{ chave: 'carteira_logo_esquerda', valor: carteiraLogoEsquerda }] : []),
         ...(urlSafe(carteiraLogoDireita) ? [{ chave: 'carteira_logo_direita', valor: carteiraLogoDireita }] : []),
+        ...(urlSafe(carteiraAssinaturaUrl) ? [{ chave: 'carteira_assinatura_url', valor: carteiraAssinaturaUrl }] : []),
         { chave: 'boleto_mensagem', valor: boletoMensagem },
         { chave: 'boleto_instrucoes', valor: boletoInstrucoes },
         { chave: 'boleto_multa', valor: boletoMulta },
@@ -415,6 +420,17 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           <LogoCard label="Logo esquerda (ex: UNIAVP)" campo="carteiraLogoEsquerda" value={carteiraLogoEsquerda} desc="Logo da universidade/escola" rec="PNG transparente · 200×200px" fileRef={carteiraLogoEsquerdaRef} uploading={uploading} onUpload={uploadImagem} />
           <LogoCard label="Logo direita (ex: AUTOVALE)" campo="carteiraLogoDireita" value={carteiraLogoDireita} desc="Logo da empresa parceira" rec="PNG transparente · 300×150px" fileRef={carteiraLogoDireitaRef} uploading={uploading} onUpload={uploadImagem} />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 4 }}>
+          <LogoCard label="Imagem da assinatura" campo="carteiraAssinaturaUrl" value={carteiraAssinaturaUrl} desc="PNG da assinatura do presidente (fundo transparente)" rec="PNG transparente · 400×150px" fileRef={carteiraAssinaturaUrlRef} uploading={uploading} onUpload={uploadImagem} />
+          <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center' }}>
+            <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>
+              💡 Suba o PNG da assinatura digitalizada do presidente. O nome abaixo da assinatura vem do campo <strong style={{ color: 'var(--avp-text)' }}>"Nome de quem assina"</strong>.
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>
+              Se não subir imagem, o nome aparece em itálico como fallback.
+            </p>
+          </div>
         </div>
         <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: -8 }}>
           Configure abaixo a assinatura e os textos da carteira.

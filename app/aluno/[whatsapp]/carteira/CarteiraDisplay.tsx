@@ -22,6 +22,7 @@ type Props = {
   assinaturaNome?: string
   assinaturaCargo?: string
   assinaturaEmpresa?: string
+  assinaturaUrl?: string | null
   urlVerificacao?: string
   tagline?: string
 }
@@ -35,7 +36,7 @@ function Field({ label, value, flex }: { label: string; value: string; flex?: bo
   )
 }
 
-export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicial, dataFormacao, validade, cargaHoraria, turma, whatsapp, status, empresaNome = 'UNIVERSIDADE', empresaLogoUrl, logoEsquerdaUrl, logoDireitaUrl, assinaturaNome = 'Assinatura', assinaturaCargo = 'PRESIDENTE', assinaturaEmpresa, urlVerificacao = '', tagline = '' }: Props) {
+export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicial, dataFormacao, validade, cargaHoraria, turma, whatsapp, status, empresaNome = 'UNIVERSIDADE', empresaLogoUrl, logoEsquerdaUrl, logoDireitaUrl, assinaturaNome = 'Jose Tiburcio dos Santos', assinaturaCargo = 'PRESIDENTE', assinaturaEmpresa, assinaturaUrl, urlVerificacao = '', tagline = '' }: Props) {
   const [fotoUrl, setFotoUrl] = useState<string | null>(fotoInicial)
   const [uploadando, setUploadando] = useState(false)
   const [msgFoto, setMsgFoto] = useState('')
@@ -197,7 +198,11 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
       {/* Assinatura + badge */}
       <div style={{ background: '#fff', borderTop: '1px solid #e0e0e0', padding: '6px 18px 6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div>
-          <p style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 20, color: '#222', margin: 0, lineHeight: 1 }}>{assinaturaNome}</p>
+          {assinaturaUrl ? (
+            <img src={assinaturaUrl} alt={assinaturaNome} style={{ height: 32, maxWidth: 130, objectFit: 'contain', display: 'block', marginBottom: 2 }} />
+          ) : (
+            <p style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 20, color: '#222', margin: 0, lineHeight: 1 }}>{assinaturaNome}</p>
+          )}
           <div style={{ width: 100, height: 0.8, background: '#555', margin: '3px 0 1px' }} />
           <p style={{ fontSize: 7.5, color: '#555', margin: 0, letterSpacing: 0.5, fontWeight: 600 }}>{assinaturaCargo}</p>
           <p style={{ fontSize: 7, color: '#777', margin: 0, letterSpacing: 0.3 }}>{assinaturaEmpresa || empresaNome}</p>
@@ -262,7 +267,11 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
 
           {/* Assinatura */}
           <div>
-            <p style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 24, color: '#222', margin: '0 0 2px' }}>{assinaturaNome}</p>
+            {assinaturaUrl ? (
+              <img src={assinaturaUrl} alt={assinaturaNome} style={{ height: 44, maxWidth: 180, objectFit: 'contain', display: 'block', marginBottom: 2 }} />
+            ) : (
+              <p style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 24, color: '#222', margin: '0 0 2px' }}>{assinaturaNome}</p>
+            )}
             <div style={{ width: 140, height: 0.8, background: '#444', marginBottom: 3 }} />
             <p style={{ fontSize: 8, color: '#555', margin: 0, fontWeight: 600, letterSpacing: 0.5 }}>{assinaturaCargo}</p>
             <p style={{ fontSize: 7.5, color: '#777', margin: 0, letterSpacing: 0.3 }}>{assinaturaEmpresa || empresaNome}</p>
