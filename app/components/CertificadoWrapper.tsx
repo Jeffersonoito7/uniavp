@@ -12,8 +12,28 @@ type Props = {
 
 type Etapa = 'certificado' | 'carteira' | 'fechado'
 
+function jaViu(whatsapp: string) {
+  try { return !!localStorage.getItem(`formatura_vista_${whatsapp}`) } catch { return false }
+}
+
+function marcarVisto(whatsapp: string) {
+  try { localStorage.setItem(`formatura_vista_${whatsapp}`, '1') } catch { /* */ }
+}
+
 export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, numRegistro }: Props) {
-  const [etapa, setEtapa] = useState<Etapa>('certificado')
+  const chave = whatsapp ?? 'aluno'
+  const [etapa, setEtapa] = useState<Etapa>(() => jaViu(chave) ? 'fechado' : 'certificado')
+
+  function fecharCertificado() {
+    const proxima = whatsapp && numRegistro ? 'carteira' : 'fechado'
+    if (proxima === 'fechado') marcarVisto(chave)
+    setEtapa(proxima)
+  }
+
+  function fecharCarteira() {
+    marcarVisto(chave)
+    setEtapa('fechado')
+  }
 
   if (etapa === 'fechado') return null
 
@@ -22,7 +42,7 @@ export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, n
       <CertificadoPopup
         nomeAluno={nomeAluno}
         templateUrl={templateUrl}
-        onClose={() => setEtapa(whatsapp && numRegistro ? 'carteira' : 'fechado')}
+        onClose={fecharCertificado}
       />
     )
   }
@@ -33,7 +53,7 @@ export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, n
         nomeAluno={nomeAluno}
         numRegistro={numRegistro}
         whatsapp={whatsapp}
-        onClose={() => setEtapa('fechado')}
+        onClose={fecharCarteira}
       />
     )
   }
