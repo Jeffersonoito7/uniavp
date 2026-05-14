@@ -44,7 +44,7 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
 
   const [adminClient, siteConfig] = [createServiceRoleClient(), await getSiteConfig()]
   const { data: aluno } = await (adminClient.from('alunos') as any)
-    .select('id, nome, whatsapp, status')
+    .select('id, nome, whatsapp, status, numero_registro')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -416,6 +416,8 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
         <CertificadoWrapper
           nomeAluno={aluno.nome}
           templateUrl={certMap['certificado_template_url']}
+          whatsapp={aluno.whatsapp}
+          numRegistro={String(aluno.numero_registro ?? 1001).padStart(6, '0')}
         />
       )}
     </>
