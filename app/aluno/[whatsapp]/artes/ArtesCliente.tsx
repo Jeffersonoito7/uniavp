@@ -28,11 +28,17 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
   const [formato, setFormato] = useState<Formato | null>(null)
   const [templateSelecionado, setTemplateSelecionado] = useState<Template | null>(null)
   const [fotoLocal, setFotoLocal] = useState<string | null>(fotoInicial ?? null)
+  const [cropZoom, setCropZoom] = useState(1)
+  const [panBgX, setPanBgX] = useState(50) // 0–100, 50 = centralizado
+  const [panBgY, setPanBgY] = useState(50)
+  const [isDragging, setIsDragging] = useState(false)
   const [gerando, setGerando] = useState(false)
   const [pronto, setPronto] = useState(false)
   const [erro, setErro] = useState('')
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const inputFotoRef = useRef<HTMLInputElement>(null)
+  const previewRef = useRef<HTMLDivElement>(null)
+  const dragOrigin = useRef<{ x: number; y: number; bgX: number; bgY: number } | null>(null)
 
   const templatesFiltrados = templates.filter(t => t.formato === formato)
 
@@ -47,14 +53,47 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
     const file = e.target.files?.[0]
     if (!file) return
     setFotoLocal(URL.createObjectURL(file))
+    setCropZoom(1)
+    setPanBgX(50)
+    setPanBgY(50)
     setPronto(false)
     setErro('')
+  }
+
+  function startDrag(e: React.PointerEvent) {
+    if (!fotoLocal) return
+    setIsDragging(true)
+    dragOrigin.current = { x: e.clientX, y: e.clientY, bgX: panBgX, bgY: panBgY }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  function moveDrag(e: React.PointerEvent) {
+    if (!dragOrigin.current || !previewRef.current) return
+    const rect = previewRef.current.getBoundingClientRect()
+    // invert: drag right → image moves right → bgPosX decreases (shows left of image)
+    const dx = (e.clientX - dragOrigin.current.x) / rect.width * 100
+    const dy = (e.clientY - dragOrigin.current.y) / rect.height * 100
+    const sensitivity = 1 / cropZoom
+    setPanBgX(Math.max(0, Math.min(100, dragOrigin.current.bgX - dx * sensitivity)))
+    setPanBgY(Math.max(0, Math.min(100, dragOrigin.current.bgY - dy * sensitivity)))
+    setPronto(false)
+  }
+
+  function endDrag() {
+    setIsDragging(false)
+    dragOrigin.current = null
+  }
+
+  function handleZoom(z: number) {
+    setCropZoom(z)
+    if (z <= 1) { setPanBgX(50); setPanBgY(50) }
+    setPronto(false)
   }
 
   async function gerar() {
     if (!templateSelecionado || !fotoLocal || !formato) return
     if (!templateSelecionado.arte_url) {
-      setErro('Este template ainda não tem arte configurada pelo administrador.')
+      setErro('Este template ainda não tem arte configurada.')
       return
     }
 
@@ -64,33 +103,49 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
     const ctx = canvas.getContext('2d')!
     canvas.width = w
     canvas.height = h
+    ctx.clearRect(0, 0, w, h)
 
     try {
       const foto = await carregarImagem(fotoLocal)
+
+      // Replica exatamente o comportamento CSS: background-size + background-position
+      const scale = Math.max(w / foto.width, h / foto.height) * cropZoom
+      const dw = foto.width * scale
+      const dh = foto.height * scale
+      const imgX = dw > w ? -(dw - w) * panBgX / 100 : (w - dw) / 2
+      const imgY = dh > h ? -(dh - h) * panBgY / 100 : (h - dh) / 2
+
+      // Clipa se o template usar área específica (foto_redondo ou rect)
       const fotoX = Math.round(w * templateSelecionado.foto_x / 100)
       const fotoY = Math.round(h * templateSelecionado.foto_y / 100)
       const fotoW = Math.round(w * templateSelecionado.foto_largura / 100)
       const fotoH = Math.round(h * templateSelecionado.foto_altura / 100)
+      const usaAreaEspecifica = fotoW > 0 && fotoH > 0 && (fotoW < w * 0.9 || fotoH < h * 0.9)
 
-      ctx.clearRect(0, 0, w, h)
-
-      ctx.save()
-      if (templateSelecionado.foto_redondo) {
-        ctx.beginPath()
-        const rx = fotoX + fotoW / 2
-        const ry = fotoY + fotoH / 2
-        ctx.arc(rx, ry, Math.min(fotoW, fotoH) / 2, 0, Math.PI * 2)
+      if (usaAreaEspecifica) {
+        ctx.save()
+        if (templateSelecionado.foto_redondo) {
+          ctx.beginPath()
+          ctx.arc(fotoX + fotoW / 2, fotoY + fotoH / 2, Math.min(fotoW, fotoH) / 2, 0, Math.PI * 2)
+        } else {
+          ctx.beginPath()
+          ctx.rect(fotoX, fotoY, fotoW, fotoH)
+        }
         ctx.clip()
+        // Reescala a foto para caber na área específica
+        const areaScale = Math.max(fotoW / foto.width, fotoH / foto.height) * cropZoom
+        const adw = foto.width * areaScale
+        const adh = foto.height * areaScale
+        const ax = fotoX + (fotoW - adw) * (panBgX / 100)
+        const ay = fotoY + (fotoH - adh) * (panBgY / 100)
+        ctx.drawImage(foto, ax, ay, adw, adh)
+        ctx.restore()
       } else {
-        ctx.beginPath()
-        ctx.rect(fotoX, fotoY, fotoW, fotoH)
-        ctx.clip()
+        // Foto preenche o canvas inteiro — template cria a moldura
+        ctx.drawImage(foto, imgX, imgY, dw, dh)
       }
-      const scale = Math.max(fotoW / foto.width, fotoH / foto.height)
-      const dw = foto.width * scale; const dh = foto.height * scale
-      ctx.drawImage(foto, fotoX + (fotoW - dw) / 2, fotoY + (fotoH - dh) / 2, dw, dh)
-      ctx.restore()
 
+      // Template por cima
       try {
         const art = await carregarImagem(templateSelecionado.arte_url, 'anonymous')
         ctx.drawImage(art, 0, 0, w, h)
@@ -100,6 +155,8 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
           ctx.drawImage(art, 0, 0, w, h)
         } catch {
           setErro('Não foi possível carregar a arte. Verifique se a URL é pública.')
+          setGerando(false)
+          return
         }
       }
 
@@ -118,48 +175,28 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
       link.href = canvas.toDataURL('image/png')
       link.click()
     } catch {
-      setErro('Não foi possível fazer o download. Tente salvar a imagem manualmente clicando com o botão direito no preview.')
+      setErro('Salve a imagem manualmente clicando com botão direito no preview.')
     }
   }
-
-  const inputStyle: React.CSSProperties = { display: 'none' }
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: 32 }}>
       <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Minhas Artes</h1>
-      <p style={{ color: 'var(--avp-text-dim)', fontSize: 15, marginBottom: 32 }}>
+      <p style={{ color: 'var(--avp-text-dim)', fontSize: 15, marginBottom: 28 }}>
         Gere artes profissionais com sua foto para compartilhar nas redes sociais.
       </p>
 
-      {/* PASSO 1 — Escolher formato */}
-      <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24, marginBottom: 24 }}>
-        <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>1. Escolha o formato</p>
-        <div style={{ display: 'flex', gap: 16 }}>
+      {/* PASSO 1 — Formato */}
+      <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, marginBottom: 20 }}>
+        <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 14 }}>1. Escolha o formato</p>
+        <div style={{ display: 'flex', gap: 14 }}>
           {(['feed', 'stories'] as Formato[]).map(f => {
-            const d = DIMS[f]
-            const ativo = formato === f
+            const d = DIMS[f]; const ativo = formato === f
             return (
-              <button
-                key={f}
-                onClick={() => selecionarFormato(f)}
-                style={{
-                  flex: 1, background: ativo ? 'var(--grad-brand)' : 'var(--avp-black)',
-                  border: `2px solid ${ativo ? 'transparent' : 'var(--avp-border)'}`,
-                  borderRadius: 12, padding: '20px 16px', cursor: 'pointer',
-                  color: ativo ? '#fff' : 'var(--avp-text)', textAlign: 'center',
-                  transition: 'all 0.2s',
-                }}
-              >
-                <div style={{ fontSize: 40, marginBottom: 10 }}>
-                  {f === 'feed' ? '🖼️' : '📱'}
-                </div>
-                <p style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>{d.label}</p>
-                <p style={{ fontSize: 13, opacity: 0.8 }}>
-                  {f === 'feed' ? '1080 × 1080 px · Quadrado' : '1080 × 1920 px · Vertical'}
-                </p>
-                <p style={{ fontSize: 12, opacity: 0.7, marginTop: 4 }}>
-                  {f === 'feed' ? 'Instagram Feed, Facebook' : 'Instagram Stories, WhatsApp'}
-                </p>
+              <button key={f} onClick={() => selecionarFormato(f)} style={{ flex: 1, background: ativo ? 'var(--grad-brand)' : 'var(--avp-black)', border: `2px solid ${ativo ? 'transparent' : 'var(--avp-border)'}`, borderRadius: 12, padding: '18px 14px', cursor: 'pointer', color: ativo ? '#fff' : 'var(--avp-text)', textAlign: 'center' as const, transition: 'all 0.2s' }}>
+                <div style={{ fontSize: 36, marginBottom: 8 }}>{f === 'feed' ? '🖼️' : '📱'}</div>
+                <p style={{ fontWeight: 800, fontSize: 17, marginBottom: 3 }}>{d.label}</p>
+                <p style={{ fontSize: 12, opacity: 0.75 }}>{f === 'feed' ? '1080×1080 · Quadrado' : '1080×1920 · Vertical'}</p>
               </button>
             )
           })}
@@ -167,32 +204,22 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
       </div>
 
       {formato && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, alignItems: 'start' }}>
-          {/* Coluna esquerda */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 20, alignItems: 'start' }}>
 
-            {/* PASSO 2 — Template */}
-            <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20 }}>
-              <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 14 }}>2. Escolha a arte ({DIMS[formato].label})</p>
+          {/* ─── COLUNA ESQUERDA ─── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+            {/* Template */}
+            <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 18 }}>
+              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 12 }}>2. Escolha a arte</p>
               {templatesFiltrados.length === 0 ? (
-                <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Nenhum template de {DIMS[formato].label} configurado ainda.</p>
+                <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Nenhum template de {DIMS[formato].label} configurado.</p>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                   {templatesFiltrados.map(t => (
-                    <button
-                      key={t.id}
-                      onClick={() => { setTemplateSelecionado(t); setPronto(false) }}
-                      style={{
-                        background: templateSelecionado?.id === t.id ? 'var(--grad-brand)' : 'var(--avp-black)',
-                        border: `1px solid ${templateSelecionado?.id === t.id ? 'transparent' : 'var(--avp-border)'}`,
-                        borderRadius: 8, padding: '11px 14px', color: '#fff',
-                        cursor: 'pointer', textAlign: 'left', fontWeight: 600, fontSize: 14,
-                        display: 'flex', alignItems: 'center', gap: 10,
-                      }}
-                    >
-                      <span style={{ fontSize: 18 }}>
-                        {t.tipo.includes('boas_vindas') ? '🎉' : t.tipo.includes('gestor') ? '🏆' : '⭐'}
-                      </span>
+                    <button key={t.id} onClick={() => { setTemplateSelecionado(t); setPronto(false) }}
+                      style={{ background: templateSelecionado?.id === t.id ? 'var(--grad-brand)' : 'var(--avp-black)', border: `1px solid ${templateSelecionado?.id === t.id ? 'transparent' : 'var(--avp-border)'}`, borderRadius: 8, padding: '10px 13px', color: '#fff', cursor: 'pointer', textAlign: 'left' as const, fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 16 }}>{t.tipo.includes('boas_vindas') ? '🎉' : t.tipo.includes('gestor') ? '🏆' : '⭐'}</span>
                       {t.titulo.replace(' (Stories)', '').replace(' (Feed)', '')}
                     </button>
                   ))}
@@ -200,38 +227,38 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
               )}
             </div>
 
-            {/* PASSO 3 — Foto */}
-            <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20 }}>
-              <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>3. Envie sua foto</p>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 14 }}>Use uma foto de rosto com boa iluminação e fundo neutro.</p>
-              <input ref={inputFotoRef} type="file" accept="image/*" onChange={selecionarFoto} style={inputStyle} />
-              <button
-                onClick={() => inputFotoRef.current?.click()}
-                style={{
-                  width: '100%', background: 'var(--avp-black)', border: '2px dashed var(--avp-border)',
-                  borderRadius: 10, padding: 20, cursor: 'pointer', color: 'var(--avp-text-dim)',
-                  fontSize: 14, textAlign: 'center',
-                }}
-              >
-                {fotoLocal
-                  ? <img src={fotoLocal} alt="foto" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: '50%', display: 'block', margin: '0 auto 8px' }} />
-                  : <span style={{ fontSize: 36, display: 'block', marginBottom: 8 }}>📷</span>}
-                {fotoLocal ? 'Clique para trocar a foto' : 'Clique para selecionar sua foto'}
+            {/* Upload foto */}
+            <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 18 }}>
+              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>3. Sua foto</p>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, marginBottom: 12 }}>Foto de rosto com boa iluminação e fundo neutro.</p>
+              <input ref={inputFotoRef} type="file" accept="image/*" onChange={selecionarFoto} style={{ display: 'none' }} />
+              <button onClick={() => inputFotoRef.current?.click()}
+                style={{ width: '100%', background: fotoLocal ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '11px', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
+                {fotoLocal ? '🔄 Trocar foto' : '📷 Selecionar foto'}
               </button>
             </div>
 
+            {/* Zoom slider */}
+            {fotoLocal && (
+              <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 18 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>🔍 Zoom do corte</p>
+                  <span style={{ fontSize: 13, color: 'var(--avp-text-dim)' }}>{Math.round(cropZoom * 100)}%</span>
+                </div>
+                <input type="range" min="1" max="3" step="0.05" value={cropZoom}
+                  onChange={e => handleZoom(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: 'var(--avp-green)', cursor: 'pointer' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                  <span style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>Original</span>
+                  <span style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>3× zoom</span>
+                </div>
+              </div>
+            )}
+
             {/* Gerar */}
-            <button
-              onClick={gerar}
-              disabled={gerando || !templateSelecionado || !fotoLocal}
-              style={{
-                background: 'var(--grad-brand)', color: '#fff', border: 'none',
-                borderRadius: 8, padding: '14px', fontWeight: 800, fontSize: 16,
-                cursor: (gerando || !templateSelecionado || !fotoLocal) ? 'not-allowed' : 'pointer',
-                opacity: (gerando || !templateSelecionado || !fotoLocal) ? 0.55 : 1,
-              }}
-            >
-              {gerando ? '⏳ Gerando...' : '✨ Gerar Arte'}
+            <button onClick={gerar} disabled={gerando || !templateSelecionado || !fotoLocal}
+              style={{ background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px', fontWeight: 800, fontSize: 16, cursor: (gerando || !templateSelecionado || !fotoLocal) ? 'not-allowed' : 'pointer', opacity: (gerando || !templateSelecionado || !fotoLocal) ? 0.5 : 1 }}>
+              {gerando ? '⏳ Gerando...' : '✨ Gerar Arte em Alta Qualidade'}
             </button>
 
             {erro && (
@@ -241,34 +268,97 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
             )}
           </div>
 
-          {/* Coluna direita — preview */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20 }}>
-              <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 14 }}>Preview — {DIMS[formato].label}</p>
-              <div style={{ position: 'relative', width: '100%', aspectRatio: DIMS[formato].ratio, background: 'var(--avp-black)', borderRadius: 10, overflow: 'hidden', border: '1px solid var(--avp-border)' }}>
-                <canvas
-                  ref={canvasRef}
-                  style={{ width: '100%', height: '100%', display: 'block', objectFit: 'contain' }}
-                />
-                {!pronto && (
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--avp-text-dim)', fontSize: 14 }}>
-                    <span style={{ fontSize: 40, marginBottom: 12 }}>🎨</span>
-                    Selecione template e foto, depois clique em Gerar
+          {/* ─── COLUNA DIREITA — PREVIEW INTERATIVO ─── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <p style={{ fontWeight: 700, fontSize: 15, margin: 0 }}>
+                {pronto ? '✅ Arte gerada — pronta para baixar' : '👁 Preview ao vivo'}
+              </p>
+              {fotoLocal && !pronto && (
+                <span style={{ fontSize: 12, color: 'var(--avp-text-dim)', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', padding: '3px 10px', borderRadius: 6 }}>
+                  ↔ Arraste para reposicionar
+                </span>
+              )}
+            </div>
+
+            {/* Preview CSS ao vivo (foto + template overlay) */}
+            {!pronto && (
+              <div
+                ref={previewRef}
+                style={{
+                  position: 'relative', width: '100%', aspectRatio: DIMS[formato].ratio,
+                  background: '#111', borderRadius: 12, overflow: 'hidden',
+                  border: `2px solid ${fotoLocal && templateSelecionado ? 'var(--avp-green)' : 'var(--avp-border)'}`,
+                  cursor: isDragging ? 'grabbing' : (fotoLocal ? 'grab' : 'default'),
+                  userSelect: 'none',
+                }}
+                onPointerDown={startDrag}
+                onPointerMove={moveDrag}
+                onPointerUp={endDrag}
+                onPointerLeave={endDrag}
+              >
+                {/* FOTO — grande, preenche o card, sem corte circular */}
+                {fotoLocal && (
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    backgroundImage: `url(${fotoLocal})`,
+                    backgroundSize: `${cropZoom * 100}%`,
+                    backgroundPosition: `${panBgX}% ${panBgY}%`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundColor: '#222',
+                  }} />
+                )}
+
+                {/* TEMPLATE PNG — sobrepõe a foto, partes transparentes revelam a foto */}
+                {templateSelecionado?.arte_url && (
+                  <img src={templateSelecionado.arte_url} alt="Template" draggable={false}
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill', pointerEvents: 'none' }} />
+                )}
+
+                {/* Estado vazio */}
+                {(!fotoLocal || !templateSelecionado) && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#555', fontSize: 14, gap: 10, textAlign: 'center' as const, padding: 20 }}>
+                    <span style={{ fontSize: 44 }}>{!fotoLocal ? '📷' : '🎨'}</span>
+                    <span>{!fotoLocal ? 'Envie sua foto para ver o preview' : 'Selecione uma arte para ver o preview'}</span>
+                  </div>
+                )}
+
+                {/* Hint arraste */}
+                {fotoLocal && cropZoom > 1 && (
+                  <div style={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: 11, padding: '4px 12px', borderRadius: 20, whiteSpace: 'nowrap' as const, pointerEvents: 'none' }}>
+                    {isDragging ? '↔ Reposicionando...' : '↔ Arraste para ajustar o corte'}
                   </div>
                 )}
               </div>
-            </div>
+            )}
+
+            {/* Canvas final (resultado do Gerar) */}
             {pronto && (
-              <button
-                onClick={baixar}
-                style={{
-                  background: 'var(--avp-green)', color: '#fff', border: 'none',
-                  borderRadius: 8, padding: '14px', fontWeight: 800, fontSize: 16,
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                }}
-              >
-                ⬇️ Baixar Arte em PNG
-              </button>
+              <div style={{ position: 'relative', width: '100%', aspectRatio: DIMS[formato].ratio, borderRadius: 12, overflow: 'hidden', border: '2px solid var(--avp-green)' }}>
+                <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+              </div>
+            )}
+            {/* Canvas oculto quando não pronto (para renderização) */}
+            {!pronto && <canvas ref={canvasRef} style={{ display: 'none' }} />}
+
+            {/* Botão baixar */}
+            {pronto && (
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={baixar}
+                  style={{ flex: 1, background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px', fontWeight: 800, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  ⬇️ Baixar Arte em PNG (1080px)
+                </button>
+                <button onClick={() => setPronto(false)}
+                  style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 10, padding: '14px 18px', cursor: 'pointer', fontSize: 13 }}>
+                  ✏️ Editar
+                </button>
+              </div>
+            )}
+
+            {fotoLocal && templateSelecionado && !pronto && (
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', textAlign: 'center' as const }}>
+                💡 O preview mostra como ficará. Clique em <strong>"Gerar Arte"</strong> para exportar em alta qualidade (1080px).
+              </p>
             )}
           </div>
         </div>
