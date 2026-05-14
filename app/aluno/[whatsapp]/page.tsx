@@ -37,7 +37,7 @@ function calcularNivel(pontos: number) {
   return { nome: 'Iniciante', prox: 100, atual: pontos, min: 0, max: 100 }
 }
 
-export default async function AlunoHomePage({ params }: { params: { whatsapp: string } }) {
+export default async function AlunoHomePage({ params, searchParams }: { params: { whatsapp: string }; searchParams?: { modulo?: string } }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/consultor/login')
@@ -69,14 +69,16 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
 
   const trilha: TrilhaItem[] = trilhaBase.map(t => ({ ...t, quiz_aprovacao_minima: aprovMinMap[t.aula_id] ?? null }))
 
-  const agrupado: Record<string, { modulo_titulo: string; modulo_ordem: number; aulas: TrilhaItem[] }> = {}
+  const agrupado: Record<string, { modulo_id: string; modulo_titulo: string; modulo_ordem: number; aulas: TrilhaItem[] }> = {}
   for (const item of trilha) {
     if (!agrupado[item.modulo_id]) {
-      agrupado[item.modulo_id] = { modulo_titulo: item.modulo_titulo, modulo_ordem: item.modulo_ordem, aulas: [] }
+      agrupado[item.modulo_id] = { modulo_id: item.modulo_id, modulo_titulo: item.modulo_titulo, modulo_ordem: item.modulo_ordem, aulas: [] }
     }
     agrupado[item.modulo_id].aulas.push(item)
   }
   const modulos = Object.values(agrupado).sort((a, b) => a.modulo_ordem - b.modulo_ordem)
+  const moduloSelecionadoId = searchParams?.modulo
+  const moduloAtivo = moduloSelecionadoId ? modulos.find(m => m.modulo_id === moduloSelecionadoId) ?? null : null
 
   const { data: pontosRows } = await (adminClient.from('aluno_pontos') as any).select('quantidade').eq('aluno_id', aluno.id)
   const totalPontos = (pontosRows ?? []).reduce((s: number, r: { quantidade: number }) => s + r.quantidade, 0)
@@ -310,101 +312,143 @@ export default async function AlunoHomePage({ params }: { params: { whatsapp: st
             </div>
           )}
 
-          {/* ── TRILHA DE AULAS ── */}
-          {modulos.map(mod => (
-            <div key={mod.modulo_titulo} style={{ marginBottom: 40 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18, paddingBottom: 12, borderBottom: '1px solid var(--avp-border)' }}>
-                <h2 style={{ fontSize: 17, fontWeight: 700 }}>{mod.modulo_titulo}</h2>
-                <span style={{ fontSize: 12, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 20, padding: '2px 10px' }}>
-                  {mod.aulas.filter(a => a.status === 'concluida').length}/{mod.aulas.length} aulas
-                </span>
+          {/* ── MÓDULOS (grade estilo Kiwify) ── */}
+          {!moduloAtivo && (
+            <>
+              {modulos.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 80, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', borderRadius: 16, border: '1px solid var(--avp-border)' }}>
+                  <p style={{ fontSize: 48, marginBottom: 16 }}>📚</p>
+                  <p style={{ fontSize: 16 }}>Nenhuma aula disponível no momento.</p>
+                  <p style={{ fontSize: 14, marginTop: 8 }}>Em breve novos conteúdos serão liberados!</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
+                  {modulos.map(mod => {
+                    const concluidas = mod.aulas.filter(a => a.status === 'concluida').length
+                    const total = mod.aulas.length
+                    const pct = total > 0 ? Math.round(concluidas / total * 100) : 0
+                    const temDisponivel = mod.aulas.some(a => a.status === 'disponivel')
+                    const todasConcluidas = concluidas === total && total > 0
+                    const thumb = mod.aulas[0]?.capa_url || (mod.aulas[0]?.youtube_video_id ? `https://img.youtube.com/vi/${mod.aulas[0].youtube_video_id}/mqdefault.jpg` : null)
+                    return (
+                      <div key={mod.modulo_id} style={{ background: 'var(--avp-card)', border: `1px solid ${todasConcluidas ? '#22c55e40' : temDisponivel ? '#3b82f640' : 'var(--avp-border)'}`, borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                        {/* Capa */}
+                        <div style={{ height: 180, background: 'linear-gradient(135deg, #1e3a8a, #1e40af)', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+                          {thumb && <img src={thumb} alt={mod.modulo_titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />}
+                          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)' }} />
+                          {/* Badge progresso */}
+                          <div style={{ position: 'absolute', top: 12, right: 12, background: todasConcluidas ? '#22c55e' : 'rgba(0,0,0,0.65)', borderRadius: 20, padding: '4px 10px', fontSize: 12, fontWeight: 700, color: '#fff', backdropFilter: 'blur(4px)' }}>
+                            {todasConcluidas ? '✓ Concluído' : `${concluidas}/${total} aulas`}
+                          </div>
+                        </div>
+
+                        {/* Info */}
+                        <div style={{ padding: '16px 18px', flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          <p style={{ fontSize: 16, fontWeight: 800, lineHeight: 1.3, color: 'var(--avp-text)', margin: 0 }}>{mod.modulo_titulo}</p>
+
+                          {/* Barra de progresso */}
+                          <div>
+                            <div style={{ background: 'var(--avp-border)', borderRadius: 100, height: 5, overflow: 'hidden' }}>
+                              <div style={{ width: `${pct}%`, height: '100%', background: todasConcluidas ? '#22c55e' : 'linear-gradient(90deg, #1e40af, #3b82f6)', borderRadius: 100, transition: 'width 0.3s' }} />
+                            </div>
+                            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>{pct}% concluído</p>
+                          </div>
+
+                          {/* Botão Acessar */}
+                          <Link
+                            href={`/aluno/${params.whatsapp}?modulo=${mod.modulo_id}`}
+                            style={{
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                              background: todasConcluidas ? '#22c55e' : temDisponivel ? 'linear-gradient(135deg, #1e40af, #3b82f6)' : 'var(--avp-border)',
+                              color: (todasConcluidas || temDisponivel) ? '#fff' : 'var(--avp-text-dim)',
+                              textDecoration: 'none', borderRadius: 8, padding: '11px',
+                              fontWeight: 700, fontSize: 15, marginTop: 'auto',
+                            }}
+                          >
+                            {todasConcluidas ? '✓ Rever módulo' : temDisponivel ? '▶ Acessar' : '🔒 Bloqueado'}
+                          </Link>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ── AULAS DO MÓDULO ── */}
+          {moduloAtivo && (
+            <div>
+              {/* Cabeçalho */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid var(--avp-border)' }}>
+                <Link href={`/aluno/${params.whatsapp}`}
+                  style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '7px 14px', color: 'var(--avp-text-dim)', textDecoration: 'none', fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                  ← Módulos
+                </Link>
+                <div>
+                  <h2 style={{ fontSize: 20, fontWeight: 800, margin: 0 }}>{moduloAtivo.modulo_titulo}</h2>
+                  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: '3px 0 0' }}>
+                    {moduloAtivo.aulas.filter(a => a.status === 'concluida').length}/{moduloAtivo.aulas.length} aulas concluídas
+                  </p>
+                </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
-                {mod.aulas.map(aula => {
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
+                {moduloAtivo.aulas.map(aula => {
                   const recertNeeded = getStatusRecertificacao(aula)
                   const isDisponivel = aula.status === 'disponivel'
                   const isConcluida = aula.status === 'concluida'
                   const isBloqueada = aula.status === 'bloqueada'
-                  const cor = statusColor[aula.status] || '#6b7280'
                   return (
                     <div key={aula.aula_id} style={{
                       background: 'var(--avp-card)',
                       border: `1px solid ${isConcluida ? '#22c55e30' : isDisponivel ? '#3b82f630' : 'var(--avp-border)'}`,
                       borderRadius: 12, overflow: 'hidden',
                       opacity: isBloqueada ? 0.55 : 1,
-                      transition: 'transform 0.15s, box-shadow 0.15s',
+                      display: 'flex', flexDirection: 'column',
                     }}>
                       {/* Thumbnail */}
-                      <div style={{ height: 112, position: 'relative', background: 'linear-gradient(135deg, #1e3a8a, #1e40af)', overflow: 'hidden' }}>
+                      <div style={{ height: 130, position: 'relative', background: 'linear-gradient(135deg, #1e3a8a, #1e40af)', overflow: 'hidden', flexShrink: 0 }}>
                         {(aula.capa_url || aula.youtube_video_id) && (
-                          <img
-                            src={aula.capa_url || `https://img.youtube.com/vi/${aula.youtube_video_id}/mqdefault.jpg`}
-                            alt={aula.aula_titulo}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
-                          />
+                          <img src={aula.capa_url || `https://img.youtube.com/vi/${aula.youtube_video_id}/mqdefault.jpg`} alt={aula.aula_titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
                         )}
-                        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <div style={{
-                            width: 38, height: 38, borderRadius: '50%',
-                            background: isConcluida ? '#22c55e' : isDisponivel ? '#3b82f6' : 'rgba(255,255,255,0.2)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 16,
-                          }}>
+                        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)' }} />
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ width: 42, height: 42, borderRadius: '50%', background: isConcluida ? '#22c55e' : isDisponivel ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: isDisponivel ? '#1e40af' : '#fff' }}>
                             {isConcluida ? '✓' : isDisponivel ? '▶' : isBloqueada ? '🔒' : '⏳'}
                           </div>
                         </div>
-                        {recertNeeded && (
-                          <div style={{ position: 'absolute', top: 6, right: 6, background: '#f59e0b', borderRadius: 6, padding: '2px 6px', fontSize: 10, fontWeight: 700, color: '#000' }}>
-                            RECERT.
-                          </div>
-                        )}
+                        {recertNeeded && <div style={{ position: 'absolute', top: 8, right: 8, background: '#f59e0b', borderRadius: 6, padding: '2px 6px', fontSize: 10, fontWeight: 700, color: '#000' }}>RECERT.</div>}
                       </div>
-                      {/* Info */}
-                      <div style={{ padding: '10px 12px' }}>
-                        <p style={{ fontSize: 13, fontWeight: 700, marginBottom: 6, lineHeight: 1.35, color: 'var(--avp-text)' }}>{aula.aula_titulo}</p>
 
-                        {/* Nota mínima + melhor pontuação */}
+                      {/* Info + botão */}
+                      <div style={{ padding: '12px 14px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <p style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.35, color: 'var(--avp-text)', margin: 0, flex: 1 }}>{aula.aula_titulo}</p>
+
                         {(isConcluida || isDisponivel) && aula.quiz_aprovacao_minima != null && aula.quiz_aprovacao_minima > 0 && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                            <span style={{ fontSize: 10, color: 'var(--avp-text-dim)' }}>Mínimo: <strong style={{ color: isConcluida ? 'var(--avp-green)' : 'var(--avp-text)' }}>{aula.quiz_aprovacao_minima}%</strong></span>
-                            {aula.melhor_percentual != null && (
-                              <span style={{ fontSize: 10, color: 'var(--avp-text-dim)' }}>· Seu melhor: <strong style={{ color: aula.melhor_percentual >= (aula.quiz_aprovacao_minima ?? 0) ? 'var(--avp-green)' : '#f59e0b' }}>{aula.melhor_percentual}%</strong></span>
-                            )}
+                          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>
+                            Mínimo: <strong style={{ color: isConcluida ? 'var(--avp-green)' : 'var(--avp-text)' }}>{aula.quiz_aprovacao_minima}%</strong>
+                            {aula.melhor_percentual != null && <> · Melhor: <strong style={{ color: aula.melhor_percentual >= (aula.quiz_aprovacao_minima ?? 0) ? 'var(--avp-green)' : '#f59e0b' }}>{aula.melhor_percentual}%</strong></>}
+                          </p>
+                        )}
+                        {isBloqueada && <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>🔒 Complete a aula anterior</p>}
+                        {aula.status === 'aguardando_tempo' && aula.liberada_em && <p style={{ fontSize: 11, color: '#f59e0b', margin: 0 }}>⏳ {new Date(aula.liberada_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>}
+
+                        {(isDisponivel || isConcluida) ? (
+                          <Link href={`/aluno/${params.whatsapp}/aula/${aula.aula_id}`}
+                            style={{ display: 'block', textAlign: 'center', background: isConcluida && !recertNeeded ? 'var(--avp-border)' : 'linear-gradient(135deg, #1e40af, #3b82f6)', color: isConcluida && !recertNeeded ? 'var(--avp-text-dim)' : '#fff', textDecoration: 'none', fontWeight: 700, borderRadius: 8, padding: '9px', fontSize: 14 }}>
+                            {isConcluida && !recertNeeded ? 'Rever' : '▶ Acessar'}
+                          </Link>
+                        ) : (
+                          <div style={{ display: 'block', textAlign: 'center', background: 'var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '9px', fontSize: 14, fontWeight: 700 }}>
+                            {aula.status === 'aguardando_tempo' ? '⏳ Aguardando' : '🔒 Bloqueada'}
                           </div>
                         )}
-
-                        {isBloqueada && (
-                          <p style={{ fontSize: 10, color: 'var(--avp-text-dim)', marginBottom: 6 }}>🔒 Complete a aula anterior para desbloquear</p>
-                        )}
-
-                        {aula.status === 'aguardando_tempo' && aula.liberada_em && (
-                          <p style={{ fontSize: 10, color: '#f59e0b', marginBottom: 6 }}>⏳ Disponível em {new Date(aula.liberada_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
-                        )}
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: 11, color: cor, fontWeight: 600 }}>
-                            {isConcluida ? (recertNeeded ? '⚠️ Refazer' : '✓ Concluída') : isDisponivel ? '▶ Disponível' : aula.status === 'aguardando_tempo' ? '⏳ Aguardando' : '🔒 Bloqueada'}
-                          </span>
-                          {(isDisponivel || isConcluida) && (
-                            <Link href={`/aluno/${params.whatsapp}/aula/${aula.aula_id}`}
-                              style={{ fontSize: 12, background: isConcluida && !recertNeeded ? 'var(--avp-border)' : 'var(--avp-blue)', color: isConcluida && !recertNeeded ? 'var(--avp-text-dim)' : '#fff', textDecoration: 'none', fontWeight: 700, borderRadius: 6, padding: '3px 10px' }}>
-                              {isConcluida && !recertNeeded ? 'Rever' : 'Acessar →'}
-                            </Link>
-                          )}
-                        </div>
                       </div>
                     </div>
                   )
                 })}
               </div>
-            </div>
-          ))}
-
-          {modulos.length === 0 && (
-            <div style={{ textAlign: 'center', padding: 80, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', borderRadius: 16, border: '1px solid var(--avp-border)' }}>
-              <p style={{ fontSize: 48, marginBottom: 16 }}>📚</p>
-              <p style={{ fontSize: 16 }}>Nenhuma aula disponível no momento.</p>
-              <p style={{ fontSize: 14, marginTop: 8 }}>Em breve novos conteúdos serão liberados!</p>
             </div>
           )}
         </div>
