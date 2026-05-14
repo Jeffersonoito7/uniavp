@@ -68,6 +68,7 @@ export async function PUT(req: NextRequest) {
   const body: { id: string; titulo: string; tipo: string; arte_url: string; foto_x: number; foto_y: number; foto_largura: number; foto_altura: number; foto_redondo: boolean; ativo: boolean }[] = await req.json()
 
   for (const t of body) {
+    if (!t.id) continue
     await (adminClient.from('artes_templates') as any)
       .update({ titulo: t.titulo, tipo: t.tipo, arte_url: t.arte_url, foto_x: t.foto_x, foto_y: t.foto_y, foto_largura: t.foto_largura, foto_altura: t.foto_altura, foto_redondo: t.foto_redondo, ativo: t.ativo })
       .eq('id', t.id)

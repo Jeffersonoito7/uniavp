@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 type Template = {
   id: string; tipo: string; titulo: string; arte_url: string;
   foto_x: number; foto_y: number; foto_largura: number; foto_altura: number;
-  foto_redondo: boolean; formato: string;
+  foto_redondo: boolean; formato: string; ativo?: boolean;
 }
 
 type Formato = 'feed' | 'stories'
@@ -25,7 +25,7 @@ function carregarImagem(src: string, crossOrigin?: string): Promise<HTMLImageEle
 }
 
 export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { templates: Template[]; nomeAluno: string; fotoInicial?: string | null }) {
-  const [formato, setFormato] = useState<Formato | null>(null)
+  const [formato, setFormato] = useState<Formato>('feed')
   const [templateSelecionado, setTemplateSelecionado] = useState<Template | null>(null)
   const [fotoLocal, setFotoLocal] = useState<string | null>(fotoInicial ?? null)
   const [cropZoom, setCropZoom] = useState(1)
@@ -40,14 +40,8 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
   const previewRef = useRef<HTMLDivElement>(null)
   const dragOrigin = useRef<{ x: number; y: number; bgX: number; bgY: number } | null>(null)
 
-  const templatesFiltrados = templates.filter(t => t.formato === formato)
-
-  function selecionarFormato(f: Formato) {
-    setFormato(f)
-    setTemplateSelecionado(null)
-    setPronto(false)
-    setErro('')
-  }
+  // Mostra todos os templates ativos — formato é escolhido na hora de gerar
+  const templatesFiltrados = templates.filter(t => t.ativo !== false)
 
   function selecionarFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -186,34 +180,16 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
         Gere artes profissionais com sua foto para compartilhar nas redes sociais.
       </p>
 
-      {/* PASSO 1 — Formato */}
-      <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, marginBottom: 20 }}>
-        <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 14 }}>1. Escolha o formato</p>
-        <div style={{ display: 'flex', gap: 14 }}>
-          {(['feed', 'stories'] as Formato[]).map(f => {
-            const d = DIMS[f]; const ativo = formato === f
-            return (
-              <button key={f} onClick={() => selecionarFormato(f)} style={{ flex: 1, background: ativo ? 'var(--grad-brand)' : 'var(--avp-black)', border: `2px solid ${ativo ? 'transparent' : 'var(--avp-border)'}`, borderRadius: 12, padding: '18px 14px', cursor: 'pointer', color: ativo ? '#fff' : 'var(--avp-text)', textAlign: 'center' as const, transition: 'all 0.2s' }}>
-                <div style={{ fontSize: 36, marginBottom: 8 }}>{f === 'feed' ? '🖼️' : '📱'}</div>
-                <p style={{ fontWeight: 800, fontSize: 17, marginBottom: 3 }}>{d.label}</p>
-                <p style={{ fontSize: 12, opacity: 0.75 }}>{f === 'feed' ? '1080×1080 · Quadrado' : '1080×1920 · Vertical'}</p>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {formato && (
-        <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 20, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 20, alignItems: 'start' }}>
 
           {/* ─── COLUNA ESQUERDA ─── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
             {/* Template */}
             <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 18 }}>
-              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 12 }}>2. Escolha a arte</p>
+              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 12 }}>1. Escolha a arte</p>
               {templatesFiltrados.length === 0 ? (
-                <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Nenhum template de {DIMS[formato].label} configurado.</p>
+                <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Nenhum template configurado ainda.</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                   {templatesFiltrados.map(t => (
@@ -255,6 +231,21 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
               </div>
             )}
 
+            {/* Formato de saída */}
+            <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 14 }}>
+              <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>3. Formato de saída</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {(['feed', 'stories'] as Formato[]).map(f => (
+                  <button key={f} onClick={() => { setFormato(f); setPronto(false) }}
+                    style={{ flex: 1, background: formato === f ? 'var(--grad-brand)' : 'var(--avp-black)', border: `1px solid ${formato === f ? 'transparent' : 'var(--avp-border)'}`, borderRadius: 8, padding: '10px 8px', cursor: 'pointer', color: '#fff', fontWeight: 700, fontSize: 13, display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 4 }}>
+                    <span style={{ fontSize: 20 }}>{f === 'feed' ? '🖼️' : '📱'}</span>
+                    <span>{f === 'feed' ? 'Feed' : 'Stories'}</span>
+                    <span style={{ fontSize: 10, opacity: 0.7 }}>{f === 'feed' ? '1080×1080' : '1080×1920'}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Checklist do que falta */}
             {(!templateSelecionado || !fotoLocal) && (
               <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -262,13 +253,13 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
                   <span style={{ fontSize: 16 }}>{templateSelecionado ? '✅' : '⬜'}</span>
                   <span style={{ color: templateSelecionado ? 'var(--avp-green)' : 'var(--avp-text-dim)' }}>
-                    {templateSelecionado ? `Arte: ${templateSelecionado.titulo}` : 'Escolha uma arte (passo 2)'}
+                    {templateSelecionado ? `Arte: ${templateSelecionado.titulo}` : 'Escolha uma arte (passo 1)'}
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
                   <span style={{ fontSize: 16 }}>{fotoLocal ? '✅' : '⬜'}</span>
                   <span style={{ color: fotoLocal ? 'var(--avp-green)' : 'var(--avp-text-dim)' }}>
-                    {fotoLocal ? 'Foto carregada' : 'Envie uma foto (passo 3)'}
+                    {fotoLocal ? 'Foto carregada' : 'Envie uma foto (passo 2)'}
                   </span>
                 </div>
               </div>
@@ -277,7 +268,7 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
             {/* Gerar */}
             <button onClick={gerar} disabled={gerando || !templateSelecionado || !fotoLocal}
               style={{ background: templateSelecionado && fotoLocal ? 'var(--grad-brand)' : 'var(--avp-border)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px', fontWeight: 800, fontSize: 16, cursor: (gerando || !templateSelecionado || !fotoLocal) ? 'not-allowed' : 'pointer', transition: 'background 0.2s' }}>
-              {gerando ? '⏳ Gerando...' : templateSelecionado && fotoLocal ? '✨ Gerar Arte em Alta Qualidade' : '✨ Gerar Arte'}
+              {gerando ? '⏳ Gerando...' : templateSelecionado && fotoLocal ? `✨ Gerar em ${DIMS[formato].label}` : '✨ Gerar Arte'}
             </button>
 
             {erro && (
@@ -381,7 +372,6 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
             )}
           </div>
         </div>
-      )}
     </div>
   )
 }
