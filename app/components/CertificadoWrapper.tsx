@@ -53,15 +53,13 @@ export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, n
     } catch { /* AudioContext não disponível */ }
   }, [etapa])
 
-  function fecharCertificado() {
-    const proxima = whatsapp && numRegistro ? 'carteira' : 'fechado'
-    if (proxima === 'fechado') marcarVisto(chave)
-    setEtapa(proxima)
-  }
-
-  function fecharCarteira() {
+  function fecharTudo() {
     marcarVisto(chave)
     setEtapa('fechado')
+  }
+
+  function irParaCarteira() {
+    setEtapa('carteira')
   }
 
   if (etapa === 'fechado') return null
@@ -74,7 +72,8 @@ export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, n
         nomeY={nomeY}
         nomeFontePct={nomeFontePct}
         nomeCor={nomeCor}
-        onClose={fecharCertificado}
+        onClose={fecharTudo}
+        onVerCarteira={whatsapp && numRegistro ? irParaCarteira : undefined}
       />
     )
   }
@@ -85,7 +84,7 @@ export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, n
         nomeAluno={nomeAluno}
         numRegistro={numRegistro}
         whatsapp={whatsapp}
-        onClose={fecharCarteira}
+        onClose={fecharTudo}
       />
     )
   }
