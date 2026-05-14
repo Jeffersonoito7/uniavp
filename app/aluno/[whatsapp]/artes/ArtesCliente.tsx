@@ -139,13 +139,15 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
         ctx.drawImage(foto, imgX, imgY, dw, dh)
       }
 
-      // Template por cima
+      // Template por cima — usa proxy para evitar CORS
+      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(templateSelecionado.arte_url)}`
       try {
-        const art = await carregarImagem(templateSelecionado.arte_url, 'anonymous')
+        const art = await carregarImagem(proxyUrl, 'anonymous')
         ctx.drawImage(art, 0, 0, w, h)
       } catch {
+        // fallback direto
         try {
-          const art = await carregarImagem(templateSelecionado.arte_url)
+          const art = await carregarImagem(templateSelecionado.arte_url, 'anonymous')
           ctx.drawImage(art, 0, 0, w, h)
         } catch {
           setErro('Não foi possível carregar a arte. Verifique se a URL é pública.')
