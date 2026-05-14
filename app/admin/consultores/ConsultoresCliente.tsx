@@ -205,6 +205,10 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
                   </td>
                   <td style={{ padding: '14px 16px' }}>
                     <div style={{ display: 'flex', gap: 6 }}>
+                      <a href={`/admin/artes/${c.whatsapp}`} target="_blank" rel="noreferrer"
+                        style={{ background: '#a855f720', border: '1px solid #a855f740', color: '#a855f7', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+                        🎨 Arte
+                      </a>
                       <a href={`/admin/carteira/${c.whatsapp}`} target="_blank" rel="noreferrer"
                         style={{ background: '#fbbf2420', border: '1px solid #fbbf2440', color: '#fbbf24', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
                         🪪 Carteira
