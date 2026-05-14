@@ -17,7 +17,7 @@ export async function GET() {
     .select('id, titulo, ordem, descricao, capa_url').order('ordem')
 
   const { data: aulas } = await (admin.from('aulas') as any)
-    .select('id, titulo, descricao, youtube_video_id, video_url, duracao_minutos, capa_url, ordem, modulo_id, publicado')
+    .select('id, titulo, descricao, youtube_video_id, video_url, duracao_minutos, capa_url, ordem, modulo_id, publicado, quiz_aprovacao_minima, quiz_qtd_questoes, quiz_tipo, espera_horas, liberacao_modo')
     .order('ordem')
 
   return NextResponse.json({ modulos: modulos ?? [], aulas: aulas ?? [] })

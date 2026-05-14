@@ -196,7 +196,7 @@ export default function GestorDashboard({
   const [verSenhaNovo, setVerSenhaNovo] = useState(false)
   const [eventos, setEventos] = useState<Evento[]>([])
   const [eventosCarregados, setEventosCarregados] = useState(false)
-  type AulaGestor = { id: string; titulo: string; descricao: string | null; youtube_video_id: string | null; video_url: string | null; duracao_minutos: number | null; capa_url: string | null; ordem: number; modulo_id: string; publicado: boolean }
+  type AulaGestor = { id: string; titulo: string; descricao: string | null; youtube_video_id: string | null; video_url: string | null; duracao_minutos: number | null; capa_url: string | null; ordem: number; modulo_id: string; publicado: boolean; quiz_aprovacao_minima?: number | null; quiz_qtd_questoes?: number | null; quiz_tipo?: string | null; espera_horas?: number | null; liberacao_modo?: string | null }
   const [modulosAulas, setModulosAulas] = useState<{ id: string; titulo: string; ordem: number; capa_url?: string | null; aulas: AulaGestor[] }[]>([])
   const [aulasCarregadas, setAulasCarregadas] = useState(false)
   const [aulaAberta, setAulaAberta] = useState<AulaGestor | null>(null)
@@ -407,17 +407,87 @@ export default function GestorDashboard({
     <GestorLayout aba={aba} setAba={handleSetAba} nomeGestor={gestor.nome} fotoPerfilInicial={gestor.foto_perfil}>
 
       {/* ── DASHBOARD ── */}
-      {(aba === 'dashboard' || aba === 'consultores') && (
+      {aba === 'dashboard' && (
         <>
           <LiberacoesPendentes />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
             <div>
-              <h1 style={{ fontSize: 22, fontWeight: 800 }}>
-                {aba === 'dashboard' ? 'Dashboard' : 'Consultores'}
-              </h1>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>
-                Acompanhe o progresso da sua equipe
-              </p>
+              <h1 style={{ fontSize: 22, fontWeight: 800 }}>Dashboard</h1>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Visão geral da sua equipe</p>
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <MuralNoticias />
+              <EventosWidget />
+            </div>
+          </div>
+
+          {/* Cards de stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14, marginBottom: 24 }}>
+            <div style={{ background: 'var(--avp-card)', border: `1px solid ${vagasUsadas >= 50 ? 'var(--avp-danger)' : 'var(--avp-border)'}`, borderRadius: 12, padding: 20 }}>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, marginBottom: 6 }}>Vagas usadas</p>
+              <p style={{ fontSize: 32, fontWeight: 800, color: vagasUsadas >= 50 ? 'var(--avp-danger)' : 'var(--avp-text)' }}>{vagasUsadas}<span style={{ fontSize: 14, color: 'var(--avp-text-dim)', fontWeight: 400 }}>/50</span></p>
+            </div>
+            {[{ label: 'Em andamento', value: emAndamento }, { label: 'Concluídos', value: concluidos }, { label: 'Vagas livres', value: vagasLivres }].map(s => (
+              <div key={s.label} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20 }}>
+                <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, marginBottom: 6 }}>{s.label}</p>
+                <p style={{ fontSize: 32, fontWeight: 800 }}>{s.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Atalhos */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 24 }}>
+            <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20 }}>
+              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>🔗 Link de cadastro</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 12 }}>Compartilhe com novos consultores</p>
+              <button onClick={() => { navigator.clipboard.writeText(`${baseUrl}/g/${gestor.whatsapp}`); setLinkCopiado(true); setTimeout(() => setLinkCopiado(false), 2000) }}
+                style={{ background: linkCopiado ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
+                {linkCopiado ? '✓ Copiado!' : '📋 Copiar link'}
+              </button>
+            </div>
+            <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>👥 Consultores</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 12 }}>{listaConsultores.length} consultor{listaConsultores.length !== 1 ? 'es' : ''} vinculado{listaConsultores.length !== 1 ? 's' : ''}</p>
+              <button onClick={() => handleSetAba('consultores')}
+                style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontWeight: 600, fontSize: 13, alignSelf: 'flex-start' }}>
+                Ver todos →
+              </button>
+            </div>
+          </div>
+
+          {/* Últimos consultores */}
+          {listaConsultores.length > 0 && (
+            <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden' }}>
+              <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--avp-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <p style={{ fontWeight: 700, fontSize: 14 }}>Atividade recente</p>
+                <button onClick={() => handleSetAba('consultores')} style={{ background: 'none', border: 'none', color: 'var(--avp-blue)', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Ver todos →</button>
+              </div>
+              {listaConsultores.slice(0, 5).map(c => {
+                const pct = progressoMap[c.id] ?? 0
+                const badge = badgeStatus[c.status] ?? { label: c.status, color: 'var(--avp-text-dim)', bg: 'var(--avp-border)' }
+                return (
+                  <div key={c.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{c.nome}</p>
+                      <BarraProgresso pct={pct} />
+                    </div>
+                    <span style={{ background: badge.bg, color: badge.color, borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 600, flexShrink: 0 }}>{badge.label}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── CONSULTORES ── */}
+      {aba === 'consultores' && (
+        <>
+          <LiberacoesPendentes />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <h1 style={{ fontSize: 22, fontWeight: 800 }}>Consultores</h1>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Acompanhe o progresso da sua equipe</p>
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <MuralNoticias />
@@ -555,6 +625,26 @@ export default function GestorDashboard({
             </div>
           )}
 
+          {/* Aviso de aulas não publicadas */}
+          {aulasCarregadas && !moduloAberto && (() => {
+            const naoPublicadas = modulosAulas.flatMap(m => m.aulas).filter(a => !a.publicado).length
+            const totalAulas = modulosAulas.flatMap(m => m.aulas).length
+            if (naoPublicadas === 0 || totalAulas === 0) return null
+            return (
+              <div style={{ background: '#f59e0b15', border: '1px solid #f59e0b40', borderRadius: 10, padding: '12px 16px', marginBottom: 20, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <span style={{ fontSize: 18 }}>⚠️</span>
+                <div>
+                  <p style={{ fontWeight: 700, color: '#f59e0b', fontSize: 14, margin: '0 0 2px' }}>
+                    {naoPublicadas} aula{naoPublicadas !== 1 ? 's' : ''} não publicada{naoPublicadas !== 1 ? 's' : ''}
+                  </p>
+                  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>
+                    Aulas em rascunho não aparecem para os consultores. Publique em <strong style={{ color: 'var(--avp-text)' }}>Admin → Módulos → editar aula → ✅ Publicado</strong>.
+                  </p>
+                </div>
+              </div>
+            )
+          })()}
+
           {/* ── LISTA DE MÓDULOS (pasta) ── */}
           {aulasCarregadas && !moduloAberto && (
             <>
@@ -630,10 +720,21 @@ export default function GestorDashboard({
                           )}
                         </div>
                         <div style={{ padding: '12px 14px' }}>
-                          <p style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.3, marginBottom: 4 }}>{aula.titulo}</p>
-                          {aula.duracao_minutos && (
-                            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>⏱ {aula.duracao_minutos} min</p>
-                          )}
+                          <p style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.3, marginBottom: 6 }}>{aula.titulo}</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            {aula.duracao_minutos && (
+                              <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>⏱ {aula.duracao_minutos} min</p>
+                            )}
+                            {aula.quiz_aprovacao_minima != null && (
+                              <p style={{ fontSize: 11, color: '#f59e0b', margin: 0 }}>📝 Quiz: {aula.quiz_qtd_questoes || '?'}q · {aula.quiz_aprovacao_minima}% aprovação</p>
+                            )}
+                            {aula.espera_horas != null && aula.espera_horas > 0 && (
+                              <p style={{ fontSize: 11, color: '#60a5fa', margin: 0 }}>⏳ Aguarda {aula.espera_horas}h após anterior</p>
+                            )}
+                            {aula.liberacao_modo === 'manual' && (
+                              <p style={{ fontSize: 11, color: '#a78bfa', margin: 0 }}>🔒 Liberação manual</p>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )
