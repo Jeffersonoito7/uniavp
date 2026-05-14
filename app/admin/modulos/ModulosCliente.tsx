@@ -166,8 +166,10 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
           const isEditing = editandoId === m.id
           const temCapa = m.capa_url?.startsWith('data:') || m.capa_url?.startsWith('blob:')
           return (
-            <div key={m.id} style={card}>
+            <div key={m.id} style={{ ...card, padding: 0, overflow: 'hidden' }}>
               {isEditing ? (
+                <div style={{ padding: 20 }}>
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--avp-text-dim)' }}>Editando Módulo {m.ordem}</p>
@@ -189,50 +191,54 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
                     </button>
                   </div>
                 </div>
+                </div>
               ) : (
-                <div style={{ display: 'flex', gap: 0, alignItems: 'stretch' }}>
+                <div>
                   {/* Área clicável principal */}
-                  <Link href={`/admin/modulos/${m.id}`} style={{ textDecoration: 'none', flex: 1, display: 'flex', alignItems: 'center', gap: 16, padding: '4px 0', borderRadius: 8, transition: 'background 0.15s' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                    {/* Capa ou ícone */}
-                    <div style={{ width: 80, height: 62, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Link href={`/admin/modulos/${m.id}?aba=aulas`}
+                    style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 0, background: 'var(--avp-card)', transition: 'background 0.15s' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(59,130,246,0.06)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'var(--avp-card)')}>
+
+                    {/* Capa */}
+                    <div style={{ width: 120, height: 90, flexShrink: 0, overflow: 'hidden', background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                       {temCapa
                         ? <img src={m.capa_url!} alt={m.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <span style={{ fontSize: 28 }}>📚</span>}
-                    </div>
-                    {/* Info */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                        <span style={{ background: 'var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>Módulo {m.ordem}</span>
-                        {!m.publicado && <span style={{ background: '#f59e0b20', color: '#f59e0b', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>Rascunho</span>}
+                        : <span style={{ fontSize: 36 }}>📚</span>}
+                      <div style={{ position: 'absolute', bottom: 6, left: 6, background: 'rgba(0,0,0,0.6)', borderRadius: 4, padding: '2px 7px', fontSize: 10, color: '#fff', fontWeight: 700 }}>
+                        Módulo {m.ordem}
                       </div>
-                      <h3 style={{ fontWeight: 700, fontSize: 16, color: 'var(--avp-text)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.titulo}</h3>
-                      {m.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: '3px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.descricao}</p>}
                     </div>
-                    {/* Seta de navegação */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, color: 'var(--avp-blue)', fontWeight: 700, fontSize: 13 }}>
-                      <span>Ver aulas</span>
-                      <span style={{ fontSize: 18 }}>→</span>
+
+                    {/* Info */}
+                    <div style={{ flex: 1, padding: '16px 20px', minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <h3 style={{ fontWeight: 800, fontSize: 17, color: 'var(--avp-text)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.titulo}</h3>
+                        {!m.publicado && <span style={{ background: '#f59e0b20', color: '#f59e0b', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>Rascunho</span>}
+                      </div>
+                      {m.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.descricao}</p>}
+                    </div>
+
+                    {/* CTA */}
+                    <div style={{ padding: '0 20px', display: 'flex', alignItems: 'center', gap: 8, color: '#3b82f6', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+                      📋 Ver aulas
+                      <span style={{ fontSize: 20 }}>›</span>
                     </div>
                   </Link>
 
-                  {/* Separador */}
-                  <div style={{ width: 1, background: 'var(--avp-border)', margin: '0 16px', flexShrink: 0 }} />
-
                   {/* Ações secundárias */}
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+                  <div style={{ padding: '10px 16px', borderTop: '1px solid var(--avp-border)', display: 'flex', gap: 8, background: 'rgba(0,0,0,0.15)' }}>
                     <button onClick={() => abrirEdicao(m)}
-                      style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
-                      Editar
+                      style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                      ✏️ Editar
                     </button>
                     <button onClick={() => togglePublicado(m)}
-                      style={{ background: m.publicado ? 'var(--avp-border)' : 'var(--avp-green)', color: m.publicado ? 'var(--avp-text-dim)' : '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
-                      {m.publicado ? 'Despublicar' : 'Publicar'}
+                      style={{ background: m.publicado ? 'var(--avp-border)' : 'var(--avp-green)', color: m.publicado ? 'var(--avp-text-dim)' : '#fff', border: 'none', borderRadius: 6, padding: '5px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                      {m.publicado ? '🙈 Despublicar' : '✅ Publicar'}
                     </button>
                     <button onClick={() => excluirModulo(m)}
-                      style={{ background: 'var(--avp-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
-                      Excluir
+                      style={{ background: 'none', border: '1px solid var(--avp-danger)', color: 'var(--avp-danger)', borderRadius: 6, padding: '5px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                      🗑 Excluir
                     </button>
                   </div>
                 </div>
