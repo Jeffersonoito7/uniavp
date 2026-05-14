@@ -72,6 +72,8 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const [carteiraAssinaturaEmpresa, setCarteiraAssinaturaEmpresa] = useState(get('carteira_assinatura_empresa'))
   const [carteiraUrlVerificacao, setCarteiraUrlVerificacao] = useState(get('carteira_url_verificacao'))
   const [carteiraTagline, setCarteiraTagline] = useState(get('carteira_tagline'))
+  const [carteiraLogoEsquerda, setCarteiraLogoEsquerda] = useState(get('carteira_logo_esquerda'))
+  const [carteiraLogoDireita, setCarteiraLogoDireita] = useState(get('carteira_logo_direita'))
   const [boletoMensagem, setBoletoMensagem] = useState(get('boleto_mensagem'))
   const [boletoInstrucoes, setBoletoInstrucoes] = useState(get('boleto_instrucoes'))
   const [boletoMulta, setBoletoMulta] = useState(get('boleto_multa') || '2')
@@ -96,6 +98,8 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const logoFaviconUrlRef = useRef<HTMLInputElement>(null)
   const logoMobileUrlRef = useRef<HTMLInputElement>(null)
   const certUrlRef = useRef<HTMLInputElement>(null)
+  const carteiraLogoEsquerdaRef = useRef<HTMLInputElement>(null)
+  const carteiraLogoDireitaRef = useRef<HTMLInputElement>(null)
 
   const setters: Record<string, (v: string) => void> = {
     logoUrl: setLogoUrl,
@@ -104,6 +108,8 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
     logoFaviconUrl: setLogoFaviconUrl,
     logoMobileUrl: setLogoMobileUrl,
     certUrl: setCertUrl,
+    carteiraLogoEsquerda: setCarteiraLogoEsquerda,
+    carteiraLogoDireita: setCarteiraLogoDireita,
   }
 
   const campoToChave: Record<string, string> = {
@@ -113,6 +119,8 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
     logoFaviconUrl: 'logo_favicon_url',
     logoMobileUrl: 'logo_mobile_url',
     certUrl: 'certificado_template_url',
+    carteiraLogoEsquerda: 'carteira_logo_esquerda',
+    carteiraLogoDireita: 'carteira_logo_direita',
   }
 
   async function uploadImagem(campo: string, file: File) {
@@ -205,6 +213,8 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
         { chave: 'carteira_assinatura_empresa', valor: carteiraAssinaturaEmpresa },
         { chave: 'carteira_url_verificacao', valor: carteiraUrlVerificacao },
         { chave: 'carteira_tagline', valor: carteiraTagline },
+        ...(urlSafe(carteiraLogoEsquerda) ? [{ chave: 'carteira_logo_esquerda', valor: carteiraLogoEsquerda }] : []),
+        ...(urlSafe(carteiraLogoDireita) ? [{ chave: 'carteira_logo_direita', valor: carteiraLogoDireita }] : []),
         { chave: 'boleto_mensagem', valor: boletoMensagem },
         { chave: 'boleto_instrucoes', valor: boletoInstrucoes },
         { chave: 'boleto_multa', valor: boletoMulta },
@@ -400,7 +410,14 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
         <p style={{ fontWeight: 800, fontSize: 16 }}>🪪 Carteira de Formação</p>
         <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
-          A logo e o nome da empresa são puxados automaticamente das configurações acima. Configure abaixo a assinatura e os textos da carteira.
+          Suba as logos que aparecem no cabeçalho da carteirinha. Use PNG com fundo transparente.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <LogoCard label="Logo esquerda (ex: UNIAVP)" campo="carteiraLogoEsquerda" value={carteiraLogoEsquerda} desc="Logo da universidade/escola" rec="PNG transparente · 200×200px" fileRef={carteiraLogoEsquerdaRef} uploading={uploading} onUpload={uploadImagem} />
+          <LogoCard label="Logo direita (ex: AUTOVALE)" campo="carteiraLogoDireita" value={carteiraLogoDireita} desc="Logo da empresa parceira" rec="PNG transparente · 300×150px" fileRef={carteiraLogoDireitaRef} uploading={uploading} onUpload={uploadImagem} />
+        </div>
+        <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: -8 }}>
+          Configure abaixo a assinatura e os textos da carteira.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div>

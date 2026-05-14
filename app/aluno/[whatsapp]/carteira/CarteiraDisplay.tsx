@@ -17,6 +17,8 @@ type Props = {
   status: string
   empresaNome?: string
   empresaLogoUrl?: string | null
+  logoEsquerdaUrl?: string | null
+  logoDireitaUrl?: string | null
   assinaturaNome?: string
   assinaturaCargo?: string
   assinaturaEmpresa?: string
@@ -33,7 +35,7 @@ function Field({ label, value, flex }: { label: string; value: string; flex?: bo
   )
 }
 
-export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicial, dataFormacao, validade, cargaHoraria, turma, whatsapp, status, empresaNome = 'UNIVERSIDADE', empresaLogoUrl, assinaturaNome = 'Assinatura', assinaturaCargo = 'PRESIDENTE', assinaturaEmpresa, urlVerificacao = '', tagline = '' }: Props) {
+export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicial, dataFormacao, validade, cargaHoraria, turma, whatsapp, status, empresaNome = 'UNIVERSIDADE', empresaLogoUrl, logoEsquerdaUrl, logoDireitaUrl, assinaturaNome = 'Assinatura', assinaturaCargo = 'PRESIDENTE', assinaturaEmpresa, urlVerificacao = '', tagline = '' }: Props) {
   const [fotoUrl, setFotoUrl] = useState<string | null>(fotoInicial)
   const [uploadando, setUploadando] = useState(false)
   const [msgFoto, setMsgFoto] = useState('')
@@ -66,52 +68,91 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
     <div style={{ width: 620, height: 390, position: 'relative', overflow: 'hidden', fontFamily: '"Arial", "Helvetica", sans-serif', display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
 
       {/* Cabeçalho */}
-      <div style={{ background: NAVY, height: 78, display: 'flex', alignItems: 'center', padding: '0 20px', gap: 14, flexShrink: 0 }}>
-        {/* Logo AVP */}
-        <div style={{ width: 54, height: 54, border: '1.5px solid rgba(255,255,255,0.3)', borderRadius: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', overflow: 'hidden', background: 'rgba(255,255,255,0.08)' }}>
-          <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.7)', letterSpacing: 0.5, fontWeight: 600 }}>UNIVERSIDADE</span>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, margin: '2px 0' }}>
-            <span style={{ fontSize: 13, fontWeight: 900, color: '#fff', lineHeight: 1 }}>A</span>
-            <span style={{ fontSize: 13, fontWeight: 900, color: '#fff', lineHeight: 1 }}>V</span>
-            <span style={{ fontSize: 13, fontWeight: 900, color: GREEN, lineHeight: 1 }}>P</span>
-            <div style={{ width: 13, height: 13, background: 'rgba(255,255,255,0.1)', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: GREEN }} />
-            </div>
-          </div>
-        </div>
+      <div style={{ background: NAVY, height: 82, display: 'flex', alignItems: 'center', padding: '0 18px', gap: 12, flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
+        {/* Guilloché sutil no cabeçalho */}
+        <svg style={{ position: 'absolute', inset: 0, opacity: 0.06, pointerEvents: 'none' }} width="620" height="82">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <ellipse key={i} cx="310" cy="41" rx={30 + i * 38} ry={12 + i * 5} fill="none" stroke="#fff" strokeWidth="0.5" />
+          ))}
+        </svg>
 
-        {/* Título */}
-        <div style={{ flex: 1 }}>
-          <p style={{ color: '#fff', fontWeight: 900, fontSize: 17, margin: 0, letterSpacing: 1.5, textTransform: 'uppercase' as const }}>CARTEIRA <span style={{ fontWeight: 400 }}>de</span> FORMAÇÃO</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }}>
-            <div style={{ width: 36, height: 2, background: GREEN }} />
-            <p style={{ color: 'rgba(255,255,255,0.75)', fontWeight: 700, fontSize: 10, margin: 0, letterSpacing: 2 }}>CONSULTOR CERTIFICADO</p>
-          </div>
-        </div>
-
-        {/* Logo empresa */}
-        <div style={{ textAlign: 'right' as const, flexShrink: 0 }}>
-          {empresaLogoUrl ? (
-            <img src={empresaLogoUrl} alt={empresaNome} style={{ height: 48, maxWidth: 120, objectFit: 'contain' }} />
+        {/* Logo esquerda (UNIAVP) */}
+        <div style={{ flexShrink: 0, height: 58, display: 'flex', alignItems: 'center' }}>
+          {logoEsquerdaUrl ? (
+            <img src={logoEsquerdaUrl} alt="Logo" style={{ height: 58, maxWidth: 70, objectFit: 'contain' }} />
           ) : (
-            <p style={{ color: '#fff', fontWeight: 900, fontSize: 13, margin: 0, letterSpacing: 0.5, maxWidth: 120, textAlign: 'right' as const }}>{empresaNome}</p>
+            <div style={{ width: 52, height: 52, border: '1.5px solid rgba(255,255,255,0.3)', borderRadius: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.08)' }}>
+              <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.7)', letterSpacing: 0.5, fontWeight: 600 }}>UNIVERSIDADE</span>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, margin: '2px 0' }}>
+                <span style={{ fontSize: 12, fontWeight: 900, color: '#fff', lineHeight: 1 }}>A</span>
+                <span style={{ fontSize: 12, fontWeight: 900, color: '#fff', lineHeight: 1 }}>V</span>
+                <span style={{ fontSize: 12, fontWeight: 900, color: GREEN, lineHeight: 1 }}>P</span>
+                <div style={{ width: 12, height: 12, background: 'rgba(255,255,255,0.1)', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: GREEN }} />
+                </div>
+              </div>
+            </div>
           )}
-          {tagline && <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 7, margin: '3px 0 0', letterSpacing: 0.3 }}>{tagline}</p>}
+        </div>
+
+        {/* Título central */}
+        <div style={{ flex: 1, textAlign: 'center' as const }}>
+          <p style={{ color: '#fff', fontWeight: 900, fontSize: 16, margin: 0, letterSpacing: 2, textTransform: 'uppercase' as const }}>CARTEIRA <span style={{ fontWeight: 300 }}>de</span> FORMAÇÃO</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 }}>
+            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.25)' }} />
+            <p style={{ color: GREEN, fontWeight: 700, fontSize: 9, margin: 0, letterSpacing: 2 }}>CONSULTOR CERTIFICADO</p>
+            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.25)' }} />
+          </div>
+        </div>
+
+        {/* Logo direita (AUTOVALE) */}
+        <div style={{ flexShrink: 0, height: 58, display: 'flex', alignItems: 'center' }}>
+          {logoDireitaUrl ? (
+            <img src={logoDireitaUrl} alt={empresaNome} style={{ height: 58, maxWidth: 100, objectFit: 'contain' }} />
+          ) : empresaLogoUrl ? (
+            <img src={empresaLogoUrl} alt={empresaNome} style={{ height: 48, maxWidth: 100, objectFit: 'contain' }} />
+          ) : (
+            <div style={{ textAlign: 'right' as const }}>
+              <p style={{ color: '#fff', fontWeight: 900, fontSize: 12, margin: 0 }}>{empresaNome}</p>
+              {tagline && <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 7, margin: '2px 0 0' }}>{tagline}</p>}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Corpo */}
       <div style={{ flex: 1, background: '#fff', display: 'flex', padding: '14px 18px', gap: 16, position: 'relative', overflow: 'hidden' }}>
-        {/* Marca d'água */}
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', opacity: 0.035 }}>
-          <div style={{ fontSize: 200, fontWeight: 900, color: NAVY, transform: 'rotate(-20deg)', letterSpacing: -10, whiteSpace: 'nowrap' as const }}>AVP AVP</div>
-        </div>
-        {/* Grade guilloche */}
-        <svg style={{ position: 'absolute', inset: 0, opacity: 0.04, pointerEvents: 'none' }} width="620" height="232" xmlns="http://www.w3.org/2000/svg">
+        {/* ── MARCA D'ÁGUA ESTILO CÉDULA ── */}
+        <svg style={{ position: 'absolute', inset: 0, opacity: 0.045, pointerEvents: 'none' }} width="620" height="232" xmlns="http://www.w3.org/2000/svg">
+          {/* Guilloché centro — elipses concêntricas */}
+          {Array.from({ length: 18 }).map((_, i) => (
+            <ellipse key={`e${i}`} cx="310" cy="116" rx={20 + i * 16} ry={10 + i * 8} fill="none" stroke={NAVY} strokeWidth="0.5" />
+          ))}
+          {/* Roseta superior esquerda */}
           {Array.from({ length: 12 }).map((_, i) => (
-            <ellipse key={i} cx="310" cy="116" rx={40 + i * 26} ry={20 + i * 13} fill="none" stroke={NAVY} strokeWidth="0.6" />
+            <ellipse key={`r1${i}`} cx="100" cy="60" rx={8 + i * 7} ry={4 + i * 3.5} fill="none" stroke={NAVY} strokeWidth="0.4"
+              transform={`rotate(${i * 15} 100 60)`} />
+          ))}
+          {/* Roseta superior direita */}
+          {Array.from({ length: 12 }).map((_, i) => (
+            <ellipse key={`r2${i}`} cx="520" cy="60" rx={8 + i * 7} ry={4 + i * 3.5} fill="none" stroke={NAVY} strokeWidth="0.4"
+              transform={`rotate(${i * 15} 520 60)`} />
+          ))}
+          {/* Roseta inferior */}
+          {Array.from({ length: 12 }).map((_, i) => (
+            <ellipse key={`r3${i}`} cx="310" cy="210" rx={8 + i * 6} ry={4 + i * 3} fill="none" stroke={GREEN} strokeWidth="0.4"
+              transform={`rotate(${i * 15} 310 210)`} />
+          ))}
+          {/* Linhas finas horizontais */}
+          {Array.from({ length: 24 }).map((_, i) => (
+            <line key={`l${i}`} x1="0" y1={8 + i * 9} x2="620" y2={8 + i * 9} stroke={NAVY} strokeWidth="0.3" strokeDasharray="4 8" />
           ))}
         </svg>
+
+        {/* Texto AVP diagonal tênue */}
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', opacity: 0.025 }}>
+          <div style={{ fontSize: 160, fontWeight: 900, color: NAVY, transform: 'rotate(-18deg)', letterSpacing: -8, whiteSpace: 'nowrap' as const }}>AVP AVP</div>
+        </div>
 
         {/* Foto 3x4 */}
         <div style={{ flexShrink: 0 }}>
@@ -187,10 +228,17 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
 
       {/* Corpo */}
       <div style={{ flex: 1, background: '#fff', padding: '18px 24px', display: 'flex', gap: 20, position: 'relative', overflow: 'hidden' }}>
-        {/* Grade guilloche */}
-        <svg style={{ position: 'absolute', inset: 0, opacity: 0.04, pointerEvents: 'none' }} width="620" height="250" xmlns="http://www.w3.org/2000/svg">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <ellipse key={i} cx="310" cy="125" rx={50 + i * 28} ry={25 + i * 14} fill="none" stroke={NAVY} strokeWidth="0.6" />
+        {/* Guilloché verso */}
+        <svg style={{ position: 'absolute', inset: 0, opacity: 0.04, pointerEvents: 'none' }} width="620" height="250">
+          {Array.from({ length: 14 }).map((_, i) => (
+            <ellipse key={`ve${i}`} cx="310" cy="125" rx={35 + i * 22} ry={18 + i * 11} fill="none" stroke={NAVY} strokeWidth="0.5" />
+          ))}
+          {Array.from({ length: 14 }).map((_, i) => (
+            <ellipse key={`vr${i}`} cx="120" cy="125" rx={10 + i * 8} ry={5 + i * 4} fill="none" stroke={GREEN} strokeWidth="0.4"
+              transform={`rotate(${i * 13} 120 125)`} />
+          ))}
+          {Array.from({ length: 20 }).map((_, i) => (
+            <line key={`vl${i}`} x1="0" y1={6 + i * 12} x2="620" y2={6 + i * 12} stroke={NAVY} strokeWidth="0.25" strokeDasharray="3 6" />
           ))}
         </svg>
 
@@ -225,6 +273,30 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
           <img src={qrUrl} alt="QR Code" width={80} height={80} style={{ borderRadius: 4, border: '1px solid #ddd' }} />
           <p style={{ fontSize: 7, color: '#999', margin: 0, textAlign: 'center' as const }}>VERIFIQUE<br/>AUTENTICIDADE</p>
+        </div>
+      </div>
+
+      {/* Selo de autenticidade */}
+      <div style={{ padding: '8px 24px', borderTop: '1px solid #eee', background: '#fafafa', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <svg width="36" height="36" viewBox="0 0 36 36">
+          {/* Estrela de 12 pontas */}
+          {Array.from({ length: 12 }).map((_, i) => {
+            const angle = (i * 30 - 90) * Math.PI / 180
+            const x1 = 18 + 17 * Math.cos(angle)
+            const y1 = 18 + 17 * Math.sin(angle)
+            const angle2 = ((i + 0.5) * 30 - 90) * Math.PI / 180
+            const x2 = 18 + 10 * Math.cos(angle2)
+            const y2 = 18 + 10 * Math.sin(angle2)
+            return <line key={i} x1="18" y1="18" x2={x1} y2={y1} stroke={GREEN} strokeWidth="1.2" opacity="0.7" />
+          })}
+          <circle cx="18" cy="18" r="16" fill="none" stroke={GREEN} strokeWidth="1" />
+          <circle cx="18" cy="18" r="11" fill="none" stroke={GREEN} strokeWidth="0.6" />
+          <circle cx="18" cy="18" r="6" fill={GREEN} opacity="0.15" />
+          <text x="18" y="22" textAnchor="middle" fontSize="7" fontWeight="900" fill={GREEN}>✓</text>
+        </svg>
+        <div>
+          <p style={{ fontSize: 8, fontWeight: 800, color: GREEN, margin: 0, letterSpacing: 1, textTransform: 'uppercase' as const }}>Documento Autêntico</p>
+          <p style={{ fontSize: 7, color: '#888', margin: 0 }}>Nº {numRegistro} · Verificável em {verificacaoUrl}/verificar/{numRegistro}</p>
         </div>
       </div>
 
