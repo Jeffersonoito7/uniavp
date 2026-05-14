@@ -413,7 +413,13 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
 
       {/* CARTEIRA */}
       <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
-        <p style={{ fontWeight: 800, fontSize: 16 }}>🪪 Carteira de Formação</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+          <p style={{ fontWeight: 800, fontSize: 16 }}>🪪 Carteira de Formação</p>
+          <a href="/teste/carteira" target="_blank" rel="noreferrer"
+            style={{ background: '#fbbf2420', border: '1px solid #fbbf2460', color: '#fbbf24', borderRadius: 8, padding: '7px 16px', fontWeight: 700, fontSize: 13, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            👁 Ver modelo
+          </a>
+        </div>
         <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
           Suba as logos que aparecem no cabeçalho da carteirinha. Use PNG com fundo transparente.
         </p>
