@@ -159,15 +159,15 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
         <div style={{ flexShrink: 0 }}>
           <div
             onClick={() => fotoRef.current?.click()}
-            style={{ width: 108, height: 150, border: `2.5px solid ${GREEN}`, borderRadius: 4, overflow: 'hidden', background: '#e8e8e8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
+            style={{ width: 120, height: 160, border: `2.5px solid ${GREEN}`, borderRadius: 4, overflow: 'hidden', background: '#e8e8e8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
             title="Clique para trocar foto"
           >
             {fotoUrl ? (
               <img src={fotoUrl} alt={nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
-              <svg width="56" height="80" viewBox="0 0 56 80" fill="none">
-                <ellipse cx="28" cy="22" rx="15" ry="15" fill="#b0b0b0" />
-                <ellipse cx="28" cy="65" rx="28" ry="20" fill="#b0b0b0" />
+              <svg width="62" height="90" viewBox="0 0 62 90" fill="none">
+                <ellipse cx="31" cy="26" rx="17" ry="17" fill="#b0b0b0" />
+                <ellipse cx="31" cy="74" rx="31" ry="22" fill="#b0b0b0" />
               </svg>
             )}
             {uploadando && (
@@ -199,7 +199,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
       <div style={{ background: '#fff', borderTop: '1px solid #e0e0e0', padding: '6px 18px 6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div>
           {assinaturaUrl ? (
-            <img src={assinaturaUrl} alt={assinaturaNome} style={{ height: 32, maxWidth: 130, objectFit: 'contain', display: 'block', marginBottom: 2 }} />
+            <img src={assinaturaUrl} alt={assinaturaNome} style={{ height: 52, maxWidth: 200, objectFit: 'contain', display: 'block', marginBottom: 2 }} />
           ) : (
             <p style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 20, color: '#222', margin: 0, lineHeight: 1 }}>{assinaturaNome}</p>
           )}
@@ -268,7 +268,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
           {/* Assinatura */}
           <div>
             {assinaturaUrl ? (
-              <img src={assinaturaUrl} alt={assinaturaNome} style={{ height: 44, maxWidth: 180, objectFit: 'contain', display: 'block', marginBottom: 2 }} />
+              <img src={assinaturaUrl} alt={assinaturaNome} style={{ height: 68, maxWidth: 260, objectFit: 'contain', display: 'block', marginBottom: 2 }} />
             ) : (
               <p style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 24, color: '#222', margin: '0 0 2px' }}>{assinaturaNome}</p>
             )}
