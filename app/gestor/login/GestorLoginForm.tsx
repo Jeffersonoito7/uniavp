@@ -31,7 +31,7 @@ export default function GestorLoginForm({ logoUrl, siteNome }: { logoUrl: string
     const perfil = await res.json()
 
     if (perfil.redirect) {
-      window.location.href = perfil.redirect
+      window.location.href = '/gestor/otp'
       return
     }
 

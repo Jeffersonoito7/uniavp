@@ -34,7 +34,8 @@ export default function ConsultorLoginPage() {
     const res = await fetch('/api/auth/perfil')
     const perfil = await res.json()
     if (perfil.redirect) {
-      window.location.href = perfil.redirect
+      // Redireciona para verificação OTP
+      window.location.href = '/consultor/otp'
     } else {
       await supabase.auth.signOut()
       setErro('Usuário sem cadastro de consultor. Verifique com seu gestor.')

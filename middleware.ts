@@ -8,6 +8,10 @@ function hasSession(request: NextRequest): boolean {
   )
 }
 
+function hasOtp(request: NextRequest): boolean {
+  return !!request.cookies.get('otp_ok')?.value
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const hostname = request.headers.get('host') || ''
@@ -54,7 +58,9 @@ export function middleware(request: NextRequest) {
     pathname === '/' ||
     pathname.startsWith('/login') ||
     pathname.startsWith('/consultor/login') ||
+    pathname.startsWith('/consultor/otp') ||
     pathname.startsWith('/gestor/login') ||
+    pathname.startsWith('/gestor/otp') ||
     pathname.startsWith('/cadastro') ||
     pathname.startsWith('/captacao') ||
     pathname.startsWith('/recuperar-senha') ||
@@ -63,7 +69,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/convite') ||
     pathname.startsWith('/g/') ||
     pathname.startsWith('/planos') ||
-    pathname.startsWith('/api/')
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/verificar/')
 
   if (isPublic) return NextResponse.next()
 
@@ -73,6 +80,20 @@ export function middleware(request: NextRequest) {
     if (pathname.startsWith('/gestor')) { url.pathname = '/gestor/login';    return NextResponse.redirect(url) }
     if (pathname.startsWith('/admin'))  { url.pathname = '/login';           return NextResponse.redirect(url) }
     if (pathname.startsWith('/super'))  { url.pathname = '/super/login';     return NextResponse.redirect(url) }
+    return NextResponse.next()
+  }
+
+  // ── Verificação OTP obrigatória para aluno e gestor ─────────
+  if (!hasOtp(request)) {
+    const url = new URL(request.url)
+    if (pathname.startsWith('/aluno')) {
+      url.pathname = '/consultor/otp'
+      return NextResponse.redirect(url)
+    }
+    if (pathname.startsWith('/gestor') && !pathname.startsWith('/gestor/login') && !pathname.startsWith('/gestor/otp')) {
+      url.pathname = '/gestor/otp'
+      return NextResponse.redirect(url)
+    }
   }
 
   return NextResponse.next()
