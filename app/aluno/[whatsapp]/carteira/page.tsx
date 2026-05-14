@@ -58,7 +58,7 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
       assinaturaCargo={cfg['carteira_assinatura_cargo'] || 'PRESIDENTE'}
       assinaturaEmpresa={cfg['carteira_assinatura_empresa'] || cfg['site_nome'] || ''}
       assinaturaUrl={cfg['carteira_assinatura_url'] || null}
-      urlVerificacao={cfg['carteira_url_verificacao'] || ''}
+      urlVerificacao={cfg['carteira_url_verificacao'] || process.env.NEXT_PUBLIC_APP_URL || ''}
       tagline={cfg['carteira_tagline'] || ''}
       logoEsquerdaUrl={cfg['carteira_logo_esquerda'] || null}
       logoDireitaUrl={cfg['carteira_logo_direita'] || null}
