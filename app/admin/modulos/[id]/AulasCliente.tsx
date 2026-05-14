@@ -544,6 +544,16 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                   ))}
                 </div>
                 <div><label style={labelStyle}>Espera após aprovação (h) {form.liberacao_modo !== 'automatico' ? <span style={{ color: 'var(--avp-text-dim)', fontWeight: 400 }}>(após liberação manual)</span> : ''}</label><input type="number" style={inputStyle} value={form.espera_horas} onChange={e => setForm(p => ({ ...p, espera_horas: parseInt(e.target.value) || 0 }))} /></div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={{ ...labelStyle, marginBottom: 8 }}>🎬 Controle do vídeo</label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${(form as any).bloquear_avancar ? 'var(--avp-danger)' : 'var(--avp-border)'}`, background: (form as any).bloquear_avancar ? '#e6394610' : 'transparent' }}>
+                    <input type="checkbox" checked={!!(form as any).bloquear_avancar} onChange={e => setForm(p => ({ ...p, bloquear_avancar: e.target.checked } as typeof p))} style={{ width: 16, height: 16, accentColor: 'var(--avp-danger)' }} />
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>🚫 Bloquear avanço do vídeo</p>
+                      <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Aluno não pode pular para frente — precisa assistir na ordem</p>
+                    </div>
+                  </label>
+                </div>
                 <div><label style={labelStyle}>Duração (min)</label><input type="number" style={inputStyle} value={form.duracao_minutos} onChange={e => setForm(p => ({ ...p, duracao_minutos: e.target.value }))} placeholder="Ex: 12" /></div>
                 <div><label style={labelStyle}>Qtd. de questões no quiz</label><input type="number" style={inputStyle} value={form.quiz_qtd_questoes} onChange={e => setForm(p => ({ ...p, quiz_qtd_questoes: parseInt(e.target.value) }))} min={1} max={20} /></div>
                 <div><label style={labelStyle}>Aprovação mínima (%)</label><input type="number" style={inputStyle} value={form.quiz_aprovacao_minima} onChange={e => setForm(p => ({ ...p, quiz_aprovacao_minima: parseInt(e.target.value) }))} min={50} max={100} /></div>
@@ -658,6 +668,16 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                     </div>
                     <div><label style={labelStyle}>Duração (min)</label><input type="number" style={inputStyle} value={editForm.duracao_minutos} onChange={e => setEditForm(p => ({ ...p, duracao_minutos: e.target.value }))} /></div>
                     <div><label style={labelStyle}>Espera após aprovação (horas)</label><input type="number" style={inputStyle} value={editForm.espera_horas} onChange={e => setEditForm(p => ({ ...p, espera_horas: parseInt(e.target.value) }))} /></div>
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label style={{ ...labelStyle, marginBottom: 8 }}>🎬 Controle do vídeo</label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${(editForm as any).bloquear_avancar ? 'var(--avp-danger)' : 'var(--avp-border)'}`, background: (editForm as any).bloquear_avancar ? '#e6394610' : 'transparent' }}>
+                        <input type="checkbox" checked={!!(editForm as any).bloquear_avancar} onChange={e => setEditForm(p => ({ ...p, bloquear_avancar: e.target.checked } as typeof p))} style={{ width: 16, height: 16, accentColor: 'var(--avp-danger)' }} />
+                        <div>
+                          <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>🚫 Bloquear avanço do vídeo</p>
+                          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Aluno não pode pular para frente — precisa assistir na ordem</p>
+                        </div>
+                      </label>
+                    </div>
                     <div><label style={labelStyle}>Qtd. de questões no quiz</label><input type="number" style={inputStyle} value={editForm.quiz_qtd_questoes} onChange={e => setEditForm(p => ({ ...p, quiz_qtd_questoes: parseInt(e.target.value) }))} min={1} max={20} /></div>
                     <div><label style={labelStyle}>Aprovação mínima (%)</label><input type="number" style={inputStyle} value={editForm.quiz_aprovacao_minima} onChange={e => setEditForm(p => ({ ...p, quiz_aprovacao_minima: parseInt(e.target.value) }))} min={50} max={100} /></div>
                     <div><label style={labelStyle}>Validade (meses)</label><input type="number" style={inputStyle} value={editForm.validade_meses} onChange={e => setEditForm(p => ({ ...p, validade_meses: e.target.value }))} min={0} placeholder="0 = sem validade" /></div>

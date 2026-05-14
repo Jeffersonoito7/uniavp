@@ -15,9 +15,10 @@ type Props = {
   simNaoPergunta?: string
   simNaoNaoMensagem?: string
   simNaoPerguntas?: SimNaoItem[]
+  onAprovado?: () => void
 }
 
-export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, tentativasAnteriores, quizTipo, simNaoPergunta, simNaoNaoMensagem, simNaoPerguntas }: Props) {
+export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, tentativasAnteriores, quizTipo, simNaoPergunta, simNaoNaoMensagem, simNaoPerguntas, onAprovado }: Props) {
   const [respostas, setRespostas] = useState<Record<string, number>>({})
   const [enviando, setEnviando] = useState(false)
   const [resultado, setResultado] = useState<{ acertos: number; total: number; percentual: number; aprovado: boolean; pulado?: boolean } | null>(null)
@@ -93,6 +94,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
           body: JSON.stringify({ aula_id: aulaId, pular: true }),
         })
         setResultado({ acertos: 0, total: 0, percentual: 0, aprovado: true, pulado: true })
+        onAprovado?.()
         setEnviando(false)
       }
     }
@@ -140,6 +142,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
       body: JSON.stringify({ aula_id: aulaId, pular: true }),
     })
     setResultado({ acertos: 0, total: questoes.length, percentual: 0, aprovado: true, pulado: true })
+    onAprovado?.()
     setEnviando(false)
   }
 
@@ -157,6 +160,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
       setModoLiberacao(data.modo)
     }
     setResultado({ acertos: data.acertos, total: data.total, percentual: data.percentual, aprovado: data.aprovado })
+    if (data.aprovado) onAprovado?.()
     setEnviando(false)
   }
 

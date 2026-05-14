@@ -1,16 +1,24 @@
 'use client'
+import { useState } from 'react'
+import CertificadoCanvas from './CertificadoCanvas'
 
 type Props = {
   nomeAluno: string
   templateUrl: string
+  nomeY?: number
+  nomeFontePct?: number
+  nomeCor?: string
   onClose: () => void
 }
 
-export default function CertificadoPopup({ nomeAluno, templateUrl, onClose }: Props) {
+export default function CertificadoPopup({ nomeAluno, templateUrl, nomeY, nomeFontePct, nomeCor, onClose }: Props) {
+  const [dataUrl, setDataUrl] = useState<string | null>(null)
+
   function baixar() {
+    const src = dataUrl || templateUrl
     const link = document.createElement('a')
-    link.href = templateUrl
-    link.download = `certificado-avp.png`
+    link.href = src
+    link.download = `certificado-${nomeAluno.split(' ')[0].toLowerCase()}.png`
     link.target = '_blank'
     link.click()
   }
@@ -29,12 +37,15 @@ export default function CertificadoPopup({ nomeAluno, templateUrl, onClose }: Pr
           <strong style={{ color: 'var(--avp-text)' }}>Baixe seu certificado abaixo.</strong>
         </p>
 
-        {/* Preview do certificado */}
-        <div style={{ marginBottom: 20, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--avp-border)' }}>
-          <img
-            src={templateUrl}
-            alt="Certificado de Conclusão"
-            style={{ width: '100%', display: 'block', objectFit: 'contain' }}
+        {/* Canvas com nome renderizado */}
+        <div style={{ marginBottom: 20 }}>
+          <CertificadoCanvas
+            nomeAluno={nomeAluno}
+            templateUrl={templateUrl}
+            nomeY={nomeY}
+            nomeFontePct={nomeFontePct}
+            nomeCor={nomeCor}
+            onDataUrl={setDataUrl}
           />
         </div>
 

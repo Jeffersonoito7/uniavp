@@ -5,9 +5,8 @@ import Comentarios from './Comentarios'
 import CountdownAoVivo from './CountdownAoVivo'
 import CurtidasButton from '@/app/components/CurtidasButton'
 import ReacaoAula from './ReacaoAula'
-import VideoPlayer from '@/app/components/VideoPlayer'
-import Quiz from './Quiz'
 import AvaliacaoAula from './AvaliacaoAula'
+import AulaInterativa from './AulaInterativa'
 
 export default async function AulaPage({ params }: { params: { whatsapp: string; aulaId: string } }) {
   const supabase = await createClient()
@@ -21,7 +20,7 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
   const { data: aula } = await (adminClient.from('aulas') as any)
-    .select('*, modulo:modulos(titulo)').eq('id', params.aulaId).single()
+    .select('*, modulo:modulos(titulo), bloquear_avancar').eq('id', params.aulaId).single()
   if (!aula || !aula.publicado) redirect(`/aluno/${params.whatsapp}`)
 
   // ── Verificação server-side: aula bloqueada? ──
@@ -37,6 +36,15 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   const aulasModulo: { aula_id: string; aula_titulo: string; aula_ordem: number; status: string; capa_url: string | null; youtube_video_id: string }[] =
     ((trilhaSidebar ?? []) as any[]).filter((t: any) => t.modulo_id === aula.modulo_id)
       .sort((a: any, b: any) => a.aula_ordem - b.aula_ordem)
+
+  const idxAtual = aulasModulo.findIndex(a => a.aula_id === params.aulaId)
+  const aulaAnteriorNav = idxAtual > 0
+    ? { id: aulasModulo[idxAtual - 1].aula_id, titulo: aulasModulo[idxAtual - 1].aula_titulo, ordem: aulasModulo[idxAtual - 1].aula_ordem }
+    : null
+  const proximaAulaNav = idxAtual >= 0 && idxAtual < aulasModulo.length - 1
+    ? { id: aulasModulo[idxAtual + 1].aula_id, titulo: aulasModulo[idxAtual + 1].aula_titulo, ordem: aulasModulo[idxAtual + 1].aula_ordem }
+    : null
+  const proximaStatus = proximaAulaNav ? (aulasModulo[idxAtual + 1]?.status ?? 'bloqueada') : 'nenhuma'
 
   // Avaliação existente
   const { data: avaliacaoExistente } = await (adminClient.from('aula_avaliacoes') as any)
@@ -106,15 +114,32 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
         {/* ── PAINEL PRINCIPAL ── */}
         <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
 
-          {/* Vídeo */}
+          {/* Vídeo + Quiz + Navegação (client) */}
           {temAoVivo && (
             <div style={{ padding: '20px 24px' }}>
               <CountdownAoVivo aoVivoData={aula.ao_vivo_data} aoVivoLink={aula.ao_vivo_link} plataforma={aula.ao_vivo_plataforma ?? 'outro'} />
             </div>
           )}
-          {(!temAoVivo || aoVivoPassou) && (
-            <VideoPlayer youtubeId={aula.youtube_video_id} videoUrl={(aula as any).video_url} titulo={aula.titulo} />
-          )}
+          <AulaInterativa
+            whatsapp={params.whatsapp}
+            aulaId={params.aulaId}
+            youtubeId={(!temAoVivo || aoVivoPassou) ? aula.youtube_video_id : null}
+            videoUrl={(!temAoVivo || aoVivoPassou) ? (aula as any).video_url : null}
+            titulo={aula.titulo}
+            bloquearAvancar={!!(aula as any).bloquear_avancar}
+            aulaAnterior={aulaAnteriorNav}
+            proximaAula={proximaAulaNav}
+            proximaStatus={proximaStatus}
+            questoes={questoes}
+            aprovacaoMinima={aula.quiz_aprovacao_minima}
+            jaAprovado={jaAprovado}
+            tentativasAnteriores={tentativasAnteriores}
+            quizTipo={aula.quiz_tipo ?? 'obrigatorio'}
+            simNaoPergunta={(aula as any).quiz_sim_nao_pergunta ?? ''}
+            simNaoNaoMensagem={(aula as any).quiz_sim_nao_nao_mensagem ?? ''}
+            simNaoPerguntas={(aula as any).quiz_sim_nao_perguntas ?? []}
+            temQuiz={questoes.length > 0 || aula.quiz_tipo === 'sim_nao'}
+          />
 
           {/* Info + ações */}
           <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -142,11 +167,6 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
                   ))}
                 </div>
               </div>
-            )}
-
-            {/* Quiz */}
-            {(questoes.length > 0 || aula.quiz_tipo === 'sim_nao') && (
-              <Quiz aulaId={params.aulaId} questoes={questoes} aprovacaoMinima={aula.quiz_aprovacao_minima} jaAprovado={jaAprovado} tentativasAnteriores={tentativasAnteriores} quizTipo={aula.quiz_tipo ?? 'obrigatorio'} simNaoPergunta={(aula as any).quiz_sim_nao_pergunta ?? ''} simNaoNaoMensagem={(aula as any).quiz_sim_nao_nao_mensagem ?? ''} simNaoPerguntas={(aula as any).quiz_sim_nao_perguntas ?? []} />
             )}
 
             {/* Avaliação por estrelas */}
