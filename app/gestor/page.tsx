@@ -11,11 +11,17 @@ export default async function GestorPage() {
   const adminClient = createServiceRoleClient()
 
   const { data: gestor } = await (adminClient.from('gestores') as any)
-    .select('id, nome, email, whatsapp, foto_perfil')
+    .select('id, nome, email, whatsapp, foto_perfil, status_assinatura, trial_expira_em, plano_vencimento')
     .eq('user_id', user.id)
     .eq('ativo', true)
     .maybeSingle()
   if (!gestor) redirect('/gestor/login')
+
+  // Verifica acesso: trial ativo ou plano ativo
+  const agora = new Date()
+  const trialAtivo = gestor.status_assinatura === 'trial' && gestor.trial_expira_em && new Date(gestor.trial_expira_em) > agora
+  const planoAtivo = gestor.status_assinatura === 'ativo' && gestor.plano_vencimento && new Date(gestor.plano_vencimento) > agora
+  if (!trialAtivo && !planoAtivo) redirect('/gestor/assinar')
 
   const gestorFoto: string | null = gestor.foto_perfil ?? null
 

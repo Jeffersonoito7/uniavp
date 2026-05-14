@@ -35,8 +35,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: authError?.message ?? 'Erro ao criar usuário' }, { status: 400 })
   }
 
+  const trialExpira = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
   const { data: gestor, error: gestorError } = await (adminClient.from('gestores') as any)
-    .insert({ user_id: authUser.user.id, nome, email, whatsapp: whatsapp.replace(/\D/g, ''), ativo: true })
+    .insert({
+      user_id: authUser.user.id, nome, email,
+      whatsapp: whatsapp.replace(/\D/g, ''), ativo: true,
+      status_assinatura: 'trial',
+      trial_expira_em: trialExpira,
+    })
     .select()
     .single()
 

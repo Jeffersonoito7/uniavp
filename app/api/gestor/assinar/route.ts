@@ -1,0 +1,99 @@
+import { NextResponse } from 'next/server'
+import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { criarCobrancaPix } from '@/lib/efi'
+import { randomUUID } from 'crypto'
+
+export const dynamic = 'force-dynamic'
+
+export async function POST() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+
+  const adminClient = createServiceRoleClient()
+  const { data: gestor } = await (adminClient.from('gestores') as any)
+    .select('id, nome, whatsapp, status_assinatura, plano_vencimento')
+    .eq('user_id', user.id).eq('ativo', true).maybeSingle()
+
+  if (!gestor) return NextResponse.json({ error: 'Gestor não encontrado' }, { status: 404 })
+
+  // Verifica se já tem pagamento pendente
+  const { data: pagPendente } = await (adminClient.from('gestor_pagamentos') as any)
+    .select('id, pix_copia_cola, qrcode_base64, vencimento')
+    .eq('gestor_id', gestor.id)
+    .eq('status', 'pendente')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (pagPendente) {
+    return NextResponse.json({ ok: true, pagamento: pagPendente, jaExiste: true })
+  }
+
+  // Gera vencimento: 3 dias a partir de hoje
+  const venc = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+  const vencimento = venc.toISOString().split('T')[0]
+  const txid = randomUUID().replace(/-/g, '').substring(0, 35)
+
+  try {
+    const { pixCopiaECola, qrcodeBase64 } = await criarCobrancaPix({
+      txid,
+      valor: 100,
+      vencimento,
+      nomeDevedor: gestor.nome,
+      descricao: 'Mensalidade Painel Gestor',
+    })
+
+    const { data: pagamento } = await (adminClient.from('gestor_pagamentos') as any)
+      .insert({
+        gestor_id: gestor.id,
+        txid,
+        valor: 100,
+        status: 'pendente',
+        pix_copia_cola: pixCopiaECola,
+        qrcode_base64: qrcodeBase64,
+        vencimento,
+      })
+      .select().single()
+
+    await (adminClient.from('gestores') as any)
+      .update({ pix_txid: txid })
+      .eq('id', gestor.id)
+
+    return NextResponse.json({ ok: true, pagamento })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
+  }
+}
+
+export async function GET() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+
+  const adminClient = createServiceRoleClient()
+  const { data: gestor } = await (adminClient.from('gestores') as any)
+    .select('id, status_assinatura, trial_expira_em, plano_vencimento')
+    .eq('user_id', user.id).maybeSingle()
+
+  if (!gestor) return NextResponse.json({ error: 'Não encontrado' }, { status: 404 })
+
+  const agora = new Date()
+  const trialAtivo = gestor.status_assinatura === 'trial' && gestor.trial_expira_em && new Date(gestor.trial_expira_em) > agora
+  const diasTrial = trialAtivo ? Math.ceil((new Date(gestor.trial_expira_em).getTime() - agora.getTime()) / 86400000) : 0
+
+  const { data: ultimoPag } = await (adminClient.from('gestor_pagamentos') as any)
+    .select('*')
+    .eq('gestor_id', gestor.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  return NextResponse.json({
+    status: gestor.status_assinatura,
+    trialAtivo,
+    diasTrial,
+    planoVencimento: gestor.plano_vencimento,
+    ultimoPagamento: ultimoPag,
+  })
+}
