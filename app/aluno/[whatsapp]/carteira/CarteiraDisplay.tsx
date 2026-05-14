@@ -156,27 +156,43 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
         </div>
 
         {/* Foto 3x4 */}
-        <div style={{ flexShrink: 0 }}>
+        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
           <div
             onClick={() => fotoRef.current?.click()}
             style={{ width: 120, height: 160, border: `2.5px solid ${GREEN}`, borderRadius: 4, overflow: 'hidden', background: '#e8e8e8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
-            title="Clique para trocar foto"
           >
             {fotoUrl ? (
-              <img src={fotoUrl} alt={nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <>
+                <img src={fotoUrl} alt={nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                {/* Overlay trocar foto */}
+                <div className="no-print" style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 6, opacity: 0, transition: 'opacity 0.2s' }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = '1') }
+                  onMouseLeave={e => (e.currentTarget.style.opacity = '0') }>
+                  <span style={{ background: 'rgba(0,0,0,0.65)', color: '#fff', fontSize: 9, padding: '3px 7px', borderRadius: 4, fontWeight: 600 }}>Trocar foto</span>
+                </div>
+              </>
             ) : (
-              <svg width="62" height="90" viewBox="0 0 62 90" fill="none">
-                <ellipse cx="31" cy="26" rx="17" ry="17" fill="#b0b0b0" />
-                <ellipse cx="31" cy="74" rx="31" ry="22" fill="#b0b0b0" />
-              </svg>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                  <circle cx="20" cy="15" r="9" fill="#bbb" />
+                  <ellipse cx="20" cy="36" rx="18" ry="10" fill="#bbb" />
+                </svg>
+                <span style={{ fontSize: 9, color: '#888', fontWeight: 600, textAlign: 'center' as const, lineHeight: 1.3, padding: '0 4px' }}>📷 Toque para{'\n'}adicionar foto</span>
+              </div>
             )}
             {uploadando && (
-              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ color: '#fff', fontSize: 10 }}>...</span>
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                <span style={{ color: '#fff', fontSize: 18 }}>⏳</span>
+                <span style={{ color: '#fff', fontSize: 9 }}>Salvando...</span>
               </div>
             )}
           </div>
           <input ref={fotoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFoto} />
+          {/* Botão visível fora do card (no-print) */}
+          <button className="no-print" onClick={() => fotoRef.current?.click()}
+            style={{ marginTop: 5, background: GREEN, color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 9, fontWeight: 700, cursor: 'pointer', width: 120 }}>
+            {fotoUrl ? '🔄 Trocar foto' : '📷 Adicionar foto'}
+          </button>
         </div>
 
         {/* Campos */}
@@ -343,10 +359,31 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
       <style>{`
         @media print {
+          @page { size: A4 portrait; margin: 15mm; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           body { background: #fff !important; margin: 0 !important; }
           .no-print { display: none !important; }
-          .print-area { padding: 10mm !important; }
-          .card-wrapper { page-break-inside: avoid; margin-bottom: 10mm; }
+          .print-area {
+            padding: 0 !important;
+            max-width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 18mm !important;
+          }
+          .card-wrapper {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+          }
+          .card-wrapper > div {
+            width: 170mm !important;
+            height: 107mm !important;
+            box-shadow: none !important;
+          }
         }
       `}</style>
 
