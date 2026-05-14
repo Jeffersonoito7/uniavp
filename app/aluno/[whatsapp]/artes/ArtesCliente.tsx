@@ -255,10 +255,29 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
               </div>
             )}
 
+            {/* Checklist do que falta */}
+            {(!templateSelecionado || !fotoLocal) && (
+              <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', margin: '0 0 4px' }}>Para gerar, complete:</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+                  <span style={{ fontSize: 16 }}>{templateSelecionado ? '✅' : '⬜'}</span>
+                  <span style={{ color: templateSelecionado ? 'var(--avp-green)' : 'var(--avp-text-dim)' }}>
+                    {templateSelecionado ? `Arte: ${templateSelecionado.titulo}` : 'Escolha uma arte (passo 2)'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+                  <span style={{ fontSize: 16 }}>{fotoLocal ? '✅' : '⬜'}</span>
+                  <span style={{ color: fotoLocal ? 'var(--avp-green)' : 'var(--avp-text-dim)' }}>
+                    {fotoLocal ? 'Foto carregada' : 'Envie uma foto (passo 3)'}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Gerar */}
             <button onClick={gerar} disabled={gerando || !templateSelecionado || !fotoLocal}
-              style={{ background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px', fontWeight: 800, fontSize: 16, cursor: (gerando || !templateSelecionado || !fotoLocal) ? 'not-allowed' : 'pointer', opacity: (gerando || !templateSelecionado || !fotoLocal) ? 0.5 : 1 }}>
-              {gerando ? '⏳ Gerando...' : '✨ Gerar Arte em Alta Qualidade'}
+              style={{ background: templateSelecionado && fotoLocal ? 'var(--grad-brand)' : 'var(--avp-border)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px', fontWeight: 800, fontSize: 16, cursor: (gerando || !templateSelecionado || !fotoLocal) ? 'not-allowed' : 'pointer', transition: 'background 0.2s' }}>
+              {gerando ? '⏳ Gerando...' : templateSelecionado && fotoLocal ? '✨ Gerar Arte em Alta Qualidade' : '✨ Gerar Arte'}
             </button>
 
             {erro && (
