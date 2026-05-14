@@ -6,15 +6,6 @@ export default function TesteCertificado() {
       <CertificadoWrapper
         nomeAluno="Jefferson Soares"
         templateUrl=""
-        nomeX={50}
-        nomeY={62}
-        nomeTamanho={72}
-        nomeCor="#1a1a2e"
-        cidade="São Paulo"
-        dataX={50}
-        dataY={72}
-        dataTamanho={36}
-        dataCor="#1a1a2e"
       />
     </div>
   )
