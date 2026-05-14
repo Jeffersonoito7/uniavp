@@ -57,9 +57,8 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
     return (
       <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
         <div style={{ maxWidth: 680, width: '100%', textAlign: 'center' }}>
-          {logoUrl && <img src={logoUrl} alt={siteNome} style={{ height: 64, objectFit: 'contain', marginBottom: 40 }} />}
+          {logoUrl && <img src={logoUrl} alt={siteNome} style={{ height: 100, objectFit: 'contain', marginBottom: 40, display: 'block', margin: '0 auto 40px' }} />}
 
-          <div style={{ fontSize: 64, marginBottom: 24 }}>🤝</div>
           <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', fontWeight: 900, color: '#fff', lineHeight: 1.2, marginBottom: 16 }}>
             Você gosta de vendas<br />ou deseja aprender<br />
             <span style={{ background: 'linear-gradient(90deg, #02A153, #22c55e)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>a vender?</span>
