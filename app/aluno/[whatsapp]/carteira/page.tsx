@@ -15,7 +15,6 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
 
   if (!aluno) redirect('/consultor/login')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}/carteira`)
-  if (aluno.status !== 'concluido') redirect(`/aluno/${params.whatsapp}`)
 
   // Carga horária total dos cursos publicados
   const { data: aulas } = await (adminClient.from('aulas') as any)

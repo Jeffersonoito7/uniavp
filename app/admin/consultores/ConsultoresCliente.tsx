@@ -204,10 +204,16 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
                     {new Date(c.created_at).toLocaleDateString('pt-BR')}
                   </td>
                   <td style={{ padding: '14px 16px' }}>
-                    <button onClick={() => excluirConsultor(c)}
-                      style={{ background: 'var(--avp-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
-                      Excluir
-                    </button>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <a href={`/aluno/${c.whatsapp}/carteira`} target="_blank" rel="noreferrer"
+                        style={{ background: '#fbbf2420', border: '1px solid #fbbf2440', color: '#fbbf24', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+                        🪪 Carteira
+                      </a>
+                      <button onClick={() => excluirConsultor(c)}
+                        style={{ background: 'var(--avp-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                        Excluir
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
