@@ -114,7 +114,7 @@ export async function POST() {
     ok: true,
     canal,
     destino,
-    // Em dev sem RESEND/WhatsApp, expõe o código para testes
-    ...((!enviado && process.env.NODE_ENV !== 'production') ? { codigoDev: codigo } : {})
+    // Mostra código na tela quando nenhum canal de envio está configurado
+    ...(!enviado ? { codigoDev: codigo } : {})
   })
 }
