@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef, useCallback } from 'react'
+import ImageCropModal from '@/app/components/ImageCropModal'
 
 const NAVY = '#0D2B6E'
 const GREEN = '#0A7A42'
@@ -40,6 +41,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
   const [fotoUrl, setFotoUrl] = useState<string | null>(fotoInicial)
   const [uploadando, setUploadando] = useState(false)
   const [msgFoto, setMsgFoto] = useState('')
+  const [cropSrc, setCropSrc] = useState<string | null>(null)
   const fotoRef = useRef<HTMLInputElement>(null)
 
   const baseVerificacao = urlVerificacao || (typeof window !== 'undefined' ? window.location.origin : '')
@@ -47,13 +49,19 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
   const verificacaoLink = `${baseVerificacao.startsWith('http') ? baseVerificacao : 'https://' + baseVerificacao}/verificar/${numRegistro}`
   const qrVerificacao = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(verificacaoLink)}&color=0A7A42&bgcolor=ffffff`
 
-  async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFotoSelecionada(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    setFotoUrl(URL.createObjectURL(file))
+    setCropSrc(URL.createObjectURL(file))
+    e.target.value = ''
+  }
+
+  async function handleCropSalvo(_dataUrl: string, blob: Blob) {
+    setCropSrc(null)
+    setFotoUrl(_dataUrl)
     setUploadando(true)
     const fd = new FormData()
-    fd.append('foto', file)
+    fd.append('foto', blob, 'foto.jpg')
     const res = await fetch('/api/aluno/foto-carteira', { method: 'POST', body: fd })
     const data = await res.json()
     if (data.url) { setFotoUrl(data.url); setMsgFoto('Foto salva!') }
@@ -187,7 +195,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
               </div>
             )}
           </div>
-          <input ref={fotoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFoto} />
+          <input ref={fotoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFotoSelecionada} />
           {/* Botão visível fora do card (no-print) */}
           <button className="no-print" onClick={() => fotoRef.current?.click()}
             style={{ marginTop: 5, background: GREEN, color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 9, fontWeight: 700, cursor: 'pointer', width: 144 }}>
@@ -356,6 +364,16 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
   )
 
   return (
+    <>
+    {cropSrc && (
+      <ImageCropModal
+        src={cropSrc}
+        aspectRatio={3 / 4}
+        title="Ajustar foto 3x4"
+        onSave={handleCropSalvo}
+        onCancel={() => setCropSrc(null)}
+      />
+    )}
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
       <style>{`
         @media print {
@@ -441,5 +459,6 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
         </div>
       </div>
     </div>
+    </>
   )
 }
