@@ -41,23 +41,25 @@ export default function VideoPlayer({ youtubeId, videoUrl, titulo, onEnded, bloq
         playerVars: { rel: 0, modestbranding: 1, origin: window.location.origin },
         events: {
           onStateChange: (event: { data: number }) => {
-            if (event.data === 0) onEnded?.() // ended
-            // Bloquear avanço: quando PLAYING, checa se saltou frente
-            if (bloquearAvancar && event.data === 1 && playerRef.current) {
+            if (event.data === 0) onEnded?.()
+            // Bloquear avanço: checa ao voltar a PLAYING (1) ou entrar em BUFFERING (3)
+            if (bloquearAvancar && (event.data === 1 || event.data === 3) && playerRef.current) {
               const cur = playerRef.current.getCurrentTime()
-              if (cur > maxWatchedRef.current + 2) {
+              if (cur > maxWatchedRef.current + 1) {
                 playerRef.current.seekTo(maxWatchedRef.current, true)
               }
             }
           },
           onReady: () => {
             if (!bloquearAvancar) return
-            // Poll a cada 2s para atualizar maxWatched
+            // Poll a cada 500ms para atualizar maxWatched com precisão
             const iv = setInterval(() => {
               if (!playerRef.current || destroyed) { clearInterval(iv); return }
-              const cur = playerRef.current.getCurrentTime()
-              if (cur > maxWatchedRef.current) maxWatchedRef.current = cur
-            }, 2000)
+              try {
+                const cur = playerRef.current.getCurrentTime()
+                if (cur > maxWatchedRef.current) maxWatchedRef.current = cur
+              } catch { clearInterval(iv) }
+            }, 500)
           },
         },
       })
