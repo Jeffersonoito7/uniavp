@@ -51,7 +51,13 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
 
   const { data: certConfigs } = await (adminClient.from('configuracoes') as any)
     .select('chave, valor')
-    .in('chave', ['certificado_template_url', 'certificado_nome_y', 'certificado_nome_tamanho', 'certificado_nome_cor', 'modulo_capa_padrao'])
+    .in('chave', [
+      'certificado_template_url', 'certificado_nome_y', 'certificado_nome_tamanho', 'certificado_nome_cor',
+      'modulo_capa_padrao',
+      'cert_logo_esquerda', 'cert_logo_direita', 'cert_logo_y', 'cert_logo_tam', 'cert_assinatura_y',
+      'carteira_logo_esquerda', 'carteira_logo_direita',
+      'carteira_assinatura_url', 'carteira_assinatura_nome', 'carteira_assinatura_cargo',
+    ])
   const certMap: Record<string, string> = {}
   for (const r of certConfigs ?? []) { try { certMap[r.chave] = JSON.parse(r.valor) } catch { certMap[r.chave] = r.valor } }
   if (!aluno) redirect('/consultor/login')
@@ -479,6 +485,14 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
           nomeY={certMap['certificado_nome_y'] ? Number(certMap['certificado_nome_y']) : undefined}
           nomeFontePct={certMap['certificado_nome_tamanho'] ? Number(certMap['certificado_nome_tamanho']) / 100 : undefined}
           nomeCor={certMap['certificado_nome_cor'] ?? undefined}
+          logoEsquerdaUrl={certMap['cert_logo_esquerda'] || certMap['carteira_logo_esquerda'] || null}
+          logoDireitaUrl={certMap['cert_logo_direita'] || certMap['carteira_logo_direita'] || null}
+          logoY={certMap['cert_logo_y'] ? Number(certMap['cert_logo_y']) : undefined}
+          logoTamPct={certMap['cert_logo_tam'] ? Number(certMap['cert_logo_tam']) / 100 : undefined}
+          assinaturaUrl={certMap['carteira_assinatura_url'] ?? null}
+          assinaturaNome={certMap['carteira_assinatura_nome'] ?? undefined}
+          assinaturaCargo={certMap['carteira_assinatura_cargo'] ?? undefined}
+          assinaturaY={certMap['cert_assinatura_y'] ? Number(certMap['cert_assinatura_y']) : undefined}
         />
       )}
     </>

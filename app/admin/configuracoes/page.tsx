@@ -1,10 +1,21 @@
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import AdminLayout from '../AdminLayout'
 import ConfiguracoesCliente from './ConfiguracoesCliente'
 import WhatsAppConectar from '@/app/components/WhatsAppConectar'
 
+export const dynamic = 'force-dynamic'
+
+const DOMINIO_MASTER = 'universidade.oito7digital.com.br'
+
 export default async function ConfiguracoesPage() {
+  // Só acessível no domínio Oito7Digital (mãe do sistema)
+  const headersList = await headers()
+  const host = headersList.get('host')?.replace(/:\d+$/, '') ?? ''
+  const isMaster = host === DOMINIO_MASTER || host === 'localhost'
+  if (!isMaster) redirect('/admin')
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -20,7 +31,7 @@ export default async function ConfiguracoesPage() {
         <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Configurações</h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Configurações da plataforma</p>
       </div>
-      <ConfiguracoesCliente configs={configs ?? []} />
+      <ConfiguracoesCliente configs={configs ?? []} isMaster={isMaster} />
       <div style={{ marginTop: 24 }}>
         <WhatsAppConectar />
       </div>

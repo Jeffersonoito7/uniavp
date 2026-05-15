@@ -44,18 +44,25 @@ function parseVal(v: string) {
   try { return JSON.parse(v) } catch { return v }
 }
 
-export default function ConfiguracoesCliente({ configs }: { configs: Config[] }) {
+// Adiciona ou atualiza ?v= para forçar CDN a servir versão nova
+function bustCache(url: string): string {
+  if (!url || !url.startsWith('http')) return url
+  const ts = Date.now()
+  return url.includes('?v=') ? url.replace(/\?v=\d+/, `?v=${ts}`) : `${url}?v=${ts}`
+}
+
+export default function ConfiguracoesCliente({ configs, isMaster = false }: { configs: Config[]; isMaster?: boolean }) {
   function get(chave: string, def = '') {
     const v = configs.find(c => c.chave === chave)?.valor ?? def
     const parsed = parseVal(v)
     return typeof parsed === 'string' ? parsed : String(parsed)
   }
 
-  const [logoUrl, setLogoUrl] = useState(get('site_logo_url'))
-  const [logoMenuUrl, setLogoMenuUrl] = useState(get('logo_menu_url'))
-  const [logoPaginaUrl, setLogoPaginaUrl] = useState(get('logo_pagina_url'))
-  const [logoFaviconUrl, setLogoFaviconUrl] = useState(get('logo_favicon_url'))
-  const [logoMobileUrl, setLogoMobileUrl] = useState(get('logo_mobile_url'))
+  const [logoUrl, setLogoUrl] = useState(() => bustCache(get('site_logo_url')))
+  const [logoMenuUrl, setLogoMenuUrl] = useState(() => bustCache(get('logo_menu_url')))
+  const [logoPaginaUrl, setLogoPaginaUrl] = useState(() => bustCache(get('logo_pagina_url')))
+  const [logoFaviconUrl, setLogoFaviconUrl] = useState(() => bustCache(get('logo_favicon_url')))
+  const [logoMobileUrl, setLogoMobileUrl] = useState(() => bustCache(get('logo_mobile_url')))
   const [nome, setNome] = useState(get('site_nome'))
   const [slogan, setSlogan] = useState(get('site_slogan'))
   const [corPrimaria, setCorPrimaria] = useState(get('site_cor_primaria') || '#333687')
@@ -72,17 +79,17 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const [carteiraAssinaturaEmpresa, setCarteiraAssinaturaEmpresa] = useState(get('carteira_assinatura_empresa'))
   const [carteiraUrlVerificacao, setCarteiraUrlVerificacao] = useState(get('carteira_url_verificacao'))
   const [carteiraTagline, setCarteiraTagline] = useState(get('carteira_tagline'))
-  const [carteiraLogoEsquerda, setCarteiraLogoEsquerda] = useState(get('carteira_logo_esquerda'))
-  const [carteiraLogoDireita, setCarteiraLogoDireita] = useState(get('carteira_logo_direita'))
-  const [carteiraAssinaturaUrl, setCarteiraAssinaturaUrl] = useState(get('carteira_assinatura_url'))
+  const [carteiraLogoEsquerda, setCarteiraLogoEsquerda] = useState(() => bustCache(get('carteira_logo_esquerda')))
+  const [carteiraLogoDireita, setCarteiraLogoDireita] = useState(() => bustCache(get('carteira_logo_direita')))
+  const [carteiraAssinaturaUrl, setCarteiraAssinaturaUrl] = useState(() => bustCache(get('carteira_assinatura_url')))
   const [boletoMensagem, setBoletoMensagem] = useState(get('boleto_mensagem'))
   const [boletoInstrucoes, setBoletoInstrucoes] = useState(get('boleto_instrucoes'))
   const [boletoMulta, setBoletoMulta] = useState(get('boleto_multa') || '2')
   const [boletoJuros, setBoletoJuros] = useState(get('boleto_juros') || '1')
-  const [moduloCapaPadrao, setModuloCapaPadrao] = useState(get('modulo_capa_padrao') || '')
+  const [moduloCapaPadrao, setModuloCapaPadrao] = useState(() => bustCache(get('modulo_capa_padrao')))
   const moduloCapaRef = useRef<HTMLInputElement>(null)
   const [captacaoVideoId, setCaptacaoVideoId] = useState(get('captacao_video_id') || '')
-  const [certUrl, setCertUrl] = useState(get('certificado_template_url'))
+  const [certUrl, setCertUrl] = useState(() => bustCache(get('certificado_template_url')))
   const [certNomeX, setCertNomeX] = useState(get('certificado_nome_x') || '50')
   const [certNomeY, setCertNomeY] = useState(get('certificado_nome_y') || '62')
   const [certNomeTamanho, setCertNomeTamanho] = useState(get('certificado_nome_tamanho') || '4.5')
@@ -92,6 +99,11 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const [certDataY, setCertDataY] = useState(get('certificado_data_y') || '72')
   const [certDataTamanho, setCertDataTamanho] = useState(get('certificado_data_tamanho') || '36')
   const [certDataCor, setCertDataCor] = useState(get('certificado_data_cor') || '#1a1a2e')
+  const [certLogoEsquerda, setCertLogoEsquerda] = useState(() => bustCache(get('cert_logo_esquerda')))
+  const [certLogoDireita, setCertLogoDireita] = useState(() => bustCache(get('cert_logo_direita')))
+  const [certLogoY, setCertLogoY] = useState(get('cert_logo_y') || '88')
+  const [certLogoTam, setCertLogoTam] = useState(get('cert_logo_tam') || '10')
+  const [certAssinaturaY, setCertAssinaturaY] = useState(get('cert_assinatura_y') || '82')
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
   const [uploading, setUploading] = useState('')
@@ -102,6 +114,8 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const logoFaviconUrlRef = useRef<HTMLInputElement>(null)
   const logoMobileUrlRef = useRef<HTMLInputElement>(null)
   const certUrlRef = useRef<HTMLInputElement>(null)
+  const certLogoEsquerdaRef = useRef<HTMLInputElement>(null)
+  const certLogoDireitaRef = useRef<HTMLInputElement>(null)
   const carteiraLogoEsquerdaRef = useRef<HTMLInputElement>(null)
   const carteiraLogoDireitaRef = useRef<HTMLInputElement>(null)
   const carteiraAssinaturaUrlRef = useRef<HTMLInputElement>(null)
@@ -113,6 +127,8 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
     logoFaviconUrl: setLogoFaviconUrl,
     logoMobileUrl: setLogoMobileUrl,
     certUrl: setCertUrl,
+    certLogoEsquerda: setCertLogoEsquerda,
+    certLogoDireita: setCertLogoDireita,
     carteiraLogoEsquerda: setCarteiraLogoEsquerda,
     carteiraLogoDireita: setCarteiraLogoDireita,
     carteiraAssinaturaUrl: setCarteiraAssinaturaUrl,
@@ -126,6 +142,8 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
     logoFaviconUrl: 'logo_favicon_url',
     logoMobileUrl: 'logo_mobile_url',
     certUrl: 'certificado_template_url',
+    certLogoEsquerda: 'cert_logo_esquerda',
+    certLogoDireita: 'cert_logo_direita',
     carteiraLogoEsquerda: 'carteira_logo_esquerda',
     carteiraLogoDireita: 'carteira_logo_direita',
     carteiraAssinaturaUrl: 'carteira_assinatura_url',
@@ -183,6 +201,10 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
           body: JSON.stringify([{ chave, valor: publicUrl }]),
         })
         setMsg(saveRes.ok ? '✅ Imagem salva!' : '❌ Upload ok mas erro ao salvar URL.')
+        // Notifica layouts que escutam (AdminLayout, GestorLayout) para atualizar logo ao vivo
+        if (saveRes.ok) {
+          window.dispatchEvent(new CustomEvent('site-logo-updated', { detail: { chave, url: publicUrl } }))
+        }
       } else {
         setMsg('✅ Upload feito!')
       }
@@ -232,6 +254,11 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
         ...(urlSafe(moduloCapaPadrao) ? [{ chave: 'modulo_capa_padrao', valor: moduloCapaPadrao }] : []),
         { chave: 'captacao_video_id', valor: captacaoVideoId },
         ...(urlSafe(certUrl) ? [{ chave: 'certificado_template_url', valor: certUrl }] : []),
+        ...(urlSafe(certLogoEsquerda) ? [{ chave: 'cert_logo_esquerda', valor: certLogoEsquerda }] : []),
+        ...(urlSafe(certLogoDireita) ? [{ chave: 'cert_logo_direita', valor: certLogoDireita }] : []),
+        { chave: 'cert_logo_y', valor: certLogoY },
+        { chave: 'cert_logo_tam', valor: certLogoTam },
+        { chave: 'cert_assinatura_y', valor: certAssinaturaY },
         { chave: 'certificado_nome_x', valor: certNomeX },
         { chave: 'certificado_nome_y', valor: certNomeY },
         { chave: 'certificado_nome_tamanho', valor: certNomeTamanho },
@@ -381,8 +408,8 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
         <div><label style={lbl}>WhatsApp suporte</label><PhoneInput value={whatsapp} onChange={setWhatsapp} placeholder="suporte da empresa" /></div>
       </div>
 
-      {/* BOLETO */}
-      <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
+      {/* BOLETO — só no painel Oito7Digital */}
+      {isMaster && <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
         <p style={{ fontWeight: 800, fontSize: 16 }}>🧾 Boleto Bancário (Efí)</p>
         <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
           Configure a mensagem e as instruções que aparecem no boleto. A logo da empresa é configurada diretamente no painel da Efí em <strong style={{ color: 'var(--avp-text)' }}>app.efipay.com.br → Minha Conta → Personalização</strong>.
@@ -416,7 +443,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
             O boleto gerado também serve como <strong style={{ color: 'var(--avp-text)' }}>recibo</strong>. Após o pagamento, o recibo é acessível em <strong style={{ color: 'var(--avp-text)' }}>/recibo/[id]</strong> com logo, dados do cliente e status de pagamento.
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* CARTEIRA */}
       <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
@@ -545,6 +572,28 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
 
         <LogoCard label="Template do certificado" campo="certUrl" value={certUrl} desc="PNG em alta resolução — A4 paisagem" rec="2480×1748px (mín.)" fileRef={certUrlRef} uploading={uploading} onUpload={uploadImagem} />
 
+        {/* Logos esquerda e direita do certificado */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <LogoCard label="Logo esquerda (certificado)" campo="certLogoEsquerda" value={certLogoEsquerda} desc="Ex: logo da escola/empresa" rec="PNG transparente" fileRef={certLogoEsquerdaRef} uploading={uploading} onUpload={uploadImagem} />
+          <LogoCard label="Logo direita (certificado)" campo="certLogoDireita" value={certLogoDireita} desc="Ex: logo da parceira/credenciadora" rec="PNG transparente" fileRef={certLogoDireitaRef} uploading={uploading} onUpload={uploadImagem} />
+        </div>
+
+        {/* Posição e tamanho dos logos */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Posição vertical dos logos (%)</label>
+            <input type="number" min={0} max={100} value={certLogoY} onChange={e => setCertLogoY(e.target.value)}
+              style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} />
+            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>0 = topo · 100 = base · padrão: 88</p>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Tamanho dos logos (%)</label>
+            <input type="number" min={1} max={30} step={0.5} value={certLogoTam} onChange={e => setCertLogoTam(e.target.value)}
+              style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} />
+            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>% da altura do certificado · padrão: 10</p>
+          </div>
+        </div>
+
         {/* Campos de posicionamento do nome */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
           <div>
@@ -570,12 +619,28 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
           </div>
         </div>
 
-        {/* Preview visual do certificado com nome */}
+        {/* Posição da assinatura */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Posição vertical da assinatura (%)</label>
+            <input type="number" min={0} max={100} value={certAssinaturaY} onChange={e => setCertAssinaturaY(e.target.value)}
+              style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} />
+            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>Linha da assinatura · padrão: 82</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 6 }}>
+            <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0, lineHeight: 1.5 }}>
+              ✍️ <strong style={{ color: 'var(--avp-text)' }}>Assinatura:</strong> usa automaticamente a imagem, nome e cargo configurados na seção <em>Carteira de Formação</em> acima.
+            </p>
+          </div>
+        </div>
+
+        {/* Preview visual do certificado completo */}
         {certUrl && certUrl.startsWith('http') && (
           <div>
-            <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 10 }}>Preview com nome do aluno</p>
-            <div style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid var(--avp-border)', position: 'relative' }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 10 }}>Preview completo</p>
+            <div style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid var(--avp-border)', position: 'relative', containerType: 'inline-size' }}>
               <img src={certUrl} alt="Certificado" style={{ width: '100%', display: 'block', objectFit: 'contain' }} />
+              {/* Nome */}
               <div style={{
                 position: 'absolute', left: '50%', transform: 'translateX(-50%)',
                 top: `${certNomeY}%`, width: '80%', textAlign: 'center',
@@ -586,9 +651,35 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
               }}>
                 NOME DO CONSULTOR
               </div>
+              {/* Logo esquerda — usa cert ou fallback carteirinha */}
+              {(certLogoEsquerda || carteiraLogoEsquerda) && (
+                <img src={certLogoEsquerda || carteiraLogoEsquerda} alt="logo esq"
+                  style={{ position: 'absolute', left: '5%', top: `${certLogoY}%`, transform: 'translateY(-50%)', height: `${certLogoTam}%`, objectFit: 'contain', pointerEvents: 'none' }} />
+              )}
+              {/* Logo direita */}
+              {(certLogoDireita || carteiraLogoDireita) && (
+                <img src={certLogoDireita || carteiraLogoDireita} alt="logo dir"
+                  style={{ position: 'absolute', right: '5%', top: `${certLogoY}%`, transform: 'translateY(-50%)', height: `${certLogoTam}%`, objectFit: 'contain', pointerEvents: 'none' }} />
+              )}
+              {/* Assinatura — vem da carteirinha */}
+              {(carteiraAssinaturaUrl || carteiraAssinaturaNome) && (
+                <div style={{ position: 'absolute', left: '10%', top: `${certAssinaturaY}%`, transform: 'translateY(-100%)', pointerEvents: 'none', textAlign: 'left' }}>
+                  {carteiraAssinaturaUrl && (
+                    <img src={carteiraAssinaturaUrl} alt="assinatura"
+                      style={{ height: '5cqw', maxWidth: '20cqw', objectFit: 'contain', display: 'block', marginBottom: '0.2cqw' }} />
+                  )}
+                  <div style={{ width: '20cqw', height: 1, background: '#444', marginBottom: '0.3cqw' }} />
+                  {carteiraAssinaturaNome && (
+                    <p style={{ margin: 0, fontSize: '1.1cqw', fontWeight: 700, color: '#1a1a1a' }}>{carteiraAssinaturaNome}</p>
+                  )}
+                  {carteiraAssinaturaCargo && (
+                    <p style={{ margin: 0, fontSize: '0.9cqw', color: '#555' }}>{carteiraAssinaturaCargo}</p>
+                  )}
+                </div>
+              )}
             </div>
             <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 8 }}>
-              💡 Ajuste os valores acima e veja o resultado em tempo real no preview
+              💡 Ajuste os valores acima e veja o resultado em tempo real
             </p>
           </div>
         )}

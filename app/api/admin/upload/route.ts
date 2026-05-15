@@ -28,5 +28,7 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   const { data: { publicUrl } } = adminClient.storage.from(bucket).getPublicUrl(path)
-  return NextResponse.json({ url: publicUrl })
+  // Cache-buster: força CDN a servir a versão recém-enviada em vez da cacheada
+  const url = `${publicUrl}?v=${Date.now()}`
+  return NextResponse.json({ url })
 }

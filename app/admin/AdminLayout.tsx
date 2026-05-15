@@ -25,7 +25,6 @@ const navItems = [
   { href: '/admin/eventos', label: 'Eventos', icon: Calendar },
   { href: '/admin/artes', label: 'Artes', icon: Palette },
   { href: '/admin/reacoes', label: 'Reações', icon: Star },
-  { href: '/admin/configuracoes', label: 'Configurações', icon: Settings },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -45,6 +44,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setIsDominioMaster(d.isDominioMaster)
       setLogoError(false)
     }).catch(() => {})
+  }, [])
+
+  // Atualiza logo instantaneamente quando o upload acontece na tela de Configurações
+  useEffect(() => {
+    function onLogoUpdated(e: CustomEvent) {
+      const { chave, url } = e.detail
+      if (chave === 'logo_menu_url' || chave === 'site_logo_url') {
+        setSiteLogoUrl(url || '')
+        setLogoError(false)
+      }
+    }
+    window.addEventListener('site-logo-updated', onLogoUpdated as EventListener)
+    return () => window.removeEventListener('site-logo-updated', onLogoUpdated as EventListener)
   }, [])
 
   useEffect(() => {

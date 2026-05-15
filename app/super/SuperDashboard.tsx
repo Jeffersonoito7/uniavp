@@ -11,7 +11,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
   nome: string; clientes: Cliente[]; stats: Stats; recentesAlunos: { nome: string; created_at: string; status: string }[]
 }) {
   const [clientes, setClientes] = useState<Cliente[]>(inicial)
-  const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca'>('dashboard')
+  const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca' | 'configuracoes'>('dashboard')
   const [onboardingId, setOnboardingId] = useState<string | null>(null)
   const [onboardingForm, setOnboardingForm] = useState({ admin_email: '', admin_nome: '', admin_senha: '', dominio: '' })
   const [onboardingMsg, setOnboardingMsg] = useState<string[]>([])
@@ -101,6 +101,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
     { id: 'clientes', label: 'Clientes', icon: '🏢' },
     { id: 'novo', label: 'Novo Cliente', icon: '➕' },
     { id: 'testar', label: 'Testar', icon: '🧪' },
+    { id: 'configuracoes', label: 'Configurações', icon: '⚙️' },
     { id: 'cobranca', label: 'Cobranças', icon: '💰' },
   ] as const
 
@@ -593,6 +594,27 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
               <p>• Após <strong style={{ color: '#f0f1f5' }}>3 dias de atraso</strong> o acesso é suspenso automaticamente</p>
               <p>• Quando o pagamento é confirmado, o acesso é reativado instantaneamente</p>
               <p style={{ marginTop: 8, color: '#6366f1', fontWeight: 600 }}>⚙️ Registre o webhook da Efí em: <span style={{ fontFamily: 'monospace' }}>{process.env.NEXT_PUBLIC_APP_URL || 'https://universidade.oito7digital.com.br'}/api/webhooks/pix</span></p>
+            </div>
+          </div>
+        )}
+        {aba === 'configuracoes' && (
+          <div>
+            <div style={{ marginBottom: 28 }}>
+              <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>⚙️ Configurações da Plataforma</h1>
+              <p style={{ color: '#8a8fa3', fontSize: 14 }}>Estas configurações só são acessíveis pelo painel Oito7Digital.</p>
+            </div>
+            <div style={{ background: '#181b24', border: '2px solid #6366f1', borderRadius: 16, padding: 32, textAlign: 'center' }}>
+              <p style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>🔐 Painel de Configurações Completo</p>
+              <p style={{ color: '#8a8fa3', fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
+                Logos, cores, certificados, carteirinha, boleto e todos os ajustes<br />da plataforma estão no painel administrativo completo.
+              </p>
+              <a href="/admin/configuracoes"
+                style={{ display: 'inline-block', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', borderRadius: 10, padding: '13px 32px', fontWeight: 700, fontSize: 15, textDecoration: 'none' }}>
+                ⚙️ Abrir Configurações
+              </a>
+              <p style={{ color: '#8a8fa3', fontSize: 12, marginTop: 16 }}>
+                Esta página só está disponível em universidade.oito7digital.com.br
+              </p>
             </div>
           </div>
         )}

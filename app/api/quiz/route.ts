@@ -260,12 +260,11 @@ export async function POST(req: NextRequest) {
           instanciaGestor
         )
       }
-      // Notifica o próprio consultor
+      // Notifica o próprio consultor — usa instância global (não a do gestor)
       if (alunoAtualizado?.whatsapp) {
         await enviarWhatsApp(
           alunoAtualizado.whatsapp,
-          `🎓 *PARABÉNS, ${alunoAtualizado.nome}!*\n\nVocê concluiu 100% da formação! 🏆✨\n\nCrie sua arte de formatura:\n👉 ${appUrl}/aluno/${alunoAtualizado.whatsapp}/artes`,
-          instanciaGestor
+          `🎓 *PARABÉNS, ${alunoAtualizado.nome}!*\n\nVocê concluiu 100% da formação! 🏆✨\n\nCrie sua arte de formatura:\n👉 ${appUrl}/aluno/${alunoAtualizado.whatsapp}/artes`
         )
       }
     }

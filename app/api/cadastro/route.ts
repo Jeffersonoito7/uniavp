@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import { enviarWhatsApp } from '@/lib/whatsapp'
+import { enviarWhatsApp, getInstanciaGestorPorNome } from '@/lib/whatsapp'
+import { getSiteConfig } from '@/lib/site-config'
 import { z } from 'zod'
 
 export const dynamic = 'force-dynamic'
@@ -87,9 +88,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: alunoErr.message ?? 'Erro ao cadastrar consultor' }, { status: 400 })
   }
 
+  const siteConfig = await getSiteConfig()
+  const nomePlataforma = siteConfig.nome || 'Universidade'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://uniavp.autovaleprevencoes.org.br'
+
+  // Notifica o gestor usando a instância WhatsApp dele (se tiver) ou a global
+  const instanciaGestor = await getInstanciaGestorPorNome(gestor_nome, adminClient)
   await enviarWhatsApp(
     gestor_whatsapp,
-    `🎓 Olá ${gestor_nome}! ${nome} acabou de se cadastrar na Universidade AVP e iniciou sua jornada de formação. Você receberá atualizações do progresso dele aqui.`
+    `🎓 Olá ${gestor_nome}! *${nome}* acabou de se cadastrar na *${nomePlataforma}* e iniciou sua jornada de formação! 🚀\n\nVocê receberá atualizações do progresso dele por aqui.`,
+    instanciaGestor
+  )
+
+  // Notifica o próprio consultor com boas-vindas e link de acesso
+  await enviarWhatsApp(
+    whatsappLimpo,
+    `🎓 Seja bem-vindo(a) à *${nomePlataforma}*, *${nome}*! 🚀\n\nSeu cadastro foi confirmado! Agora você pode começar sua formação.\n\nAcesse sua plataforma:\n👉 ${appUrl}/aluno/${whatsappLimpo}\n\n_Bons estudos!_ 📚`
   )
 
   return NextResponse.json({ aluno })

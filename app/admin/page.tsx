@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase-server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import AdminLayout from './AdminLayout'
@@ -6,7 +7,12 @@ import LinksCaptacao from './LinksCapatacao'
 import LiberacoesPendentes from './LiberacoesPendentes'
 import LinksTeste from './LinksTeste'
 
+const DOMINIO_MASTER = 'universidade.oito7digital.com.br'
+
 export default async function AdminDashboard() {
+  const host = (await headers()).get('host')?.replace(/:\d+$/, '') ?? ''
+  const isMaster = host === DOMINIO_MASTER || host === 'localhost'
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -72,7 +78,7 @@ export default async function AdminDashboard() {
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Visão geral da plataforma</p>
       </div>
 
-      <LinksTeste />
+      {isMaster && <LinksTeste />}
       <LiberacoesPendentes />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 28 }}>

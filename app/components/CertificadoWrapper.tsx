@@ -11,6 +11,14 @@ type Props = {
   nomeY?: number
   nomeFontePct?: number
   nomeCor?: string
+  logoEsquerdaUrl?: string | null
+  logoDireitaUrl?: string | null
+  logoY?: number
+  logoTamPct?: number
+  assinaturaUrl?: string | null
+  assinaturaNome?: string
+  assinaturaCargo?: string
+  assinaturaY?: number
 }
 
 type Etapa = 'certificado' | 'carteira' | 'fechado'
@@ -23,7 +31,7 @@ function marcarVisto(whatsapp: string) {
   try { localStorage.setItem(`formatura_vista_${whatsapp}`, '1') } catch { /* */ }
 }
 
-export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, numRegistro, nomeY, nomeFontePct, nomeCor }: Props) {
+export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, numRegistro, nomeY, nomeFontePct, nomeCor, logoEsquerdaUrl, logoDireitaUrl, logoY, logoTamPct, assinaturaUrl, assinaturaNome, assinaturaCargo, assinaturaY }: Props) {
   const chave = whatsapp ?? 'aluno'
   const [etapa, setEtapa] = useState<Etapa>(() => jaViu(chave) ? 'fechado' : 'certificado')
 
@@ -72,6 +80,14 @@ export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, n
         nomeY={nomeY}
         nomeFontePct={nomeFontePct}
         nomeCor={nomeCor}
+        logoEsquerdaUrl={logoEsquerdaUrl}
+        logoDireitaUrl={logoDireitaUrl}
+        logoY={logoY}
+        logoTamPct={logoTamPct}
+        assinaturaUrl={assinaturaUrl}
+        assinaturaNome={assinaturaNome}
+        assinaturaCargo={assinaturaCargo}
+        assinaturaY={assinaturaY}
         onClose={fecharTudo}
         onVerCarteira={whatsapp && numRegistro ? irParaCarteira : undefined}
       />
