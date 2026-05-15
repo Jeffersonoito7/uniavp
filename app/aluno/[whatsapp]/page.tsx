@@ -45,7 +45,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
 
   const [adminClient, siteConfig] = [createServiceRoleClient(), await getSiteConfig()]
   const { data: aluno } = await (adminClient.from('alunos') as any)
-    .select('id, nome, whatsapp, status, numero_registro')
+    .select('id, nome, whatsapp, status, numero_registro, streak_atual, maior_streak')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -281,6 +281,17 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
               <div style={{ marginTop: 10, background: 'rgba(2,161,83,0.15)', borderRadius: 100, height: 5, overflow: 'hidden' }}>
                 <div style={{ width: `${progressoGeral}%`, height: '100%', background: 'linear-gradient(90deg, #059669, #02A153)', borderRadius: 100 }} />
               </div>
+            </div>
+
+            {/* Card streak */}
+            <div style={{ background: 'linear-gradient(135deg, #92400e20, #f59e0b10)', border: `1px solid ${(aluno.streak_atual ?? 0) >= 3 ? '#f59e0b50' : '#37415130'}`, borderRadius: 14, padding: 20 }}>
+              <p style={{ color: '#fcd34d', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Sequência de Estudos</p>
+              <p style={{ fontSize: 26, fontWeight: 800, color: '#fff', marginBottom: 2 }}>
+                {(aluno.streak_atual ?? 0) >= 1 ? '🔥' : '💤'} {aluno.streak_atual ?? 0} {aluno.streak_atual === 1 ? 'dia' : 'dias'}
+              </p>
+              <p style={{ color: '#fcd34d', fontSize: 11 }}>
+                Recorde: {aluno.maior_streak ?? 0} {(aluno.maior_streak ?? 0) === 1 ? 'dia' : 'dias'} consecutivos
+              </p>
             </div>
 
             {/* Medalhas */}

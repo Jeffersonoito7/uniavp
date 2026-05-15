@@ -108,6 +108,32 @@ export async function POST(req: NextRequest) {
       motivo: `Quiz aprovado - aula ${aula_id}`,
     })
 
+    // ── Streak de estudo ──────────────────────────────────────────
+    const hojeStr = new Date().toISOString().split('T')[0]
+    const ontemStr = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+    const { data: streakInfo } = await (adminClient.from('alunos') as any)
+      .select('streak_atual, maior_streak, ultimo_estudo_em').eq('id', aluno.id).maybeSingle()
+    if (streakInfo !== null) {
+      let novoStreak = 1
+      if (streakInfo.ultimo_estudo_em === hojeStr) {
+        novoStreak = streakInfo.streak_atual || 1 // já estudou hoje
+      } else if (streakInfo.ultimo_estudo_em === ontemStr) {
+        novoStreak = (streakInfo.streak_atual || 0) + 1 // dia consecutivo
+      }
+      const novoMaior = Math.max(novoStreak, streakInfo.maior_streak || 0)
+      await (adminClient.from('alunos') as any)
+        .update({ streak_atual: novoStreak, maior_streak: novoMaior, ultimo_estudo_em: hojeStr })
+        .eq('id', aluno.id)
+      // Medalha streak 3 dias
+      if (novoStreak === 3) {
+        const { data: mStreak } = await (adminClient.from('medalhas_config') as any)
+          .select('id').eq('tipo', 'streak_3dias').maybeSingle()
+        if (mStreak) await (adminClient.from('aluno_medalhas') as any)
+          .upsert({ aluno_id: aluno.id, medalha_id: mStreak.id }, { onConflict: 'aluno_id,medalha_id' })
+      }
+    }
+    // ─────────────────────────────────────────────────────────────
+
     if (percentual === 100) {
       await (adminClient.from('aluno_pontos') as any).insert({
         aluno_id: aluno.id,

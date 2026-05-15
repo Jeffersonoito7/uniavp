@@ -557,9 +557,13 @@ export default function GestorDashboard({
               <h1 style={{ fontSize: 22, fontWeight: 800 }}>Consultores</h1>
               <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Acompanhe o progresso da sua equipe</p>
             </div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               <MuralNoticias />
               <EventosWidget />
+              <a href="/api/gestor/relatorio-excel" download
+                style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', color: 'var(--avp-text)', borderRadius: 8, padding: '9px 14px', fontWeight: 600, cursor: 'pointer', fontSize: 13, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+                📊 Exportar Excel
+              </a>
               <button onClick={() => setShowNovoConsultor(true)}
                 style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>
                 + Novo consultor

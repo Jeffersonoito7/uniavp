@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
-import { enviarWhatsApp } from '@/lib/whatsapp'
+import { enviarWhatsApp, getInstanciaGestorPorNome } from '@/lib/whatsapp'
+import { getAppUrl } from '@/lib/get-app-url'
+import { getSiteConfig } from '@/lib/site-config'
 
 export const dynamic = 'force-dynamic'
 
-// Vercel Cron: roda todo dia às 9h
-// vercel.json: { "crons": [{ "path": "/api/cron/inatividade", "schedule": "0 12 * * *" }] }
-
-const DIAS_ALERTA = [3, 7, 15] // alertas em 3, 7 e 15 dias sem avançar
+// Vercel Cron: roda todo dia às 12h (UTC)
+const DIAS_ALERTA = [3, 7, 15]
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
@@ -17,12 +17,14 @@ export async function GET(req: NextRequest) {
 
   const adminClient = createServiceRoleClient()
   const agora = new Date()
+  const appUrl = await getAppUrl()
+  const siteConfig = await getSiteConfig()
+  const nomePlat = siteConfig.nome || 'Universidade'
   let notificacoes = 0
 
   const { data: alunos } = await (adminClient.from('alunos') as any)
-    .select('id, nome, whatsapp, gestor_nome, gestor_whatsapp, status')
+    .select('id, nome, whatsapp, gestor_nome, gestor_whatsapp, status, created_at')
     .eq('status', 'ativo')
-    .not('gestor_whatsapp', 'is', null)
 
   for (const aluno of alunos ?? []) {
     const { data: ultimoProgresso } = await (adminClient.from('progresso') as any)
@@ -32,18 +34,32 @@ export async function GET(req: NextRequest) {
       .limit(1)
       .maybeSingle()
 
-    const dataReferencia = ultimoProgresso
+    const dataRef = ultimoProgresso
       ? new Date(ultimoProgresso.created_at)
       : new Date(aluno.created_at ?? agora)
 
-    const diasSemAtividade = Math.floor((agora.getTime() - dataReferencia.getTime()) / (1000 * 60 * 60 * 24))
+    const dias = Math.floor((agora.getTime() - dataRef.getTime()) / 86400000)
 
-    if (DIAS_ALERTA.includes(diasSemAtividade) && aluno.gestor_whatsapp) {
-      const msg = diasSemAtividade === 15
-        ? `⚠️ *Alerta Importante, ${aluno.gestor_nome || 'Gestor'}!*\n\nSeu consultor *${aluno.nome}* está há *${diasSemAtividade} dias* sem acessar a plataforma.\n\nConsidere entrar em contato para evitar abandono. 📞`
-        : `📊 *Lembrete, ${aluno.gestor_nome || 'Gestor'}!*\n\nSeu consultor *${aluno.nome}* está há *${diasSemAtividade} dias* sem avançar na Universidade AVP.\n\nUm contato pode fazer a diferença! 💪`
+    if (!DIAS_ALERTA.includes(dias)) continue
 
-      await enviarWhatsApp(aluno.gestor_whatsapp, msg)
+    // 1. Avisa o próprio consultor
+    if (aluno.whatsapp) {
+      const msgConsultor = dias === 3
+        ? `📚 Olá, *${aluno.nome}*! Sentimos sua falta na *${nomePlat}*.\n\nFaz ${dias} dias que você não avança nos estudos. Que tal retomar agora?\n\n👉 ${appUrl}/aluno/${aluno.whatsapp}`
+        : dias === 7
+        ? `⏰ *${aluno.nome}*, já faz uma semana sem estudar!\n\nSeu progresso está esperando por você na *${nomePlat}*. Não perca o fio! 💪\n\n👉 ${appUrl}/aluno/${aluno.whatsapp}`
+        : `🚨 *${aluno.nome}*, ${dias} dias sem acessar a plataforma!\n\nNão deixe sua formação parar aqui. Volte agora e continue de onde parou.\n\n👉 ${appUrl}/aluno/${aluno.whatsapp}`
+      await enviarWhatsApp(aluno.whatsapp, msgConsultor)
+      notificacoes++
+    }
+
+    // 2. Avisa o gestor
+    if (aluno.gestor_whatsapp) {
+      const instancia = await getInstanciaGestorPorNome(aluno.gestor_nome, adminClient)
+      const msgGestor = dias === 15
+        ? `⚠️ *Alerta, ${aluno.gestor_nome || 'Gestor'}!*\n\nSeu consultor *${aluno.nome}* está há *${dias} dias* sem acessar a plataforma. Risco de abandono! 📞`
+        : `📊 *Lembrete, ${aluno.gestor_nome || 'Gestor'}!*\n\nSeu consultor *${aluno.nome}* está há *${dias} dias* sem avançar. Um contato pode fazer a diferença! 💪`
+      await enviarWhatsApp(aluno.gestor_whatsapp, msgGestor, instancia)
       notificacoes++
     }
   }
