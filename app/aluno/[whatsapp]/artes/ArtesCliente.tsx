@@ -362,14 +362,10 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
               </div>
             )}
 
-            {/* Canvas final (resultado do Gerar) */}
-            {pronto && (
-              <div style={{ position: 'relative', width: '100%', aspectRatio: DIMS[formato].ratio, borderRadius: 12, overflow: 'hidden', border: '2px solid var(--avp-green)' }}>
-                <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
-              </div>
-            )}
-            {/* Canvas oculto quando não pronto (para renderização) */}
-            {!pronto && <canvas ref={canvasRef} style={{ display: 'none' }} />}
+            {/* Canvas único — sempre no DOM, visibilidade via CSS */}
+            <div style={{ width: '100%', aspectRatio: DIMS[formato].ratio, borderRadius: 12, overflow: 'hidden', border: pronto ? '2px solid var(--avp-green)' : 'none', visibility: pronto ? 'visible' : 'hidden', height: pronto ? undefined : 0, margin: pronto ? undefined : 0 }}>
+              <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+            </div>
 
             {/* Botão baixar */}
             {pronto && (
