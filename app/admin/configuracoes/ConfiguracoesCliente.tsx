@@ -106,6 +106,9 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [certAssinaturaY, setCertAssinaturaY] = useState(get('cert_assinatura_y') || '82')
   // Padrão true: template limpo recebe sobreposição de assinatura
   const [certAssinaturaAtiva, setCertAssinaturaAtiva] = useState(get('cert_assinatura_ativa') !== 'false')
+  const [certAssinaturaUrl, setCertAssinaturaUrl] = useState(() => bustCache(get('cert_assinatura_url')))
+  const [certAssinaturaNome, setCertAssinaturaNome] = useState(get('cert_assinatura_nome'))
+  const [certAssinaturaCargo, setCertAssinaturaCargo] = useState(get('cert_assinatura_cargo'))
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
   const [uploading, setUploading] = useState('')
@@ -118,6 +121,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const certUrlRef = useRef<HTMLInputElement>(null)
   const certLogoEsquerdaRef = useRef<HTMLInputElement>(null)
   const certLogoDireitaRef = useRef<HTMLInputElement>(null)
+  const certAssinaturaUrlRef = useRef<HTMLInputElement>(null)
   const carteiraLogoEsquerdaRef = useRef<HTMLInputElement>(null)
   const carteiraLogoDireitaRef = useRef<HTMLInputElement>(null)
   const carteiraAssinaturaUrlRef = useRef<HTMLInputElement>(null)
@@ -131,6 +135,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
     certUrl: setCertUrl,
     certLogoEsquerda: setCertLogoEsquerda,
     certLogoDireita: setCertLogoDireita,
+    certAssinaturaUrl: setCertAssinaturaUrl,
     carteiraLogoEsquerda: setCarteiraLogoEsquerda,
     carteiraLogoDireita: setCarteiraLogoDireita,
     carteiraAssinaturaUrl: setCarteiraAssinaturaUrl,
@@ -146,6 +151,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
     certUrl: 'certificado_template_url',
     certLogoEsquerda: 'cert_logo_esquerda',
     certLogoDireita: 'cert_logo_direita',
+    certAssinaturaUrl: 'cert_assinatura_url',
     carteiraLogoEsquerda: 'carteira_logo_esquerda',
     carteiraLogoDireita: 'carteira_logo_direita',
     carteiraAssinaturaUrl: 'carteira_assinatura_url',
@@ -262,6 +268,9 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         { chave: 'cert_logo_tam', valor: certLogoTam },
         { chave: 'cert_assinatura_y', valor: certAssinaturaY },
         { chave: 'cert_assinatura_ativa', valor: String(certAssinaturaAtiva) },
+        ...(urlSafe(certAssinaturaUrl) ? [{ chave: 'cert_assinatura_url', valor: certAssinaturaUrl }] : []),
+        { chave: 'cert_assinatura_nome', valor: certAssinaturaNome },
+        { chave: 'cert_assinatura_cargo', valor: certAssinaturaCargo },
         { chave: 'certificado_nome_x', valor: certNomeX },
         { chave: 'certificado_nome_y', valor: certNomeY },
         { chave: 'certificado_nome_tamanho', valor: certNomeTamanho },
@@ -638,17 +647,46 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
             </button>
           </div>
           {certAssinaturaAtiva && (
-            <div style={{ marginTop: 14, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Posição vertical (%)</label>
-                <input type="number" min={0} max={100} value={certAssinaturaY} onChange={e => setCertAssinaturaY(e.target.value)}
-                  style={{ width: '100%', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} />
-                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>Linha da assinatura · padrão: 82</p>
+            <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {/* Upload da assinatura do presidente */}
+              <LogoCard
+                label="Assinatura do Presidente (certificado)"
+                campo="certAssinaturaUrl"
+                value={certAssinaturaUrl}
+                desc="PNG com fundo transparente — assinatura manuscrita"
+                rec="PNG transparente · 400×150px"
+                fileRef={certAssinaturaUrlRef}
+                uploading={uploading}
+                onUpload={uploadImagem}
+              />
+              {/* Nome e cargo */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Nome de quem assina</label>
+                  <input value={certAssinaturaNome} onChange={e => setCertAssinaturaNome(e.target.value)}
+                    placeholder="Ex: TIBURCIO FILHO"
+                    style={{ width: '100%', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Cargo</label>
+                  <input value={certAssinaturaCargo} onChange={e => setCertAssinaturaCargo(e.target.value)}
+                    placeholder="Ex: PRESIDENTE"
+                    style={{ width: '100%', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} />
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 4 }}>
-                <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0, lineHeight: 1.5 }}>
-                  Imagem, nome e cargo vêm da seção <em>Carteira de Formação</em> acima.
-                </p>
+              {/* Posição vertical */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Posição vertical da linha (%)</label>
+                  <input type="number" min={0} max={100} value={certAssinaturaY} onChange={e => setCertAssinaturaY(e.target.value)}
+                    style={{ width: '100%', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} />
+                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>0 = topo · 100 = base · padrão: 82</p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 4 }}>
+                  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0, lineHeight: 1.5 }}>
+                    💡 Se não preencher aqui, usa automaticamente a assinatura da Carteirinha como fallback.
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -681,19 +719,19 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
                 <img src={certLogoDireita || carteiraLogoDireita} alt="logo dir"
                   style={{ position: 'absolute', right: '5%', top: `${certLogoY}%`, transform: 'translateY(-50%)', height: `${certLogoTam}%`, objectFit: 'contain', pointerEvents: 'none' }} />
               )}
-              {/* Assinatura — só quando ativa */}
-              {certAssinaturaAtiva && (carteiraAssinaturaUrl || carteiraAssinaturaNome) && (
+              {/* Assinatura — só quando ativa, usa a do cert ou fallback carteirinha */}
+              {certAssinaturaAtiva && (certAssinaturaUrl || certAssinaturaNome || carteiraAssinaturaUrl || carteiraAssinaturaNome) && (
                 <div style={{ position: 'absolute', left: '10%', top: `${certAssinaturaY}%`, transform: 'translateY(-100%)', pointerEvents: 'none', textAlign: 'left' }}>
-                  {carteiraAssinaturaUrl && (
-                    <img src={carteiraAssinaturaUrl} alt="assinatura"
+                  {(certAssinaturaUrl || carteiraAssinaturaUrl) && (
+                    <img src={certAssinaturaUrl || carteiraAssinaturaUrl} alt="assinatura"
                       style={{ height: '5cqw', maxWidth: '20cqw', objectFit: 'contain', display: 'block', marginBottom: '0.2cqw' }} />
                   )}
                   <div style={{ width: '20cqw', height: 1, background: '#444', marginBottom: '0.3cqw' }} />
-                  {carteiraAssinaturaNome && (
-                    <p style={{ margin: 0, fontSize: '1.1cqw', fontWeight: 700, color: '#1a1a1a' }}>{carteiraAssinaturaNome}</p>
+                  {(certAssinaturaNome || carteiraAssinaturaNome) && (
+                    <p style={{ margin: 0, fontSize: '1.1cqw', fontWeight: 700, color: '#1a1a1a' }}>{certAssinaturaNome || carteiraAssinaturaNome}</p>
                   )}
-                  {carteiraAssinaturaCargo && (
-                    <p style={{ margin: 0, fontSize: '0.9cqw', color: '#555' }}>{carteiraAssinaturaCargo}</p>
+                  {(certAssinaturaCargo || carteiraAssinaturaCargo) && (
+                    <p style={{ margin: 0, fontSize: '0.9cqw', color: '#555' }}>{certAssinaturaCargo || carteiraAssinaturaCargo}</p>
                   )}
                 </div>
               )}
