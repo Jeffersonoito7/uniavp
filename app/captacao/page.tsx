@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
 import FunilCaptacao from '@/app/components/FunilCaptacao'
