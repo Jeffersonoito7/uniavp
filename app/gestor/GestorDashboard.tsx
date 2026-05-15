@@ -205,7 +205,7 @@ export default function GestorDashboard({
   const [salvandoEvento, setSalvandoEvento] = useState(false)
   const [showEvento, setShowEvento] = useState(false)
   const [msgEvento, setMsgEvento] = useState('')
-  const [artesSubAba, setArtesSubAba] = useState<'templates' | 'consultores'>('templates')
+  const [artesSubAba, setArtesSubAba] = useState<'templates' | 'consultores'>('consultores')
   const [artesTemplates] = useState<ArteTemplate[]>(artesTemplatesIniciais)
 
   const ativos = listaConsultores.filter(c => c.status !== 'concluido')
