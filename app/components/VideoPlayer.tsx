@@ -38,7 +38,13 @@ export default function VideoPlayer({ youtubeId, videoUrl, titulo, onEnded, bloq
         videoId: youtubeId!,
         width: '100%',
         height: '100%',
-        playerVars: { rel: 0, modestbranding: 1, origin: window.location.origin },
+        playerVars: {
+          rel: 0,
+          modestbranding: 1,
+          origin: window.location.origin,
+          // Desativa teclado quando bloquearAvancar (setas avançam/retrocedem)
+          disablekb: bloquearAvancar ? 1 : 0,
+        },
         events: {
           onStateChange: (event: { data: number }) => {
             if (event.data === 0) onEnded?.()
@@ -52,14 +58,19 @@ export default function VideoPlayer({ youtubeId, videoUrl, titulo, onEnded, bloq
           },
           onReady: () => {
             if (!bloquearAvancar) return
-            // Poll a cada 500ms para atualizar maxWatched com precisão
+            // Poll a cada 250ms para detectar e corrigir avanços mais rápido
             const iv = setInterval(() => {
               if (!playerRef.current || destroyed) { clearInterval(iv); return }
               try {
                 const cur = playerRef.current.getCurrentTime()
-                if (cur > maxWatchedRef.current) maxWatchedRef.current = cur
+                if (cur > maxWatchedRef.current + 1.5) {
+                  // Detectou avanço direto no poll — corrige imediatamente
+                  playerRef.current.seekTo(maxWatchedRef.current, true)
+                } else if (cur > maxWatchedRef.current) {
+                  maxWatchedRef.current = cur
+                }
               } catch { clearInterval(iv) }
-            }, 500)
+            }, 250)
           },
         },
       })
@@ -88,6 +99,17 @@ export default function VideoPlayer({ youtubeId, videoUrl, titulo, onEnded, bloq
     return (
       <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 12, overflow: 'hidden', background: '#000' }}>
         <div ref={containerRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+        {bloquearAvancar && (
+          /* Overlay sobre a barra de controles do YouTube — bloqueia clique na barra de progresso */
+          <div style={{
+            position: 'absolute',
+            bottom: 0, left: 0, right: 0,
+            height: '14%',   /* altura aproximada dos controles do YouTube */
+            zIndex: 10,
+            cursor: 'not-allowed',
+            background: 'transparent',
+          }} title="Avançar o vídeo não é permitido" />
+        )}
       </div>
     )
   }
