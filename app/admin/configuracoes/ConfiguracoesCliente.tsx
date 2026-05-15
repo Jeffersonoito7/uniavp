@@ -104,6 +104,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [certLogoY, setCertLogoY] = useState(get('cert_logo_y') || '88')
   const [certLogoTam, setCertLogoTam] = useState(get('cert_logo_tam') || '10')
   const [certAssinaturaY, setCertAssinaturaY] = useState(get('cert_assinatura_y') || '82')
+  const [certAssinaturaAtiva, setCertAssinaturaAtiva] = useState(get('cert_assinatura_ativa') === 'true')
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
   const [uploading, setUploading] = useState('')
@@ -259,6 +260,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         { chave: 'cert_logo_y', valor: certLogoY },
         { chave: 'cert_logo_tam', valor: certLogoTam },
         { chave: 'cert_assinatura_y', valor: certAssinaturaY },
+        { chave: 'cert_assinatura_ativa', valor: String(certAssinaturaAtiva) },
         { chave: 'certificado_nome_x', valor: certNomeX },
         { chave: 'certificado_nome_y', valor: certNomeY },
         { chave: 'certificado_nome_tamanho', valor: certNomeTamanho },
@@ -619,19 +621,36 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
           </div>
         </div>
 
-        {/* Posição da assinatura */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <div>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Posição vertical da assinatura (%)</label>
-            <input type="number" min={0} max={100} value={certAssinaturaY} onChange={e => setCertAssinaturaY(e.target.value)}
-              style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} />
-            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>Linha da assinatura · padrão: 82</p>
+        {/* Toggle assinatura */}
+        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div>
+              <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>✍️ Sobrepor assinatura no certificado</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0', lineHeight: 1.5 }}>
+                Ative <strong>somente</strong> se o template <strong>não</strong> tiver assinatura gravada. Se o PNG já tem assinatura, deixe desligado para não duplicar.
+              </p>
+            </div>
+            <button
+              onClick={() => setCertAssinaturaAtiva(v => !v)}
+              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: certAssinaturaAtiva ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+              <span style={{ position: 'absolute', top: 3, left: certAssinaturaAtiva ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+            </button>
           </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 6 }}>
-            <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0, lineHeight: 1.5 }}>
-              ✍️ <strong style={{ color: 'var(--avp-text)' }}>Assinatura:</strong> usa automaticamente a imagem, nome e cargo configurados na seção <em>Carteira de Formação</em> acima.
-            </p>
-          </div>
+          {certAssinaturaAtiva && (
+            <div style={{ marginTop: 14, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Posição vertical (%)</label>
+                <input type="number" min={0} max={100} value={certAssinaturaY} onChange={e => setCertAssinaturaY(e.target.value)}
+                  style={{ width: '100%', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} />
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>Linha da assinatura · padrão: 82</p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 4 }}>
+                <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0, lineHeight: 1.5 }}>
+                  Imagem, nome e cargo vêm da seção <em>Carteira de Formação</em> acima.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Preview visual do certificado completo */}
@@ -661,8 +680,8 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
                 <img src={certLogoDireita || carteiraLogoDireita} alt="logo dir"
                   style={{ position: 'absolute', right: '5%', top: `${certLogoY}%`, transform: 'translateY(-50%)', height: `${certLogoTam}%`, objectFit: 'contain', pointerEvents: 'none' }} />
               )}
-              {/* Assinatura — vem da carteirinha */}
-              {(carteiraAssinaturaUrl || carteiraAssinaturaNome) && (
+              {/* Assinatura — só quando ativa */}
+              {certAssinaturaAtiva && (carteiraAssinaturaUrl || carteiraAssinaturaNome) && (
                 <div style={{ position: 'absolute', left: '10%', top: `${certAssinaturaY}%`, transform: 'translateY(-100%)', pointerEvents: 'none', textAlign: 'left' }}>
                   {carteiraAssinaturaUrl && (
                     <img src={carteiraAssinaturaUrl} alt="assinatura"

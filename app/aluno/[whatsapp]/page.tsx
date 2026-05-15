@@ -54,7 +54,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
     .in('chave', [
       'certificado_template_url', 'certificado_nome_y', 'certificado_nome_tamanho', 'certificado_nome_cor',
       'modulo_capa_padrao',
-      'cert_logo_esquerda', 'cert_logo_direita', 'cert_logo_y', 'cert_logo_tam', 'cert_assinatura_y',
+      'cert_logo_esquerda', 'cert_logo_direita', 'cert_logo_y', 'cert_logo_tam', 'cert_assinatura_y', 'cert_assinatura_ativa',
       'carteira_logo_esquerda', 'carteira_logo_direita',
       'carteira_assinatura_url', 'carteira_assinatura_nome', 'carteira_assinatura_cargo',
     ])
@@ -489,9 +489,9 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
           logoDireitaUrl={certMap['cert_logo_direita'] || certMap['carteira_logo_direita'] || null}
           logoY={certMap['cert_logo_y'] ? Number(certMap['cert_logo_y']) : undefined}
           logoTamPct={certMap['cert_logo_tam'] ? Number(certMap['cert_logo_tam']) / 100 : undefined}
-          assinaturaUrl={certMap['carteira_assinatura_url'] ?? null}
-          assinaturaNome={certMap['carteira_assinatura_nome'] ?? undefined}
-          assinaturaCargo={certMap['carteira_assinatura_cargo'] ?? undefined}
+          assinaturaUrl={certMap['cert_assinatura_ativa'] === 'true' ? (certMap['carteira_assinatura_url'] ?? null) : null}
+          assinaturaNome={certMap['cert_assinatura_ativa'] === 'true' ? (certMap['carteira_assinatura_nome'] ?? undefined) : undefined}
+          assinaturaCargo={certMap['cert_assinatura_ativa'] === 'true' ? (certMap['carteira_assinatura_cargo'] ?? undefined) : undefined}
           assinaturaY={certMap['cert_assinatura_y'] ? Number(certMap['cert_assinatura_y']) : undefined}
         />
       )}
