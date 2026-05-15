@@ -571,6 +571,45 @@ export default function GestorDashboard({
             </div>
           </div>
 
+          {/* ── Links de captação visíveis ── */}
+          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 18, marginBottom: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>🔗 Links de Captação — compartilhe com futuros consultores</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {/* Funil completo */}
+              <div style={{ background: 'var(--avp-black)', borderRadius: 8, padding: '12px 14px' }}>
+                <p style={{ fontWeight: 700, fontSize: 12, marginBottom: 2 }}>🎯 Funil Completo</p>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 8 }}>Para quem não conhece — passa por perguntas + vídeo</p>
+                <p style={{ fontSize: 10, color: '#6366f1', fontFamily: 'monospace', marginBottom: 8, wordBreak: 'break-all' as const }}>{baseUrl}/g/{gestor.whatsapp}</p>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={() => { navigator.clipboard.writeText(`${baseUrl}/g/${gestor.whatsapp}`); setLinkCopiado(true); setTimeout(() => setLinkCopiado(false), 2000) }}
+                    style={{ flex: 1, background: linkCopiado ? 'var(--avp-green)' : '#333687', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 10px', cursor: 'pointer', fontWeight: 700, fontSize: 11 }}>
+                    {linkCopiado ? '✓ Copiado!' : '📋 Copiar'}
+                  </button>
+                  <a href={`https://wa.me/?text=${encodeURIComponent(`📲 Cadastre-se na plataforma:\n\n${baseUrl}/g/${gestor.whatsapp}`)}`} target="_blank" rel="noreferrer"
+                    style={{ background: '#25d36620', border: '1px solid #25d36640', color: '#25d366', borderRadius: 6, padding: '7px 10px', textDecoration: 'none', fontSize: 11, fontWeight: 700 }}>
+                    WhatsApp
+                  </a>
+                </div>
+              </div>
+              {/* Acesso direto */}
+              <div style={{ background: 'var(--avp-black)', borderRadius: 8, padding: '12px 14px' }}>
+                <p style={{ fontWeight: 700, fontSize: 12, marginBottom: 2 }}>⚡ Acesso Direto</p>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 8 }}>Para quem já conhece — vai direto ao cadastro</p>
+                <p style={{ fontSize: 10, color: '#f59e0b', fontFamily: 'monospace', marginBottom: 8, wordBreak: 'break-all' as const }}>{baseUrl}/g/{gestor.whatsapp}?direto=1</p>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={() => { navigator.clipboard.writeText(`${baseUrl}/g/${gestor.whatsapp}?direto=1`); setLinkCopiado(true); setTimeout(() => setLinkCopiado(false), 2000) }}
+                    style={{ flex: 1, background: linkCopiado ? 'var(--avp-green)' : '#92400e', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 10px', cursor: 'pointer', fontWeight: 700, fontSize: 11 }}>
+                    {linkCopiado ? '✓ Copiado!' : '📋 Copiar'}
+                  </button>
+                  <a href={`https://wa.me/?text=${encodeURIComponent(`📲 Acesse a plataforma:\n\n${baseUrl}/g/${gestor.whatsapp}?direto=1`)}`} target="_blank" rel="noreferrer"
+                    style={{ background: '#25d36620', border: '1px solid #25d36640', color: '#25d366', borderRadius: 6, padding: '7px 10px', textDecoration: 'none', fontSize: 11, fontWeight: 700 }}>
+                    WhatsApp
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14, marginBottom: 28 }}>
             <div style={{ background: 'var(--avp-card)', border: `1px solid ${vagasUsadas >= 50 ? 'var(--avp-danger)' : 'var(--avp-border)'}`, borderRadius: 12, padding: 20 }}>
               <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, marginBottom: 6 }}>Vagas usadas</p>

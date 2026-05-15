@@ -79,6 +79,19 @@ export default async function AdminDashboard() {
       </div>
 
       {isMaster && <LinksTeste />}
+
+      {/* Atalho para os links de captação */}
+      <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+        <div>
+          <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 2 }}>🔗 Links de Captação de Consultores</p>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Funil completo e acesso direto — com QR code e compartilhamento por WhatsApp</p>
+        </div>
+        <a href="/admin/captacao"
+          style={{ flexShrink: 0, background: 'var(--avp-blue)', color: '#fff', borderRadius: 10, padding: '10px 22px', fontWeight: 700, fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+          Ver links →
+        </a>
+      </div>
+
       <LiberacoesPendentes />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 28 }}>
