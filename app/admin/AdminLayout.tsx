@@ -25,6 +25,7 @@ const navItems = [
   { href: '/admin/eventos', label: 'Eventos', icon: Calendar },
   { href: '/admin/artes', label: 'Artes', icon: Palette },
   { href: '/admin/reacoes', label: 'Reações', icon: Star },
+  { href: '/admin/configuracoes', label: 'Configurações', icon: Settings },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

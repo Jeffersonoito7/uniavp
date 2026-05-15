@@ -10,11 +10,9 @@ export const dynamic = 'force-dynamic'
 const DOMINIO_MASTER = 'universidade.oito7digital.com.br'
 
 export default async function ConfiguracoesPage() {
-  // Só acessível no domínio Oito7Digital (mãe do sistema)
   const headersList = await headers()
   const host = headersList.get('host')?.replace(/:\d+$/, '') ?? ''
   const isMaster = host === DOMINIO_MASTER || host === 'localhost'
-  if (!isMaster) redirect('/admin')
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
