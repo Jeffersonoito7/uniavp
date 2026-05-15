@@ -104,7 +104,8 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [certLogoY, setCertLogoY] = useState(get('cert_logo_y') || '88')
   const [certLogoTam, setCertLogoTam] = useState(get('cert_logo_tam') || '10')
   const [certAssinaturaY, setCertAssinaturaY] = useState(get('cert_assinatura_y') || '82')
-  const [certAssinaturaAtiva, setCertAssinaturaAtiva] = useState(get('cert_assinatura_ativa') === 'true')
+  // Padrão true: template limpo recebe sobreposição de assinatura
+  const [certAssinaturaAtiva, setCertAssinaturaAtiva] = useState(get('cert_assinatura_ativa') !== 'false')
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
   const [uploading, setUploading] = useState('')

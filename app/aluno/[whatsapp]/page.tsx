@@ -489,9 +489,9 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
           logoDireitaUrl={certMap['cert_logo_direita'] || certMap['carteira_logo_direita'] || null}
           logoY={certMap['cert_logo_y'] ? Number(certMap['cert_logo_y']) : undefined}
           logoTamPct={certMap['cert_logo_tam'] ? Number(certMap['cert_logo_tam']) / 100 : undefined}
-          assinaturaUrl={certMap['cert_assinatura_ativa'] === 'true' ? (certMap['carteira_assinatura_url'] ?? null) : null}
-          assinaturaNome={certMap['cert_assinatura_ativa'] === 'true' ? (certMap['carteira_assinatura_nome'] ?? undefined) : undefined}
-          assinaturaCargo={certMap['cert_assinatura_ativa'] === 'true' ? (certMap['carteira_assinatura_cargo'] ?? undefined) : undefined}
+          assinaturaUrl={certMap['cert_assinatura_ativa'] !== 'false' ? (certMap['carteira_assinatura_url'] ?? null) : null}
+          assinaturaNome={certMap['cert_assinatura_ativa'] !== 'false' ? (certMap['carteira_assinatura_nome'] ?? undefined) : undefined}
+          assinaturaCargo={certMap['cert_assinatura_ativa'] !== 'false' ? (certMap['carteira_assinatura_cargo'] ?? undefined) : undefined}
           assinaturaY={certMap['cert_assinatura_y'] ? Number(certMap['cert_assinatura_y']) : undefined}
         />
       )}
