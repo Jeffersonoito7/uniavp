@@ -51,7 +51,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
 
   const { data: certConfigs } = await (adminClient.from('configuracoes') as any)
     .select('chave, valor')
-    .in('chave', ['certificado_template_url', 'cert_nome_y', 'cert_nome_fonte_pct', 'cert_nome_cor'])
+    .in('chave', ['certificado_template_url', 'certificado_nome_y', 'certificado_nome_tamanho', 'certificado_nome_cor'])
   const certMap: Record<string, string> = {}
   for (const r of certConfigs ?? []) { try { certMap[r.chave] = JSON.parse(r.valor) } catch { certMap[r.chave] = r.valor } }
   if (!aluno) redirect('/consultor/login')
@@ -476,9 +476,9 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
           templateUrl={certMap['certificado_template_url']}
           whatsapp={aluno.whatsapp}
           numRegistro={String(aluno.numero_registro ?? 1001).padStart(6, '0')}
-          nomeY={certMap['cert_nome_y'] ? Number(certMap['cert_nome_y']) : undefined}
-          nomeFontePct={certMap['cert_nome_fonte_pct'] ? Number(certMap['cert_nome_fonte_pct']) : undefined}
-          nomeCor={certMap['cert_nome_cor'] ?? undefined}
+          nomeY={certMap['certificado_nome_y'] ? Number(certMap['certificado_nome_y']) : undefined}
+          nomeFontePct={certMap['certificado_nome_tamanho'] ? Number(certMap['certificado_nome_tamanho']) / 100 : undefined}
+          nomeCor={certMap['certificado_nome_cor'] ?? undefined}
         />
       )}
     </>

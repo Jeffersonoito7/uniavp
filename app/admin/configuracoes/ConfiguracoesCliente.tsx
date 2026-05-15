@@ -83,7 +83,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const [certUrl, setCertUrl] = useState(get('certificado_template_url'))
   const [certNomeX, setCertNomeX] = useState(get('certificado_nome_x') || '50')
   const [certNomeY, setCertNomeY] = useState(get('certificado_nome_y') || '62')
-  const [certNomeTamanho, setCertNomeTamanho] = useState(get('certificado_nome_tamanho') || '72')
+  const [certNomeTamanho, setCertNomeTamanho] = useState(get('certificado_nome_tamanho') || '4.5')
   const [certNomeCor, setCertNomeCor] = useState(get('certificado_nome_cor') || '#1a1a2e')
   const [certCidade, setCertCidade] = useState(get('certificado_cidade'))
   const [certDataX, setCertDataX] = useState(get('certificado_data_x') || '50')
@@ -496,12 +496,56 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
       <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
         <p style={{ fontWeight: 800, fontSize: 16 }}>🎓 Certificado de Conclusão</p>
         <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
-          Suba o PNG do certificado em alta resolução. Ele será exibido e disponibilizado para download exatamente como está — sem dados do aluno.
+          Faça upload do template PNG e configure onde o nome do aluno aparece. O certificado baixado terá o nome gravado na posição definida.
         </p>
+
         <LogoCard label="Template do certificado" campo="certUrl" value={certUrl} desc="PNG em alta resolução — A4 paisagem" rec="2480×1748px (mín.)" fileRef={certUrlRef} uploading={uploading} onUpload={uploadImagem} />
+
+        {/* Campos de posicionamento do nome */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Posição vertical do nome (%)</label>
+            <input type="number" min={0} max={100} value={certNomeY} onChange={e => setCertNomeY(e.target.value)}
+              style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} />
+            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>0 = topo · 100 = base · padrão: 63</p>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Tamanho da fonte (%)</label>
+            <input type="number" min={1} max={15} step={0.1} value={certNomeTamanho} onChange={e => setCertNomeTamanho(e.target.value)}
+              style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} />
+            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>% da largura · padrão: 4.5</p>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Cor do nome</label>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <input type="color" value={certNomeCor} onChange={e => setCertNomeCor(e.target.value)}
+                style={{ width: 44, height: 40, borderRadius: 6, border: '1px solid var(--avp-border)', background: 'none', cursor: 'pointer', padding: 2 }} />
+              <input value={certNomeCor} onChange={e => setCertNomeCor(e.target.value)}
+                style={{ flex: 1, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' as const }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Preview visual do certificado com nome */}
         {certUrl && certUrl.startsWith('http') && (
-          <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid var(--avp-border)' }}>
-            <img src={certUrl} alt="Preview certificado" style={{ width: '100%', display: 'block', objectFit: 'contain' }} />
+          <div>
+            <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 10 }}>Preview com nome do aluno</p>
+            <div style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid var(--avp-border)', position: 'relative' }}>
+              <img src={certUrl} alt="Certificado" style={{ width: '100%', display: 'block', objectFit: 'contain' }} />
+              <div style={{
+                position: 'absolute', left: '50%', transform: 'translateX(-50%)',
+                top: `${certNomeY}%`, width: '80%', textAlign: 'center',
+                fontFamily: 'Georgia, serif', fontWeight: 700,
+                fontSize: `${Number(certNomeTamanho) * 0.8}cqw`,
+                color: certNomeCor, textTransform: 'uppercase' as const,
+                letterSpacing: 2, pointerEvents: 'none', lineHeight: 1.2,
+              }}>
+                NOME DO CONSULTOR
+              </div>
+            </div>
+            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 8 }}>
+              💡 Ajuste os valores acima e veja o resultado em tempo real no preview
+            </p>
           </div>
         )}
       </div>
