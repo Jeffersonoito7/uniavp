@@ -565,8 +565,8 @@ export default function GestorDashboard({
                 📊 Exportar Excel
               </a>
               <button onClick={() => setShowNovoConsultor(true)}
-                style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>
-                + Novo consultor
+                style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
+                ➕ Cadastrar consultor
               </button>
             </div>
           </div>

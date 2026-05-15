@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import {
   LayoutDashboard, BookOpen, Users, ShieldCheck,
   Trophy, Settings, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper, Star,
-  Menu, X, ChevronLeft, ChevronRight, UsersRound
+  Menu, X, ChevronLeft, ChevronRight, UsersRound, Link2
 } from 'lucide-react'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import LogoutButton from '@/app/components/LogoutButton'
@@ -13,6 +13,7 @@ import SupportChat from '@/app/components/SupportChat'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/captacao', label: 'Links de Captação', icon: Link2 },
   { href: '/admin/crm', label: 'CRM', icon: BarChart3 },
   { href: '/admin/modulos', label: 'Módulos', icon: BookOpen },
   { href: '/admin/usuarios', label: 'Usuários', icon: UsersRound },
