@@ -1,5 +1,6 @@
 'use client'
 import { useRef, useState } from 'react'
+import ImageCropModal from '@/app/components/ImageCropModal'
 
 type Template = {
   id: string; tipo: string; titulo: string; arte_url: string;
@@ -35,6 +36,7 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
   const [gerando, setGerando] = useState(false)
   const [pronto, setPronto] = useState(false)
   const [erro, setErro] = useState('')
+  const [cropSrc, setCropSrc] = useState<string | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const inputFotoRef = useRef<HTMLInputElement>(null)
   const previewRef = useRef<HTMLDivElement>(null)
@@ -46,7 +48,13 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
   function selecionarFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    setFotoLocal(URL.createObjectURL(file))
+    setCropSrc(URL.createObjectURL(file))
+    e.target.value = ''
+  }
+
+  function handleCropSalvo(dataUrl: string) {
+    setCropSrc(null)
+    setFotoLocal(dataUrl)
     setCropZoom(1)
     setPanBgX(50)
     setPanBgY(50)
@@ -176,6 +184,16 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
   }
 
   return (
+    <>
+    {cropSrc && (
+      <ImageCropModal
+        src={cropSrc}
+        aspectRatio={1}
+        title="Ajustar foto para a arte"
+        onSave={handleCropSalvo}
+        onCancel={() => setCropSrc(null)}
+      />
+    )}
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: 32 }}>
       <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Minhas Artes</h1>
       <p style={{ color: 'var(--avp-text-dim)', fontSize: 15, marginBottom: 28 }}>
@@ -375,5 +393,6 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
           </div>
         </div>
     </div>
+    </>
   )
 }

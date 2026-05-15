@@ -7,8 +7,8 @@ export async function GET(req: NextRequest) {
   if (!url) return new NextResponse('url obrigatória', { status: 400 })
 
   try {
-    const res = await fetch(url, { cache: 'force-cache' })
-    if (!res.ok) return new NextResponse('Erro ao buscar imagem', { status: 502 })
+    const res = await fetch(url, { cache: 'no-store' })
+    if (!res.ok) return new NextResponse(`Erro ao buscar imagem: ${res.status}`, { status: 502 })
 
     const buffer = await res.arrayBuffer()
     const contentType = res.headers.get('content-type') || 'image/png'
