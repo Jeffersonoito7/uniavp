@@ -67,6 +67,27 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
     setDuplicando(false)
   }
 
+  async function copiarParaMim(t: Template) {
+    const res = await fetch('/api/gestor/artes', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tipo: t.tipo, titulo: `${t.titulo} (meu)`,
+        arte_url: t.arte_url,
+        foto_x: t.foto_x, foto_y: t.foto_y,
+        foto_largura: t.foto_largura, foto_altura: t.foto_altura,
+        foto_redondo: t.foto_redondo, ativo: true,
+        formato: t.formato,
+      }),
+    })
+    const novo = await res.json()
+    if (res.ok && novo.id) {
+      setTemplates(prev => [...prev, novo])
+      setMsg(`✅ "${t.titulo}" copiado! Agora é seu — edite à vontade.`)
+    } else {
+      setMsg('Erro ao copiar template.')
+    }
+  }
+
   async function excluir(id: string) {
     if (!confirm('Excluir este template?')) return
     await fetch('/api/gestor/artes', {
@@ -172,14 +193,49 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {filtrados.map(t => {
-            const isAdmin = !meu(t)
-            return (
+          {/* Meus templates primeiro */}
+          {filtrados.filter(t => meu(t)).length > 0 && (
+            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-green)', textTransform: 'uppercase', letterSpacing: 1, paddingBottom: 4, borderBottom: '1px solid var(--avp-border)' }}>
+              ✅ Meus templates
+            </div>
+          )}
+          {filtrados.filter(t => meu(t)).map(t => renderTemplate(t))}
+
+          {/* Templates do admin */}
+          {filtrados.filter(t => !meu(t)).length > 0 && (
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 1, paddingBottom: 4, borderBottom: '1px solid var(--avp-border)', marginTop: 8 }}>
+              🔒 Templates do Admin — copie para personalizar
+            </div>
+          )}
+          {filtrados.filter(t => !meu(t)).map(t => renderTemplate(t))}
+        </div>
+      )}
+
+      {msg && (
+        <p style={{ fontSize: 14, marginTop: 16, color: msg.includes('Erro') || msg.includes('❌') ? 'var(--avp-danger)' : 'var(--avp-green)' }}>{msg}</p>
+      )}
+
+      <button onClick={salvar} disabled={salvando}
+        style={{ marginTop: 20, background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 28px', fontWeight: 700, fontSize: 15, cursor: salvando ? 'not-allowed' : 'pointer', opacity: salvando ? 0.7 : 1 }}>
+        {salvando ? 'Salvando...' : 'Salvar todos os templates'}
+      </button>
+    </div>
+  )
+
+  function renderTemplate(t: Template) {
+    const isAdmin = !meu(t)
+    return (
               <div key={t.id} style={{ background: 'var(--avp-card)', border: `1px solid ${isAdmin ? '#8b5cf640' : 'var(--avp-border)'}`, borderRadius: 12, padding: 20, opacity: t.ativo ? 1 : 0.55, position: 'relative' }}>
                 {isAdmin && (
-                  <span style={{ position: 'absolute', top: 12, right: 12, fontSize: 11, background: '#8b5cf620', color: '#a78bfa', borderRadius: 6, padding: '2px 8px', fontWeight: 600 }}>
-                    Admin
-                  </span>
+                  <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <button onClick={() => copiarParaMim(t)}
+                      style={{ background: '#a78bfa20', border: '1px solid #a78bfa60', color: '#a78bfa', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
+                      📋 Copiar para mim
+                    </button>
+                    <span style={{ fontSize: 11, background: '#8b5cf620', color: '#a78bfa', borderRadius: 6, padding: '2px 8px', fontWeight: 600 }}>
+                      Admin
+                    </span>
+                  </div>
                 )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14, gap: 12 }}>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -281,19 +337,7 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
                   )}
                 </div>
               </div>
-            )
-          })}
-        </div>
-      )}
-
-      {msg && (
-        <p style={{ fontSize: 14, marginTop: 16, color: msg.includes('Erro') || msg.includes('❌') ? 'var(--avp-danger)' : 'var(--avp-green)' }}>{msg}</p>
-      )}
-
-      <button onClick={salvar} disabled={salvando}
-        style={{ marginTop: 20, background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 28px', fontWeight: 700, fontSize: 15, cursor: salvando ? 'not-allowed' : 'pointer', opacity: salvando ? 0.7 : 1 }}>
-        {salvando ? 'Salvando...' : 'Salvar todos os templates'}
-      </button>
-    </div>
-  )
+    )
+  }
 }
+
