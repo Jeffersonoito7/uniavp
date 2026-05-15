@@ -184,7 +184,11 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
       <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
         <div style={{ maxWidth: 520, width: '100%' }}>
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
-            {logoUrl && <img src={logoUrl} alt={siteNome} style={{ height: 56, objectFit: 'contain', marginBottom: 16 }} />}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
+              {logoUrl
+                ? <img src={logoUrl} alt={siteNome} style={{ height: 140, objectFit: 'contain', filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.5))' }} />
+                : <span style={{ color: '#fff', fontWeight: 900, fontSize: 28, letterSpacing: 2 }}>{siteNome}</span>}
+            </div>
             <h2 style={{ fontSize: 26, fontWeight: 900, color: '#fff', marginBottom: 8 }}>Crie sua conta agora</h2>
             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>É gratuito — você terá acesso imediato à plataforma</p>
           </div>
