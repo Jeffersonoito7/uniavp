@@ -108,7 +108,11 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
     ctx.clearRect(0, 0, w, h)
 
     try {
-      const foto = await carregarImagem(fotoLocal)
+      // Se a foto for URL remota (não blob/data), usa proxy para evitar canvas tainted
+      const fotoSrc = fotoLocal.startsWith('http')
+        ? `/api/proxy-image?url=${encodeURIComponent(fotoLocal)}`
+        : fotoLocal
+      const foto = await carregarImagem(fotoSrc, 'anonymous')
 
       // Replica exatamente o comportamento CSS: background-size + background-position
       const scale = Math.max(w / foto.width, h / foto.height) * cropZoom

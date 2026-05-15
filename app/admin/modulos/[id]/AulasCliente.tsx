@@ -309,6 +309,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
         capa_url: editForm.capaBase64 || null,
         liberacao_modo: editForm.liberacao_modo,
         quiz_tipo: editForm.quiz_tipo,
+        bloquear_avancar: !!(editForm as any).bloquear_avancar,
       }),
     })
     const data = await res.json()
@@ -365,6 +366,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
       capa_url: capaBase64 || null,
       liberacao_modo: form.liberacao_modo,
       quiz_tipo: form.quiz_tipo,
+      bloquear_avancar: !!(form as any).bloquear_avancar,
     }
     if (aoVivo && form.ao_vivo_link) {
       body.ao_vivo_link = form.ao_vivo_link

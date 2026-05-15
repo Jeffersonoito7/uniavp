@@ -35,8 +35,8 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
         whatsapp: form.whatsapp.replace(/\D/g, ''),
         email: form.email,
         senha: form.senha,
-        gestor_nome: gestorNome ?? '',
-        gestor_whatsapp: gestorWhatsapp ?? '',
+        gestor_nome: gestorWhatsapp ? (gestorNome ?? '') : (form.gestor_nome || ''),
+        gestor_whatsapp: gestorWhatsapp ? gestorWhatsapp : (form.gestor_whatsapp.replace(/\D/g, '') || ''),
       }),
     })
     const data = await res.json()
