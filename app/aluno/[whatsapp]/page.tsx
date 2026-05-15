@@ -146,7 +146,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
 
         {/* ── HEADER ── */}
         <header style={{
-          background: 'rgba(8,9,13,0.92)',
+          background: 'var(--avp-header-bg)',
           backdropFilter: 'blur(12px)',
           borderBottom: '1px solid var(--avp-border)',
           padding: '0 20px',

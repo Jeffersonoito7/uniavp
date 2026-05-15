@@ -10,6 +10,7 @@
   --avp-black: #08090d; --avp-dark: #11131a; --avp-card: #181b24;
   --avp-card-hover: #232634; --avp-text: #f0f1f5; --avp-text-dim: #8a8fa3;
   --avp-border: #252836; --avp-success: #02A153; --avp-danger: #e63946;
+  --avp-header-bg: rgba(8,9,13,0.92);
   --grad-brand: linear-gradient(135deg, #333687 0%, #1f216b 35%, #017a3e 70%, #02A153 100%);
 }
 
@@ -21,6 +22,7 @@
   --avp-border: #d1d1d6;
   --avp-text: #1c1c1e;
   --avp-text-dim: #6e6e73;
+  --avp-header-bg: rgba(245,245,247,0.92);
 }
 
 /* Logo fica preta no tema claro (logos são brancas por padrão no tema escuro) */
