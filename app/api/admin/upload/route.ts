@@ -9,6 +9,11 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
+  const { data: adminRecord } = await (adminClient.from('admins') as any)
+    .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  const { data: superRecord } = await (adminClient.from('super_admins') as any)
+    .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  if (!adminRecord && !superRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const formData = await req.formData()
   const file = formData.get('file') as File

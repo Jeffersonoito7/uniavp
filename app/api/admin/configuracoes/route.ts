@@ -12,11 +12,10 @@ export async function PUT(req: NextRequest) {
 
   const adminClient = createServiceRoleClient()
   const { data: adminRecord } = await (adminClient.from('admins') as any)
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('ativo', true)
-    .maybeSingle()
-  if (!adminRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+    .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  const { data: superRecord } = await (adminClient.from('super_admins') as any)
+    .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  if (!adminRecord && !superRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const body: { chave: string; valor: string }[] = await req.json()
   if (!Array.isArray(body)) return NextResponse.json({ error: 'Body inválido' }, { status: 400 })

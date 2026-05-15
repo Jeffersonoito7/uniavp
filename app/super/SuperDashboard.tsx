@@ -1,14 +1,16 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import ConfiguracoesCliente from '@/app/admin/configuracoes/ConfiguracoesCliente'
 
 type Cliente = { id: string; nome: string; dominio: string; ativo: boolean; contato_nome: string; contato_whatsapp: string; contato_email: string; observacoes: string; created_at: string; gestor_ativo: boolean; limite_consultores: number }
 type Stats = { totalAlunos: number; totalGestores: number; totalAdmins: number; totalModulos: number; totalAulas: number }
+type Config = { chave: string; valor: string; descricao?: string }
 
 const BASE_URL = 'https://universidade.oito7digital.com.br'
 
-export default function SuperDashboard({ nome, clientes: inicial, stats, recentesAlunos }: {
-  nome: string; clientes: Cliente[]; stats: Stats; recentesAlunos: { nome: string; created_at: string; status: string }[]
+export default function SuperDashboard({ nome, clientes: inicial, stats, recentesAlunos, configs }: {
+  nome: string; clientes: Cliente[]; stats: Stats; recentesAlunos: { nome: string; created_at: string; status: string }[]; configs: Config[]
 }) {
   const [clientes, setClientes] = useState<Cliente[]>(inicial)
   const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca' | 'boleto_avulso' | 'configuracoes'>('dashboard')
@@ -753,23 +755,11 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
 
         {aba === 'configuracoes' && (
           <div>
-            <div style={{ marginBottom: 28 }}>
+            <div style={{ marginBottom: 24 }}>
               <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>⚙️ Configurações da Plataforma</h1>
-              <p style={{ color: '#8a8fa3', fontSize: 14 }}>Estas configurações só são acessíveis pelo painel Oito7Digital.</p>
+              <p style={{ color: '#8a8fa3', fontSize: 14 }}>Logos, cores, certificados, carteirinha, boleto — tudo aqui.</p>
             </div>
-            <div style={{ background: '#181b24', border: '2px solid #6366f1', borderRadius: 16, padding: 32, textAlign: 'center' }}>
-              <p style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>🔐 Painel de Configurações Completo</p>
-              <p style={{ color: '#8a8fa3', fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
-                Logos, cores, certificados, carteirinha, boleto e todos os ajustes<br />da plataforma estão no painel administrativo completo.
-              </p>
-              <a href="/admin/configuracoes"
-                style={{ display: 'inline-block', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', borderRadius: 10, padding: '13px 32px', fontWeight: 700, fontSize: 15, textDecoration: 'none' }}>
-                ⚙️ Abrir Configurações
-              </a>
-              <p style={{ color: '#8a8fa3', fontSize: 12, marginTop: 16 }}>
-                Esta página só está disponível em universidade.oito7digital.com.br
-              </p>
-            </div>
+            <ConfiguracoesCliente configs={configs} isMaster={true} />
           </div>
         )}
       </main>
