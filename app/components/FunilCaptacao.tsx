@@ -57,10 +57,10 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
     return (
       <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
         <div style={{ maxWidth: 680, width: '100%', textAlign: 'center' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 48 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 52 }}>
             {logoUrl
-              ? <img src={logoUrl} alt={siteNome} style={{ height: 90, objectFit: 'contain' }} />
-              : <span style={{ color: '#fff', fontWeight: 900, fontSize: 22 }}>{siteNome}</span>}
+              ? <img src={logoUrl} alt={siteNome} style={{ height: 160, objectFit: 'contain', filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.5))' }} />
+              : <span style={{ color: '#fff', fontWeight: 900, fontSize: 28, letterSpacing: 2 }}>{siteNome}</span>}
           </div>
 
           <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', fontWeight: 900, color: '#fff', lineHeight: 1.2, marginBottom: 16 }}>
