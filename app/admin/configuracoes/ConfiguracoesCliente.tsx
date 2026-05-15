@@ -485,11 +485,26 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
             Deixe em branco para pular a etapa do vídeo e ir direto para o formulário.
           </p>
         </div>
-        {captacaoVideoId && (
-          <div style={{ background: '#02A15315', border: '1px solid var(--avp-green)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--avp-green)' }}>
-            ✅ Vídeo configurado — candidatos precisarão assistir antes de se cadastrar
-          </div>
-        )}
+        {captacaoVideoId && (() => {
+          const v = captacaoVideoId.trim()
+          const match = v.match(/(?:v=|\/embed\/|youtu\.be\/|\/shorts\/)([a-zA-Z0-9_-]{11})/) || (/^[a-zA-Z0-9_-]{11}$/.test(v) ? [null, v] : null)
+          const id = match?.[1] ?? null
+          return id ? (
+            <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+              <img src={`https://img.youtube.com/vi/${id}/mqdefault.jpg`} alt="preview" style={{ width: 160, height: 90, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--avp-border)', flexShrink: 0 }} />
+              <div>
+                <div style={{ background: '#02A15315', border: '1px solid var(--avp-green)', borderRadius: 8, padding: '8px 12px', fontSize: 13, color: 'var(--avp-green)', marginBottom: 6 }}>
+                  ✅ ID detectado: <strong style={{ fontFamily: 'monospace', letterSpacing: 1 }}>{id}</strong>
+                </div>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>Candidatos precisarão assistir este vídeo antes de se cadastrar</p>
+              </div>
+            </div>
+          ) : (
+            <div style={{ background: '#e6394615', border: '1px solid var(--avp-danger)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--avp-danger)' }}>
+              ⚠️ ID do YouTube não reconhecido. Cole apenas o ID (11 chars) ou a URL completa do YouTube.
+            </div>
+          )
+        })()}
       </div>
 
       {/* CERTIFICADO */}

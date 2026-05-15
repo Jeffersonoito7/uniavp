@@ -7,10 +7,12 @@ import FunilCaptacao from '@/app/components/FunilCaptacao'
 function extrairIdYoutube(valor?: string | null): string | null {
   if (!valor) return null
   const v = String(valor).replace(/"/g, '').trim()
-  const match = v.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
+  if (!v) return null
+  const match = v.match(/(?:v=|\/embed\/|youtu\.be\/|\/shorts\/)([a-zA-Z0-9_-]{11})/)
   if (match) return match[1]
   if (/^[a-zA-Z0-9_-]{11}$/.test(v)) return v
-  return null
+  const fallback = v.match(/[a-zA-Z0-9_-]{11}/)
+  return fallback ? fallback[0] : null
 }
 
 export default async function CaptacaoPage() {

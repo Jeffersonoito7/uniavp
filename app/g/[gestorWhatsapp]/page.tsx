@@ -8,10 +8,15 @@ import FunilCaptacao from '@/app/components/FunilCaptacao'
 function extrairIdYoutube(valor?: string | null): string | null {
   if (!valor) return null
   const v = String(valor).replace(/"/g, '').trim()
-  const match = v.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
+  if (!v) return null
+  // Aceita qualquer formato de URL YouTube
+  const match = v.match(/(?:v=|\/embed\/|youtu\.be\/|\/shorts\/)([a-zA-Z0-9_-]{11})/)
   if (match) return match[1]
+  // ID direto com 11 caracteres
   if (/^[a-zA-Z0-9_-]{11}$/.test(v)) return v
-  return null
+  // Pega qualquer sequência de 11 chars alfanuméricos isolada
+  const fallback = v.match(/[a-zA-Z0-9_-]{11}/)
+  return fallback ? fallback[0] : null
 }
 
 export default async function GestorCaptacaoPage({ params }: { params: { gestorWhatsapp: string } }) {
