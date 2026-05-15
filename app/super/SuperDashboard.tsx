@@ -11,7 +11,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
   nome: string; clientes: Cliente[]; stats: Stats; recentesAlunos: { nome: string; created_at: string; status: string }[]
 }) {
   const [clientes, setClientes] = useState<Cliente[]>(inicial)
-  const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca' | 'configuracoes'>('dashboard')
+  const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca' | 'boleto_avulso' | 'configuracoes'>('dashboard')
   const [onboardingId, setOnboardingId] = useState<string | null>(null)
   const [onboardingForm, setOnboardingForm] = useState({ admin_email: '', admin_nome: '', admin_senha: '', dominio: '' })
   const [onboardingMsg, setOnboardingMsg] = useState<string[]>([])
@@ -34,6 +34,35 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
   const [editando, setEditando] = useState<Cliente | null>(null)
+
+  // Boleto avulso
+  const hoje = new Date(); hoje.setDate(hoje.getDate() + 7)
+  const dataDefaultVenc = hoje.toISOString().split('T')[0]
+  const [bAvulso, setBAvulso] = useState({ nome: '', cpfCnpj: '', valor: '', vencimento: dataDefaultVenc, descricao: '', email: '', whatsapp: '', mensagem: '' })
+  const [bAvulsoLoading, setBAvulsoLoading] = useState(false)
+  const [bAvulsoMsg, setBAvulsoMsg] = useState('')
+  const [bAvulsoResultado, setBAvulsoResultado] = useState<{ codigoBarras: string; pdfUrl: string } | null>(null)
+
+  async function gerarBoletoAvulso() {
+    if (!bAvulso.nome || !bAvulso.cpfCnpj || !bAvulso.valor || !bAvulso.vencimento) {
+      setBAvulsoMsg('❌ Preencha nome, CPF/CNPJ, valor e vencimento.')
+      return
+    }
+    setBAvulsoLoading(true); setBAvulsoMsg(''); setBAvulsoResultado(null)
+    const res = await fetch('/api/super/boleto-avulso', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bAvulso),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      setBAvulsoMsg(`❌ ${data.error ?? 'Erro ao gerar boleto'}`)
+    } else {
+      setBAvulsoResultado(data.boleto)
+      setBAvulsoMsg('✅ Boleto gerado com sucesso!')
+    }
+    setBAvulsoLoading(false)
+  }
 
   async function sair() {
     const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -101,6 +130,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
     { id: 'clientes', label: 'Clientes', icon: '🏢' },
     { id: 'novo', label: 'Novo Cliente', icon: '➕' },
     { id: 'testar', label: 'Testar', icon: '🧪' },
+    { id: 'boleto_avulso', label: 'Boleto Avulso', icon: '🧾' },
     { id: 'configuracoes', label: 'Configurações', icon: '⚙️' },
     { id: 'cobranca', label: 'Cobranças', icon: '💰' },
   ] as const
@@ -597,6 +627,130 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
             </div>
           </div>
         )}
+        {aba === 'boleto_avulso' && (
+          <div>
+            <div style={{ marginBottom: 28 }}>
+              <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>🧾 Boleto Avulso</h1>
+              <p style={{ color: '#8a8fa3', fontSize: 14 }}>Gere um boleto personalizado para qualquer pessoa, sem vínculo com mensalidade ou cliente cadastrado.</p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28, alignItems: 'start' }}>
+              {/* Formulário */}
+              <div style={{ background: '#181b24', border: '1px solid #252836', borderRadius: 14, padding: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <p style={{ fontWeight: 700, fontSize: 15, margin: 0 }}>Dados do boleto</p>
+
+                <div>
+                  <label style={labelStyle}>Nome completo *</label>
+                  <input style={inputStyle} placeholder="Ex: João da Silva" value={bAvulso.nome}
+                    onChange={e => setBAvulso(v => ({ ...v, nome: e.target.value }))} />
+                </div>
+
+                <div>
+                  <label style={labelStyle}>CPF ou CNPJ *</label>
+                  <input style={inputStyle} placeholder="000.000.000-00 ou 00.000.000/0001-00" value={bAvulso.cpfCnpj}
+                    onChange={e => setBAvulso(v => ({ ...v, cpfCnpj: e.target.value }))} />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div>
+                    <label style={labelStyle}>Valor (R$) *</label>
+                    <input style={inputStyle} type="number" min="0.01" step="0.01" placeholder="0,00" value={bAvulso.valor}
+                      onChange={e => setBAvulso(v => ({ ...v, valor: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Vencimento *</label>
+                    <input style={inputStyle} type="date" value={bAvulso.vencimento}
+                      onChange={e => setBAvulso(v => ({ ...v, vencimento: e.target.value }))} />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={labelStyle}>Descrição / Serviço</label>
+                  <input style={inputStyle} placeholder="Ex: Consultoria de marketing" value={bAvulso.descricao}
+                    onChange={e => setBAvulso(v => ({ ...v, descricao: e.target.value }))} />
+                </div>
+
+                <div>
+                  <label style={labelStyle}>E-mail (opcional)</label>
+                  <input style={inputStyle} type="email" placeholder="cliente@email.com" value={bAvulso.email}
+                    onChange={e => setBAvulso(v => ({ ...v, email: e.target.value }))} />
+                </div>
+
+                <div>
+                  <label style={labelStyle}>WhatsApp para envio (opcional)</label>
+                  <input style={inputStyle} placeholder="5511999999999" value={bAvulso.whatsapp}
+                    onChange={e => setBAvulso(v => ({ ...v, whatsapp: e.target.value }))} />
+                  <p style={{ fontSize: 11, color: '#8a8fa3', marginTop: 4 }}>Se preenchido, envia o boleto automaticamente por WhatsApp</p>
+                </div>
+
+                <div>
+                  <label style={labelStyle}>Mensagem no boleto (opcional)</label>
+                  <input style={inputStyle} placeholder="Usa a padrão configurada se não informar" value={bAvulso.mensagem}
+                    onChange={e => setBAvulso(v => ({ ...v, mensagem: e.target.value }))} />
+                </div>
+
+                {bAvulsoMsg && (
+                  <div style={{ background: bAvulsoMsg.includes('✅') ? '#02A15320' : '#e6394620', border: `1px solid ${bAvulsoMsg.includes('✅') ? '#02A153' : '#e63946'}`, borderRadius: 8, padding: '10px 14px', color: bAvulsoMsg.includes('✅') ? '#02A153' : '#e63946', fontSize: 13 }}>
+                    {bAvulsoMsg}
+                  </div>
+                )}
+
+                <button onClick={gerarBoletoAvulso} disabled={bAvulsoLoading}
+                  style={{ background: bAvulsoLoading ? '#252836' : 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', border: 'none', borderRadius: 10, padding: '13px', fontWeight: 700, fontSize: 15, cursor: bAvulsoLoading ? 'not-allowed' : 'pointer', opacity: bAvulsoLoading ? 0.7 : 1 }}>
+                  {bAvulsoLoading ? '⏳ Gerando boleto...' : '🧾 Gerar Boleto'}
+                </button>
+              </div>
+
+              {/* Resultado */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {bAvulsoResultado ? (
+                  <div style={{ background: '#181b24', border: '2px solid #02A153', borderRadius: 14, padding: 28 }}>
+                    <p style={{ fontWeight: 800, fontSize: 16, color: '#02A153', marginBottom: 16 }}>✅ Boleto gerado!</p>
+
+                    <div style={{ marginBottom: 16 }}>
+                      <p style={{ fontSize: 12, color: '#8a8fa3', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Código de barras</p>
+                      <div style={{ background: '#08090d', border: '1px solid #252836', borderRadius: 8, padding: '12px 14px', fontFamily: 'monospace', fontSize: 12, color: '#f0f1f5', wordBreak: 'break-all', lineHeight: 1.6 }}>
+                        {bAvulsoResultado.codigoBarras}
+                      </div>
+                      <button
+                        onClick={() => navigator.clipboard.writeText(bAvulsoResultado.codigoBarras)}
+                        style={{ marginTop: 8, background: 'none', border: '1px solid #252836', color: '#8a8fa3', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                        📋 Copiar código
+                      </button>
+                    </div>
+
+                    {bAvulsoResultado.pdfUrl && (
+                      <a href={bAvulsoResultado.pdfUrl} target="_blank" rel="noreferrer"
+                        style={{ display: 'block', background: '#6366f120', border: '1px solid #6366f140', color: '#6366f1', borderRadius: 10, padding: '12px', textAlign: 'center', textDecoration: 'none', fontWeight: 700, fontSize: 14 }}>
+                        📄 Abrir PDF do Boleto
+                      </a>
+                    )}
+
+                    <button onClick={() => { setBAvulsoResultado(null); setBAvulsoMsg('') }}
+                      style={{ marginTop: 12, background: 'none', border: '1px solid #252836', color: '#8a8fa3', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, width: '100%' }}>
+                      Gerar novo boleto
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ background: '#181b24', border: '1px solid #252836', borderRadius: 14, padding: 28 }}>
+                    <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 12 }}>ℹ️ Como funciona</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13, color: '#8a8fa3', lineHeight: 1.6 }}>
+                      <p>• Preencha os dados ao lado e clique em <strong style={{ color: '#f0f1f5' }}>Gerar Boleto</strong></p>
+                      <p>• O boleto é emitido pela <strong style={{ color: '#f0f1f5' }}>Efí Pay</strong> com a logo configurada no painel da Efí</p>
+                      <p>• Se informar o WhatsApp, o código de barras e o PDF são enviados automaticamente</p>
+                      <p>• Não precisa estar vinculado a nenhum cliente ou assinatura</p>
+                      <p>• Multa e juros padrão vêm da seção Boleto das Configurações</p>
+                    </div>
+                    <div style={{ marginTop: 20, background: '#6366f110', border: '1px solid #6366f130', borderRadius: 8, padding: '12px 14px', fontSize: 12, color: '#8a8fa3' }}>
+                      💡 A logo da empresa no boleto é configurada diretamente em <strong style={{ color: '#f0f1f5' }}>app.efipay.com.br → Minha Conta → Personalização</strong>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {aba === 'configuracoes' && (
           <div>
             <div style={{ marginBottom: 28 }}>
