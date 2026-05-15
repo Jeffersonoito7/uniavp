@@ -13,13 +13,17 @@ export default async function ModulosPage() {
 
   const { data: modulos } = await (adminClient.from('modulos') as any).select('id, titulo, descricao, ordem, publicado, perfis_permitidos').order('ordem')
 
+  const { data: capaCfg } = await (adminClient.from('configuracoes') as any)
+    .select('valor').eq('chave', 'modulo_capa_padrao').maybeSingle()
+  const capaDefault = capaCfg?.valor ? String(capaCfg.valor).replace(/"/g, '') : null
+
   return (
     <AdminLayout>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Módulos</h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Gerencie os módulos e aulas da trilha</p>
       </div>
-      <ModulosCliente modulosIniciais={modulos ?? []} />
+      <ModulosCliente modulosIniciais={modulos ?? []} capaDefault={capaDefault} />
     </AdminLayout>
   )
 }

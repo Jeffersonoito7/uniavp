@@ -51,7 +51,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
 
   const { data: certConfigs } = await (adminClient.from('configuracoes') as any)
     .select('chave, valor')
-    .in('chave', ['certificado_template_url', 'certificado_nome_y', 'certificado_nome_tamanho', 'certificado_nome_cor'])
+    .in('chave', ['certificado_template_url', 'certificado_nome_y', 'certificado_nome_tamanho', 'certificado_nome_cor', 'modulo_capa_padrao'])
   const certMap: Record<string, string> = {}
   for (const r of certConfigs ?? []) { try { certMap[r.chave] = JSON.parse(r.valor) } catch { certMap[r.chave] = r.valor } }
   if (!aluno) redirect('/consultor/login')
@@ -343,7 +343,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                     const pct = total > 0 ? Math.round(concluidas / total * 100) : 0
                     const temDisponivel = mod.aulas.some(a => a.status === 'disponivel')
                     const todasConcluidas = concluidas === total && total > 0
-                    const thumb = mod.aulas[0]?.capa_url || (mod.aulas[0]?.youtube_video_id ? `https://img.youtube.com/vi/${mod.aulas[0].youtube_video_id}/mqdefault.jpg` : null)
+                    const thumb = mod.aulas[0]?.capa_url || (mod.aulas[0]?.youtube_video_id ? `https://img.youtube.com/vi/${mod.aulas[0].youtube_video_id}/mqdefault.jpg` : null) || certMap['modulo_capa_padrao'] || null
                     return (
                       <div key={mod.modulo_id} style={{ background: 'var(--avp-card)', border: `1px solid ${todasConcluidas ? '#22c55e40' : temDisponivel ? '#3b82f640' : 'var(--avp-border)'}`, borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                         {/* Capa */}

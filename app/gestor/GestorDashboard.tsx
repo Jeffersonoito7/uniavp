@@ -179,9 +179,9 @@ function BarraProgresso({ pct }: { pct: number }) {
 type ArteTemplate = { id: string; tipo: string; titulo: string; arte_url: string; foto_x: number; foto_y: number; foto_largura: number; foto_altura: number; foto_redondo: boolean; ativo: boolean; formato: string; gestor_id: string | null }
 
 export default function GestorDashboard({
-  gestor, consultores, progressoMap, artesTemplatesIniciais, baseUrl,
+  gestor, consultores, progressoMap, artesTemplatesIniciais, baseUrl, capaDefault,
 }: {
-  gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string
+  gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string; capaDefault?: string | null
 }) {
   const [aba, setAba] = useState('dashboard')
   const [listaConsultores, setListaConsultores] = useState(consultores)
@@ -733,7 +733,9 @@ export default function GestorDashboard({
                       <div style={{ height: 130, background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {mod.capa_url
                           ? <img src={mod.capa_url} alt={mod.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
-                          : <span style={{ fontSize: 48 }}>📁</span>
+                          : capaDefault
+                            ? <img src={capaDefault} alt="capa" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                            : <span style={{ fontSize: 48 }}>📁</span>
                         }
                         {/* Badge de quantidade */}
                         <div style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(0,0,0,0.65)', borderRadius: 20, padding: '3px 10px', fontSize: 11, color: '#fff', fontWeight: 600, backdropFilter: 'blur(4px)' }}>

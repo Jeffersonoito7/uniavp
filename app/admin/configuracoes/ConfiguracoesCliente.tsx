@@ -79,6 +79,8 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
   const [boletoInstrucoes, setBoletoInstrucoes] = useState(get('boleto_instrucoes'))
   const [boletoMulta, setBoletoMulta] = useState(get('boleto_multa') || '2')
   const [boletoJuros, setBoletoJuros] = useState(get('boleto_juros') || '1')
+  const [moduloCapaPadrao, setModuloCapaPadrao] = useState(get('modulo_capa_padrao') || '')
+  const moduloCapaRef = useRef<HTMLInputElement>(null)
   const [captacaoVideoId, setCaptacaoVideoId] = useState(get('captacao_video_id') || '')
   const [certUrl, setCertUrl] = useState(get('certificado_template_url'))
   const [certNomeX, setCertNomeX] = useState(get('certificado_nome_x') || '50')
@@ -114,6 +116,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
     carteiraLogoEsquerda: setCarteiraLogoEsquerda,
     carteiraLogoDireita: setCarteiraLogoDireita,
     carteiraAssinaturaUrl: setCarteiraAssinaturaUrl,
+    moduloCapaPadrao: setModuloCapaPadrao,
   }
 
   const campoToChave: Record<string, string> = {
@@ -126,6 +129,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
     carteiraLogoEsquerda: 'carteira_logo_esquerda',
     carteiraLogoDireita: 'carteira_logo_direita',
     carteiraAssinaturaUrl: 'carteira_assinatura_url',
+    moduloCapaPadrao: 'modulo_capa_padrao',
   }
 
   async function uploadImagem(campo: string, file: File) {
@@ -225,6 +229,7 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
         { chave: 'boleto_instrucoes', valor: boletoInstrucoes },
         { chave: 'boleto_multa', valor: boletoMulta },
         { chave: 'boleto_juros', valor: boletoJuros },
+        ...(urlSafe(moduloCapaPadrao) ? [{ chave: 'modulo_capa_padrao', valor: moduloCapaPadrao }] : []),
         { chave: 'captacao_video_id', valor: captacaoVideoId },
         ...(urlSafe(certUrl) ? [{ chave: 'certificado_template_url', valor: certUrl }] : []),
         { chave: 'certificado_nome_x', valor: certNomeX },
@@ -465,6 +470,30 @@ export default function ConfiguracoesCliente({ configs }: { configs: Config[] })
             <input style={inp} value={carteiraTagline} onChange={e => setCarteiraTagline(e.target.value)} placeholder="Ex: PROTEÇÃO VEICULAR DE VERDADE!" />
           </div>
         </div>
+      </div>
+
+      {/* CAPA PADRÃO DOS MÓDULOS */}
+      <div style={{ ...card }}>
+        <p style={{ fontWeight: 800, fontSize: 16 }}>📚 Capa padrão dos módulos</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8, lineHeight: 1.6 }}>
+          Imagem exibida nos módulos que não têm capa própria — aparece no painel Admin, Gestor e Consultor.
+        </p>
+        <LogoCard
+          label="Imagem padrão dos módulos"
+          campo="moduloCapaPadrao"
+          value={moduloCapaPadrao}
+          desc="Aparece como capa quando o módulo não tem imagem"
+          rec="1380×1080px (mín.)"
+          fileRef={moduloCapaRef}
+          uploading={uploading}
+          onUpload={(_, file) => uploadImagem('moduloCapaPadrao', file)}
+        />
+        {moduloCapaPadrao && moduloCapaPadrao.startsWith('http') && (
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <img src={moduloCapaPadrao} alt="preview" style={{ width: 140, height: 90, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--avp-border)' }} />
+            <p style={{ fontSize: 12, color: 'var(--avp-green)' }}>✅ Imagem configurada — módulos sem capa vão usar esta</p>
+          </div>
+        )}
       </div>
 
       {/* VÍDEO DE CAPTAÇÃO */}

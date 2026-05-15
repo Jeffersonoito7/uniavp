@@ -43,7 +43,7 @@ type Modulo = {
 
 type EditForm = { titulo: string; descricao: string; capaPreview: string | null; capaBase64: string | null; perfis_permitidos: PerfilId[] }
 
-export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: Modulo[] }) {
+export default function ModulosCliente({ modulosIniciais, capaDefault }: { modulosIniciais: Modulo[]; capaDefault?: string | null }) {
   const router = useRouter()
   const [modulos, setModulos] = useState<Modulo[]>(modulosIniciais)
   const [criando, setCriando] = useState(false)
@@ -260,7 +260,9 @@ export default function ModulosCliente({ modulosIniciais }: { modulosIniciais: M
                     <div style={{ width: 120, height: 90, flexShrink: 0, overflow: 'hidden', background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                       {temCapa
                         ? <img src={m.capa_url!} alt={m.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <span style={{ fontSize: 36 }}>📚</span>}
+                        : capaDefault
+                          ? <img src={capaDefault} alt="capa padrão" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : <span style={{ fontSize: 36 }}>📚</span>}
                       <div style={{ position: 'absolute', bottom: 6, left: 6, background: 'rgba(0,0,0,0.6)', borderRadius: 4, padding: '2px 7px', fontSize: 10, color: '#fff', fontWeight: 700 }}>
                         Módulo {m.ordem}
                       </div>
