@@ -86,13 +86,34 @@ export default function CaptacaoCliente({ gestores, baseUrl }: { gestores: Gesto
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-      {/* Link genérico de consultor */}
+      {/* Explicação */}
+      <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: 20, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div style={{ borderRight: '1px solid var(--avp-border)', paddingRight: 16 }}>
+          <p style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}>🎯 Funil Completo</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>Para quem <strong style={{ color: 'var(--avp-text)' }}>não conhece</strong> o negócio. Passa por: pergunta → vídeo de apresentação → segunda pergunta → cadastro.</p>
+        </div>
+        <div>
+          <p style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}>⚡ Acesso Direto</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>Para quem <strong style={{ color: 'var(--avp-text)' }}>já conhece</strong> o negócio. Pula o funil e vai direto ao formulário de cadastro (nome, WhatsApp, e-mail, senha).</p>
+        </div>
+      </div>
+
+      {/* Link genérico de consultor — Funil completo */}
       <LinkCard
-        icon="👤"
-        titulo="Cadastro de Consultor — Geral"
-        desc="Link genérico. O consultor preenche o nome do gestor manualmente durante o cadastro."
+        icon="🎯"
+        titulo="Consultor — Funil Completo (geral)"
+        desc="Para quem não conhece o negócio. Passa por perguntas + vídeo obrigatório antes de se cadastrar."
         link={`${baseUrl}/captacao`}
         cor="#333687"
+      />
+
+      {/* Link genérico direto */}
+      <LinkCard
+        icon="⚡"
+        titulo="Consultor — Acesso Direto (geral)"
+        desc="Para quem já conhece. Pula o funil e vai direto ao formulário de cadastro."
+        link={`${baseUrl}/captacao?direto=1`}
+        cor="#f59e0b"
       />
 
       {/* Link por gestor específico */}
@@ -121,13 +142,22 @@ export default function CaptacaoCliente({ gestores, baseUrl }: { gestores: Gesto
         </select>
 
         {gestor && linkGestor && (
-          <LinkCard
-            icon="🎯"
-            titulo={`Link do gestor: ${gestor.nome}`}
-            desc={`Consultores que acessarem este link já ficam vinculados a ${gestor.nome} automaticamente.`}
-            link={linkGestor}
-            cor="#02A153"
-          />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <LinkCard
+              icon="🎯"
+              titulo={`Funil Completo — ${gestor.nome}`}
+              desc={`Para quem não conhece. Passa por perguntas + vídeo + cadastro, vinculado a ${gestor.nome}.`}
+              link={linkGestor}
+              cor="#02A153"
+            />
+            <LinkCard
+              icon="⚡"
+              titulo={`Acesso Direto — ${gestor.nome}`}
+              desc={`Para quem já conhece. Vai direto ao cadastro, vinculado a ${gestor.nome}.`}
+              link={`${linkGestor}?direto=1`}
+              cor="#f59e0b"
+            />
+          </div>
         )}
 
         {!gestorSelecionado && (

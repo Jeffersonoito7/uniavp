@@ -19,7 +19,7 @@ function extrairIdYoutube(valor?: string | null): string | null {
   return fallback ? fallback[0] : null
 }
 
-export default async function GestorCaptacaoPage({ params }: { params: { gestorWhatsapp: string } }) {
+export default async function GestorCaptacaoPage({ params, searchParams }: { params: { gestorWhatsapp: string }; searchParams?: { direto?: string } }) {
   const adminClient = createServiceRoleClient()
   const config = await getSiteConfig()
 
@@ -37,6 +37,7 @@ export default async function GestorCaptacaoPage({ params }: { params: { gestorW
   const valorRaw = videoConfig?.valor
   const valorStr = typeof valorRaw === 'string' ? valorRaw : JSON.stringify(valorRaw ?? '')
   const videoId = extrairIdYoutube(valorStr)
+  const direto = searchParams?.direto === '1'
 
   return (
     <FunilCaptacao
@@ -45,6 +46,7 @@ export default async function GestorCaptacaoPage({ params }: { params: { gestorW
       siteNome={config.nome}
       logoUrl={config.logoPaginaUrl || config.logoUrl}
       videoId={videoId}
+      direto={direto}
     />
   )
 }

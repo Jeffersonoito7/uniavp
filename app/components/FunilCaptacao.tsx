@@ -11,12 +11,13 @@ type Props = {
   gestorWhatsapp?: string
   siteNome?: string
   logoUrl?: string
-  videoId?: string | null  // YouTube video ID do funil (admin config)
+  videoId?: string | null
+  direto?: boolean  // pula o funil e vai direto ao cadastro
 }
 
-export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, logoUrl, videoId }: Props) {
+export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, logoUrl, videoId, direto }: Props) {
   const router = useRouter()
-  const [etapa, setEtapa] = useState<Etapa>('pergunta1')
+  const [etapa, setEtapa] = useState<Etapa>(direto ? 'cadastro' : 'pergunta1')
   const [videoAssistido, setVideoAssistido] = useState(false)
   const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', senha: '', gestor_nome: '', gestor_whatsapp: '' })
   const [loading, setLoading] = useState(false)
