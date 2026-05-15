@@ -21,7 +21,9 @@ export default async function CaptacaoPage() {
 
   const { data: videoConfig } = await (adminClient.from('configuracoes') as any)
     .select('valor').eq('chave', 'captacao_video_id').maybeSingle()
-  const videoId = extrairIdYoutube(videoConfig?.valor)
+  const valorRaw = videoConfig?.valor
+  const valorStr = typeof valorRaw === 'string' ? valorRaw : JSON.stringify(valorRaw ?? '')
+  const videoId = extrairIdYoutube(valorStr)
 
   return (
     <FunilCaptacao

@@ -33,7 +33,10 @@ export default async function GestorCaptacaoPage({ params }: { params: { gestorW
 
   const { data: videoConfig } = await (adminClient.from('configuracoes') as any)
     .select('valor').eq('chave', 'captacao_video_id').maybeSingle()
-  const videoId = extrairIdYoutube(videoConfig?.valor)
+  // JSONB pode vir como objeto parsed ou string raw — tenta os dois
+  const valorRaw = videoConfig?.valor
+  const valorStr = typeof valorRaw === 'string' ? valorRaw : JSON.stringify(valorRaw ?? '')
+  const videoId = extrairIdYoutube(valorStr)
 
   return (
     <FunilCaptacao
