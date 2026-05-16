@@ -14,6 +14,7 @@ import GestorArtesTemplates from './artes/GestorArtesTemplates'
 // ── Componente de Perfil do Gestor ──────────────────────────────────────────
 function PerfilGestor({ gestor, onNomeAtualizado }: { gestor: Gestor; onNomeAtualizado: (n: string) => void }) {
   const [nome, setNome]         = useState(gestor.nome)
+  const [linkExterno, setLinkExterno] = useState(gestor.link_externo ?? '')
   const [fotoUrl, setFotoUrl]   = useState<string | null>(gestor.foto_perfil ?? null)
   const [cropSrc, setCropSrc]   = useState<string | null>(null)
   const [showCrop, setShowCrop] = useState(false)
@@ -47,7 +48,7 @@ function PerfilGestor({ gestor, onNomeAtualizado }: { gestor: Gestor; onNomeAtua
     const res = await fetch('/api/gestor/perfil', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome }),
+      body: JSON.stringify({ nome, link_externo: linkExterno }),
     })
     const data = await res.json()
     if (data.ok) { setMsg({ tipo: 'ok', texto: 'Perfil atualizado!' }); onNomeAtualizado(nome) }
@@ -110,6 +111,11 @@ function PerfilGestor({ gestor, onNomeAtualizado }: { gestor: Gestor; onNomeAtua
               <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>Nome *</label>
               <input style={inp} value={nome} onChange={e => setNome(e.target.value)} required />
             </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>🔗 Link da Plataforma Parceira</label>
+              <input style={inp} value={linkExterno} onChange={e => setLinkExterno(e.target.value)} placeholder="https://link-da-outra-plataforma.com.br" />
+              <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>Enviado automaticamente para seus FREE ao se cadastrarem</p>
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>WhatsApp</label>
@@ -157,7 +163,7 @@ type Modulo = {
   titulo: string; ordem: number; aulas_total: number; aulas_concluidas: number; percentual: number
 }
 type Evento = { id: string; titulo: string; descricao: string; cidade: string; data_hora: string }
-type Gestor = { id: string; nome: string; email: string; whatsapp: string; foto_perfil?: string | null }
+type Gestor = { id: string; nome: string; email: string; whatsapp: string; foto_perfil?: string | null; link_externo?: string | null }
 
 const badgeStatus: Record<string, { label: string; color: string; bg: string }> = {
   ativo: { label: 'Ativo', color: 'var(--avp-green)', bg: '#02A15320' },

@@ -16,6 +16,7 @@ const SQLS = [
   `CREATE TABLE IF NOT EXISTS pro_lembretes (id UUID DEFAULT gen_random_uuid() PRIMARY KEY, gestor_id UUID REFERENCES gestores(id) NOT NULL, mensagem TEXT NOT NULL, lembrar_em TIMESTAMPTZ NOT NULL, enviado BOOLEAN DEFAULT FALSE, created_at TIMESTAMPTZ DEFAULT NOW())`,
   `CREATE INDEX IF NOT EXISTS idx_pro_lembretes_gestor ON pro_lembretes(gestor_id)`,
   `CREATE INDEX IF NOT EXISTS idx_pro_lembretes_envio ON pro_lembretes(lembrar_em, enviado)`,
+  `ALTER TABLE gestores ADD COLUMN IF NOT EXISTS link_externo TEXT`,
 ]
 
 export async function GET(req: NextRequest) {

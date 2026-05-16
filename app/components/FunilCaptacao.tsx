@@ -15,9 +15,10 @@ type Props = {
   direto?: boolean
   indicadorWhatsapp?: string
   plano?: 'pro'
+  linkExterno?: string
 }
 
-export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, logoUrl, videoId, direto, indicadorWhatsapp, plano }: Props) {
+export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, logoUrl, videoId, direto, indicadorWhatsapp, plano, linkExterno }: Props) {
   const router = useRouter()
   const [etapa, setEtapa] = useState<Etapa>(direto ? 'cadastro' : 'pergunta1')
   const [videoAssistido, setVideoAssistido] = useState(false)
@@ -46,7 +47,10 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
     const data = await res.json()
     if (data.ok || data.aluno) {
       setEtapa('sucesso')
-      setTimeout(() => router.push(plano === 'pro' ? '/assinar-pro' : '/entrar'), 2500)
+      if (linkExterno) {
+        setTimeout(() => window.open(linkExterno, '_blank'), 1500)
+      }
+      setTimeout(() => router.push(plano === 'pro' ? '/assinar-pro' : '/entrar'), linkExterno ? 4000 : 2500)
     } else {
       setErro(data.erro ?? data.error ?? 'Erro ao criar conta.')
     }
@@ -163,20 +167,7 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 420, margin: '0 auto' }}>
             <button
-              onClick={() => {
-                const contato = indicadorWhatsapp || gestorWhatsapp
-                if (contato) {
-                  const numero = contato.replace(/\D/g, '')
-                  const ddi = numero.startsWith('55') ? numero : `55${numero}`
-                  const msg = encodeURIComponent(
-                    `Olá! 🎯 Acabei de assistir ao vídeo da ${siteNome || 'plataforma'} e faz sentido pra mim iniciar o processo de seleção e treinamento.\n\nMe envia o link de cadastro para me tornar um Consultor AVP! 🚀`
-                  )
-                  window.open(`https://wa.me/${ddi}?text=${msg}`, '_blank')
-                  setEtapa('aguardando_link')
-                } else {
-                  setEtapa('cadastro')
-                }
-              }}
+              onClick={() => setEtapa('cadastro')}
               style={{ background: 'linear-gradient(135deg, #25d366, #128c7e)', color: '#fff', border: 'none', borderRadius: 16, padding: '22px 40px', fontWeight: 900, fontSize: 20, cursor: 'pointer', boxShadow: '0 12px 40px rgba(37,211,102,0.4)', letterSpacing: 0.5, transition: 'transform 0.15s' }}
               onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.03)')}
               onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
@@ -344,11 +335,31 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
   // ── SUCESSO ───────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: 40 }}>
-      <div style={{ textAlign: 'center', color: '#fff' }}>
-        <div style={{ fontSize: 64, marginBottom: 20 }}>{plano === 'pro' ? '✨' : '🎉'}</div>
+      <div style={{ textAlign: 'center', color: '#fff', maxWidth: 520, width: '100%' }}>
+        <div style={{ fontSize: 64, marginBottom: 20 }}>🎉</div>
         <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 12 }}>Cadastro realizado!</h2>
-        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16 }}>
-          {plano === 'pro' ? 'Redirecionando para o pagamento PRO...' : 'Redirecionando para o login...'}
+        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, marginBottom: 28 }}>
+          Bem-vindo! Sua conta foi criada com sucesso.
+        </p>
+
+        {linkExterno && (
+          <div style={{ background: 'rgba(2,161,83,0.1)', border: '1px solid rgba(2,161,83,0.4)', borderRadius: 16, padding: '24px', marginBottom: 24 }}>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginBottom: 8 }}>📲 Próximo passo obrigatório</p>
+            <p style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 16, lineHeight: 1.5 }}>
+              Cadastre-se também na plataforma parceira para ativar seu acesso completo ao treinamento:
+            </p>
+            <a href={linkExterno} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'inline-block', background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', borderRadius: 12, padding: '14px 32px', fontWeight: 800, fontSize: 16, textDecoration: 'none', boxShadow: '0 8px 24px rgba(2,161,83,0.4)' }}>
+              Acessar plataforma parceira →
+            </a>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 12 }}>
+              Abrindo automaticamente em instantes...
+            </p>
+          </div>
+        )}
+
+        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>
+          {plano === 'pro' ? 'Redirecionando para o pagamento PRO...' : 'Redirecionando para o login da plataforma...'}
         </p>
       </div>
     </div>

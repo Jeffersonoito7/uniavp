@@ -128,23 +128,32 @@ export async function POST(req: NextRequest) {
   const nomePlataforma = siteConfig.nome || 'Universidade'
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://uniavp.autovaleprevencoes.org.br'
 
+  // Busca o gestor (PRO) para pegar o link externo configurado
+  const gestorWppLimpo = gestor_whatsapp.replace(/\D/g, '')
+  const { data: gestorData } = await (adminClient.from('gestores') as any)
+    .select('id, link_externo').eq('whatsapp', gestorWppLimpo).eq('ativo', true).maybeSingle()
+  const linkExterno: string | null = gestorData?.link_externo ?? null
+
   // Notifica o gestor usando a instância WhatsApp dele (se tiver) ou a global
   const instanciaGestor = await getInstanciaGestorPorNome(gestor_nome, adminClient)
   await enviarWhatsApp(
     gestor_whatsapp,
-    `🆓 *Novo UNIAVP FREE!*\n\nOlá ${gestor_nome}! *${nome}* acabou de se cadastrar em *${nomePlataforma}* e iniciou sua jornada. 🚀\n\nVocê receberá atualizações do progresso dele por aqui.`,
+    `🆓 *Novo FREE cadastrado!*\n\nOlá ${gestor_nome}! *${nome}* acabou de se cadastrar em *${nomePlataforma}* pelo seu link. 🚀\n\n📱 WhatsApp: ${whatsappLimpo}\n\nVocê receberá atualizações do progresso dele por aqui.`,
     instanciaGestor
   )
 
-  // Notifica o próprio consultor com boas-vindas e link de acesso
-  await enviarWhatsApp(
-    whatsappLimpo,
-    `🎓 *Bem-vindo ao UNIAVP FREE, ${nome}!* 🚀\n\n` +
-    `Seu cadastro foi confirmado! Acesse agora:\n👉 ${appUrl}/free/${whatsappLimpo}\n\n` +
-    `📚 Você tem acesso às primeiras *20 aulas* gratuitamente.\n` +
-    `✨ Quer acesso completo? Faça upgrade para o *UNIAVP PRO* dentro da plataforma.\n\n` +
-    `_Bons estudos!_`
-  )
+  // Boas-vindas para o candidato + link da plataforma parceira (se configurado)
+  let msgCandidato = `🎓 *Bem-vindo ao ${nomePlataforma}, ${nome}!* 🚀\n\n` +
+    `Seu cadastro foi confirmado! Acesse a plataforma:\n👉 ${appUrl}/entrar\n\n`
+
+  if (linkExterno) {
+    msgCandidato += `📲 *Próximo passo obrigatório:*\nCadastre-se também na plataforma parceira pelo link abaixo para poder iniciar o treinamento:\n👉 ${linkExterno}\n\n` +
+      `Após se cadastrar lá, volte aqui e assista as aulas. A primeira aula já te ensina a usar a plataforma! 🎯\n\n`
+  }
+
+  msgCandidato += `_Bons estudos!_`
+
+  await enviarWhatsApp(whatsappLimpo, msgCandidato)
 
   return NextResponse.json({ aluno })
 }

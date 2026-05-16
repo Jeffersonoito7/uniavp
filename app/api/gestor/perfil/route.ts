@@ -13,11 +13,12 @@ export async function PUT(req: NextRequest) {
     .select('id').eq('user_id', user.id).maybeSingle()
   if (!gestor) return NextResponse.json({ error: 'Não encontrado' }, { status: 404 })
 
-  const { nome, bio } = await req.json()
+  const { nome, bio, link_externo } = await req.json()
 
   const updates: Record<string, unknown> = {}
   if (nome !== undefined) updates.nome = nome
   if (bio !== undefined) updates.bio = bio
+  if (link_externo !== undefined) updates.link_externo = link_externo || null
 
   const { error } = await (adminClient.from('gestores') as any).update(updates).eq('id', gestor.id)
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })

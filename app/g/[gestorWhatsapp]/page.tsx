@@ -24,7 +24,7 @@ export default async function GestorCaptacaoPage({ params, searchParams }: { par
   const config = await getSiteConfig()
 
   const { data: gestor } = await (adminClient.from('gestores') as any)
-    .select('nome, whatsapp')
+    .select('nome, whatsapp, link_externo')
     .eq('whatsapp', params.gestorWhatsapp)
     .eq('ativo', true)
     .maybeSingle()
@@ -51,6 +51,7 @@ export default async function GestorCaptacaoPage({ params, searchParams }: { par
       direto={direto}
       indicadorWhatsapp={ref}
       plano={plano}
+      linkExterno={gestor.link_externo ?? undefined}
     />
   )
 }
