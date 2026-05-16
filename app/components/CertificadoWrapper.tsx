@@ -33,7 +33,13 @@ function marcarVisto(whatsapp: string) {
 
 export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, numRegistro, nomeY, nomeFontePct, nomeCor, logoEsquerdaUrl, logoDireitaUrl, logoY, logoTamPct, assinaturaUrl, assinaturaNome, assinaturaCargo, assinaturaY }: Props) {
   const chave = whatsapp ?? 'aluno'
-  const [etapa, setEtapa] = useState<Etapa>(() => jaViu(chave) ? 'fechado' : 'certificado')
+  // Começa sempre 'fechado' no servidor — ajusta no useEffect para evitar hydration mismatch
+  const [etapa, setEtapa] = useState<Etapa>('fechado')
+
+  useEffect(() => {
+    if (!jaViu(chave)) setEtapa('certificado')
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (etapa !== 'certificado') return
