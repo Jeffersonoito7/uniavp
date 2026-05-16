@@ -3,7 +3,7 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
 export const dynamic = 'force-dynamic'
 
-export const MIGRATIONS = [
+const MIGRATIONS = [
   {
     id: '0031_otp_whatsapp',
     descricao: 'Verificação WhatsApp OTP — upgrade PRO',
