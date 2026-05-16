@@ -1,7 +1,21 @@
 import { getSiteConfig } from '@/lib/site-config'
 import { createServiceRoleClient } from '@/lib/supabase-server'
+import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getSiteConfig()
+  return {
+    title: `Plano FREE — ${config.nome}`,
+    description: `Entre gratuitamente na ${config.nome} e comece a aprender. Sem cartão de crédito, sem burocracia.`,
+    openGraph: {
+      title: `${config.nome} FREE — Comece grátis agora`,
+      description: 'Acesse módulos de treinamento, certificados e muito mais. 100% gratuito.',
+      images: config.logoUrl ? [config.logoUrl] : [],
+    },
+  }
+}
 
 export default async function PlanoFreePage() {
   const config = await getSiteConfig()

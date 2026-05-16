@@ -28,6 +28,42 @@ function carregarImagem(src: string, crossOrigin?: string): Promise<HTMLImageEle
   })
 }
 
+function FotoPreview({ fotoLocal, template, cropZoom, panBgX, panBgY }: {
+  fotoLocal: string; template: Template | null; cropZoom: number; panBgX: number; panBgY: number
+}) {
+  const fW = template?.foto_largura ?? 0
+  const fH = template?.foto_altura ?? 0
+  const usaArea = template && fW > 0 && fH > 0 && (fW < 90 || fH < 90)
+  // 'cover' garante que a foto preenche a área inteira (igual ao Math.max do canvas)
+  const bgSize = cropZoom <= 1 ? 'cover' : `${cropZoom * 100}%`
+  if (usaArea) {
+    return (
+      <div style={{
+        position: 'absolute',
+        left: `${template!.foto_x}%`, top: `${template!.foto_y}%`,
+        width: `${fW}%`, height: `${fH}%`,
+        backgroundImage: `url(${fotoLocal})`,
+        backgroundSize: bgSize,
+        backgroundPosition: `${panBgX}% ${panBgY}%`,
+        backgroundRepeat: 'no-repeat',
+        backgroundColor: '#1a1a2e',
+        borderRadius: template!.foto_redondo ? '50%' : 0,
+        overflow: 'hidden',
+      }} />
+    )
+  }
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      backgroundImage: `url(${fotoLocal})`,
+      backgroundSize: bgSize,
+      backgroundPosition: `${panBgX}% ${panBgY}%`,
+      backgroundRepeat: 'no-repeat',
+      backgroundColor: '#222',
+    }} />
+  )
+}
+
 export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { templates: Template[]; nomeAluno: string; fotoInicial?: string | null }) {
   const [formato, setFormato] = useState<Formato>('feed')
   const [templateSelecionado, setTemplateSelecionado] = useState<Template | null>(null)
@@ -121,7 +157,8 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
       const fotoSrc = fotoLocal.startsWith('http')
         ? `/api/proxy-image?url=${encodeURIComponent(fotoLocal)}`
         : fotoLocal
-      const foto = await carregarImagem(fotoSrc, 'anonymous')
+      // data: URLs não suportam crossOrigin — só define para URLs remotas
+      const foto = await carregarImagem(fotoSrc, fotoSrc.startsWith('data:') ? undefined : 'anonymous')
 
       // Replica exatamente o comportamento CSS: background-size + background-position
       const scale = Math.max(w / foto.width, h / foto.height) * cropZoom
@@ -362,40 +399,13 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
                 onPointerLeave={endDrag}
               >
                 {/* FOTO — área específica ou canvas inteiro, igual ao canvas */}
-                {fotoLocal && (() => {
-                  const t = templateSelecionado
-                  const fW = t?.foto_largura ?? 0
-                  const fH = t?.foto_altura ?? 0
-                  const usaArea = t && fW > 0 && fH > 0 && (fW < 90 || fH < 90)
-                  if (usaArea) {
-                    return (
-                      <div style={{
-                        position: 'absolute',
-                        left: `${t!.foto_x}%`,
-                        top: `${t!.foto_y}%`,
-                        width: `${fW}%`,
-                        height: `${fH}%`,
-                        backgroundImage: `url(${fotoLocal})`,
-                        backgroundSize: `${cropZoom * 100}%`,
-                        backgroundPosition: `${panBgX}% ${panBgY}%`,
-                        backgroundRepeat: 'no-repeat',
-                        backgroundColor: '#333',
-                        borderRadius: t!.foto_redondo ? '50%' : 0,
-                        overflow: 'hidden',
-                      }} />
-                    )
-                  }
-                  return (
-                    <div style={{
-                      position: 'absolute', inset: 0,
-                      backgroundImage: `url(${fotoLocal})`,
-                      backgroundSize: `${cropZoom * 100}%`,
-                      backgroundPosition: `${panBgX}% ${panBgY}%`,
-                      backgroundRepeat: 'no-repeat',
-                      backgroundColor: '#222',
-                    }} />
-                  )
-                })()}
+                {fotoLocal && <FotoPreview
+                  fotoLocal={fotoLocal}
+                  template={templateSelecionado}
+                  cropZoom={cropZoom}
+                  panBgX={panBgX}
+                  panBgY={panBgY}
+                />}
 
                 {/* TEMPLATE PNG — sobrepõe a foto, partes transparentes revelam a foto */}
                 {templateSelecionado?.arte_url && (

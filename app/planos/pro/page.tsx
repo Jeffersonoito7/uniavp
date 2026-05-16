@@ -1,7 +1,21 @@
 import { getSiteConfig } from '@/lib/site-config'
 import { createServiceRoleClient } from '@/lib/supabase-server'
+import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getSiteConfig()
+  return {
+    title: `Plano PRO — ${config.nome}`,
+    description: `Gerencie sua equipe, acesse relatórios, templates de arte e muito mais. Assine o ${config.nome} PRO por R$97/mês.`,
+    openGraph: {
+      title: `${config.nome} PRO — Gerencie sua equipe com método`,
+      description: 'Painel completo para líderes. Templates, relatórios, WhatsApp integrado e muito mais.',
+      images: config.logoUrl ? [config.logoUrl] : [],
+    },
+  }
+}
 
 export default async function PlanoProPage() {
   const config = await getSiteConfig()
@@ -140,8 +154,8 @@ export default async function PlanoProPage() {
         </div>
 
         {/* Comparativo */}
-        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, overflow: 'hidden', marginBottom: 56 }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, overflow: 'hidden', marginBottom: 56, overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 420 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                 <th style={{ padding: '20px 24px', textAlign: 'left', fontSize: 14, color: 'rgba(241,245,249,0.5)', fontWeight: 600 }}>Recurso</th>
