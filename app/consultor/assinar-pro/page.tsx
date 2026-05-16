@@ -84,7 +84,7 @@ export default function AssinarProPage() {
       ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pag.pix_copia_cola)}&color=6366f1&bgcolor=ffffff`
       : null
 
-  const valor = info?.valorPlano ?? 147
+  const valor = info?.valorPlano ?? 97
   const wppFormatado = info?.whatsapp
     ? info.whatsapp.replace(/(\d{2})(\d{2})(\d{4,5})(\d{4})/, '+$1 ($2) $3-$4')
     : null

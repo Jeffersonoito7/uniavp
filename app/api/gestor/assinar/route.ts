@@ -34,7 +34,7 @@ export async function POST() {
   const { data: valorCfg } = await (adminClient.from('configuracoes') as any)
     .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
   const valorStr = valorCfg?.valor ? String(valorCfg.valor).replace(/"/g, '') : '147'
-  const valorPlano = Math.max(1, parseFloat(valorStr) || 147)
+  const valorPlano = Math.max(1, parseFloat(valorStr) || 97)
 
   // Gera vencimento: 3 dias a partir de hoje
   const venc = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
@@ -97,7 +97,7 @@ export async function GET() {
 
   const { data: valorCfgGet } = await (adminClient.from('configuracoes') as any)
     .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
-  const valorPlanoGet = Math.max(1, parseFloat(String(valorCfgGet?.valor ?? '').replace(/"/g, '')) || 147)
+  const valorPlanoGet = Math.max(1, parseFloat(String(valorCfgGet?.valor ?? '').replace(/"/g, '')) || 97)
 
   return NextResponse.json({
     status: gestor.status_assinatura,

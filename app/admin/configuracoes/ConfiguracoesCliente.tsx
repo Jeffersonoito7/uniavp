@@ -69,7 +69,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
     return typeof parsed === 'string' ? parsed : String(parsed)
   }
 
-  const [planoPROValor, setPlanoPROValor] = useState(get('plano_pro_valor') || '147')
+  const [planoPROValor, setPlanoPROValor] = useState(get('plano_pro_valor') || '97')
   const [logoUrl, setLogoUrl] = useState(() => bustCache(get('site_logo_url')))
   const [logoMenuUrl, setLogoMenuUrl] = useState(() => bustCache(get('logo_menu_url')))
   const [logoPaginaUrl, setLogoPaginaUrl] = useState(() => bustCache(get('logo_pagina_url')))
@@ -462,7 +462,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
           <input style={inp} type="number" min="1" step="0.01"
             value={planoPROValor}
             onChange={e => setPlanoPROValor(e.target.value)}
-            placeholder="147.00" />
+            placeholder="97.00" />
         </div>
         <p style={{ fontSize: 12, color: '#818cf8', marginTop: 4 }}>
           Valor atual: <strong>R$ {parseFloat(planoPROValor || '0').toFixed(2).replace('.', ',')}</strong>/mês

@@ -65,7 +65,7 @@ export default function AssinarPage() {
               {info.diasTrial} {info.diasTrial === 1 ? 'dia restante' : 'dias restantes'} de teste grátis
             </p>
             <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>
-              Aproveite ao máximo! Após o trial, o plano é R${(info?.valorPlano ?? 147).toFixed(2).replace('.', ',')}/mês.
+              Aproveite ao máximo! Após o trial, o plano é R${(info?.valorPlano ?? 97).toFixed(2).replace('.', ',')}/mês.
             </p>
             <a href="/pro" style={{ display: 'inline-block', marginTop: 16, background: 'var(--avp-green)', color: '#fff', borderRadius: 10, padding: '12px 28px', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
               → Acessar painel
@@ -110,7 +110,7 @@ export default function AssinarPage() {
                   <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Acesso completo ao painel</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontWeight: 900, fontSize: 28, color: 'var(--avp-green)' }}>R$ {(info?.valorPlano ?? 147).toFixed(2).replace('.', ',')}</p>
+                  <p style={{ fontWeight: 900, fontSize: 28, color: 'var(--avp-green)' }}>R$ {(info?.valorPlano ?? 97).toFixed(2).replace('.', ',')}</p>
                   <p style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>/mês</p>
                 </div>
               </div>
@@ -147,7 +147,7 @@ export default function AssinarPage() {
             ) : (
               <button onClick={gerarPix} disabled={gerando}
                 style={{ width: '100%', background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 12, padding: '16px', fontWeight: 800, fontSize: 16, cursor: gerando ? 'not-allowed' : 'pointer', opacity: gerando ? 0.7 : 1 }}>
-                {gerando ? '⏳ Gerando cobrança...' : `💳 Assinar por R$${(info?.valorPlano ?? 147).toFixed(2).replace('.', ',')}/mês`}
+                {gerando ? '⏳ Gerando cobrança...' : `💳 Assinar por R$${(info?.valorPlano ?? 97).toFixed(2).replace('.', ',')}/mês`}
               </button>
             )}
             {msg && <p style={{ color: 'var(--avp-danger)', fontSize: 13, marginTop: 10, textAlign: 'center' }}>{msg}</p>}
