@@ -665,9 +665,15 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
           </div>
           <div>
             <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Tamanho da fonte (%)</label>
-            <input type="number" min={1} max={15} step={0.1} value={certNomeTamanho} onChange={e => setCertNomeTamanho(e.target.value)}
-              style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} />
-            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>% da largura · padrão: 4.5</p>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <input type="number" min={1} max={8} step={0.1} value={certNomeTamanho} onChange={e => setCertNomeTamanho(e.target.value)}
+                style={{ flex: 1, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 12px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }} />
+              <button type="button" onClick={() => setCertNomeTamanho('4.5')}
+                style={{ background: 'var(--avp-border)', border: 'none', borderRadius: 8, padding: '0 12px', color: 'var(--avp-text-dim)', fontSize: 12, cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' as const }}>
+                Padrão
+              </button>
+            </div>
+            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>% da largura · mín 1 · máx 8 · padrão: 4.5</p>
           </div>
           <div>
             <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Cor do nome</label>
@@ -753,7 +759,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
                 position: 'absolute', left: '50%', transform: 'translateX(-50%)',
                 top: `${certNomeY}%`, width: '80%', textAlign: 'center',
                 fontFamily: 'Georgia, serif', fontWeight: 700,
-                fontSize: `${Math.min(Number(certNomeTamanho) || 4.5, 15)}cqw`,
+                fontSize: `${Math.min(Number(certNomeTamanho) || 4.5, 8)}cqw`,
                 color: certNomeCor, textTransform: 'uppercase' as const,
                 letterSpacing: 2, pointerEvents: 'none', lineHeight: 1.2,
               }}>
