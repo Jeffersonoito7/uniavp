@@ -1,5 +1,5 @@
 'use client'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import PhoneInput from '@/app/components/PhoneInput'
 
 type Config = { chave: string; valor: string; descricao?: string }
@@ -84,6 +84,19 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [corBorda, setCorBorda] = useState(get('cor_borda') || '#252836')
   const [corTexto, setCorTexto] = useState(get('cor_texto') || '#f0f1f5')
   const [corSidebar, setCorSidebar] = useState(get('cor_sidebar') || '#181b24')
+
+  // Aplica CSS variables em tempo real ao mudar qualquer cor
+  useEffect(() => {
+    const r = document.documentElement.style
+    r.setProperty('--avp-blue', corPrimaria)
+    r.setProperty('--avp-green', corSecundaria)
+    r.setProperty('--avp-black', corFundo)
+    r.setProperty('--avp-card', corCard)
+    r.setProperty('--avp-border', corBorda)
+    r.setProperty('--avp-text', corTexto)
+    r.setProperty('--avp-sidebar', corSidebar)
+    r.setProperty('--grad-brand', `linear-gradient(135deg, ${corPrimaria} 0%, ${corSecundaria} 100%)`)
+  }, [corPrimaria, corSecundaria, corFundo, corCard, corBorda, corTexto, corSidebar])
   const [whatsapp, setWhatsapp] = useState(get('whatsapp_suporte'))
   const [dominio, setDominio] = useState(get('dominio_customizado'))
   const [carteiraAssinaturaNome, setCarteiraAssinaturaNome] = useState(get('carteira_assinatura_nome'))
