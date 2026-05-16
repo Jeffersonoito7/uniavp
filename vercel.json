@@ -4,6 +4,7 @@
     { "path": "/api/cron/cobranca",    "schedule": "0 8 * * *"  },
     { "path": "/api/cron/boas-vindas", "schedule": "0 9 * * *"  },
     { "path": "/api/cron/validade",    "schedule": "0 10 * * *" },
-    { "path": "/api/cron/relatorio",   "schedule": "0 8 * * 1"  }
+    { "path": "/api/cron/relatorio",           "schedule": "0 8 * * 1" },
+    { "path": "/api/cron/gestores-expirados", "schedule": "0 9 * * *" }
   ]
 }
