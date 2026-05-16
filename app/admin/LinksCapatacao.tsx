@@ -37,15 +37,27 @@ export default function LinksCaptacao() {
   return (
     <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24, marginTop: 24 }}>
       <div style={{ marginBottom: 16 }}>
-        <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 4 }}>🔗 Links de Cadastro</p>
+        <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 4 }}>🔗 Links de Cadastro e Vendas</p>
         <p style={{ fontSize: 13, color: 'var(--avp-text-dim)' }}>Copie e envie para PROs ou FREEs se cadastrarem na plataforma.</p>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <BotaoCopiar
           icon="✨"
+          label="Página de vendas PRO"
+          desc="Apresentação completa do plano PRO com benefícios, comparativo e FAQ."
+          url="/planos/pro"
+        />
+        <BotaoCopiar
+          icon="✨"
           label="Cadastro PRO direto"
           desc="Cadastro + pagamento PRO automático. Para quem já conhece o negócio."
           url="/captacao?direto=1&plano=pro"
+        />
+        <BotaoCopiar
+          icon="🆓"
+          label="Página de vendas FREE"
+          desc="Apresentação do plano gratuito com benefícios e comparativo."
+          url="/planos/free"
         />
         <BotaoCopiar
           icon="🆓"
