@@ -34,7 +34,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [siteLogoUrl, setSiteLogoUrl] = useState('')
   const [isDominioMaster, setIsDominioMaster] = useState(false)
   const [logoError, setLogoError] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState<boolean | null>(null)
   const [menuAberto, setMenuAberto] = useState(false)
   const [colapsada, setColapsada] = useState(false)
 

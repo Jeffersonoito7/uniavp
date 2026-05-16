@@ -98,7 +98,7 @@ export default function WhatsAppConectar() {
                 Abra o WhatsApp → Menu → Dispositivos conectados → Conectar dispositivo
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b', animation: 'pulse 1.5s infinite' }} />
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b' }} />
                 <span style={{ fontSize: 13, color: '#f59e0b' }}>Aguardando escaneamento...</span>
               </div>
               <button onClick={conectar} disabled={loading}

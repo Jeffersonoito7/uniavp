@@ -123,7 +123,7 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
           />
 
           {videoAssistido && (
-            <div style={{ marginTop: 24, textAlign: 'center', animation: 'fadeIn 0.5s ease' }}>
+            <div style={{ marginTop: 24, textAlign: 'center' }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>🎯</div>
               <p style={{ color: '#22c55e', fontSize: 18, fontWeight: 700, marginBottom: 20 }}>
                 Ótimo! Você assistiu ao vídeo completo.

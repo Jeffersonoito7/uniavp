@@ -31,7 +31,7 @@ export default function GestorLayout({
   const [siteLogoUrl, setSiteLogoUrl] = useState('')
   const [fotoPerfil] = useState<string | null>(fotoPerfilInicial ?? null)
   const [logoError, setLogoError] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState<boolean | null>(null)
   const [menuAberto, setMenuAberto] = useState(false)
   const [colapsada, setColapsada] = useState(false)
 
