@@ -87,7 +87,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* ── Barra superior mobile ── */}
       {isMobile && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 56, zIndex: 400, background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', padding: '0 14px', gap: 12 }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 56, zIndex: 400, background: 'var(--avp-sidebar)', borderBottom: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', padding: '0 14px', gap: 12 }}>
           <button onClick={() => setMenuAberto(m => !m)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--avp-text)', display: 'flex', alignItems: 'center', padding: 4, borderRadius: 6 }}>
             {menuAberto ? <X size={22} /> : <Menu size={22} />}
@@ -104,7 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* ── Sidebar ── */}
       <aside style={{
-        background: 'var(--avp-card)',
+        background: 'var(--avp-sidebar)',
         borderRight: '1px solid var(--avp-border)',
         display: 'flex',
         flexDirection: 'column',

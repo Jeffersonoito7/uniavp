@@ -435,7 +435,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         </div>
 
         <div style={{ background: 'var(--avp-black)', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--avp-text-dim)' }}>
-          💡 As cores são aplicadas em todos os painéis (admin, gestor e consultor) após salvar e recarregar a página.
+          💡 As cores são aplicadas em tempo real nesta página. Clique em <strong>Salvar</strong> para persistir em todos os painéis.
         </div>
       </div>
 

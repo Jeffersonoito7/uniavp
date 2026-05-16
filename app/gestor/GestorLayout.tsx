@@ -82,7 +82,7 @@ export default function GestorLayout({
 
       {/* ── Barra superior mobile ── */}
       {isMobile && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 56, zIndex: 400, background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', padding: '0 14px', gap: 12 }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 56, zIndex: 400, background: 'var(--avp-sidebar)', borderBottom: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', padding: '0 14px', gap: 12 }}>
           <button onClick={() => setMenuAberto(m => !m)}
             style={{ background: 'none', border: 'none', color: 'var(--avp-text)', cursor: 'pointer', padding: 4 }}>
             {menuAberto ? <X size={22} /> : <Menu size={22} />}
@@ -101,7 +101,7 @@ export default function GestorLayout({
       <aside style={{
         width: isMobile ? 220 : sidebarW,
         flexShrink: 0,
-        background: 'var(--avp-card)',
+        background: 'var(--avp-sidebar)',
         borderRight: '1px solid var(--avp-border)',
         display: 'flex', flexDirection: 'column',
         position: 'fixed', top: 0, bottom: 0, left: 0,
@@ -211,7 +211,7 @@ export default function GestorLayout({
       {isMobile && (
         <nav style={{
           position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 400,
-          background: 'var(--avp-card)', borderTop: '1px solid var(--avp-border)',
+          background: 'var(--avp-sidebar)', borderTop: '1px solid var(--avp-border)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-around',
           height: 60, padding: '0 4px',
         }}>
