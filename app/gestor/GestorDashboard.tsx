@@ -181,6 +181,37 @@ type ArteTemplate = { id: string; tipo: string; titulo: string; arte_url: string
 
 const LIMITE_PRO_GRATUITO = 20
 
+function CardProGratuito({ prosIndicados }: { prosIndicados: number }) {
+  const pct = Math.min(100, Math.round((prosIndicados / LIMITE_PRO_GRATUITO) * 100))
+  const ehGratuito = prosIndicados >= LIMITE_PRO_GRATUITO
+  return (
+    <div style={{ background: ehGratuito ? 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))' : 'var(--avp-card)', border: `1px solid ${ehGratuito ? 'rgba(99,102,241,0.5)' : 'var(--avp-border)'}`, borderRadius: 16, padding: '20px 24px', marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+        <div>
+          <p style={{ fontWeight: 800, fontSize: 15, margin: 0 }}>{ehGratuito ? '🎉 Seu PRO está gratuito!' : '✨ PRO gratuito por rede'}</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '3px 0 0' }}>
+            {ehGratuito ? `Você tem ${prosIndicados} PROs ativos na sua rede — continue assim!` : `Indique ${LIMITE_PRO_GRATUITO - prosIndicados} PROs ativos para ter o plano gratuito`}
+          </p>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <p style={{ fontSize: 28, fontWeight: 900, color: ehGratuito ? '#818cf8' : 'var(--avp-text)', margin: 0, lineHeight: 1 }}>
+            {prosIndicados}<span style={{ fontSize: 14, fontWeight: 600, color: 'var(--avp-text-dim)' }}>/{LIMITE_PRO_GRATUITO}</span>
+          </p>
+          <p style={{ fontSize: 10, color: 'var(--avp-text-dim)', margin: '2px 0 0', textTransform: 'uppercase' as const, letterSpacing: 1 }}>PROs ativos</p>
+        </div>
+      </div>
+      <div style={{ background: 'var(--avp-border)', borderRadius: 100, height: 8, overflow: 'hidden' }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: ehGratuito ? 'linear-gradient(90deg, #6366f1, #8b5cf6)' : pct >= 75 ? 'linear-gradient(90deg, #f59e0b, #6366f1)' : 'linear-gradient(90deg, #3b82f6, #6366f1)', borderRadius: 100, transition: 'width 0.4s' }} />
+      </div>
+      {!ehGratuito && (
+        <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 6 }}>
+          Faltam <strong style={{ color: 'var(--avp-text)' }}>{LIMITE_PRO_GRATUITO - prosIndicados} PROs</strong> para o plano gratuito — compartilhe o link PRO com sua rede!
+        </p>
+      )}
+    </div>
+  )
+}
+
 export default function GestorDashboard({
   gestor, consultores, progressoMap, indicacoesMap, artesTemplatesIniciais, baseUrl, capaDefault, prosIndicados,
 }: {
@@ -531,41 +562,7 @@ export default function GestorDashboard({
           </div>
 
           {/* Card PRO Gratuito por Rede */}
-          {(() => {
-            const total = prosIndicados ?? 0
-            const pct = Math.min(100, Math.round((total / LIMITE_PRO_GRATUITO) * 100))
-            const ehGratuito = total >= LIMITE_PRO_GRATUITO
-            return (
-              <div style={{ background: ehGratuito ? 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))' : 'var(--avp-card)', border: `1px solid ${ehGratuito ? 'rgba(99,102,241,0.5)' : 'var(--avp-border)'}`, borderRadius: 16, padding: '20px 24px', marginBottom: 24 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
-                  <div>
-                    <p style={{ fontWeight: 800, fontSize: 15, margin: 0 }}>
-                      {ehGratuito ? '🎉 Seu PRO está gratuito!' : '✨ PRO gratuito por rede'}
-                    </p>
-                    <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '3px 0 0' }}>
-                      {ehGratuito
-                        ? `Você tem ${total} PROs ativos na sua rede — continue assim!`
-                        : `Indique ${LIMITE_PRO_GRATUITO - total} PROs ativos para ter o plano gratuito`}
-                    </p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: 28, fontWeight: 900, color: ehGratuito ? '#818cf8' : 'var(--avp-text)', margin: 0, lineHeight: 1 }}>
-                      {total}<span style={{ fontSize: 14, fontWeight: 600, color: 'var(--avp-text-dim)' }}>/{LIMITE_PRO_GRATUITO}</span>
-                    </p>
-                    <p style={{ fontSize: 10, color: 'var(--avp-text-dim)', margin: '2px 0 0', textTransform: 'uppercase', letterSpacing: 1 }}>PROs ativos</p>
-                  </div>
-                </div>
-                <div style={{ background: 'var(--avp-border)', borderRadius: 100, height: 8, overflow: 'hidden' }}>
-                  <div style={{ width: `${pct}%`, height: '100%', background: ehGratuito ? 'linear-gradient(90deg, #6366f1, #8b5cf6)' : pct >= 75 ? 'linear-gradient(90deg, #f59e0b, #6366f1)' : 'linear-gradient(90deg, #3b82f6, #6366f1)', borderRadius: 100, transition: 'width 0.4s' }} />
-                </div>
-                {!ehGratuito && (
-                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 6 }}>
-                    Faltam <strong style={{ color: 'var(--avp-text)' }}>{LIMITE_PRO_GRATUITO - total} PROs</strong> para seu plano ser gratuito — compartilhe o link de captação PRO com sua rede!
-                  </p>
-                )}
-              </div>
-            )
-          })()}
+          {CardProGratuito({ prosIndicados: prosIndicados ?? 0 })}
 
           {/* Alerta de inativos */}
           {inativos7d.length > 0 && (

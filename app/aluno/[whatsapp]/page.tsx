@@ -421,13 +421,9 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                     const todasConcluidas = !eProExclusivo && concluidas === total && total > 0
                     const thumb = mod.aulas[0]?.capa_url || (mod.aulas[0]?.youtube_video_id ? `https://img.youtube.com/vi/${mod.aulas[0].youtube_video_id}/mqdefault.jpg` : null) || certMap['modulo_capa_padrao'] || null
                     const aulasPro = mod.aulas.filter(a => (posicaoMap[a.aula_id] ?? 0) > LIMITE_FREE).length
-                    const Wrapper = eProExclusivo ? 'div' : (Link as any)
-                    const wrapperProps = eProExclusivo
-                      ? { key: mod.modulo_id }
-                      : { key: mod.modulo_id, href: `/aluno/${params.whatsapp}?modulo=${mod.modulo_id}` }
-                    return (
-                      <Wrapper {...wrapperProps} style={{ background: eProExclusivo ? 'linear-gradient(135deg, rgba(99,102,241,0.08), var(--avp-card))' : 'var(--avp-card)', border: `1px solid ${eProExclusivo ? 'rgba(99,102,241,0.35)' : todasConcluidas ? '#22c55e40' : temDisponivel ? '#3b82f640' : 'var(--avp-border)'}`, borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column', textDecoration: 'none', color: 'inherit' }}>
-                        {/* Capa */}
+                    const cardStyle = { background: eProExclusivo ? 'linear-gradient(135deg, rgba(99,102,241,0.08), var(--avp-card))' : 'var(--avp-card)', border: `1px solid ${eProExclusivo ? 'rgba(99,102,241,0.35)' : todasConcluidas ? '#22c55e40' : temDisponivel ? '#3b82f640' : 'var(--avp-border)'}`, borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column' as const, textDecoration: 'none', color: 'inherit' }
+                    const conteudo = (
+                      <>
                         <div style={{ height: 180, background: eProExclusivo ? 'linear-gradient(135deg, #312e81, #4c1d95)' : 'linear-gradient(135deg, #1e3a8a, #1e40af)', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
                           {thumb && <img src={thumb} alt={mod.modulo_titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, filter: eProExclusivo ? 'blur(3px)' : 'none', opacity: eProExclusivo ? 0.5 : 1 }} />}
                           <div style={{ position: 'absolute', inset: 0, background: eProExclusivo ? 'rgba(49,46,129,0.6)' : 'rgba(0,0,0,0.3)' }} />
@@ -437,41 +433,22 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                               <div style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 20, padding: '4px 14px', fontSize: 11, fontWeight: 800, color: '#fff' }}>✨ EXCLUSIVO PRO</div>
                             </div>
                           )}
-                          {!eProExclusivo && (
-                            <div style={{ position: 'absolute', top: 12, right: 12, background: todasConcluidas ? '#22c55e' : 'rgba(0,0,0,0.65)', borderRadius: 20, padding: '4px 10px', fontSize: 12, fontWeight: 700, color: '#fff', backdropFilter: 'blur(4px)' }}>
-                              {todasConcluidas ? '✓ Concluído' : `${concluidas}/${total} aulas`}
-                            </div>
-                          )}
-                          {!eProExclusivo && aulasPro > 0 && !todasConcluidas && (
-                            <div style={{ position: 'absolute', top: 12, left: 12, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 20, padding: '4px 10px', fontSize: 11, fontWeight: 800, color: '#fff' }}>
-                              ✨ {aulasPro} Pro
-                            </div>
-                          )}
+                          {!eProExclusivo && <div style={{ position: 'absolute', top: 12, right: 12, background: todasConcluidas ? '#22c55e' : 'rgba(0,0,0,0.65)', borderRadius: 20, padding: '4px 10px', fontSize: 12, fontWeight: 700, color: '#fff' }}>{todasConcluidas ? '✓ Concluído' : `${concluidas}/${total} aulas`}</div>}
+                          {!eProExclusivo && aulasPro > 0 && !todasConcluidas && <div style={{ position: 'absolute', top: 12, left: 12, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 20, padding: '4px 10px', fontSize: 11, fontWeight: 800, color: '#fff' }}>✨ {aulasPro} Pro</div>}
                         </div>
-
-                        {/* Info */}
                         <div style={{ padding: '16px 18px', flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
                           <p style={{ fontSize: 16, fontWeight: 800, lineHeight: 1.3, color: eProExclusivo ? '#c4b5fd' : 'var(--avp-text)', margin: 0 }}>{mod.modulo_titulo}</p>
-                          {!eProExclusivo && (
-                            <div>
-                              <div style={{ background: 'var(--avp-border)', borderRadius: 100, height: 5, overflow: 'hidden' }}>
-                                <div style={{ width: `${pct}%`, height: '100%', background: todasConcluidas ? '#22c55e' : 'linear-gradient(90deg, #1e40af, #3b82f6)', borderRadius: 100, transition: 'width 0.3s' }} />
-                              </div>
-                              <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>{pct}% concluído</p>
-                            </div>
-                          )}
-                          {eProExclusivo ? (
-                            <a href="/upgrade" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', textDecoration: 'none', borderRadius: 8, padding: '11px', fontWeight: 800, fontSize: 14, marginTop: 'auto', boxShadow: '0 4px 16px rgba(99,102,241,0.35)' }}>
-                              ✨ Desbloquear — Ser PRO
-                            </a>
-                          ) : (
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: todasConcluidas ? '#22c55e' : temDisponivel ? 'linear-gradient(135deg, #1e40af, #3b82f6)' : 'var(--avp-border)', color: (todasConcluidas || temDisponivel) ? '#fff' : 'var(--avp-text-dim)', borderRadius: 8, padding: '11px', fontWeight: 700, fontSize: 15, marginTop: 'auto' }}>
-                              {todasConcluidas ? '✓ Rever módulo' : temDisponivel ? '▶ Acessar' : '🔒 Bloqueado'}
-                            </div>
-                          )}
+                          {!eProExclusivo && <div><div style={{ background: 'var(--avp-border)', borderRadius: 100, height: 5, overflow: 'hidden' }}><div style={{ width: `${pct}%`, height: '100%', background: todasConcluidas ? '#22c55e' : 'linear-gradient(90deg, #1e40af, #3b82f6)', borderRadius: 100, transition: 'width 0.3s' }} /></div><p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>{pct}% concluído</p></div>}
+                          {eProExclusivo
+                            ? <a href="/upgrade" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', textDecoration: 'none', borderRadius: 8, padding: '11px', fontWeight: 800, fontSize: 14, marginTop: 'auto', boxShadow: '0 4px 16px rgba(99,102,241,0.35)' }}>✨ Desbloquear — Ser PRO</a>
+                            : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: todasConcluidas ? '#22c55e' : temDisponivel ? 'linear-gradient(135deg, #1e40af, #3b82f6)' : 'var(--avp-border)', color: (todasConcluidas || temDisponivel) ? '#fff' : 'var(--avp-text-dim)', borderRadius: 8, padding: '11px', fontWeight: 700, fontSize: 15, marginTop: 'auto' }}>{todasConcluidas ? '✓ Rever módulo' : temDisponivel ? '▶ Acessar' : '🔒 Bloqueado'}</div>
+                          }
                         </div>
-                      </Wrapper>
+                      </>
                     )
+                    return eProExclusivo
+                      ? <div key={mod.modulo_id} style={cardStyle}>{conteudo}</div>
+                      : <Link key={mod.modulo_id} href={`/aluno/${params.whatsapp}?modulo=${mod.modulo_id}`} style={cardStyle}>{conteudo}</Link>
                   })}
                 </div>
               )}
