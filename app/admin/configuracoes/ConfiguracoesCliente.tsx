@@ -759,11 +759,11 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
                 position: 'absolute', left: '50%', transform: 'translateX(-50%)',
                 top: `${certNomeY}%`, width: '80%', textAlign: 'center',
                 fontFamily: 'Georgia, serif', fontWeight: 700,
-                fontSize: `${Math.min(Number(certNomeTamanho) || 4.5, 8)}cqw`,
+                fontSize: `${Math.min(Number(certNomeTamanho) || 4.5, 6)}cqw`,
                 color: certNomeCor, textTransform: 'uppercase' as const,
                 letterSpacing: 2, pointerEvents: 'none', lineHeight: 1.2,
               }}>
-                Nome do Aluno Exemplo
+                Nome do Aluno
               </div>
               {/* Logo esquerda — usa cert ou fallback carteirinha */}
               {(certLogoEsquerda || carteiraLogoEsquerda) && (
