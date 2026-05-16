@@ -36,8 +36,6 @@ export default function RedefinirSenhaForm({ logoUrl, siteNome }: { logoUrl: str
   )
 
   useEffect(() => {
-    // Se já detectamos erro no hash antes do Supabase inicializar, não faz nada
-    if (hashErroInicial) return
     if (estado !== 'validando') return
 
     // Verificar se chegou com ?code= (PKCE flow)
