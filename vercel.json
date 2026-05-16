@@ -6,6 +6,6 @@
     { "path": "/api/cron/validade",    "schedule": "0 10 * * *" },
     { "path": "/api/cron/relatorio",           "schedule": "0 8 * * 1" },
     { "path": "/api/cron/gestores-expirados", "schedule": "0 9 * * *" },
-    { "path": "/api/cron/lembretes-pro",     "schedule": "0 * * * *" }
+    { "path": "/api/cron/lembretes-pro",     "schedule": "0 8 * * *" }
   ]
 }
