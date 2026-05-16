@@ -97,7 +97,7 @@ export default async function CRMPage() {
   )
 
   const statusLabel: Record<string, string> = { ativo: 'Ativo', concluido: 'Concluído', pausado: 'Pausado', desligado: 'Desligado' }
-  const statusCor: Record<string, string> = { ativo: 'var(--avp-green)', concluido: 'var(--avp-blue)', pausado: '#f59e0b', desligado: 'var(--avp-danger)' }
+  const statusCor: Record<string, string> = { ativo: 'var(--avp-green)', concluido: 'var(--avp-blue)', pausado: '#6366f1', desligado: 'var(--avp-danger)' }
 
   return (
     <AdminLayout>
@@ -110,7 +110,7 @@ export default async function CRMPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
         {card('Total UNIAVP FREE', allAlunos.length, 'var(--avp-text)')}
         {card('Nunca Iniciaram', nuncaIniciou, 'var(--avp-text-dim)')}
-        {card('Em Andamento', emAndamento, '#f59e0b')}
+        {card('Em Andamento', emAndamento, '#6366f1')}
         {card('Formados', formados, 'var(--avp-green)')}
       </div>
 

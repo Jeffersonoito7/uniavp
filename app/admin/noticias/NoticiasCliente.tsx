@@ -90,7 +90,7 @@ export default function NoticiasCliente({ inicial }: { inicial: Noticia[] }) {
                 <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>{new Date(n.created_at).toLocaleDateString('pt-BR')}</p>
               </div>
               <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                <button onClick={() => togglePublicado(n)} style={{ background: n.publicado ? '#f59e0b20' : '#02A15320', color: n.publicado ? '#f59e0b' : 'var(--avp-green)', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                <button onClick={() => togglePublicado(n)} style={{ background: n.publicado ? '#6366f120' : '#02A15320', color: n.publicado ? '#6366f1' : 'var(--avp-green)', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                   {n.publicado ? 'Despublicar' : 'Publicar'}
                 </button>
                 <button onClick={() => excluir(n.id)} style={{ background: 'none', border: 'none', color: 'var(--avp-danger)', cursor: 'pointer', fontSize: 18, padding: 4 }}>✕</button>

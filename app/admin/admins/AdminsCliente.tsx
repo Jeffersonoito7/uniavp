@@ -190,7 +190,7 @@ export default function AdminsCliente({ adminsIniciais, meuUserId }: { adminsIni
                       <button onClick={() => { setResetando(a); setNovaSenha(''); setVerNovaSenha(false) }}
                         style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>🔑 Senha</button>
                       <button onClick={() => toggleAtivo(a)}
-                        style={{ background: a.ativo ? '#f59e0b' : 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>
+                        style={{ background: a.ativo ? '#6366f1' : 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>
                         {a.ativo ? 'Desativar' : 'Ativar'}
                       </button>
                       <button onClick={() => excluir(a)}

@@ -9,7 +9,7 @@ const EyeIcon = ({ open }: { open: boolean }) => open
   ? <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
   : <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
 
-const statusCor: Record<string, string> = { ativo: '#02A153', pausado: '#f59e0b', concluido: '#333687', desligado: '#e63946' }
+const statusCor: Record<string, string> = { ativo: '#02A153', pausado: '#6366f1', concluido: '#333687', desligado: '#e63946' }
 
 export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais }: { consultoresIniciais: Consultor[]; gestoresIniciais: Gestor[] }) {
   const [aba, setAba] = useState<'consultores' | 'gestores'>('consultores')
@@ -207,7 +207,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
                     <td style={{ padding: '12px 14px', color: 'var(--avp-text-dim)', fontSize: 13 }}>{g.email}</td>
                     <td style={{ padding: '12px 14px', color: 'var(--avp-text-dim)', fontSize: 13 }}>{g.whatsapp}</td>
                     <td style={{ padding: '12px 14px' }}>
-                      <span style={{ background: g.ativo ? '#02A15320' : '#f59e0b20', color: g.ativo ? 'var(--avp-green)' : '#f59e0b', borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>
+                      <span style={{ background: g.ativo ? '#02A15320' : '#6366f120', color: g.ativo ? 'var(--avp-green)' : '#6366f1', borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>
                         {g.ativo ? 'Ativo' : 'Inativo'}
                       </span>
                     </td>
@@ -216,7 +216,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {btnAcao('✏️ Editar', () => abrirEdicao('gestor', g), 'var(--avp-blue)')}
                         {btnAcao('🔑 Senha', () => { setResetando({ user_id: g.user_id, nome: g.nome }); setNovaSenha(''); setVerSenha(false) }, '#6366f1')}
-                        {btnAcao(g.ativo ? 'Desativar' : 'Ativar', () => toggleGestor(g), g.ativo ? '#f59e0b' : 'var(--avp-green)')}
+                        {btnAcao(g.ativo ? 'Desativar' : 'Ativar', () => toggleGestor(g), g.ativo ? '#6366f1' : 'var(--avp-green)')}
                         {btnAcao('🗑 Excluir', () => excluirGestor(g), 'var(--avp-danger)')}
                       </div>
                     </td>
@@ -307,8 +307,8 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
                 </button>
               </div>
             </div>
-            <div style={{ background: '#f59e0b15', border: '1px solid #f59e0b40', borderRadius: 8, padding: '10px 14px', marginBottom: 20 }}>
-              <p style={{ fontSize: 12, color: '#f59e0b' }}>⚠️ Após redefinir, informe a nova senha ao usuário. Ele poderá alterá-la depois nas configurações do perfil.</p>
+            <div style={{ background: '#6366f115', border: '1px solid #6366f140', borderRadius: 8, padding: '10px 14px', marginBottom: 20 }}>
+              <p style={{ fontSize: 12, color: '#6366f1' }}>⚠️ Após redefinir, informe a nova senha ao usuário. Ele poderá alterá-la depois nas configurações do perfil.</p>
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button onClick={() => setResetando(null)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>

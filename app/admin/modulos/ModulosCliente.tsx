@@ -272,7 +272,7 @@ export default function ModulosCliente({ modulosIniciais, capaDefault }: { modul
                     <div style={{ flex: 1, padding: '16px 20px', minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
                         <h3 style={{ fontWeight: 800, fontSize: 17, color: 'var(--avp-text)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.titulo}</h3>
-                        {!m.publicado && <span style={{ background: '#f59e0b20', color: '#f59e0b', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>Rascunho</span>}
+                        {!m.publicado && <span style={{ background: '#6366f120', color: '#6366f1', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>Rascunho</span>}
                       </div>
                       {m.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: '0 0 8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.descricao}</p>}
                       {/* Badges de perfis permitidos */}

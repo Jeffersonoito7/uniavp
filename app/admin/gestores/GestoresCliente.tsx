@@ -278,7 +278,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
                   </button>
                 </td>
                 <td style={{ padding: '14px 16px' }}>
-                  <span style={{ color: g.ativo ? 'var(--avp-green)' : '#f59e0b', fontSize: 13, fontWeight: 600 }}>
+                  <span style={{ color: g.ativo ? 'var(--avp-green)' : '#6366f1', fontSize: 13, fontWeight: 600 }}>
                     {g.ativo ? 'Ativo' : 'Pendente'}
                   </span>
                 </td>
@@ -290,7 +290,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
                       {g.ativo ? 'Desativar' : 'Ativar'}
                     </button>
                     <button onClick={() => { setResetGestor(g); setNovaSenha('') }}
-                      style={{ background: '#f59e0b20', color: '#f59e0b', border: '1px solid #f59e0b60', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                      style={{ background: '#6366f120', color: '#6366f1', border: '1px solid #6366f160', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                       Senha
                     </button>
                     <button onClick={() => excluirGestor(g)}

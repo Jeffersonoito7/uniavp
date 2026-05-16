@@ -63,7 +63,7 @@ export default async function ReacoesPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 28 }}>
         {[
           { label: 'Total de Avaliações', valor: reacoesData.length, cor: 'var(--avp-text)' },
-          { label: 'Média Geral', valor: `${mediaGeral} ⭐`, cor: '#f59e0b' },
+          { label: 'Média Geral', valor: `${mediaGeral} ⭐`, cor: '#6366f1' },
           { label: 'Com Comentário', valor: reacoesData.filter((r: any) => r.comentario).length, cor: 'var(--avp-blue)' },
         ].map(({ label, valor, cor }) => (
           <div key={label} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '20px 24px' }}>
@@ -96,7 +96,7 @@ export default async function ReacoesPage() {
                     <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 2 }}>{dados.notas.length} avaliação(ões)</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: 28, fontWeight: 800, color: '#f59e0b' }}>{media(dados.notas)}</p>
+                    <p style={{ fontSize: 28, fontWeight: 800, color: '#6366f1' }}>{media(dados.notas)}</p>
                     <p style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>de 5.0</p>
                   </div>
                 </div>
@@ -113,7 +113,7 @@ export default async function ReacoesPage() {
                           <span style={{ fontSize: 12, color: 'var(--avp-text-dim)', width: 16 }}>{n}</span>
                           <span style={{ fontSize: 11 }}>⭐</span>
                           <div style={{ flex: 1, background: 'var(--avp-black)', borderRadius: 100, height: 6, overflow: 'hidden' }}>
-                            <div style={{ width: `${pct}%`, height: '100%', borderRadius: 100, background: n >= 4 ? 'var(--avp-green)' : n === 3 ? '#f59e0b' : 'var(--avp-danger)' }} />
+                            <div style={{ width: `${pct}%`, height: '100%', borderRadius: 100, background: n >= 4 ? 'var(--avp-green)' : n === 3 ? '#6366f1' : 'var(--avp-danger)' }} />
                           </div>
                           <span style={{ fontSize: 12, color: 'var(--avp-text-dim)', width: 28 }}>{qty}</span>
                         </div>
@@ -132,7 +132,7 @@ export default async function ReacoesPage() {
                         <div key={i} style={{ background: 'var(--avp-black)', borderRadius: 8, padding: '10px 12px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                             <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--avp-text)' }}>{c.aluno}</span>
-                            <span style={{ fontSize: 11, color: '#f59e0b' }}>{'⭐'.repeat(c.nota)}</span>
+                            <span style={{ fontSize: 11, color: '#6366f1' }}>{'⭐'.repeat(c.nota)}</span>
                           </div>
                           <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', lineHeight: 1.4 }}>{c.comentario}</p>
                           <p style={{ fontSize: 11, color: 'var(--avp-border)', marginTop: 4 }}>{c.data}</p>

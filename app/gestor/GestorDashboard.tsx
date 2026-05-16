@@ -162,7 +162,7 @@ type Gestor = { id: string; nome: string; email: string; whatsapp: string; foto_
 const badgeStatus: Record<string, { label: string; color: string; bg: string }> = {
   ativo: { label: 'Ativo', color: 'var(--avp-green)', bg: '#02A15320' },
   concluido: { label: 'Concluído', color: '#333687', bg: '#33368720' },
-  pausado: { label: 'Pausado', color: '#f59e0b', bg: '#f59e0b20' },
+  pausado: { label: 'Pausado', color: '#6366f1', bg: '#6366f120' },
   desligado: { label: 'Desligado', color: 'var(--avp-danger)', bg: '#e6394620' },
 }
 
@@ -203,10 +203,10 @@ function AvisoAulasNaoPublicadas({ modulosAulas }: { modulosAulas: any[] }) {
   const totalAulas = modulosAulas.flatMap(m => m.aulas).length
   if (naoPublicadas === 0 || totalAulas === 0) return null
   return (
-    <div style={{ background: '#f59e0b15', border: '1px solid #f59e0b40', borderRadius: 10, padding: '12px 16px', marginBottom: 20, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+    <div style={{ background: '#6366f115', border: '1px solid #6366f140', borderRadius: 10, padding: '12px 16px', marginBottom: 20, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
       <span style={{ fontSize: 18 }}>⚠️</span>
       <div>
-        <p style={{ fontWeight: 700, color: '#f59e0b', fontSize: 14, margin: '0 0 2px' }}>
+        <p style={{ fontWeight: 700, color: '#6366f1', fontSize: 14, margin: '0 0 2px' }}>
           {naoPublicadas} aula{naoPublicadas !== 1 ? 's' : ''} não publicada{naoPublicadas !== 1 ? 's' : ''}
         </p>
         <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>
@@ -237,7 +237,7 @@ function CardProGratuito({ prosIndicados }: { prosIndicados: number }) {
         </div>
       </div>
       <div style={{ background: 'var(--avp-border)', borderRadius: 100, height: 8, overflow: 'hidden' }}>
-        <div style={{ width: `${pct}%`, height: '100%', background: ehGratuito ? 'linear-gradient(90deg, #6366f1, #8b5cf6)' : pct >= 75 ? 'linear-gradient(90deg, #f59e0b, #6366f1)' : 'linear-gradient(90deg, #3b82f6, #6366f1)', borderRadius: 100, transition: 'width 0.4s' }} />
+        <div style={{ width: `${pct}%`, height: '100%', background: ehGratuito ? 'linear-gradient(90deg, #6366f1, #8b5cf6)' : pct >= 75 ? 'linear-gradient(90deg, #6366f1, #6366f1)' : 'linear-gradient(90deg, #3b82f6, #6366f1)', borderRadius: 100, transition: 'width 0.4s' }} />
       </div>
       {!ehGratuito && (
         <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 6 }}>
@@ -537,7 +537,7 @@ export default function GestorDashboard({
             )}
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               {aulaAberta.duracao_minutos && <span style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>⏱ {aulaAberta.duracao_minutos} min</span>}
-              {aulaAberta.quiz_aprovacao_minima != null && <span style={{ fontSize: 12, color: '#f59e0b' }}>📝 Quiz: {aulaAberta.quiz_qtd_questoes || '?'}q · {aulaAberta.quiz_aprovacao_minima}% mín.</span>}
+              {aulaAberta.quiz_aprovacao_minima != null && <span style={{ fontSize: 12, color: '#6366f1' }}>📝 Quiz: {aulaAberta.quiz_qtd_questoes || '?'}q · {aulaAberta.quiz_aprovacao_minima}% mín.</span>}
               {aulaAberta.espera_horas != null && aulaAberta.espera_horas > 0 && <span style={{ fontSize: 12, color: '#60a5fa' }}>⏳ {aulaAberta.espera_horas}h de espera</span>}
               {(aulaAberta.liberacao_modo === 'manual_gestor' || aulaAberta.liberacao_modo === 'manual_admin') && <span style={{ fontSize: 12, color: '#a78bfa' }}>🔒 Liberação manual</span>}
             </div>
@@ -579,9 +579,9 @@ export default function GestorDashboard({
               { label: 'Em andamento', value: emAndamento, cor: 'var(--avp-text)' },
               { label: 'Concluídos', value: concluidos, cor: 'var(--avp-green)' },
               { label: 'Progresso médio', value: `${mediaProgresso}%`, cor: '#3b82f6' },
-              { label: 'Inativos 7 dias', value: inativos7d.length, cor: inativos7d.length > 0 ? '#f59e0b' : 'var(--avp-text)' },
+              { label: 'Inativos 7 dias', value: inativos7d.length, cor: inativos7d.length > 0 ? '#6366f1' : 'var(--avp-text)' },
             ].map(s => (
-              <div key={s.label} style={{ background: 'var(--avp-card)', border: `1px solid ${s.label === 'Inativos 7 dias' && inativos7d.length > 0 ? '#f59e0b40' : 'var(--avp-border)'}`, borderRadius: 12, padding: 20 }}>
+              <div key={s.label} style={{ background: 'var(--avp-card)', border: `1px solid ${s.label === 'Inativos 7 dias' && inativos7d.length > 0 ? '#6366f140' : 'var(--avp-border)'}`, borderRadius: 12, padding: 20 }}>
                 <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, marginBottom: 6 }}>{s.label}</p>
                 <p style={{ fontSize: 30, fontWeight: 800, color: s.cor }}>{s.value}</p>
               </div>
@@ -593,8 +593,8 @@ export default function GestorDashboard({
 
           {/* Alerta de inativos */}
           {inativos7d.length > 0 && (
-            <div style={{ background: '#92400e15', border: '1px solid #f59e0b40', borderRadius: 12, padding: '16px 20px', marginBottom: 20 }}>
-              <p style={{ fontWeight: 700, fontSize: 14, color: '#f59e0b', marginBottom: 10 }}>
+            <div style={{ background: '#1e1b4b15', border: '1px solid #6366f140', borderRadius: 12, padding: '16px 20px', marginBottom: 20 }}>
+              <p style={{ fontWeight: 700, fontSize: 14, color: '#6366f1', marginBottom: 10 }}>
                 ⚠️ {inativos7d.length} consultor{inativos7d.length > 1 ? 'es' : ''} sem estudar há mais de 7 dias
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -617,7 +617,7 @@ export default function GestorDashboard({
                   )
                 })}
                 {inativos7d.length > 5 && (
-                  <button onClick={() => handleSetAba('consultores')} style={{ background: 'none', border: 'none', color: '#f59e0b', cursor: 'pointer', fontSize: 13, fontWeight: 600, textAlign: 'left', padding: 0 }}>
+                  <button onClick={() => handleSetAba('consultores')} style={{ background: 'none', border: 'none', color: '#6366f1', cursor: 'pointer', fontSize: 13, fontWeight: 600, textAlign: 'left', padding: 0 }}>
                     Ver mais {inativos7d.length - 5} →
                   </button>
                 )}
@@ -717,10 +717,10 @@ export default function GestorDashboard({
               <div style={{ background: 'var(--avp-black)', borderRadius: 8, padding: '12px 14px' }}>
                 <p style={{ fontWeight: 700, fontSize: 12, marginBottom: 2 }}>⚡ Acesso Direto</p>
                 <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 8 }}>Para quem já conhece — vai direto ao cadastro</p>
-                <p style={{ fontSize: 10, color: '#f59e0b', fontFamily: 'monospace', marginBottom: 8, wordBreak: 'break-all' as const }}>{baseUrl}/g/{gestor.whatsapp}?direto=1</p>
+                <p style={{ fontSize: 10, color: '#6366f1', fontFamily: 'monospace', marginBottom: 8, wordBreak: 'break-all' as const }}>{baseUrl}/g/{gestor.whatsapp}?direto=1</p>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button onClick={() => { navigator.clipboard.writeText(`${baseUrl}/g/${gestor.whatsapp}?direto=1`); setLinkCopiado(true); setTimeout(() => setLinkCopiado(false), 2000) }}
-                    style={{ flex: 1, background: linkCopiado ? 'var(--avp-green)' : '#92400e', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 10px', cursor: 'pointer', fontWeight: 700, fontSize: 11 }}>
+                    style={{ flex: 1, background: linkCopiado ? 'var(--avp-green)' : '#1e1b4b', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 10px', cursor: 'pointer', fontWeight: 700, fontSize: 11 }}>
                     {linkCopiado ? '✓ Copiado!' : '📋 Copiar'}
                   </button>
                   <a href={`https://wa.me/?text=${encodeURIComponent(`📲 Acesse a plataforma:\n\n${baseUrl}/g/${gestor.whatsapp}?direto=1`)}`} target="_blank" rel="noreferrer"
@@ -764,7 +764,7 @@ export default function GestorDashboard({
                     const indicou = indicacoesMap[c.whatsapp] ?? 0
                     const alertaInativo = c.status === 'ativo' && (dias === null || dias >= 7)
                     return (
-                      <tr key={c.id} style={{ borderBottom: '1px solid var(--avp-border)', background: alertaInativo ? '#92400e08' : 'transparent' }}>
+                      <tr key={c.id} style={{ borderBottom: '1px solid var(--avp-border)', background: alertaInativo ? '#1e1b4b08' : 'transparent' }}>
                         <td style={{ padding: '12px 16px' }}>
                           <p onClick={() => abrirConsultor(c)} style={{ fontWeight: 700, cursor: 'pointer', fontSize: 14, marginBottom: 2 }}>{c.nome}</p>
                           <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>{c.whatsapp}</p>
@@ -772,10 +772,10 @@ export default function GestorDashboard({
                         <td style={{ padding: '12px 16px', minWidth: 140 }}><BarraProgresso pct={pct} /></td>
                         <td style={{ padding: '12px 16px' }}>
                           {dias === null
-                            ? <span style={{ fontSize: 12, color: '#f59e0b' }}>Nunca estudou</span>
+                            ? <span style={{ fontSize: 12, color: '#6366f1' }}>Nunca estudou</span>
                             : dias === 0
                               ? <span style={{ fontSize: 12, color: 'var(--avp-green)', fontWeight: 600 }}>🔥 Hoje</span>
-                              : <span style={{ fontSize: 12, color: dias >= 7 ? '#f59e0b' : 'var(--avp-text-dim)' }}>{dias === 1 ? 'Ontem' : `${dias}d atrás`}</span>
+                              : <span style={{ fontSize: 12, color: dias >= 7 ? '#6366f1' : 'var(--avp-text-dim)' }}>{dias === 1 ? 'Ontem' : `${dias}d atrás`}</span>
                           }
                         </td>
                         <td style={{ padding: '12px 16px', textAlign: 'center' }}>
@@ -795,7 +795,7 @@ export default function GestorDashboard({
                             </a>
                             {c.status === 'ativo' && (
                               <button onClick={() => alterarStatus(c, 'pausado')}
-                                style={{ background: '#f59e0b15', border: '1px solid #f59e0b30', color: '#f59e0b', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                                style={{ background: '#6366f115', border: '1px solid #6366f130', color: '#6366f1', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                                 Pausar
                               </button>
                             )}
@@ -835,7 +835,7 @@ export default function GestorDashboard({
                 const indicou = indicacoesMap[c.whatsapp] ?? 0
                 const alertaInativo = c.status === 'ativo' && (dias === null || dias >= 7)
                 return (
-                  <div key={c.id} style={{ background: alertaInativo ? '#92400e10' : 'var(--avp-black)', border: `1px solid ${alertaInativo ? '#f59e0b30' : 'var(--avp-border)'}`, borderRadius: 12, padding: '14px 16px' }}>
+                  <div key={c.id} style={{ background: alertaInativo ? '#1e1b4b10' : 'var(--avp-black)', border: `1px solid ${alertaInativo ? '#6366f130' : 'var(--avp-border)'}`, borderRadius: 12, padding: '14px 16px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                       <div>
                         <p onClick={() => abrirConsultor(c)} style={{ fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 2 }}>{c.nome}</p>
@@ -845,16 +845,16 @@ export default function GestorDashboard({
                     </div>
                     <BarraProgresso pct={pct} />
                     <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap', fontSize: 11, color: 'var(--avp-text-dim)' }}>
-                      {dias === null ? <span style={{ color: '#f59e0b' }}>⚠ Nunca estudou</span>
+                      {dias === null ? <span style={{ color: '#6366f1' }}>⚠ Nunca estudou</span>
                         : dias === 0 ? <span style={{ color: 'var(--avp-green)' }}>🔥 Estudou hoje</span>
-                        : <span style={{ color: dias >= 7 ? '#f59e0b' : 'var(--avp-text-dim)' }}>{dias === 1 ? '📅 Ontem' : `📅 ${dias}d atrás`}</span>}
+                        : <span style={{ color: dias >= 7 ? '#6366f1' : 'var(--avp-text-dim)' }}>{dias === 1 ? '📅 Ontem' : `📅 ${dias}d atrás`}</span>}
                       {indicou > 0 && <span style={{ color: 'var(--avp-green)', fontWeight: 700 }}>🤝 {indicou} indicado{indicou > 1 ? 's' : ''}</span>}
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
                         <button onClick={() => abrirConsultor(c)} style={{ background: 'var(--avp-border)', color: 'var(--avp-text)', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Ver progresso</button>
                         <a href={`https://wa.me/55${c.whatsapp}`} target="_blank" rel="noreferrer" style={{ background: '#25d36620', border: '1px solid #25d36640', color: '#25d366', borderRadius: 6, padding: '5px 10px', textDecoration: 'none', fontSize: 12, fontWeight: 700 }}>💬 WhatsApp</a>
                         <a href={`/gestor/artes/${c.whatsapp}`} style={{ background: '#8b5cf620', border: '1px solid #8b5cf640', color: '#a78bfa', borderRadius: 6, padding: '5px 10px', textDecoration: 'none', fontSize: 12, fontWeight: 600 }}>🎨 Artes</a>
-                        {c.status === 'ativo' && <button onClick={() => alterarStatus(c, 'pausado')} style={{ background: '#f59e0b15', border: '1px solid #f59e0b30', color: '#f59e0b', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Pausar</button>}
+                        {c.status === 'ativo' && <button onClick={() => alterarStatus(c, 'pausado')} style={{ background: '#6366f115', border: '1px solid #6366f130', color: '#6366f1', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Pausar</button>}
                         {c.status === 'pausado' && <button onClick={() => alterarStatus(c, 'ativo')} style={{ background: '#02A15320', border: '1px solid #02A15340', color: 'var(--avp-green)', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Reativar</button>}
                         {c.status !== 'concluido' && <button onClick={() => removerConsultor(c)} style={{ background: '#e6394615', border: '1px solid #e6394630', color: 'var(--avp-danger)', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Remover</button>}
                       </div>
@@ -977,7 +977,7 @@ export default function GestorDashboard({
                             #{idx + 1}
                           </div>
                           {!aula.publicado && (
-                            <div style={{ position: 'absolute', top: 8, right: 8, background: '#f59e0b', borderRadius: 4, padding: '2px 7px', fontSize: 9, fontWeight: 700, color: '#fff' }}>RASCUNHO</div>
+                            <div style={{ position: 'absolute', top: 8, right: 8, background: '#6366f1', borderRadius: 4, padding: '2px 7px', fontSize: 9, fontWeight: 700, color: '#fff' }}>RASCUNHO</div>
                           )}
                         </div>
                         <div style={{ padding: '12px 14px' }}>
@@ -987,7 +987,7 @@ export default function GestorDashboard({
                               <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>⏱ {aula.duracao_minutos} min</p>
                             )}
                             {aula.quiz_aprovacao_minima != null && (
-                              <p style={{ fontSize: 11, color: '#f59e0b', margin: 0 }}>📝 Quiz: {aula.quiz_qtd_questoes || '?'}q · {aula.quiz_aprovacao_minima}% mín.</p>
+                              <p style={{ fontSize: 11, color: '#6366f1', margin: 0 }}>📝 Quiz: {aula.quiz_qtd_questoes || '?'}q · {aula.quiz_aprovacao_minima}% mín.</p>
                             )}
                             {aula.espera_horas != null && aula.espera_horas > 0 && (
                               <p style={{ fontSize: 11, color: '#60a5fa', margin: 0 }}>⏳ {aula.espera_horas}h de espera</p>

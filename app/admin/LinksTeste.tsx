@@ -25,7 +25,7 @@ const paineis = [
     desc: 'Como o FREE vê a plataforma',
     href: '/free/85999990002',
     icon: '🎓',
-    cor: '#f59e0b',
+    cor: '#6366f1',
     email: 'ana.consultora@uniavp.demo',
     senha: 'Demo@2025',
   },

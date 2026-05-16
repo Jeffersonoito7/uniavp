@@ -30,7 +30,7 @@ export default async function RankingPage() {
       <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden' }}>
         {ranking.map(([alunoId, pts], i) => (
           <div key={alunoId} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', borderBottom: i < ranking.length - 1 ? '1px solid var(--avp-border)' : 'none' }}>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', background: i === 0 ? '#f59e0b' : i === 1 ? '#94a3b8' : i === 2 ? '#b45309' : 'var(--avp-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, color: i < 3 ? '#fff' : 'var(--avp-text-dim)', flexShrink: 0 }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: i === 0 ? '#6366f1' : i === 1 ? '#94a3b8' : i === 2 ? '#6366f1' : 'var(--avp-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, color: i < 3 ? '#fff' : 'var(--avp-text-dim)', flexShrink: 0 }}>
               {i + 1}
             </div>
             <p style={{ flex: 1, fontWeight: 600, fontSize: 15 }}>{alunoMap[alunoId] ?? 'Aluno'}</p>
