@@ -4,6 +4,8 @@ import { getSiteConfig } from '@/lib/site-config'
 import RegisterSW from './components/RegisterSW'
 import InstalarApp from './components/InstalarApp'
 
+export const dynamic = 'force-dynamic'
+
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfig()
   return {

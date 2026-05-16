@@ -21,7 +21,8 @@ export type SiteConfig = {
 }
 
 export async function getSiteConfig(): Promise<SiteConfig> {
-  // Sempre busca do banco — todos os clientes usam o mesmo domínio
+  const { unstable_noStore: noStore } = await import('next/cache')
+  noStore()
   const client = createServiceRoleClient()
   const { data } = await (client.from('configuracoes') as any)
     .select('chave, valor')
