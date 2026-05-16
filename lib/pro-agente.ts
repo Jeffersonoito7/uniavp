@@ -131,7 +131,7 @@ async function executarFerramenta(nome: string, input: any, gestorId: string, ad
   }
 
   if (nome === 'buscar_resumo') {
-    const inicio = periodo => {
+    const inicio = (periodo: string) => {
       const d = new Date()
       if (periodo === 'hoje') return hoje
       if (periodo === 'semana') { d.setDate(d.getDate() - 7); return d.toISOString().split('T')[0] }
