@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { getSiteConfig } from '@/lib/site-config'
 import RegisterSW from './components/RegisterSW'
+import InstalarApp from './components/InstalarApp'
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfig()
@@ -25,7 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <meta name="apple-mobile-web-app-title" content={config.nome} />
         {config.logoFaviconUrl && <link rel="icon" href={config.logoFaviconUrl} />}
         {config.logoFaviconUrl && <link rel="apple-touch-icon" href={config.logoFaviconUrl} />}
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="manifest" href="/api/pwa/manifest" />
         <style>{`
           :root {
             --avp-blue: ${config.corPrimaria};
@@ -48,6 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <RegisterSW />
         {children}
+        <InstalarApp />
       </body>
     </html>
   )
