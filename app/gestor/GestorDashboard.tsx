@@ -181,6 +181,43 @@ type ArteTemplate = { id: string; tipo: string; titulo: string; arte_url: string
 
 const LIMITE_PRO_GRATUITO = 20
 
+function NavAulas({ aulas, aulaAtualId, onPrev, onNext }: { aulas: any[]; aulaAtualId: string; onPrev: (a: any) => void; onNext: (a: any) => void }) {
+  const idx = aulas.findIndex(a => a.id === aulaAtualId)
+  const prev = idx > 0 ? aulas[idx - 1] : null
+  const next = idx < aulas.length - 1 ? aulas[idx + 1] : null
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, paddingTop: 10, borderTop: '1px solid var(--avp-border)' }}>
+      <button onClick={() => prev && onPrev(prev)} disabled={!prev}
+        style={{ flex: 1, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', color: prev ? 'var(--avp-text)' : 'var(--avp-text-dim)', borderRadius: 8, padding: '9px 14px', cursor: prev ? 'pointer' : 'default', fontSize: 13, fontWeight: 600, opacity: prev ? 1 : 0.4 }}>
+        ← Aula anterior
+      </button>
+      <button onClick={() => next && onNext(next)} disabled={!next}
+        style={{ flex: 1, background: next ? 'var(--avp-blue)' : 'var(--avp-black)', border: `1px solid ${next ? 'var(--avp-blue)' : 'var(--avp-border)'}`, color: '#fff', borderRadius: 8, padding: '9px 14px', cursor: next ? 'pointer' : 'default', fontSize: 13, fontWeight: 600, opacity: next ? 1 : 0.4 }}>
+        Próxima aula →
+      </button>
+    </div>
+  )
+}
+
+function AvisoAulasNaoPublicadas({ modulosAulas }: { modulosAulas: any[] }) {
+  const naoPublicadas = modulosAulas.flatMap(m => m.aulas).filter(a => !a.publicado).length
+  const totalAulas = modulosAulas.flatMap(m => m.aulas).length
+  if (naoPublicadas === 0 || totalAulas === 0) return null
+  return (
+    <div style={{ background: '#f59e0b15', border: '1px solid #f59e0b40', borderRadius: 10, padding: '12px 16px', marginBottom: 20, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+      <span style={{ fontSize: 18 }}>⚠️</span>
+      <div>
+        <p style={{ fontWeight: 700, color: '#f59e0b', fontSize: 14, margin: '0 0 2px' }}>
+          {naoPublicadas} aula{naoPublicadas !== 1 ? 's' : ''} não publicada{naoPublicadas !== 1 ? 's' : ''}
+        </p>
+        <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>
+          Aulas em rascunho não aparecem para os consultores. Publique em <strong style={{ color: 'var(--avp-text)' }}>Admin → Módulos → editar aula → ✅ Publicado</strong>.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function CardProGratuito({ prosIndicados }: { prosIndicados: number }) {
   const pct = Math.min(100, Math.round((prosIndicados / LIMITE_PRO_GRATUITO) * 100))
   const ehGratuito = prosIndicados >= LIMITE_PRO_GRATUITO
@@ -506,23 +543,14 @@ export default function GestorDashboard({
               {(aulaAberta.liberacao_modo === 'manual_gestor' || aulaAberta.liberacao_modo === 'manual_admin') && <span style={{ fontSize: 12, color: '#a78bfa' }}>🔒 Liberação manual</span>}
             </div>
             {/* Navegação entre aulas */}
-            {moduloAberto && moduloAberto.aulas.length > 1 && (() => {
-              const idx = moduloAberto.aulas.findIndex(a => a.id === aulaAberta.id)
-              const prev = idx > 0 ? moduloAberto.aulas[idx - 1] : null
-              const next = idx < moduloAberto.aulas.length - 1 ? moduloAberto.aulas[idx + 1] : null
-              return (
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, paddingTop: 10, borderTop: '1px solid var(--avp-border)' }}>
-                  <button onClick={() => prev && setAulaAberta(prev)} disabled={!prev}
-                    style={{ flex: 1, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', color: prev ? 'var(--avp-text)' : 'var(--avp-text-dim)', borderRadius: 8, padding: '9px 14px', cursor: prev ? 'pointer' : 'default', fontSize: 13, fontWeight: 600, opacity: prev ? 1 : 0.4 }}>
-                    ← Aula anterior
-                  </button>
-                  <button onClick={() => next && setAulaAberta(next)} disabled={!next}
-                    style={{ flex: 1, background: next ? 'var(--avp-blue)' : 'var(--avp-black)', border: `1px solid ${next ? 'var(--avp-blue)' : 'var(--avp-border)'}`, color: '#fff', borderRadius: 8, padding: '9px 14px', cursor: next ? 'pointer' : 'default', fontSize: 13, fontWeight: 600, opacity: next ? 1 : 0.4 }}>
-                    Próxima aula →
-                  </button>
-                </div>
-              )
-            })()}
+            {moduloAberto && moduloAberto.aulas.length > 1 && aulaAberta && (
+              <NavAulas
+                aulas={moduloAberto.aulas}
+                aulaAtualId={aulaAberta.id}
+                onPrev={setAulaAberta}
+                onNext={setAulaAberta}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -870,24 +898,7 @@ export default function GestorDashboard({
           )}
 
           {/* Aviso de aulas não publicadas */}
-          {aulasCarregadas && !moduloAberto && (() => {
-            const naoPublicadas = modulosAulas.flatMap(m => m.aulas).filter(a => !a.publicado).length
-            const totalAulas = modulosAulas.flatMap(m => m.aulas).length
-            if (naoPublicadas === 0 || totalAulas === 0) return null
-            return (
-              <div style={{ background: '#f59e0b15', border: '1px solid #f59e0b40', borderRadius: 10, padding: '12px 16px', marginBottom: 20, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <span style={{ fontSize: 18 }}>⚠️</span>
-                <div>
-                  <p style={{ fontWeight: 700, color: '#f59e0b', fontSize: 14, margin: '0 0 2px' }}>
-                    {naoPublicadas} aula{naoPublicadas !== 1 ? 's' : ''} não publicada{naoPublicadas !== 1 ? 's' : ''}
-                  </p>
-                  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>
-                    Aulas em rascunho não aparecem para os consultores. Publique em <strong style={{ color: 'var(--avp-text)' }}>Admin → Módulos → editar aula → ✅ Publicado</strong>.
-                  </p>
-                </div>
-              </div>
-            )
-          })()}
+          {aulasCarregadas && !moduloAberto && <AvisoAulasNaoPublicadas modulosAulas={modulosAulas} />}
 
           {/* ── LISTA DE MÓDULOS (pasta) ── */}
           {aulasCarregadas && !moduloAberto && (
