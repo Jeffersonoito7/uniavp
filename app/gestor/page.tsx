@@ -96,6 +96,13 @@ export default async function GestorPage() {
     .select('valor').eq('chave', 'modulo_capa_padrao').maybeSingle()
   const capaDefault = capaCfg?.valor ? String(capaCfg.valor).replace(/"/g, '') : null
 
+  // PROs ativos indicados por este gestor (para o benefício de PRO gratuito)
+  const { count: prosIndicados } = await (adminClient.from('gestores') as any)
+    .select('id', { count: 'exact', head: true })
+    .eq('indicado_por_gestor_id', gestor.id)
+    .eq('ativo', true)
+    .eq('status_assinatura', 'ativo')
+
   return (
     <GestorDashboard
       gestor={{ ...gestor, foto_perfil: gestorFoto }}
@@ -105,6 +112,7 @@ export default async function GestorPage() {
       artesTemplatesIniciais={artesTemplates}
       baseUrl={baseUrl}
       capaDefault={capaDefault}
+      prosIndicados={prosIndicados ?? 0}
     />
   )
 }

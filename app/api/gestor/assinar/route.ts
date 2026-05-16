@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { criarCobrancaPix } from '@/lib/efi'
 import { randomUUID } from 'crypto'
+import { verificarPROGratuito, contarPROsAtivosIndicados, LIMITE_PRO_GRATUITO } from '@/lib/pros-indicados'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,7 +31,17 @@ export async function POST() {
     return NextResponse.json({ ok: true, pagamento: pagPendente, jaExiste: true })
   }
 
-  // Lê valor configurado no painel admin (padrão 147)
+  // ── Verifica se o PRO tem 20+ PROs ativos na rede → renovação gratuita ──
+  const ehGratuito = await verificarPROGratuito(gestor.id, adminClient)
+  if (ehGratuito) {
+    const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    await (adminClient.from('gestores') as any)
+      .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento })
+      .eq('id', gestor.id)
+    return NextResponse.json({ ok: true, gratuito: true, vencimento })
+  }
+
+  // Lê valor configurado no painel admin (padrão 97)
   const { data: valorCfg } = await (adminClient.from('configuracoes') as any)
     .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
   const valorStr = valorCfg?.valor ? String(valorCfg.valor).replace(/"/g, '') : '147'
@@ -99,6 +110,9 @@ export async function GET() {
     .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
   const valorPlanoGet = Math.max(1, parseFloat(String(valorCfgGet?.valor ?? '').replace(/"/g, '')) || 97)
 
+  const prosIndicados = await contarPROsAtivosIndicados(gestor.id, adminClient)
+  const ehGratuito = prosIndicados >= LIMITE_PRO_GRATUITO
+
   return NextResponse.json({
     status: gestor.status_assinatura,
     trialAtivo,
@@ -106,5 +120,8 @@ export async function GET() {
     planoVencimento: gestor.plano_vencimento,
     ultimoPagamento: ultimoPag,
     valorPlano: valorPlanoGet,
+    prosIndicados,
+    limiteGratuito: LIMITE_PRO_GRATUITO,
+    ehGratuito,
   })
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { criarCobrancaPix } from '@/lib/efi'
 import { randomUUID } from 'crypto'
+import { verificarPROGratuito, contarPROsAtivosIndicados, LIMITE_PRO_GRATUITO } from '@/lib/pros-indicados'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,7 +38,8 @@ export async function GET() {
     .eq('ativo', true)
     .maybeSingle()
   if (gestorAtivo) {
-    return NextResponse.json({ jaEhPro: true, valorPlano })
+    const prosIndicados = await contarPROsAtivosIndicados(gestorAtivo.id, adminClient)
+    return NextResponse.json({ jaEhPro: true, valorPlano, prosIndicados, limiteGratuito: LIMITE_PRO_GRATUITO })
   }
 
   // Verifica pagamento pendente
@@ -84,6 +86,16 @@ export async function POST() {
       .eq('gestor_id', gestorId)
       .eq('status', 'pendente')
   } else {
+    // Descobre quem era o gestor (PRO) deste aluno para registrar a indicação
+    const { data: alunoCompleto } = await (adminClient.from('alunos') as any)
+      .select('gestor_whatsapp').eq('user_id', user.id).maybeSingle()
+    let indicadoPorGestorId: string | null = null
+    if (alunoCompleto?.gestor_whatsapp) {
+      const { data: gestorOrigem } = await (adminClient.from('gestores') as any)
+        .select('id').eq('whatsapp', alunoCompleto.gestor_whatsapp).eq('ativo', true).maybeSingle()
+      indicadoPorGestorId = gestorOrigem?.id ?? null
+    }
+
     const { data: novoGestor } = await (adminClient.from('gestores') as any)
       .insert({
         user_id: user.id,
@@ -92,6 +104,7 @@ export async function POST() {
         whatsapp: aluno.whatsapp,
         ativo: false,
         status_assinatura: 'pendente_upgrade',
+        indicado_por_gestor_id: indicadoPorGestorId,
       })
       .select('id')
       .single()
