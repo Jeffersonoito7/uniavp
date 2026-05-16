@@ -7,7 +7,6 @@ import {
   Trophy, Settings, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper, Star,
   Menu, X, ChevronLeft, ChevronRight, UsersRound, Link2
 } from 'lucide-react'
-import ThemeToggle from '@/app/components/ThemeToggle'
 import LogoutButton from '@/app/components/LogoutButton'
 import SupportChat from '@/app/components/SupportChat'
 
@@ -17,8 +16,8 @@ const navItems = [
   { href: '/admin/crm', label: 'CRM', icon: BarChart3 },
   { href: '/admin/modulos', label: 'Módulos', icon: BookOpen },
   { href: '/admin/usuarios', label: 'Usuários', icon: UsersRound },
-  { href: '/admin/consultores', label: 'Consultores', icon: Users },
-  { href: '/admin/gestores', label: 'Gestores', icon: UserCog },
+  { href: '/admin/consultores', label: 'FREE', icon: Users },
+  { href: '/admin/gestores', label: 'PRO', icon: UserCog },
   { href: '/admin/admins', label: 'Gerentes', icon: ShieldCheck },
   { href: '/admin/ranking', label: 'Ranking', icon: Trophy },
   { href: '/admin/premios', label: 'Prêmios', icon: Gift },
@@ -95,7 +94,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {menuAberto ? <X size={22} /> : <Menu size={22} />}
           </button>
           <div style={{ flex: 1 }}>{logoMarkup(true)}</div>
-          <ThemeToggle />
         </div>
       )}
 
@@ -190,7 +188,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* ── Rodapé ── */}
         <div style={{ padding: colapsada ? '12px 8px' : '12px 14px', borderTop: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', gap: 8, justifyContent: colapsada ? 'center' : 'space-between' }}>
           {!colapsada && <LogoutButton style={{ flex: 1 }} />}
-          <ThemeToggle />
           {colapsada && <LogoutButton />}
         </div>
       </aside>

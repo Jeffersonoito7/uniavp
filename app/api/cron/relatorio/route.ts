@@ -48,19 +48,19 @@ async function enviarEmailRelatorio(para: string, nomeGestor: string, stats: {
     ${parados.length > 0 ? `
     <!-- Parados -->
     <div style="margin:0 32px 24px;background:#fff3f4;border:1px solid #fecdd3;border-radius:12px;padding:20px">
-      <p style="font-weight:700;color:#e63946;font-size:14px;margin:0 0 12px">⚠️ Consultores parados há +7 dias</p>
+      <p style="font-weight:700;color:#e63946;font-size:14px;margin:0 0 12px">⚠️ UNIAVP FREE parados há +7 dias</p>
       ${parados.map(n => `<p style="font-size:13px;color:#666;margin:4px 0">• ${n}</p>`).join('')}
       <p style="font-size:12px;color:#999;margin:12px 0 0">Entre em contato e incentive-os a continuar!</p>
     </div>
     ` : `
     <div style="margin:0 32px 24px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:20px;text-align:center">
-      <p style="font-weight:700;color:#16a34a;font-size:14px;margin:0">🏆 Ótima semana! Nenhum consultor parado.</p>
+      <p style="font-weight:700;color:#16a34a;font-size:14px;margin:0">🏆 Ótima semana! Nenhum membro FREE parado.</p>
     </div>
     `}
 
     <!-- CTA -->
     <div style="padding:0 32px 32px;text-align:center">
-      <a href="${await getAppUrl()}/gestor"
+      <a href="${await getAppUrl()}/pro"
         style="display:inline-block;background:linear-gradient(135deg,#333687,#02A153);color:#fff;text-decoration:none;border-radius:10px;padding:14px 32px;font-weight:700;font-size:15px">
         Ver painel completo →
       </a>
@@ -131,7 +131,7 @@ export async function GET(req: NextRequest) {
       `🏆 Formados: *${stats.concluidos}*\n` +
       `😴 Parados (+7 dias): *${parados.length}*\n` +
       (parados.length > 0 ? `\n⚠️ Entre em contato:\n${parados.map(n => `• ${n}`).join('\n')}\n` : '') +
-      `\n👉 Ver detalhes: ${await getAppUrl()}/gestor`
+      `\n👉 Ver detalhes: ${await getAppUrl()}/pro`
     await enviarWhatsApp(g.whatsapp, msg, instancia)
 
     // E-mail

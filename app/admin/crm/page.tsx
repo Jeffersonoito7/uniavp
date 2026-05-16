@@ -108,7 +108,7 @@ export default async function CRMPage() {
 
       {/* Cards principais */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
-        {card('Total de Consultores', allAlunos.length, 'var(--avp-text)')}
+        {card('Total UNIAVP FREE', allAlunos.length, 'var(--avp-text)')}
         {card('Nunca Iniciaram', nuncaIniciou, 'var(--avp-text-dim)')}
         {card('Em Andamento', emAndamento, '#f59e0b')}
         {card('Formados', formados, 'var(--avp-green)')}
@@ -139,7 +139,7 @@ export default async function CRMPage() {
 
         {/* Por módulo */}
         <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24 }}>
-          <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Consultores por Módulo Atual</p>
+          <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>UNIAVP FREE por Módulo</p>
           {Object.entries(distModulo).length === 0 && (
             <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Nenhum progresso registrado ainda.</p>
           )}
@@ -185,7 +185,7 @@ export default async function CRMPage() {
       {/* Tabela de consultores */}
       <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden' }}>
         <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--avp-border)' }}>
-          <p style={{ fontWeight: 700, fontSize: 15 }}>Consultores — Detalhado</p>
+          <p style={{ fontWeight: 700, fontSize: 15 }}>UNIAVP FREE — Detalhado</p>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>

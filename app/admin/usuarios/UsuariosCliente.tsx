@@ -58,7 +58,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
       const data = await res.json()
       if (data.aluno) {
         setConsultores(prev => prev.map(c => c.id === editando.dado.id ? { ...c, ...data.aluno } : c))
-        setEditando(null); flash('ok', 'Consultor atualizado!')
+        setEditando(null); flash('ok', 'UNIAVP FREE atualizado!')
       } else flash('err', data.error ?? 'Erro ao salvar.')
     } else {
       const res = await fetch('/api/admin/gestores', {
@@ -68,7 +68,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
       const data = await res.json()
       if (data.gestor) {
         setGestores(prev => prev.map(g => g.id === editando.dado.id ? { ...g, ...data.gestor } : g))
-        setEditando(null); flash('ok', 'Gestor atualizado!')
+        setEditando(null); flash('ok', 'PRO atualizado!')
       } else flash('err', data.error ?? 'Erro ao salvar.')
     }
     setSalvando(false)
@@ -131,7 +131,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
 
       {/* Abas */}
       <div style={{ display: 'flex', gap: 4, borderBottom: '2px solid var(--avp-border)', marginBottom: 20 }}>
-        {([['consultores', `👥 Consultores (${consultores.length})`], ['gestores', `🧑‍💼 Gestores (${gestores.length})`]] as const).map(([id, label]) => (
+        {([['consultores', `🆓 FREE (${consultores.length})`], ['gestores', `✨ PRO (${gestores.length})`]] as const).map(([id, label]) => (
           <button key={id} onClick={() => { setAba(id); setBusca('') }}
             style={{ background: 'none', border: 'none', borderBottom: `3px solid ${aba === id ? 'var(--avp-blue)' : 'transparent'}`, marginBottom: -2, padding: '10px 20px', cursor: 'pointer', fontWeight: aba === id ? 700 : 500, fontSize: 14, color: aba === id ? 'var(--avp-text)' : 'var(--avp-text-dim)' }}>
             {label}
@@ -152,7 +152,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--avp-border)', background: 'var(--avp-black)' }}>
-                  {['Nome', 'WhatsApp', 'E-mail / Gestor', 'Status', 'Cadastro', 'Ações'].map(h => (
+                  {['Nome', 'WhatsApp', 'E-mail / PRO', 'Status', 'Cadastro', 'Ações'].map(h => (
                     <th key={h} style={{ padding: '12px 14px', textAlign: 'left', color: 'var(--avp-text-dim)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
@@ -164,7 +164,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
                     <td style={{ padding: '12px 14px', color: 'var(--avp-text-dim)', fontSize: 13 }}>{c.whatsapp}</td>
                     <td style={{ padding: '12px 14px', fontSize: 13 }}>
                       <span style={{ color: 'var(--avp-text-dim)' }}>{c.email}</span>
-                      {c.gestor_nome && <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--avp-text-dim)' }}>Gestor: {c.gestor_nome}</p>}
+                      {c.gestor_nome && <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--avp-text-dim)' }}>PRO: {c.gestor_nome}</p>}
                     </td>
                     <td style={{ padding: '12px 14px' }}>
                       <span style={{ background: (statusCor[c.status] ?? '#8a8fa3') + '20', color: statusCor[c.status] ?? '#8a8fa3', borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>{c.status}</span>
@@ -180,7 +180,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
                   </tr>
                 ))}
                 {filtrarConsultores.length === 0 && (
-                  <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Nenhum consultor encontrado.</td></tr>
+                  <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Nenhum FREE encontrado.</td></tr>
                 )}
               </tbody>
             </table>
@@ -223,7 +223,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
                   </tr>
                 ))}
                 {filtrarGestores.length === 0 && (
-                  <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Nenhum gestor encontrado.</td></tr>
+                  <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Nenhum PRO encontrado.</td></tr>
                 )}
               </tbody>
             </table>
@@ -239,7 +239,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
             onMouseDown={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <h2 style={{ fontSize: 18, fontWeight: 700 }}>
-                ✏️ Editar {editando.tipo === 'consultor' ? 'Consultor' : 'Gestor'}
+                ✏️ Editar {editando.tipo === 'consultor' ? 'UNIAVP FREE' : 'UNIAVP PRO'}
               </h2>
               <button onClick={() => setEditando(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--avp-text-dim)', fontSize: 22 }}>×</button>
             </div>

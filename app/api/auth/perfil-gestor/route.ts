@@ -15,5 +15,5 @@ export async function GET() {
 
   if (!gestorRecord) return NextResponse.json({ tipo: null })
   if (!gestorRecord.ativo) return NextResponse.json({ tipo: 'gestor_inativo' })
-  return NextResponse.json({ tipo: 'gestor', redirect: '/gestor' })
+  return NextResponse.json({ tipo: 'gestor', redirect: '/pro' })
 }

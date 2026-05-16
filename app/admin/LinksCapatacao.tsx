@@ -38,20 +38,20 @@ export default function LinksCaptacao() {
     <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24, marginTop: 24 }}>
       <div style={{ marginBottom: 16 }}>
         <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 4 }}>🔗 Links de Cadastro</p>
-        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)' }}>Copie e envie para gestores ou consultores se cadastrarem na plataforma.</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)' }}>Copie e envie para PROs ou FREEs se cadastrarem na plataforma.</p>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <BotaoCopiar
-          icon="👔"
-          label="Cadastro de Gestor"
-          desc="Envie para quem vai ser gestor. O cadastro fica pendente até você ativar no painel de Gestores."
-          url="/convite/gestor"
+          icon="✨"
+          label="Cadastro PRO direto"
+          desc="Cadastro + pagamento PRO automático. Para quem já conhece o negócio."
+          url="/captacao?direto=1&plano=pro"
         />
         <BotaoCopiar
-          icon="👤"
-          label="Cadastro de Consultor (sem gestor)"
-          desc="Use quando o consultor não tem gestor específico. O admin acompanha pelo CRM."
-          url="/captacao"
+          icon="🆓"
+          label="Cadastro FREE (sem funil)"
+          desc="Cadastro direto sem vídeo. Para quem já conhece e quer entrar como FREE."
+          url="/captacao?direto=1"
         />
       </div>
     </div>

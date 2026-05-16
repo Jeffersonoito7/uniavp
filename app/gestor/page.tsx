@@ -6,7 +6,7 @@ import GestorDashboard from './GestorDashboard'
 export default async function GestorPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/gestor/login')
+  if (!user) redirect('/entrar')
 
   const adminClient = createServiceRoleClient()
 
@@ -15,7 +15,7 @@ export default async function GestorPage() {
     .eq('user_id', user.id)
     .eq('ativo', true)
     .maybeSingle()
-  if (!gestor) redirect('/gestor/login')
+  if (!gestor) redirect('/entrar')
 
   // Se trial sem data de expiração → auto-concede 7 dias (bug da migration DEFAULT)
   if (gestor.status_assinatura === 'trial' && !gestor.trial_expira_em) {
@@ -35,7 +35,7 @@ export default async function GestorPage() {
   const gestorFoto: string | null = gestor.foto_perfil ?? null
 
   const { data: consultores } = await (adminClient.from('alunos') as any)
-    .select('id, nome, whatsapp, email, status, created_at')
+    .select('id, nome, whatsapp, email, status, created_at, ultimo_estudo_em, streak_atual')
     .eq('gestor_whatsapp', gestor.whatsapp)
     .order('created_at', { ascending: false })
 
@@ -61,6 +61,28 @@ export default async function GestorPage() {
     }
   }
 
+  // Mapa de indicações: whatsapp do consultor → quantos indicou
+  const indicacoesMap: Record<string, number> = {}
+  if ((consultores ?? []).length > 0) {
+    const whatsapps = (consultores ?? []).map((c: any) => c.whatsapp)
+    const { data: indRows } = await (adminClient.from('indicadores') as any)
+      .select('id, whatsapp')
+      .eq('tipo', 'consultor')
+      .in('whatsapp', whatsapps)
+    if ((indRows ?? []).length > 0) {
+      const indIds = (indRows ?? []).map((r: any) => r.id)
+      const { data: alunosInd } = await (adminClient.from('alunos') as any)
+        .select('indicador_id')
+        .in('indicador_id', indIds)
+      const wppById: Record<string, string> = {}
+      for (const r of (indRows ?? [])) wppById[r.id] = r.whatsapp
+      for (const a of (alunosInd ?? [])) {
+        const wpp = wppById[a.indicador_id]
+        if (wpp) indicacoesMap[wpp] = (indicacoesMap[wpp] ?? 0) + 1
+      }
+    }
+  }
+
   const { data: templatesRaw } = await (adminClient.from('artes_templates') as any)
     .select('*').order('created_at')
   const artesTemplates = (templatesRaw ?? []).filter((t: any) => !t.gestor_id || t.gestor_id === gestor.id)
@@ -79,6 +101,7 @@ export default async function GestorPage() {
       gestor={{ ...gestor, foto_perfil: gestorFoto }}
       consultores={consultores ?? []}
       progressoMap={progressoMap}
+      indicacoesMap={indicacoesMap}
       artesTemplatesIniciais={artesTemplates}
       baseUrl={baseUrl}
       capaDefault={capaDefault}

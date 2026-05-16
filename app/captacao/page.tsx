@@ -15,7 +15,7 @@ function extrairIdYoutube(valor?: string | null): string | null {
   return fallback ? fallback[0] : null
 }
 
-export default async function CaptacaoPage({ searchParams }: { searchParams?: { direto?: string } }) {
+export default async function CaptacaoPage({ searchParams }: { searchParams?: { direto?: string; ref?: string; plano?: string } }) {
   const adminClient = createServiceRoleClient()
   const config = await getSiteConfig()
 
@@ -25,6 +25,8 @@ export default async function CaptacaoPage({ searchParams }: { searchParams?: { 
   const valorStr = typeof valorRaw === 'string' ? valorRaw : JSON.stringify(valorRaw ?? '')
   const videoId = extrairIdYoutube(valorStr)
   const direto = searchParams?.direto === '1'
+  const ref = searchParams?.ref ?? undefined
+  const plano = searchParams?.plano === 'pro' ? 'pro' : undefined
 
   return (
     <FunilCaptacao
@@ -32,6 +34,8 @@ export default async function CaptacaoPage({ searchParams }: { searchParams?: { 
       logoUrl={config.logoPaginaUrl || config.logoUrl}
       videoId={videoId}
       direto={direto}
+      indicadorWhatsapp={ref}
+      plano={plano}
     />
   )
 }

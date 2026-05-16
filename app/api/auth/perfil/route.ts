@@ -23,7 +23,7 @@ export async function GET(req: Request) {
       .select('id, ativo').eq('user_id', user.id).maybeSingle()
     if (gestorRecord) {
       if (!gestorRecord.ativo) return NextResponse.json({ tipo: 'gestor_inativo' })
-      return NextResponse.json({ tipo: 'gestor', redirect: '/gestor' })
+      return NextResponse.json({ tipo: 'gestor', redirect: '/pro' })
     }
   }
 
@@ -44,12 +44,12 @@ export async function GET(req: Request) {
     .select('id, ativo').eq('user_id', user.id).maybeSingle()
   if (gestorRecord) {
     if (!gestorRecord.ativo) return NextResponse.json({ tipo: 'gestor_inativo' })
-    return NextResponse.json({ tipo: 'gestor', redirect: '/gestor' })
+    return NextResponse.json({ tipo: 'gestor', redirect: '/pro' })
   }
 
   const { data: alunoRecord } = await (admin.from('alunos') as any)
     .select('whatsapp').eq('user_id', user.id).maybeSingle()
-  if (alunoRecord?.whatsapp) return NextResponse.json({ tipo: 'aluno', redirect: `/aluno/${alunoRecord.whatsapp}` })
+  if (alunoRecord?.whatsapp) return NextResponse.json({ tipo: 'aluno', redirect: `/free/${alunoRecord.whatsapp}` })
 
   return NextResponse.json({ tipo: null })
 }

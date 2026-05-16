@@ -5,7 +5,7 @@ import CarteiraDisplay from './CarteiraDisplay'
 export default async function CarteiraPage({ params }: { params: { whatsapp: string } }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/consultor/login')
+  if (!user) redirect('/entrar')
 
   const adminClient = createServiceRoleClient()
   const { data: aluno } = await (adminClient.from('alunos') as any)
@@ -13,7 +13,7 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
     .eq('user_id', user.id)
     .maybeSingle()
 
-  if (!aluno) redirect('/consultor/login')
+  if (!aluno) redirect('/entrar')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}/carteira`)
 
   // Carga horária total dos cursos publicados

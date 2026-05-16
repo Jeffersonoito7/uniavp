@@ -31,11 +31,11 @@ export default async function HomePage() {
 
   const { data: gestor } = await (adminClient.from('gestores') as any)
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (gestor) redirect('/gestor')
+  if (gestor) redirect('/pro')
 
   const { data: aluno } = await (adminClient.from('alunos') as any)
     .select('whatsapp').eq('user_id', user.id).maybeSingle()
-  if (aluno?.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
+  if (aluno?.whatsapp) redirect(`/free/${aluno.whatsapp}`)
 
-  redirect('/login')
+  redirect('/entrar')
 }

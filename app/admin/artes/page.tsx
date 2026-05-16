@@ -19,7 +19,7 @@ export default async function ArtesPage() {
     <AdminLayout>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Templates de Artes</h1>
-        <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Configure as artes profissionais dos consultores (boas-vindas, placas, gestor)</p>
+        <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Configure as artes profissionais para os membros FREE e PRO</p>
       </div>
       <ArtesCliente inicial={templates ?? []} />
     </AdminLayout>

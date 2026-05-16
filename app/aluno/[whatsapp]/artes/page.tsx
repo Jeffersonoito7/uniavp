@@ -3,18 +3,17 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
 import Link from 'next/link'
 import ArtesCliente from './ArtesCliente'
-import ThemeToggle from '@/app/components/ThemeToggle'
 import EventosWidget from '@/app/components/EventosWidget'
 
 export default async function ArtesPage({ params }: { params: { whatsapp: string } }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/consultor/login')
+  if (!user) redirect('/entrar')
 
   const [adminClient, siteConfig] = [createServiceRoleClient(), await getSiteConfig()]
   const { data: aluno } = await (adminClient.from('alunos') as any)
     .select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
-  if (!aluno) redirect('/consultor/login')
+  if (!aluno) redirect('/entrar')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}/artes`)
 
   const { data: templates } = await (adminClient.from('artes_templates') as any)
@@ -28,7 +27,6 @@ export default async function ArtesPage({ params }: { params: { whatsapp: string
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <EventosWidget />
-          <ThemeToggle />
         </div>
       </header>
       {(templates ?? []).length === 0 ? (

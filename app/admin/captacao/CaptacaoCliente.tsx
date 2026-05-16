@@ -87,21 +87,25 @@ export default function CaptacaoCliente({ gestores, baseUrl }: { gestores: Gesto
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
       {/* Explicação */}
-      <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: 20, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: 20, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
         <div style={{ borderRight: '1px solid var(--avp-border)', paddingRight: 16 }}>
           <p style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}>🎯 Funil Completo</p>
-          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>Para quem <strong style={{ color: 'var(--avp-text)' }}>não conhece</strong> o negócio. Passa por: pergunta → vídeo de apresentação → segunda pergunta → cadastro.</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>Para quem <strong style={{ color: 'var(--avp-text)' }}>não conhece</strong> o negócio. Pergunta → vídeo → cadastro FREE.</p>
+        </div>
+        <div style={{ borderRight: '1px solid var(--avp-border)', paddingRight: 16 }}>
+          <p style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}>⚡ Acesso Direto FREE</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>Para quem <strong style={{ color: 'var(--avp-text)' }}>já conhece</strong>. Pula o funil, vai direto ao formulário e cadastra como <strong style={{ color: 'var(--avp-text)' }}>FREE</strong>.</p>
         </div>
         <div>
-          <p style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}>⚡ Acesso Direto</p>
-          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>Para quem <strong style={{ color: 'var(--avp-text)' }}>já conhece</strong> o negócio. Pula o funil e vai direto ao formulário de cadastro (nome, WhatsApp, e-mail, senha).</p>
+          <p style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}>✨ Acesso Direto PRO</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>Para quem <strong style={{ color: 'var(--avp-text)' }}>já conhece e quer ser PRO</strong>. Cria conta e redireciona ao pagamento automaticamente.</p>
         </div>
       </div>
 
       {/* Link genérico de consultor — Funil completo */}
       <LinkCard
         icon="🎯"
-        titulo="Consultor — Funil Completo (geral)"
+        titulo="UNIAVP FREE — Funil Completo"
         desc="Para quem não conhece o negócio. Passa por perguntas + vídeo obrigatório antes de se cadastrar."
         link={`${baseUrl}/captacao`}
         cor="#333687"
@@ -110,7 +114,7 @@ export default function CaptacaoCliente({ gestores, baseUrl }: { gestores: Gesto
       {/* Link genérico direto */}
       <LinkCard
         icon="⚡"
-        titulo="Consultor — Acesso Direto (geral)"
+        titulo="UNIAVP FREE — Acesso Direto"
         desc="Para quem já conhece. Pula o funil e vai direto ao formulário de cadastro."
         link={`${baseUrl}/captacao?direto=1`}
         cor="#f59e0b"
@@ -121,9 +125,9 @@ export default function CaptacaoCliente({ gestores, baseUrl }: { gestores: Gesto
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 16 }}>
           <span style={{ fontSize: 36 }}>🎯</span>
           <div>
-            <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 4 }}>Link por Gestor Específico</p>
+            <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 4 }}>Link por PRO Específico</p>
             <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, lineHeight: 1.5 }}>
-              O consultor já é vinculado automaticamente ao gestor correto — sem precisar digitar nada.
+              O UNIAVP FREE já é vinculado automaticamente ao PRO correto — sem precisar digitar nada.
             </p>
           </div>
         </div>
@@ -145,17 +149,24 @@ export default function CaptacaoCliente({ gestores, baseUrl }: { gestores: Gesto
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <LinkCard
               icon="🎯"
-              titulo={`Funil Completo — ${gestor.nome}`}
+              titulo={`FREE — Funil Completo — ${gestor.nome}`}
               desc={`Para quem não conhece. Passa por perguntas + vídeo + cadastro, vinculado a ${gestor.nome}.`}
               link={linkGestor}
               cor="#02A153"
             />
             <LinkCard
               icon="⚡"
-              titulo={`Acesso Direto — ${gestor.nome}`}
-              desc={`Para quem já conhece. Vai direto ao cadastro, vinculado a ${gestor.nome}.`}
+              titulo={`FREE — Acesso Direto — ${gestor.nome}`}
+              desc={`Para quem já conhece. Vai direto ao cadastro FREE, vinculado a ${gestor.nome}.`}
               link={`${linkGestor}?direto=1`}
               cor="#f59e0b"
+            />
+            <LinkCard
+              icon="✨"
+              titulo={`PRO — Cadastro + Pagamento — ${gestor.nome}`}
+              desc={`Para quem quer ir direto ao PRO. Cria conta e redireciona ao pagamento, vinculado a ${gestor.nome}.`}
+              link={`${linkGestor}?direto=1&plano=pro`}
+              cor="#6366f1"
             />
           </div>
         )}
@@ -167,12 +178,20 @@ export default function CaptacaoCliente({ gestores, baseUrl }: { gestores: Gesto
         )}
       </div>
 
-      {/* Link de gestor */}
+      {/* Divisor PRO */}
+      <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 8 }}>
+        <p style={{ fontWeight: 800, fontSize: 16, color: '#818cf8', marginBottom: 4 }}>✨ Links UNIAVP PRO — Cadastro Direto</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 16 }}>
+          Para quem já conhece o negócio e quer ir direto para o plano PRO. O cadastro cria a conta FREE automaticamente e redireciona para o pagamento.
+        </p>
+      </div>
+
+      {/* Link PRO genérico direto */}
       <LinkCard
-        icon="👔"
-        titulo="Cadastro de Gestor"
-        desc="Envie para quem vai ser gestor da equipe. O cadastro fica pendente até você ativar no painel Gestores."
-        link={`${baseUrl}/convite/gestor`}
+        icon="✨"
+        titulo="UNIAVP PRO — Cadastro + Pagamento Direto"
+        desc="Pula o funil. Cria a conta e redireciona direto para o pagamento via PIX. Para quem já conhece e quer ser PRO."
+        link={`${baseUrl}/captacao?direto=1&plano=pro`}
         cor="#6366f1"
       />
 
@@ -180,8 +199,8 @@ export default function CaptacaoCliente({ gestores, baseUrl }: { gestores: Gesto
       <div style={{ background: '#02A15310', border: '1px solid #02A15330', borderRadius: 12, padding: 18, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
         <span style={{ fontSize: 22, flexShrink: 0 }}>💡</span>
         <div style={{ fontSize: 13, color: 'var(--avp-text-dim)', lineHeight: 1.7 }}>
-          <strong style={{ color: 'var(--avp-text)' }}>Dica:</strong> Use o <strong style={{ color: 'var(--avp-text)' }}>Link por Gestor Específico</strong> sempre que possível.
-          O consultor chega direto na apresentação do gestor e já fica vinculado automaticamente —
+          <strong style={{ color: 'var(--avp-text)' }}>Dica:</strong> Use o <strong style={{ color: 'var(--avp-text)' }}>Link por PRO Específico</strong> sempre que possível.
+          O UNIAVP FREE chega direto na apresentação do PRO e já fica vinculado automaticamente —
           sem erros de digitação no cadastro.
         </div>
       </div>

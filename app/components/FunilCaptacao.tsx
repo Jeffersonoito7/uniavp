@@ -4,7 +4,7 @@ import VideoPlayer from './VideoPlayer'
 import PhoneInput from './PhoneInput'
 import { useRouter } from 'next/navigation'
 
-type Etapa = 'pergunta1' | 'video' | 'pergunta2' | 'cadastro' | 'reprovado' | 'sucesso'
+type Etapa = 'pergunta1' | 'video' | 'pergunta2' | 'cadastro' | 'reprovado' | 'sucesso' | 'aguardando_link'
 
 type Props = {
   gestorNome?: string
@@ -12,10 +12,12 @@ type Props = {
   siteNome?: string
   logoUrl?: string
   videoId?: string | null
-  direto?: boolean  // pula o funil e vai direto ao cadastro
+  direto?: boolean
+  indicadorWhatsapp?: string
+  plano?: 'pro'
 }
 
-export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, logoUrl, videoId, direto }: Props) {
+export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, logoUrl, videoId, direto, indicadorWhatsapp, plano }: Props) {
   const router = useRouter()
   const [etapa, setEtapa] = useState<Etapa>(direto ? 'cadastro' : 'pergunta1')
   const [videoAssistido, setVideoAssistido] = useState(false)
@@ -38,12 +40,13 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
         senha: form.senha,
         gestor_nome: gestorWhatsapp ? (gestorNome ?? '') : (form.gestor_nome || ''),
         gestor_whatsapp: gestorWhatsapp ? gestorWhatsapp : (form.gestor_whatsapp.replace(/\D/g, '') || ''),
+        indicador_whatsapp: indicadorWhatsapp ?? undefined,
       }),
     })
     const data = await res.json()
     if (data.ok || data.aluno) {
       setEtapa('sucesso')
-      setTimeout(() => router.push('/consultor/login'), 2500)
+      setTimeout(() => router.push(plano === 'pro' ? '/assinar-pro' : '/entrar'), 2500)
     } else {
       setErro(data.erro ?? data.error ?? 'Erro ao criar conta.')
     }
@@ -160,12 +163,25 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 420, margin: '0 auto' }}>
             <button
-              onClick={() => setEtapa('cadastro')}
-              style={{ background: 'linear-gradient(135deg, #1e40af, #3b82f6)', color: '#fff', border: 'none', borderRadius: 16, padding: '22px 40px', fontWeight: 900, fontSize: 20, cursor: 'pointer', boxShadow: '0 12px 40px rgba(59,130,246,0.4)', letterSpacing: 0.5, transition: 'transform 0.15s' }}
+              onClick={() => {
+                const contato = indicadorWhatsapp || gestorWhatsapp
+                if (contato) {
+                  const numero = contato.replace(/\D/g, '')
+                  const ddi = numero.startsWith('55') ? numero : `55${numero}`
+                  const msg = encodeURIComponent(
+                    `Olá! 🎯 Acabei de assistir ao vídeo da ${siteNome || 'plataforma'} e faz sentido pra mim iniciar o processo de seleção e treinamento.\n\nMe envia o link de cadastro para me tornar um Consultor AVP! 🚀`
+                  )
+                  window.open(`https://wa.me/${ddi}?text=${msg}`, '_blank')
+                  setEtapa('aguardando_link')
+                } else {
+                  setEtapa('cadastro')
+                }
+              }}
+              style={{ background: 'linear-gradient(135deg, #25d366, #128c7e)', color: '#fff', border: 'none', borderRadius: 16, padding: '22px 40px', fontWeight: 900, fontSize: 20, cursor: 'pointer', boxShadow: '0 12px 40px rgba(37,211,102,0.4)', letterSpacing: 0.5, transition: 'transform 0.15s' }}
               onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.03)')}
               onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
             >
-              ✅ SIM, quero me cadastrar!
+              ✅ SIM, quero iniciar!
             </button>
             <button
               onClick={() => setEtapa('reprovado')}
@@ -229,7 +245,7 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
               {/* Campos do gestor só aparecem se não vier de link de gestor */}
               {!gestorWhatsapp && (
                 <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 16 }}>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 14 }}>Gestor que te indicou</p>
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 14 }}>PRO que te indicou</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     <input type="text" placeholder="Nome do gestor (opcional)" onChange={e => setForm(p => ({ ...p, gestor_nome: e.target.value }))} style={inp} />
                     <PhoneInput value={form.gestor_whatsapp} onChange={v => setForm(p => ({ ...p, gestor_whatsapp: v }))} placeholder="WhatsApp do gestor (opcional)" />
@@ -248,15 +264,59 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
               )}
 
               <button type="submit" disabled={loading}
-                style={{ background: 'linear-gradient(135deg, #1e40af, #3b82f6)', color: '#fff', border: 'none', borderRadius: 12, padding: '16px', fontWeight: 800, fontSize: 16, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, boxShadow: '0 8px 32px rgba(59,130,246,0.4)', marginTop: 4 }}>
-                {loading ? '⏳ Criando conta...' : '🚀 Iniciar minha formação'}
+                style={{ background: plano === 'pro' ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'linear-gradient(135deg, #1e40af, #3b82f6)', color: '#fff', border: 'none', borderRadius: 12, padding: '16px', fontWeight: 800, fontSize: 16, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, boxShadow: plano === 'pro' ? '0 8px 32px rgba(99,102,241,0.4)' : '0 8px 32px rgba(59,130,246,0.4)', marginTop: 4 }}>
+                {loading ? '⏳ Criando conta...' : plano === 'pro' ? '✨ Criar conta e ir para o pagamento PRO' : '🚀 Iniciar minha formação'}
               </button>
             </form>
 
             <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: 13, marginTop: 20 }}>
-              Já tem conta? <a href="/consultor/login" style={{ color: '#60a5fa', textDecoration: 'none', fontWeight: 600 }}>Entrar aqui</a>
+              Já tem conta? <a href="/entrar" style={{ color: '#60a5fa', textDecoration: 'none', fontWeight: 600 }}>Entrar aqui</a>
             </p>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── AGUARDANDO LINK (após abrir WhatsApp) ────────────────────────
+  if (etapa === 'aguardando_link') {
+    const contato = indicadorWhatsapp || gestorWhatsapp
+    function reabrirWhatsApp() {
+      if (!contato) return
+      const numero = contato.replace(/\D/g, '')
+      const ddi = numero.startsWith('55') ? numero : `55${numero}`
+      const msg = encodeURIComponent(
+        `Olá! 🎯 Acabei de assistir ao vídeo da ${siteNome || 'plataforma'} e faz sentido pra mim iniciar o processo de seleção e treinamento.\n\nMe envia o link de cadastro para me tornar um Consultor AVP! 🚀`
+      )
+      window.open(`https://wa.me/${ddi}?text=${msg}`, '_blank')
+    }
+    return (
+      <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
+        <div style={{ maxWidth: 520, width: '100%', textAlign: 'center' }}>
+          {logoUrl && <img src={logoUrl} alt={siteNome} style={{ height: 64, objectFit: 'contain', marginBottom: 32, filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.5))' }} />}
+
+          <div style={{ fontSize: 72, marginBottom: 20 }}>📱</div>
+          <h2 style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 900, color: '#fff', lineHeight: 1.25, marginBottom: 16 }}>
+            Mensagem enviada!
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, lineHeight: 1.7, marginBottom: 32 }}>
+            Você foi direcionado para o WhatsApp com seu contato.<br />
+            Em breve você receberá o <strong style={{ color: '#25d366' }}>link de cadastro</strong> para se tornar um Consultor AVP.
+          </p>
+
+          <div style={{ background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.25)', borderRadius: 16, padding: '20px 24px', marginBottom: 28 }}>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginBottom: 4 }}>Próximo passo</p>
+            <p style={{ color: '#fff', fontSize: 15, fontWeight: 600, lineHeight: 1.6 }}>
+              Aguarde o link de cadastro no seu WhatsApp e siga as instruções do seu contato para iniciar o processo de seleção. 🚀
+            </p>
+          </div>
+
+          <button
+            onClick={reabrirWhatsApp}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'linear-gradient(135deg, #25d366, #128c7e)', color: '#fff', border: 'none', borderRadius: 14, padding: '16px 32px', fontWeight: 800, fontSize: 16, cursor: 'pointer', margin: '0 auto', boxShadow: '0 6px 24px rgba(37,211,102,0.4)' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Abrir WhatsApp novamente
+          </button>
         </div>
       </div>
     )
@@ -285,9 +345,11 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
   return (
     <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: 40 }}>
       <div style={{ textAlign: 'center', color: '#fff' }}>
-        <div style={{ fontSize: 64, marginBottom: 20 }}>🎉</div>
+        <div style={{ fontSize: 64, marginBottom: 20 }}>{plano === 'pro' ? '✨' : '🎉'}</div>
         <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 12 }}>Cadastro realizado!</h2>
-        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16 }}>Redirecionando para o login...</p>
+        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16 }}>
+          {plano === 'pro' ? 'Redirecionando para o pagamento PRO...' : 'Redirecionando para o login...'}
+        </p>
       </div>
     </div>
   )

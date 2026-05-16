@@ -45,7 +45,7 @@ export default function ConviteGestorForm({ siteNome, logoUrl }: { siteNome: str
               {siteNome}
             </h1>
           )}
-          <p style={{ color: 'var(--avp-text-dim)', fontSize: 15, margin: 0 }}>Cadastro de Gestor</p>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 15, margin: 0 }}>Cadastro UNIAVP PRO</p>
           <div style={{ marginTop: 12, background: '#f59e0b20', border: '1px solid #f59e0b50', borderRadius: 8, padding: '10px 16px', fontSize: 13, color: '#f59e0b' }}>
             Após o cadastro, aguarde a ativação pela empresa.
           </div>

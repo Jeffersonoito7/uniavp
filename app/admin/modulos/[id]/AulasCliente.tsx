@@ -536,10 +536,10 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                       <input type="radio" name="liberacao_modo_new" checked={form.liberacao_modo === modo} onChange={() => setForm(p => ({ ...p, liberacao_modo: modo }))} style={{ marginTop: 2, accentColor: 'var(--avp-blue)' }} />
                       <div>
                         <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--avp-text)', margin: 0 }}>
-                          {modo === 'automatico' ? '⚡ Automático' : modo === 'manual_gestor' ? '👤 Aprovação do Gestor' : '🛡 Aprovação do Admin'}
+                          {modo === 'automatico' ? '⚡ Automático' : modo === 'manual_gestor' ? '👤 Aprovação do PRO' : '🛡 Aprovação do Admin'}
                         </p>
                         <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
-                          {modo === 'automatico' ? 'Libera sozinho após o tempo configurado' : modo === 'manual_gestor' ? 'Gestor precisa clicar para liberar' : 'Só o admin da empresa pode liberar'}
+                          {modo === 'automatico' ? 'Libera sozinho após o tempo configurado' : modo === 'manual_gestor' ? 'O PRO precisa clicar para liberar' : 'Só o admin da empresa pode liberar'}
                         </p>
                       </div>
                     </label>

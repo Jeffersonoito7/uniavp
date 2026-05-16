@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
 import Link from 'next/link'
-import ThemeToggle from '@/app/components/ThemeToggle'
 import EventosWidget from '@/app/components/EventosWidget'
 import MuralNoticias from '@/app/components/MuralNoticias'
 import LogoutButton from '@/app/components/LogoutButton'
@@ -12,6 +11,8 @@ import PushButton from '@/app/components/PushButton'
 import PWAInstallButton from '@/app/components/PWAInstallButton'
 import RankingWidget from '@/app/components/RankingWidget'
 import RetomarPopup from '@/app/components/RetomarPopup'
+import IndicacaoCard from '@/app/components/IndicacaoCard'
+import ProTeaser from '@/app/components/ProTeaser'
 
 type TrilhaItem = {
   modulo_id: string
@@ -34,14 +35,14 @@ type TrilhaItem = {
 
 function calcularNivel(pontos: number) {
   if (pontos >= 300) return { nome: 'Especialista', prox: null, atual: pontos, min: 300, max: 300 }
-  if (pontos >= 100) return { nome: 'Consultor', prox: 300, atual: pontos, min: 100, max: 300 }
+  if (pontos >= 100) return { nome: 'FREE Avançado', prox: 300, atual: pontos, min: 100, max: 300 }
   return { nome: 'Iniciante', prox: 100, atual: pontos, min: 0, max: 100 }
 }
 
 export default async function AlunoHomePage({ params, searchParams }: { params: { whatsapp: string }; searchParams?: { modulo?: string } }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/consultor/login')
+  if (!user) redirect('/entrar')
 
   const [adminClient, siteConfig] = [createServiceRoleClient(), await getSiteConfig()]
   const { data: aluno } = await (adminClient.from('alunos') as any)
@@ -61,8 +62,16 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
     ])
   const certMap: Record<string, string> = {}
   for (const r of certConfigs ?? []) { try { certMap[r.chave] = JSON.parse(r.valor) } catch { certMap[r.chave] = r.valor } }
-  if (!aluno) redirect('/consultor/login')
+  if (!aluno) redirect('/entrar')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
+
+  // Se o FREE fez upgrade e já tem conta PRO ativa → redireciona para o painel PRO
+  const { data: gestorAtivo } = await (adminClient.from('gestores') as any)
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('ativo', true)
+    .maybeSingle()
+  if (gestorAtivo) redirect('/pro')
 
   const { data: trilhaRaw } = await (adminClient as any).rpc('obter_trilha_aluno', { p_aluno_id: aluno.id })
   const trilhaBase: TrilhaItem[] = (trilhaRaw ?? []) as TrilhaItem[]
@@ -96,8 +105,27 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
     .eq('aluno_id', aluno.id)
   const medalhas = (medalhasRows ?? []).map((r: any) => r.medalha)
 
+  // Contagem de consultores indicados por este aluno
+  const { data: meuIndicador } = await (adminClient.from('indicadores') as any)
+    .select('id')
+    .eq('whatsapp', aluno.whatsapp)
+    .eq('tipo', 'consultor')
+    .maybeSingle()
+  const { count: totalIndicadosReal } = meuIndicador
+    ? await (adminClient.from('alunos') as any)
+        .select('id', { count: 'exact', head: true })
+        .eq('indicador_id', meuIndicador.id)
+    : { count: 0 }
+
   const nivel = calcularNivel(totalPontos)
   const progressoPct = nivel.prox ? Math.round(((nivel.atual - nivel.min) / (nivel.max - nivel.min)) * 100) : 100
+
+  const LIMITE_FREE = 20
+  const trilhaOrdenada = [...trilha].sort((a, b) =>
+    a.modulo_ordem !== b.modulo_ordem ? a.modulo_ordem - b.modulo_ordem : a.aula_ordem - b.aula_ordem
+  )
+  const posicaoMap: Record<string, number> = {}
+  trilhaOrdenada.forEach((t, i) => { posicaoMap[t.aula_id] = i + 1 })
 
   const totalAulas = trilha.length
   const aulasConcluidas = trilha.filter(a => a.status === 'concluida').length
@@ -171,6 +199,10 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                 style={{ color: '#fbbf24', fontSize: 13, textDecoration: 'none', fontWeight: 700, padding: '6px 10px', borderRadius: 8, background: '#fbbf2415', border: '1px solid #fbbf2440' }}
                 title="Minha Carteira de Formação">🎓 Carteira</Link>
             )}
+            <a href="/upgrade"
+              style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 8, padding: '5px 12px', textDecoration: 'none', fontSize: 12, fontWeight: 800, flexShrink: 0, boxShadow: '0 2px 10px rgba(99,102,241,0.4)' }}>
+              ✨ UNIAVP PRO
+            </a>
             <PushButton />
             <PWAInstallButton />
             <MuralNoticias />
@@ -181,7 +213,6 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
               </div>
               <span className="hide-mobile" style={{ fontSize: 13, fontWeight: 600, color: 'var(--avp-text)' }}>{aluno.nome.split(' ')[0]}</span>
             </a>
-            <ThemeToggle />
             <LogoutButton />
           </nav>
         </header>
@@ -200,7 +231,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
 
           {/* ── CONTINUE ASSISTINDO ── */}
           {aulaAtual && (
-            <div style={{
+            <Link href={`/aluno/${params.whatsapp}/aula/${aulaAtual.aula_id}`} style={{
               marginBottom: 28,
               background: 'linear-gradient(135deg, rgba(30,58,138,0.6) 0%, rgba(17,24,39,0.9) 100%)',
               border: '1px solid rgba(59,130,246,0.3)',
@@ -209,6 +240,8 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
               display: 'flex',
               flexDirection: 'row',
               minHeight: 140,
+              textDecoration: 'none',
+              cursor: 'pointer',
             }}>
               {/* Thumbnail */}
               <div style={{ width: 220, flexShrink: 0, position: 'relative', background: 'linear-gradient(135deg, #1e3a8a, #1e40af)', overflow: 'hidden' }}
@@ -241,25 +274,24 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                     {aulaAtual.aula_descricao}
                   </p>
                 )}
-                <div style={{ marginTop: 4 }}>
-                  <Link href={`/aluno/${params.whatsapp}/aula/${aulaAtual.aula_id}`}
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 8,
-                      background: 'linear-gradient(135deg, #1e40af, #3b82f6)',
-                      color: '#fff', textDecoration: 'none', borderRadius: 10,
-                      padding: '10px 22px', fontWeight: 700, fontSize: 14,
-                      boxShadow: '0 4px 16px rgba(59,130,246,0.4)',
-                    }}>
+                <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                    background: 'linear-gradient(135deg, #1e40af, #3b82f6)',
+                    color: '#fff', borderRadius: 10,
+                    padding: '10px 22px', fontWeight: 700, fontSize: 14,
+                    boxShadow: '0 4px 16px rgba(59,130,246,0.4)',
+                  }}>
                     ▶ Continuar agora
-                  </Link>
+                  </span>
                   {aulaAtual.duracao_minutos && (
-                    <span style={{ marginLeft: 12, fontSize: 12, color: 'var(--avp-text-dim)' }}>
+                    <span style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>
                       ⏱ {aulaAtual.duracao_minutos} min
                     </span>
                   )}
                 </div>
               </div>
-            </div>
+            </Link>
           )}
 
           {/* ── CARDS DE STATS + PROGRESSO ── */}
@@ -332,7 +364,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
             <div style={{ background: 'linear-gradient(135deg, #1a1a3e, #2d1b69)', border: '1px solid #6366f140', borderRadius: 16, padding: '24px 28px', marginBottom: 28, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
               <div style={{ fontSize: 52, flexShrink: 0 }}>🎓</div>
               <div style={{ flex: 1 }}>
-                <p style={{ fontWeight: 900, fontSize: 18, color: '#fff', margin: '0 0 4px' }}>Parabéns, {aluno.nome.split(' ')[0]}! Você é um Consultor Certificado!</p>
+                <p style={{ fontWeight: 900, fontSize: 18, color: '#fff', margin: '0 0 4px' }}>Parabéns, {aluno.nome.split(' ')[0]}! Você concluiu a formação UNIAVP FREE!</p>
                 <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 14, margin: 0 }}>Você concluiu 100% da formação. Acesse seus documentos abaixo.</p>
               </div>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -342,6 +374,19 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                 </Link>
               </div>
             </div>
+          )}
+
+          {/* ── INDICAÇÃO ── */}
+          {!moduloAtivo && (
+            <IndicacaoCard
+              link={`${process.env.NEXT_PUBLIC_APP_URL || 'https://uniavp.autovaleprevencoes.org.br'}/captacao?ref=${aluno.whatsapp}`}
+              totalIndicados={totalIndicadosReal ?? 0}
+            />
+          )}
+
+          {/* ── PRO TEASER — preview desfocado + calculadora ── */}
+          {!moduloAtivo && (
+            <ProTeaser totalIndicados={totalIndicadosReal ?? 0} />
           )}
 
           {/* ── MÓDULOS (grade estilo Kiwify) ── */}
@@ -359,11 +404,12 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                     const concluidas = mod.aulas.filter(a => a.status === 'concluida').length
                     const total = mod.aulas.length
                     const pct = total > 0 ? Math.round(concluidas / total * 100) : 0
-                    const temDisponivel = mod.aulas.some(a => a.status === 'disponivel')
+                    const temDisponivel = mod.aulas.some(a => a.status === 'disponivel' && (posicaoMap[a.aula_id] ?? 0) <= LIMITE_FREE)
                     const todasConcluidas = concluidas === total && total > 0
                     const thumb = mod.aulas[0]?.capa_url || (mod.aulas[0]?.youtube_video_id ? `https://img.youtube.com/vi/${mod.aulas[0].youtube_video_id}/mqdefault.jpg` : null) || certMap['modulo_capa_padrao'] || null
+                    const aulasPro = mod.aulas.filter(a => (posicaoMap[a.aula_id] ?? 0) > LIMITE_FREE).length
                     return (
-                      <div key={mod.modulo_id} style={{ background: 'var(--avp-card)', border: `1px solid ${todasConcluidas ? '#22c55e40' : temDisponivel ? '#3b82f640' : 'var(--avp-border)'}`, borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                      <Link key={mod.modulo_id} href={`/aluno/${params.whatsapp}?modulo=${mod.modulo_id}`} style={{ background: 'var(--avp-card)', border: `1px solid ${todasConcluidas ? '#22c55e40' : temDisponivel ? '#3b82f640' : 'var(--avp-border)'}`, borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column', textDecoration: 'none', color: 'inherit' }}>
                         {/* Capa */}
                         <div style={{ height: 180, background: 'linear-gradient(135deg, #1e3a8a, #1e40af)', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
                           {thumb && <img src={thumb} alt={mod.modulo_titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />}
@@ -372,6 +418,11 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                           <div style={{ position: 'absolute', top: 12, right: 12, background: todasConcluidas ? '#22c55e' : 'rgba(0,0,0,0.65)', borderRadius: 20, padding: '4px 10px', fontSize: 12, fontWeight: 700, color: '#fff', backdropFilter: 'blur(4px)' }}>
                             {todasConcluidas ? '✓ Concluído' : `${concluidas}/${total} aulas`}
                           </div>
+                          {aulasPro > 0 && !todasConcluidas && (
+                            <div style={{ position: 'absolute', top: 12, left: 12, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 20, padding: '4px 10px', fontSize: 11, fontWeight: 800, color: '#fff' }}>
+                              ✨ {aulasPro} Pro
+                            </div>
+                          )}
                         </div>
 
                         {/* Info */}
@@ -400,7 +451,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                             {todasConcluidas ? '✓ Rever módulo' : temDisponivel ? '▶ Acessar' : '🔒 Bloqueado'}
                           </Link>
                         </div>
-                      </div>
+                      </Link>
                     )
                   })}
                 </div>
@@ -428,34 +479,48 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
                 {moduloAtivo.aulas.map(aula => {
                   const recertNeeded = getStatusRecertificacao(aula)
-                  const isDisponivel = aula.status === 'disponivel'
+                  const isPro = (posicaoMap[aula.aula_id] ?? 0) > LIMITE_FREE
+                  const isDisponivel = !isPro && aula.status === 'disponivel'
                   const isConcluida = aula.status === 'concluida'
-                  const isBloqueada = aula.status === 'bloqueada'
+                  const isBloqueada = !isPro && aula.status === 'bloqueada'
                   return (
                     <div key={aula.aula_id} style={{
-                      background: 'var(--avp-card)',
-                      border: `1px solid ${isConcluida ? '#22c55e30' : isDisponivel ? '#3b82f630' : 'var(--avp-border)'}`,
+                      background: isPro ? 'linear-gradient(135deg, rgba(99,102,241,0.08), var(--avp-card))' : 'var(--avp-card)',
+                      border: `1px solid ${isPro ? 'rgba(99,102,241,0.3)' : isConcluida ? '#22c55e30' : isDisponivel ? '#3b82f630' : 'var(--avp-border)'}`,
                       borderRadius: 12, overflow: 'hidden',
                       opacity: isBloqueada ? 0.55 : 1,
                       display: 'flex', flexDirection: 'column',
                     }}>
                       {/* Thumbnail */}
-                      <div style={{ height: 130, position: 'relative', background: 'linear-gradient(135deg, #1e3a8a, #1e40af)', overflow: 'hidden', flexShrink: 0 }}>
+                      <div style={{ height: 130, position: 'relative', background: isPro ? 'linear-gradient(135deg, #312e81, #4c1d95)' : 'linear-gradient(135deg, #1e3a8a, #1e40af)', overflow: 'hidden', flexShrink: 0 }}>
                         {(aula.capa_url || aula.youtube_video_id) && (
-                          <img src={aula.capa_url || `https://img.youtube.com/vi/${aula.youtube_video_id}/mqdefault.jpg`} alt={aula.aula_titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                          <img src={aula.capa_url || `https://img.youtube.com/vi/${aula.youtube_video_id}/mqdefault.jpg`} alt={aula.aula_titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, filter: isPro ? 'blur(2.5px)' : 'none', opacity: isPro ? 0.6 : 1 }} />
                         )}
-                        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)' }} />
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <div style={{ width: 42, height: 42, borderRadius: '50%', background: isConcluida ? '#22c55e' : isDisponivel ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: isDisponivel ? '#1e40af' : '#fff' }}>
-                            {isConcluida ? '✓' : isDisponivel ? '▶' : isBloqueada ? '🔒' : '⏳'}
+                        <div style={{ position: 'absolute', inset: 0, background: isPro ? 'rgba(49,46,129,0.7)' : 'rgba(0,0,0,0.3)' }} />
+                        {/* Badge PRO exclusivo no topo */}
+                        {isPro && (
+                          <div style={{ position: 'absolute', top: 8, left: 8, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 20, padding: '3px 10px', fontSize: 10, fontWeight: 800, color: '#fff', letterSpacing: 0.5 }}>
+                            ✨ EXCLUSIVO PRO
                           </div>
+                        )}
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {isPro ? (
+                            <div style={{ textAlign: 'center' }}>
+                              <div style={{ fontSize: 32, marginBottom: 6 }}>🔒</div>
+                              <p style={{ color: '#c4b5fd', fontSize: 11, fontWeight: 700, margin: 0 }}>Apenas no PRO</p>
+                            </div>
+                          ) : (
+                            <div style={{ width: 42, height: 42, borderRadius: '50%', background: isConcluida ? '#22c55e' : isDisponivel ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: isDisponivel ? '#1e40af' : '#fff' }}>
+                              {isConcluida ? '✓' : isDisponivel ? '▶' : isBloqueada ? '🔒' : '⏳'}
+                            </div>
+                          )}
                         </div>
                         {recertNeeded && <div style={{ position: 'absolute', top: 8, right: 8, background: '#f59e0b', borderRadius: 6, padding: '2px 6px', fontSize: 10, fontWeight: 700, color: '#000' }}>RECERT.</div>}
                       </div>
 
                       {/* Info + botão */}
                       <div style={{ padding: '12px 14px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        <p style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.35, color: 'var(--avp-text)', margin: 0, flex: 1 }}>{aula.aula_titulo}</p>
+                        <p style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.35, color: isPro ? '#c4b5fd' : 'var(--avp-text)', margin: 0, flex: 1 }}>{aula.aula_titulo}</p>
 
                         {(isConcluida || isDisponivel) && aula.quiz_aprovacao_minima != null && aula.quiz_aprovacao_minima > 0 && (
                           <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>
@@ -466,7 +531,12 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                         {isBloqueada && <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>🔒 Complete a aula anterior</p>}
                         {aula.status === 'aguardando_tempo' && aula.liberada_em && <p style={{ fontSize: 11, color: '#f59e0b', margin: 0 }}>⏳ {new Date(aula.liberada_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>}
 
-                        {(isDisponivel || isConcluida) ? (
+                        {isPro ? (
+                          <a href="/upgrade"
+                            style={{ display: 'block', textAlign: 'center', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', textDecoration: 'none', fontWeight: 800, borderRadius: 8, padding: '9px', fontSize: 13 }}>
+                            ✨ Desbloquear — Ser Pro
+                          </a>
+                        ) : (isDisponivel || isConcluida) ? (
                           <Link href={`/aluno/${params.whatsapp}/aula/${aula.aula_id}`}
                             style={{ display: 'block', textAlign: 'center', background: isConcluida && !recertNeeded ? 'var(--avp-border)' : 'linear-gradient(135deg, #1e40af, #3b82f6)', color: isConcluida && !recertNeeded ? 'var(--avp-text-dim)' : '#fff', textDecoration: 'none', fontWeight: 700, borderRadius: 8, padding: '9px', fontSize: 14 }}>
                             {isConcluida && !recertNeeded ? 'Rever' : '▶ Acessar'}

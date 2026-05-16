@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen, Palette, UserCircle } from 'lucide-react'
-import ThemeToggle from '@/app/components/ThemeToggle'
 import SupportChat from '@/app/components/SupportChat'
 
 const navItems = [
@@ -57,7 +56,7 @@ export default function GestorLayout({
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
     await supabase.auth.signOut()
-    window.location.href = '/gestor/login'
+    window.location.href = '/entrar'
   }
 
   function handleNav(id: string) {
@@ -89,9 +88,6 @@ export default function GestorLayout({
             {menuAberto ? <X size={22} /> : <Menu size={22} />}
           </button>
           {logoMarkup(true)}
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <ThemeToggle />
-          </div>
         </div>
       )}
 
@@ -141,7 +137,7 @@ export default function GestorLayout({
               </div>
               <div style={{ minWidth: 0 }}>
                 <p style={{ fontWeight: 600, fontSize: 13, color: 'var(--avp-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{nomeGestor}</p>
-                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>Gestor</p>
+                <p style={{ fontSize: 11, color: '#818cf8', margin: 0, fontWeight: 700 }}>✨ UNIAVP PRO</p>
               </div>
             </div>
           </button>
@@ -181,10 +177,7 @@ export default function GestorLayout({
 
         {/* Rodapé */}
         <div style={{ padding: '12px 8px', borderTop: '1px solid var(--avp-border)', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: colapsada && !isMobile ? 'center' : 'flex-start', gap: 8, padding: '6px 12px' }}>
-            <ThemeToggle />
-            {(!colapsada || isMobile) && <span style={{ fontSize: 13, color: 'var(--avp-text-dim)' }}>Tema</span>}
-          </div>
+
           <button onClick={sair}
             style={{
               display: 'flex', alignItems: 'center', gap: colapsada && !isMobile ? 0 : 10,

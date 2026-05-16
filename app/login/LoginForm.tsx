@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import ThemeToggle from '@/app/components/ThemeToggle'
 
 export default function LoginForm({ logoUrl, siteNome, isDominioMaster }: { logoUrl: string; siteNome: string; isDominioMaster: boolean }) {
   const [form, setForm] = useState({ email: '', password: '' })
@@ -75,7 +74,7 @@ export default function LoginForm({ logoUrl, siteNome, isDominioMaster }: { logo
       {/* Marca d'água neutra admin */}
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', opacity: 0.025, fontSize: 340 }}>🏛️</div>
       <div style={{ position: 'absolute', bottom: 40, right: 60, pointerEvents: 'none', opacity: 0.03, fontSize: 180 }}>🔐</div>
-      <div style={{ position: 'absolute', top: 16, right: 16 }}><ThemeToggle /></div>
+
       <div style={{ width: 400, maxWidth: '95vw' }}>
         <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {logoUrl && !logoFalhou ? (

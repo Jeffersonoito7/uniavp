@@ -11,12 +11,12 @@ import AulaInterativa from './AulaInterativa'
 export default async function AulaPage({ params }: { params: { whatsapp: string; aulaId: string } }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/consultor/login')
+  if (!user) redirect('/entrar')
 
   const adminClient = createServiceRoleClient()
   const { data: aluno } = await (adminClient.from('alunos') as any)
     .select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
-  if (!aluno) redirect('/consultor/login')
+  if (!aluno) redirect('/entrar')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
   const { data: aula } = await (adminClient.from('aulas') as any)
@@ -29,6 +29,14 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   const trilhaStatus = ((trilhaRaw ?? []) as { aula_id: string; status: string }[])
     .find(t => t.aula_id === params.aulaId)
   if (trilhaStatus?.status === 'bloqueada') redirect(`/aluno/${params.whatsapp}`)
+
+  // ── Limite Conta Free: 20 aulas ──
+  const LIMITE_FREE = 20
+  const trilhaOrdenada = ((trilhaRaw ?? []) as any[])
+    .slice()
+    .sort((a: any, b: any) => a.modulo_ordem !== b.modulo_ordem ? a.modulo_ordem - b.modulo_ordem : a.aula_ordem - b.aula_ordem)
+  const posicaoNaTrilha = trilhaOrdenada.findIndex((t: any) => t.aula_id === params.aulaId) + 1
+  if (posicaoNaTrilha > LIMITE_FREE) redirect(`/consultor/upgrade`)
 
   // Trilha do módulo para sidebar
   const { data: trilhaSidebar } = await (adminClient as any)

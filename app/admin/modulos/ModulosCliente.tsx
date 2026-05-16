@@ -25,9 +25,9 @@ function CapaUpload({ preview, onSelect, fileRef: ref }: {
 }
 
 const PERFIS = [
-  { id: 'consultor', label: 'Consultor', cor: '#02A153', bg: '#02A15320' },
-  { id: 'gestor',    label: 'Gestor',    cor: '#3b82f6', bg: '#3b82f620' },
-  { id: 'outros',    label: 'Outros',    cor: '#a78bfa', bg: '#a78bfa20' },
+  { id: 'consultor', label: 'FREE',   cor: '#02A153', bg: '#02A15320' },
+  { id: 'gestor',    label: 'PRO',    cor: '#3b82f6', bg: '#3b82f620' },
+  { id: 'outros',    label: 'Outros', cor: '#a78bfa', bg: '#a78bfa20' },
 ] as const
 type PerfilId = typeof PERFIS[number]['id']
 

@@ -6,12 +6,12 @@ import ArtesCliente from '@/app/aluno/[whatsapp]/artes/ArtesCliente'
 export default async function GestorArtesPage({ params }: { params: { whatsapp: string } }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/gestor/login')
+  if (!user) redirect('/entrar')
 
   const adminClient = createServiceRoleClient()
   const { data: gestor } = await (adminClient.from('gestores') as any)
     .select('id, nome, whatsapp').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (!gestor) redirect('/gestor/login')
+  if (!gestor) redirect('/entrar')
 
   // Verifica se o consultor pertence a este gestor
   const { data: consultor } = await (adminClient.from('alunos') as any)
@@ -19,7 +19,7 @@ export default async function GestorArtesPage({ params }: { params: { whatsapp: 
     .eq('whatsapp', params.whatsapp)
     .eq('gestor_whatsapp', gestor.whatsapp)
     .maybeSingle()
-  if (!consultor) redirect('/gestor')
+  if (!consultor) redirect('/pro')
 
   const { data: templatesRaw } = await (adminClient.from('artes_templates') as any)
     .select('*')
@@ -32,7 +32,7 @@ export default async function GestorArtesPage({ params }: { params: { whatsapp: 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
       <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/gestor" style={{ color: 'var(--avp-text-dim)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>
+        <Link href="/pro" style={{ color: 'var(--avp-text-dim)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>
           ← Voltar ao painel
         </Link>
         <div style={{ textAlign: 'center' }}>

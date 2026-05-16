@@ -67,7 +67,7 @@ export default async function AdminDashboard() {
     { label: 'Concluíram', value: alunosConcluidos ?? 0, sub: `${taxaConclusao}% de conclusão`, cor: '#22c55e', icon: '🎓' },
     { label: 'Progresso Médio', value: `${mediaProgresso}%`, sub: 'entre alunos ativos', cor: '#f59e0b', icon: '📈' },
     { label: 'Novos (7 dias)', value: novosAlunos ?? 0, sub: 'novos cadastros', cor: '#8b5cf6', icon: '✨' },
-    { label: 'Gestores Ativos', value: gestoresAtivos ?? 0, sub: `de ${totalGestores ?? 0} cadastrados`, cor: '#06b6d4', icon: '🏢' },
+    { label: 'PROs Ativos', value: gestoresAtivos ?? 0, sub: `de ${totalGestores ?? 0} cadastrados`, cor: '#06b6d4', icon: '✨' },
     { label: 'Aulas Publicadas', value: aulasPublicadas ?? 0, sub: `de ${totalAulas ?? 0} criadas`, cor: '#f97316', icon: '🎬' },
   ]
 
@@ -83,7 +83,7 @@ export default async function AdminDashboard() {
       {/* Atalho para os links de captação */}
       <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
         <div>
-          <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 2 }}>🔗 Links de Captação de Consultores</p>
+          <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 2 }}>🔗 Links de Captação UNIAVP FREE</p>
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Funil completo e acesso direto — com QR code e compartilhamento por WhatsApp</p>
         </div>
         <a href="/admin/captacao"

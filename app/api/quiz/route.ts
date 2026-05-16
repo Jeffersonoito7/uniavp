@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || ''
       await enviarWhatsApp(
         alunoInfo.gestor_whatsapp,
-        `📋 *${alunoInfo.nome}* foi aprovado na aula *${aulaInfo?.titulo}* e está aguardando sua liberação para continuar.\n\nAcesse o painel: ${appUrl}/gestor`,
+        `📋 *${alunoInfo.nome}* foi aprovado na aula *${aulaInfo?.titulo}* e está aguardando sua liberação para continuar.\n\nAcesse o painel: ${appUrl}/pro`,
         inst
       )
     }
@@ -250,7 +250,7 @@ export async function POST(req: NextRequest) {
             const instanciaGestor = await getInstanciaGestorPorNome(alunoComGestor.gestor_nome, adminClient)
             await enviarWhatsApp(
               alunoComGestor.gestor_whatsapp,
-              `📚 Olá ${alunoComGestor.gestor_nome || 'Gestor'}! Seu consultor *${alunoComGestor.nome}* concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🎉`,
+              `📚 *${alunoComGestor.gestor_nome || 'UNIAVP PRO'}!* Seu membro FREE *${alunoComGestor.nome}* concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🎉`,
               instanciaGestor
             )
           }
@@ -261,7 +261,7 @@ export async function POST(req: NextRequest) {
             const appUrl = await getAppUrl()
             await enviarWhatsApp(
               alunoInfo.whatsapp,
-              `🎉 Parabéns, *${alunoInfo.nome}*!\n\nVocê concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🏆\n\nContinue acessando a plataforma:\n👉 ${appUrl}/aluno/${alunoInfo.whatsapp}`
+              `🎉 Parabéns, *${alunoInfo.nome}*!\n\nVocê concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🏆\n\nContinue acessando a plataforma:\n👉 ${appUrl}/free/${alunoInfo.whatsapp}`
             )
           }
         }
@@ -282,7 +282,7 @@ export async function POST(req: NextRequest) {
       if (alunoAtualizado?.gestor_whatsapp) {
         await enviarWhatsApp(
           alunoAtualizado.gestor_whatsapp,
-          `🏆 PARABÉNS, ${alunoAtualizado.gestor_nome || 'Gestor'}!\n\nSeu consultor *${alunoAtualizado.nome}* concluiu 100% da formação! 🎓✨\n\nVer progresso: ${appUrl}/aluno/${alunoAtualizado.whatsapp}`,
+          `🏆 *PARABÉNS, ${alunoAtualizado.gestor_nome || 'UNIAVP PRO'}!*\n\nSeu membro FREE *${alunoAtualizado.nome}* concluiu *100% da formação!* 🎓✨\n\nVer progresso: ${appUrl}/free/${alunoAtualizado.whatsapp}`,
           instanciaGestor
         )
       }
@@ -290,7 +290,7 @@ export async function POST(req: NextRequest) {
       if (alunoAtualizado?.whatsapp) {
         await enviarWhatsApp(
           alunoAtualizado.whatsapp,
-          `🎓 *PARABÉNS, ${alunoAtualizado.nome}!*\n\nVocê concluiu 100% da formação! 🏆✨\n\nCrie sua arte de formatura:\n👉 ${appUrl}/aluno/${alunoAtualizado.whatsapp}/artes`
+          `🎓 *PARABÉNS, ${alunoAtualizado.nome}!*\n\nVocê concluiu 100% da formação! 🏆✨\n\nCrie sua arte de formatura:\n👉 ${appUrl}/free/${alunoAtualizado.whatsapp}/artes`
         )
       }
     }

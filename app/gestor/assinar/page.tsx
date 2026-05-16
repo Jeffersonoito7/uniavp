@@ -6,6 +6,7 @@ type Status = {
   trialAtivo: boolean
   diasTrial: number
   planoVencimento: string | null
+  valorPlano?: number
   ultimoPagamento: { pix_copia_cola: string; qrcode_base64: string; vencimento: string; status: string } | null
 }
 
@@ -52,8 +53,8 @@ export default function AssinarPage() {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ fontSize: 52, marginBottom: 12 }}>🏢</div>
-          <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 8 }}>Painel Gestor</h1>
-          <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>Gerencie sua equipe de consultores</p>
+          <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 8 }}>UNIAVP PRO</h1>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>Gerencie sua equipe UNIAVP FREE</p>
         </div>
 
         {/* Trial ativo */}
@@ -64,9 +65,9 @@ export default function AssinarPage() {
               {info.diasTrial} {info.diasTrial === 1 ? 'dia restante' : 'dias restantes'} de teste grátis
             </p>
             <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>
-              Aproveite ao máximo! Após o trial, o plano é R$100/mês.
+              Aproveite ao máximo! Após o trial, o plano é R${(info?.valorPlano ?? 147).toFixed(2).replace('.', ',')}/mês.
             </p>
-            <a href="/gestor" style={{ display: 'inline-block', marginTop: 16, background: 'var(--avp-green)', color: '#fff', borderRadius: 10, padding: '12px 28px', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+            <a href="/pro" style={{ display: 'inline-block', marginTop: 16, background: 'var(--avp-green)', color: '#fff', borderRadius: 10, padding: '12px 28px', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
               → Acessar painel
             </a>
           </div>
@@ -82,7 +83,7 @@ export default function AssinarPage() {
                 Válido até {new Date(info.planoVencimento).toLocaleDateString('pt-BR')}
               </p>
             )}
-            <a href="/gestor" style={{ display: 'inline-block', marginTop: 16, background: 'var(--avp-green)', color: '#fff', borderRadius: 10, padding: '12px 28px', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+            <a href="/pro" style={{ display: 'inline-block', marginTop: 16, background: 'var(--avp-green)', color: '#fff', borderRadius: 10, padding: '12px 28px', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
               → Acessar painel
             </a>
           </div>
@@ -97,7 +98,7 @@ export default function AssinarPage() {
                 {info?.status === 'suspenso' ? 'Acesso suspenso' : 'Trial encerrado'}
               </p>
               <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>
-                Assine para continuar usando o painel gestor
+                Assine para continuar usando o UNIAVP PRO
               </p>
             </div>
 
@@ -105,15 +106,15 @@ export default function AssinarPage() {
             <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: '24px', marginBottom: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <div>
-                  <p style={{ fontWeight: 800, fontSize: 20 }}>Plano Gestor</p>
+                  <p style={{ fontWeight: 800, fontSize: 20 }}>Plano UNIAVP PRO</p>
                   <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Acesso completo ao painel</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontWeight: 900, fontSize: 28, color: 'var(--avp-green)' }}>R$ 100</p>
+                  <p style={{ fontWeight: 900, fontSize: 28, color: 'var(--avp-green)' }}>R$ {(info?.valorPlano ?? 147).toFixed(2).replace('.', ',')}</p>
                   <p style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>/mês</p>
                 </div>
               </div>
-              {['Painel completo de gestão', 'Cadastro de consultores', 'Acompanhamento de progresso', 'Geração de artes', 'Relatórios e eventos'].map(item => (
+              {['Painel completo de gestão', 'Cadastro UNIAVP FREE ilimitado', 'Acompanhamento de progresso', 'Geração de artes', 'Relatórios e eventos'].map(item => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                   <span style={{ color: 'var(--avp-green)', fontWeight: 700 }}>✓</span>
                   <span style={{ fontSize: 14 }}>{item}</span>
@@ -146,7 +147,7 @@ export default function AssinarPage() {
             ) : (
               <button onClick={gerarPix} disabled={gerando}
                 style={{ width: '100%', background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 12, padding: '16px', fontWeight: 800, fontSize: 16, cursor: gerando ? 'not-allowed' : 'pointer', opacity: gerando ? 0.7 : 1 }}>
-                {gerando ? '⏳ Gerando cobrança...' : '💳 Assinar por R$100/mês'}
+                {gerando ? '⏳ Gerando cobrança...' : `💳 Assinar por R$${(info?.valorPlano ?? 147).toFixed(2).replace('.', ',')}/mês`}
               </button>
             )}
             {msg && <p style={{ color: 'var(--avp-danger)', fontSize: 13, marginTop: 10, textAlign: 'center' }}>{msg}</p>}

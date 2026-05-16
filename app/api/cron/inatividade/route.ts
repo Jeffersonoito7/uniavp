@@ -45,20 +45,27 @@ export async function GET(req: NextRequest) {
     // 1. Avisa o próprio consultor
     if (aluno.whatsapp) {
       const msgConsultor = dias === 3
-        ? `📚 Olá, *${aluno.nome}*! Sentimos sua falta na *${nomePlat}*.\n\nFaz ${dias} dias que você não avança nos estudos. Que tal retomar agora?\n\n👉 ${appUrl}/aluno/${aluno.whatsapp}`
+        ? `📚 Olá, *${aluno.nome}*! Sentimos sua falta na *${nomePlat}*.\n\nFaz ${dias} dias que você não avança nos estudos. Que tal retomar agora?\n\n👉 ${appUrl}/free/${aluno.whatsapp}`
         : dias === 7
-        ? `⏰ *${aluno.nome}*, já faz uma semana sem estudar!\n\nSeu progresso está esperando por você na *${nomePlat}*. Não perca o fio! 💪\n\n👉 ${appUrl}/aluno/${aluno.whatsapp}`
-        : `🚨 *${aluno.nome}*, ${dias} dias sem acessar a plataforma!\n\nNão deixe sua formação parar aqui. Volte agora e continue de onde parou.\n\n👉 ${appUrl}/aluno/${aluno.whatsapp}`
+        ? `⏰ *${aluno.nome}*, já faz uma semana sem estudar!\n\nSeu progresso está esperando por você na *${nomePlat}*. Não perca o fio! 💪\n\n👉 ${appUrl}/free/${aluno.whatsapp}`
+        : `🚨 *${aluno.nome}*, ${dias} dias sem acessar a plataforma!\n\nNão deixe sua formação parar aqui. Volte agora e continue de onde parou.\n\n👉 ${appUrl}/free/${aluno.whatsapp}`
       await enviarWhatsApp(aluno.whatsapp, msgConsultor)
       notificacoes++
     }
 
-    // 2. Avisa o gestor
+    // 2. Avisa o PRO com nível de urgência crescente + link direto para contato
     if (aluno.gestor_whatsapp) {
       const instancia = await getInstanciaGestorPorNome(aluno.gestor_nome, adminClient)
-      const msgGestor = dias === 15
-        ? `⚠️ *Alerta, ${aluno.gestor_nome || 'Gestor'}!*\n\nSeu consultor *${aluno.nome}* está há *${dias} dias* sem acessar a plataforma. Risco de abandono! 📞`
-        : `📊 *Lembrete, ${aluno.gestor_nome || 'Gestor'}!*\n\nSeu consultor *${aluno.nome}* está há *${dias} dias* sem avançar. Um contato pode fazer a diferença! 💪`
+      const wppFree = aluno.whatsapp?.replace(/\D/g, '')
+      const linkContato = wppFree ? `\n\n📲 Contatar agora: https://wa.me/55${wppFree}` : ''
+      const linkPainel = `\n📊 Ver painel: ${appUrl}/pro`
+
+      const msgGestor = dias === 3
+        ? `📬 *${aluno.gestor_nome || 'PRO'}*, seu membro FREE *${aluno.nome}* está há *3 dias* sem estudar.\n\nUma mensagem sua pode ser tudo que ele precisa para retomar! 💪${linkContato}${linkPainel}`
+        : dias === 7
+        ? `⏰ *Atenção, ${aluno.gestor_nome || 'PRO'}!*\n\nSeu membro FREE *${aluno.nome}* está há *1 semana* sem avançar nos estudos.\n\nEste é o momento certo para um reengajamento direto. Entre em contato agora! 🎯${linkContato}${linkPainel}`
+        : `🚨 *ALERTA, ${aluno.gestor_nome || 'PRO'}!*\n\nSeu membro FREE *${aluno.nome}* está há *${dias} dias* sem acessar a plataforma.\n\n⚠️ Risco alto de abandono — contato urgente!${linkContato}${linkPainel}`
+
       await enviarWhatsApp(aluno.gestor_whatsapp, msgGestor, instancia)
       notificacoes++
     }

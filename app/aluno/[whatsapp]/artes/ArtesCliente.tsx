@@ -6,6 +6,9 @@ type Template = {
   id: string; tipo: string; titulo: string; arte_url: string;
   foto_x: number; foto_y: number; foto_largura: number; foto_altura: number;
   foto_redondo: boolean; formato: string; ativo?: boolean;
+  texto_ativo?: boolean; texto_template?: string;
+  texto_x?: number; texto_y?: number; texto_tamanho?: number;
+  texto_cor?: string; texto_negrito?: boolean; texto_alinhamento?: string; texto_sombra?: boolean;
 }
 
 type Formato = 'feed' | 'stories'
@@ -72,9 +75,15 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
   function moveDrag(e: React.PointerEvent) {
     if (!dragOrigin.current || !previewRef.current) return
     const rect = previewRef.current.getBoundingClientRect()
-    // invert: drag right → image moves right → bgPosX decreases (shows left of image)
-    const dx = (e.clientX - dragOrigin.current.x) / rect.width * 100
-    const dy = (e.clientY - dragOrigin.current.y) / rect.height * 100
+    const t = templateSelecionado
+    const fW = t?.foto_largura ?? 0
+    const fH = t?.foto_altura ?? 0
+    const usaArea = t && fW > 0 && fH > 0 && (fW < 90 || fH < 90)
+    // quando usa área específica, sensibilidade relativa à área; caso contrário, ao canvas inteiro
+    const refW = usaArea ? rect.width * (fW / 100) : rect.width
+    const refH = usaArea ? rect.height * (fH / 100) : rect.height
+    const dx = (e.clientX - dragOrigin.current.x) / refW * 100
+    const dy = (e.clientY - dragOrigin.current.y) / refH * 100
     const sensitivity = 1 / cropZoom
     setPanBgX(Math.max(0, Math.min(100, dragOrigin.current.bgX - dx * sensitivity)))
     setPanBgY(Math.max(0, Math.min(100, dragOrigin.current.bgY - dy * sensitivity)))
@@ -166,6 +175,27 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
           setGerando(false)
           return
         }
+      }
+
+      // Texto de sobreposição com o nome do consultor
+      if (templateSelecionado.texto_ativo && templateSelecionado.texto_template) {
+        const texto = templateSelecionado.texto_template.replace('{nome}', nomeAluno)
+        const tam = Math.round(h * (templateSelecionado.texto_tamanho ?? 5) / 100)
+        const peso = templateSelecionado.texto_negrito !== false ? 'bold' : 'normal'
+        ctx.font = `${peso} ${tam}px Inter, Arial, sans-serif`
+        ctx.fillStyle = templateSelecionado.texto_cor ?? '#FFFFFF'
+        ctx.textAlign = (templateSelecionado.texto_alinhamento ?? 'center') as CanvasTextAlign
+        const tx = Math.round(w * (templateSelecionado.texto_x ?? 50) / 100)
+        const ty = Math.round(h * (templateSelecionado.texto_y ?? 85) / 100)
+        if (templateSelecionado.texto_sombra !== false) {
+          ctx.shadowColor = 'rgba(0,0,0,0.7)'
+          ctx.shadowBlur = Math.round(tam * 0.3)
+          ctx.shadowOffsetX = 1
+          ctx.shadowOffsetY = 1
+        }
+        ctx.fillText(texto, tx, ty)
+        ctx.shadowColor = 'transparent'
+        ctx.shadowBlur = 0
       }
 
       setPronto(true)
@@ -331,22 +361,71 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
                 onPointerUp={endDrag}
                 onPointerLeave={endDrag}
               >
-                {/* FOTO — grande, preenche o card, sem corte circular */}
-                {fotoLocal && (
-                  <div style={{
-                    position: 'absolute', inset: 0,
-                    backgroundImage: `url(${fotoLocal})`,
-                    backgroundSize: `${cropZoom * 100}%`,
-                    backgroundPosition: `${panBgX}% ${panBgY}%`,
-                    backgroundRepeat: 'no-repeat',
-                    backgroundColor: '#222',
-                  }} />
-                )}
+                {/* FOTO — área específica ou canvas inteiro, igual ao canvas */}
+                {fotoLocal && (() => {
+                  const t = templateSelecionado
+                  const fW = t?.foto_largura ?? 0
+                  const fH = t?.foto_altura ?? 0
+                  const usaArea = t && fW > 0 && fH > 0 && (fW < 90 || fH < 90)
+                  if (usaArea) {
+                    return (
+                      <div style={{
+                        position: 'absolute',
+                        left: `${t!.foto_x}%`,
+                        top: `${t!.foto_y}%`,
+                        width: `${fW}%`,
+                        height: `${fH}%`,
+                        backgroundImage: `url(${fotoLocal})`,
+                        backgroundSize: `${cropZoom * 100}%`,
+                        backgroundPosition: `${panBgX}% ${panBgY}%`,
+                        backgroundRepeat: 'no-repeat',
+                        backgroundColor: '#333',
+                        borderRadius: t!.foto_redondo ? '50%' : 0,
+                        overflow: 'hidden',
+                      }} />
+                    )
+                  }
+                  return (
+                    <div style={{
+                      position: 'absolute', inset: 0,
+                      backgroundImage: `url(${fotoLocal})`,
+                      backgroundSize: `${cropZoom * 100}%`,
+                      backgroundPosition: `${panBgX}% ${panBgY}%`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundColor: '#222',
+                    }} />
+                  )
+                })()}
 
                 {/* TEMPLATE PNG — sobrepõe a foto, partes transparentes revelam a foto */}
                 {templateSelecionado?.arte_url && (
                   <img src={templateSelecionado.arte_url} alt="Template" draggable={false}
                     style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill', pointerEvents: 'none' }} />
+                )}
+
+                {/* TEXTO OVERLAY — preview ao vivo */}
+                {templateSelecionado?.texto_ativo && templateSelecionado.texto_template && (
+                  <div style={{
+                    position: 'absolute',
+                    left: `${templateSelecionado.texto_x ?? 50}%`,
+                    top: `${templateSelecionado.texto_y ?? 85}%`,
+                    transform: templateSelecionado.texto_alinhamento === 'left'
+                      ? 'translate(0, -50%)'
+                      : templateSelecionado.texto_alinhamento === 'right'
+                        ? 'translate(-100%, -50%)'
+                        : 'translate(-50%, -50%)',
+                    fontSize: `${templateSelecionado.texto_tamanho ?? 5}cqw`,
+                    fontWeight: templateSelecionado.texto_negrito !== false ? 800 : 400,
+                    color: templateSelecionado.texto_cor ?? '#FFFFFF',
+                    textAlign: (templateSelecionado.texto_alinhamento ?? 'center') as React.CSSProperties['textAlign'],
+                    textShadow: templateSelecionado.texto_sombra !== false ? '1px 1px 4px rgba(0,0,0,0.8)' : 'none',
+                    pointerEvents: 'none',
+                    whiteSpace: 'nowrap',
+                    lineHeight: 1.2,
+                    containerType: 'inline-size',
+                  }}>
+                    {templateSelecionado.texto_template.replace('{nome}', nomeAluno)}
+                  </div>
                 )}
 
                 {/* Estado vazio */}

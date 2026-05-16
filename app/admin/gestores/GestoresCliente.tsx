@@ -80,7 +80,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
       setGestores(prev => [data.gestor, ...prev])
       setForm(formVazio)
       setShowModal(false)
-      setMsg({ tipo: 'ok', texto: 'Gestor criado com sucesso!' })
+      setMsg({ tipo: 'ok', texto: 'PRO criado com sucesso!' })
     } else {
       setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao criar gestor.' })
     }
@@ -89,7 +89,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
   }
 
   async function excluirGestor(gestor: Gestor) {
-    if (!confirm(`Excluir o gestor "${gestor.nome}" permanentemente? Isso remove o acesso dele à plataforma.`)) return
+    if (!confirm(`Excluir o PRO "${gestor.nome}" permanentemente? Isso remove o acesso dele à plataforma.`)) return
     const res = await fetch('/api/admin/gestores', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
@@ -97,9 +97,9 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
     })
     if (res.ok) {
       setGestores(prev => prev.filter(g => g.id !== gestor.id))
-      setMsg({ tipo: 'ok', texto: `Gestor "${gestor.nome}" excluído.` })
+      setMsg({ tipo: 'ok', texto: `PRO "${gestor.nome}" excluído.` })
     } else {
-      setMsg({ tipo: 'err', texto: 'Erro ao excluir gestor.' })
+      setMsg({ tipo: 'err', texto: 'Erro ao excluir PRO.' })
     }
     setTimeout(() => setMsg(null), 4000)
   }
@@ -189,7 +189,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
           <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32, width: 480, maxWidth: '95vw' }}
             onMouseDown={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--avp-text)' }}>Novo Gestor</h2>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--avp-text)' }}>Novo PRO</h2>
               <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 22 }}>×</button>
             </div>
             <form onSubmit={criar} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -217,7 +217,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 4 }}>
                 <button type="button" onClick={() => setShowModal(false)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
                 <button type="submit" disabled={salvando} style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, cursor: 'pointer', fontSize: 14, opacity: salvando ? 0.6 : 1 }}>
-                  {salvando ? 'Criando...' : 'Criar Gestor'}
+                  {salvando ? 'Criando...' : 'Criar PRO'}
                 </button>
               </div>
             </form>
@@ -234,17 +234,17 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
       {/* Links de captação */}
       <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, marginBottom: 20 }}>
         <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>🔗 Links de Captação</p>
-        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 16 }}>Envie estes links para que gestores e consultores se cadastrem na plataforma.</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 16 }}>Envie estes links para que PROs e FREEs se cadastrem na plataforma.</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <LinkCopiavel
-            label="Cadastro de Gestor"
-            url={typeof window !== 'undefined' ? `${window.location.origin}/convite/gestor` : '/convite/gestor'}
-            desc="Envie para quem vai ser gestor. O cadastro fica pendente até você ativar."
+            label="Cadastro PRO direto"
+            url={typeof window !== 'undefined' ? `${window.location.origin}/captacao?direto=1&plano=pro` : '/captacao?direto=1&plano=pro'}
+            desc="Cadastro rápido + pagamento PRO automático."
           />
           <LinkCopiavel
-            label="Cadastro de Consultor (geral)"
-            url={typeof window !== 'undefined' ? `${window.location.origin}/captacao` : '/captacao'}
-            desc="Link geral sem gestor específico. Use quando o consultor não tem gestor."
+            label="Cadastro FREE (geral)"
+            url={typeof window !== 'undefined' ? `${window.location.origin}/captacao?direto=1` : '/captacao?direto=1'}
+            desc="Link direto para cadastro FREE sem funil."
           />
         </div>
       </div>
@@ -254,7 +254,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
           onClick={() => setShowModal(true)}
           style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}
         >
-          + Novo Gestor
+          + Novo PRO
         </button>
       </div>
 
@@ -263,7 +263,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--avp-border)' }}>
-              {['Nome', 'E-mail', 'WhatsApp', 'Link Consultor', 'Status', 'Cadastro', 'Ações'].map(h => (
+              {['Nome', 'E-mail', 'WhatsApp', 'Link FREE', 'Status', 'Cadastro', 'Ações'].map(h => (
                 <th key={h} style={{ padding: '14px 16px', textAlign: 'left', color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
               ))}
             </tr>
@@ -308,7 +308,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
             ))}
             {gestores.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Nenhum gestor cadastrado.</td>
+                <td colSpan={7} style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Nenhum PRO cadastrado.</td>
               </tr>
             )}
           </tbody>

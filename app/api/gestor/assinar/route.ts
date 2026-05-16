@@ -30,6 +30,12 @@ export async function POST() {
     return NextResponse.json({ ok: true, pagamento: pagPendente, jaExiste: true })
   }
 
+  // Lê valor configurado no painel admin (padrão 147)
+  const { data: valorCfg } = await (adminClient.from('configuracoes') as any)
+    .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
+  const valorStr = valorCfg?.valor ? String(valorCfg.valor).replace(/"/g, '') : '147'
+  const valorPlano = Math.max(1, parseFloat(valorStr) || 147)
+
   // Gera vencimento: 3 dias a partir de hoje
   const venc = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
   const vencimento = venc.toISOString().split('T')[0]
@@ -38,17 +44,17 @@ export async function POST() {
   try {
     const { pixCopiaECola, qrcodeBase64 } = await criarCobrancaPix({
       txid,
-      valor: 100,
+      valor: valorPlano,
       vencimento,
       nomeDevedor: gestor.nome,
-      descricao: 'Mensalidade Painel Gestor',
+      descricao: 'Mensalidade UNIAVP PRO',
     })
 
     const { data: pagamento } = await (adminClient.from('gestor_pagamentos') as any)
       .insert({
         gestor_id: gestor.id,
         txid,
-        valor: 100,
+        valor: valorPlano,
         status: 'pendente',
         pix_copia_cola: pixCopiaECola,
         qrcode_base64: qrcodeBase64,
@@ -89,11 +95,16 @@ export async function GET() {
     .limit(1)
     .maybeSingle()
 
+  const { data: valorCfgGet } = await (adminClient.from('configuracoes') as any)
+    .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
+  const valorPlanoGet = Math.max(1, parseFloat(String(valorCfgGet?.valor ?? '').replace(/"/g, '')) || 147)
+
   return NextResponse.json({
     status: gestor.status_assinatura,
     trialAtivo,
     diasTrial,
     planoVencimento: gestor.plano_vencimento,
     ultimoPagamento: ultimoPag,
+    valorPlano: valorPlanoGet,
   })
 }

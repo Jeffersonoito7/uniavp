@@ -76,7 +76,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
       setConsultores(c => [{ ...data.aluno, indicador: null }, ...c])
       setForm(formVazio)
       setShowCadastro(false)
-      setMsg({ tipo: 'ok', texto: 'Consultor cadastrado com sucesso!' })
+      setMsg({ tipo: 'ok', texto: 'UNIAVP FREE cadastrado com sucesso!' })
     } else {
       setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao cadastrar.' })
     }
@@ -97,7 +97,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
           <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32, width: 520, maxWidth: '95vw' }}
             onMouseDown={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--avp-text)' }}>Cadastrar Consultor</h2>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--avp-text)' }}>Cadastrar UNIAVP FREE</h2>
               <button onClick={() => setShowCadastro(false)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 22 }}>×</button>
             </div>
             <form onSubmit={cadastrar} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -119,11 +119,11 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
                   <div style={{ position: 'relative' }}><input type={verSenha ? 'text' : 'password'} style={{ ...inputStyle, paddingRight: 44 }} value={form.senha} onChange={e => setForm(p => ({ ...p, senha: e.target.value }))} required placeholder="Mínimo 6 caracteres" minLength={6} /><button type="button" onClick={() => setVerSenha(v => !v)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--avp-text-dim)', padding: 0, display: 'flex' }}>{verSenha ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>}</button></div>
                 </div>
                 <div>
-                  <label style={labelStyle}>Nome do gestor *</label>
+                  <label style={labelStyle}>Nome do PRO *</label>
                   <input style={inputStyle} value={form.gestor_nome} onChange={e => setForm(p => ({ ...p, gestor_nome: e.target.value }))} required placeholder="Nome do gestor" />
                 </div>
                 <div>
-                  <label style={labelStyle}>WhatsApp do gestor *</label>
+                  <label style={labelStyle}>WhatsApp do PRO *</label>
                   <PhoneInput value={form.gestor_whatsapp} onChange={v => setForm(p => ({ ...p, gestor_whatsapp: v }))} required style={{ background: 'var(--avp-black)', borderRadius: 8 }} />
                 </div>
               </div>
@@ -161,7 +161,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
             onClick={() => setShowCadastro(true)}
             style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}
           >
-            + Cadastrar Consultor
+            + Cadastrar UNIAVP FREE
           </button>
           <button
             onClick={() => setShowImport(true)}
@@ -190,7 +190,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
                     <span style={{ color: 'var(--avp-text-dim)' }}>{c.email}</span>
                     {c.gestor_nome && (
                       <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--avp-text-dim)' }}>
-                        Gestor: {c.gestor_nome} · {c.gestor_whatsapp}
+                        PRO: {c.gestor_nome} · {c.gestor_whatsapp}
                       </p>
                     )}
                   </td>
@@ -223,7 +223,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
               ))}
               {filtrados.length === 0 && (
                 <tr>
-                  <td colSpan={7} style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Nenhum consultor encontrado.</td>
+                  <td colSpan={7} style={{ padding: 32, textAlign: 'center', color: 'var(--avp-text-dim)' }}>Nenhum FREE encontrado.</td>
                 </tr>
               )}
             </tbody>

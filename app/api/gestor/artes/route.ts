@@ -58,7 +58,19 @@ export async function PUT(req: NextRequest) {
   if (!ctx) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
   const { gestor, adminClient } = ctx
 
-  const body: { id: string; gestor_id: string | null; arte_url: string; foto_x: number; foto_y: number; foto_largura: number; foto_altura: number; foto_redondo: boolean; ativo: boolean; titulo: string; tipo: string }[] = await req.json()
+  const body: any[] = await req.json()
+
+  const textoCampos = (t: any) => ({
+    texto_ativo: t.texto_ativo ?? false,
+    texto_template: t.texto_template ?? '{nome}',
+    texto_x: t.texto_x ?? 50,
+    texto_y: t.texto_y ?? 85,
+    texto_tamanho: t.texto_tamanho ?? 5,
+    texto_cor: t.texto_cor ?? '#FFFFFF',
+    texto_negrito: t.texto_negrito ?? true,
+    texto_alinhamento: t.texto_alinhamento ?? 'center',
+    texto_sombra: t.texto_sombra ?? true,
+  })
 
   for (const t of body) {
     if (t.gestor_id === gestor.id) {
@@ -73,13 +85,14 @@ export async function PUT(req: NextRequest) {
           foto_altura: t.foto_altura,
           foto_redondo: t.foto_redondo,
           ativo: t.ativo,
+          ...textoCampos(t),
         })
         .eq('id', t.id)
         .eq('gestor_id', gestor.id)
     } else {
-      // template do admin — gestor só pode atualizar a arte
+      // template do admin — gestor pode atualizar arte e texto
       await (adminClient.from('artes_templates') as any)
-        .update({ arte_url: t.arte_url })
+        .update({ arte_url: t.arte_url, ...textoCampos(t) })
         .eq('id', t.id)
         .is('gestor_id', null)
     }

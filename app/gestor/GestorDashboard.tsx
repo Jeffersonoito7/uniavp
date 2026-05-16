@@ -91,7 +91,7 @@ function PerfilGestor({ gestor, onNomeAtualizado }: { gestor: Gestor; onNomeAtua
           </div>
           <div>
             <p style={{ fontWeight: 700, fontSize: 16, margin: '0 0 4px' }}>{gestor.nome}</p>
-            <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: '0 0 10px' }}>Painel Gestor</p>
+            <p style={{ color: '#818cf8', fontSize: 13, margin: '0 0 10px', fontWeight: 700 }}>✨ UNIAVP PRO</p>
             <button onClick={() => fotoRef.current?.click()}
               style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
               📷 Trocar foto
@@ -150,6 +150,7 @@ function PerfilGestor({ gestor, onNomeAtualizado }: { gestor: Gestor; onNomeAtua
 
 type Consultor = {
   id: string; nome: string; whatsapp: string; email: string; status: string; created_at: string
+  ultimo_estudo_em?: string | null; streak_atual?: number | null
 }
 type Modulo = {
   titulo: string; ordem: number; aulas_total: number; aulas_concluidas: number; percentual: number
@@ -176,12 +177,12 @@ function BarraProgresso({ pct }: { pct: number }) {
   )
 }
 
-type ArteTemplate = { id: string; tipo: string; titulo: string; arte_url: string; foto_x: number; foto_y: number; foto_largura: number; foto_altura: number; foto_redondo: boolean; ativo: boolean; formato: string; gestor_id: string | null }
+type ArteTemplate = { id: string; tipo: string; titulo: string; arte_url: string; foto_x: number; foto_y: number; foto_largura: number; foto_altura: number; foto_redondo: boolean; ativo: boolean; formato: string; gestor_id: string | null; texto_ativo?: boolean; texto_template?: string; texto_x?: number; texto_y?: number; texto_tamanho?: number; texto_cor?: string; texto_negrito?: boolean; texto_alinhamento?: string; texto_sombra?: boolean }
 
 export default function GestorDashboard({
-  gestor, consultores, progressoMap, artesTemplatesIniciais, baseUrl, capaDefault,
+  gestor, consultores, progressoMap, indicacoesMap, artesTemplatesIniciais, baseUrl, capaDefault,
 }: {
-  gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string; capaDefault?: string | null
+  gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; indicacoesMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string; capaDefault?: string | null
 }) {
   const [aba, setAba] = useState('dashboard')
   const [listaConsultores, setListaConsultores] = useState(consultores)
@@ -211,8 +212,17 @@ export default function GestorDashboard({
   const ativos = listaConsultores.filter(c => c.status !== 'concluido')
   const emAndamento = listaConsultores.filter(c => c.status === 'ativo' && progressoMap[c.id] > 0).length
   const concluidos = listaConsultores.filter(c => c.status === 'concluido').length
-  const vagasUsadas = ativos.length
-  const vagasLivres = 50 - vagasUsadas
+  const totalAtivos = ativos.length
+
+  const seteAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  const inativos7d = listaConsultores.filter(c =>
+    c.status === 'ativo' &&
+    (!c.ultimo_estudo_em || new Date(c.ultimo_estudo_em) < seteAtras)
+  )
+  const progressoVals = listaConsultores.map(c => progressoMap[c.id] ?? 0)
+  const mediaProgresso = progressoVals.length > 0
+    ? Math.round(progressoVals.reduce((s, v) => s + v, 0) / progressoVals.length)
+    : 0
 
   function copiarLink() {
     navigator.clipboard.writeText(`${baseUrl}/g/${gestor.whatsapp}`)
@@ -257,6 +267,19 @@ export default function GestorDashboard({
       body: JSON.stringify({ alunoId: c.id }),
     })
     if (res.ok) setListaConsultores(prev => prev.filter(x => x.id !== c.id))
+  }
+
+  async function alterarStatus(c: Consultor, novoStatus: 'ativo' | 'pausado') {
+    const res = await fetch('/api/gestor/consultor', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ alunoId: c.id, status: novoStatus }),
+    })
+    if (res.ok) setListaConsultores(prev => prev.map(x => x.id === c.id ? { ...x, status: novoStatus } : x))
+  }
+
+  function diasSemEstudar(c: Consultor): number | null {
+    if (!c.ultimo_estudo_em) return null
+    return Math.floor((Date.now() - new Date(c.ultimo_estudo_em).getTime()) / (1000 * 60 * 60 * 24))
   }
 
   async function abrirConsultor(c: Consultor) {
@@ -336,7 +359,7 @@ export default function GestorDashboard({
         <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 20, width: '100%', maxWidth: 540, maxHeight: '90vh', overflow: 'auto' }}
           onMouseDown={e => e.stopPropagation()}>
           <div style={{ padding: '24px 28px', borderBottom: '1px solid var(--avp-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: 18, fontWeight: 700 }}>Novo Consultor</h2>
+            <h2 style={{ fontSize: 18, fontWeight: 700 }}>Novo UNIAVP FREE</h2>
             <button onClick={() => setShowNovoConsultor(false)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 24 }}>×</button>
           </div>
           <div style={{ padding: 28 }}>
@@ -395,7 +418,7 @@ export default function GestorDashboard({
                 </button>
                 <button type="submit" disabled={salvandoConsultor}
                   style={{ flex: 2, background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: salvandoConsultor ? 0.7 : 1 }}>
-                  {salvandoConsultor ? 'Cadastrando...' : '+ Cadastrar consultor'}
+                  {salvandoConsultor ? 'Cadastrando...' : '+ Cadastrar FREE'}
                 </button>
               </div>
             </form>
@@ -490,18 +513,54 @@ export default function GestorDashboard({
           </div>
 
           {/* Cards de stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14, marginBottom: 24 }}>
-            <div style={{ background: 'var(--avp-card)', border: `1px solid ${vagasUsadas >= 50 ? 'var(--avp-danger)' : 'var(--avp-border)'}`, borderRadius: 12, padding: 20 }}>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, marginBottom: 6 }}>Vagas usadas</p>
-              <p style={{ fontSize: 32, fontWeight: 800, color: vagasUsadas >= 50 ? 'var(--avp-danger)' : 'var(--avp-text)' }}>{vagasUsadas}<span style={{ fontSize: 14, color: 'var(--avp-text-dim)', fontWeight: 400 }}>/50</span></p>
-            </div>
-            {[{ label: 'Em andamento', value: emAndamento }, { label: 'Concluídos', value: concluidos }, { label: 'Vagas livres', value: vagasLivres }].map(s => (
-              <div key={s.label} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 14, marginBottom: 24 }}>
+            {[
+              { label: 'Consultores ativos', value: totalAtivos, cor: 'var(--avp-text)' },
+              { label: 'Em andamento', value: emAndamento, cor: 'var(--avp-text)' },
+              { label: 'Concluídos', value: concluidos, cor: 'var(--avp-green)' },
+              { label: 'Progresso médio', value: `${mediaProgresso}%`, cor: '#3b82f6' },
+              { label: 'Inativos 7 dias', value: inativos7d.length, cor: inativos7d.length > 0 ? '#f59e0b' : 'var(--avp-text)' },
+            ].map(s => (
+              <div key={s.label} style={{ background: 'var(--avp-card)', border: `1px solid ${s.label === 'Inativos 7 dias' && inativos7d.length > 0 ? '#f59e0b40' : 'var(--avp-border)'}`, borderRadius: 12, padding: 20 }}>
                 <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, marginBottom: 6 }}>{s.label}</p>
-                <p style={{ fontSize: 32, fontWeight: 800 }}>{s.value}</p>
+                <p style={{ fontSize: 30, fontWeight: 800, color: s.cor }}>{s.value}</p>
               </div>
             ))}
           </div>
+
+          {/* Alerta de inativos */}
+          {inativos7d.length > 0 && (
+            <div style={{ background: '#92400e15', border: '1px solid #f59e0b40', borderRadius: 12, padding: '16px 20px', marginBottom: 20 }}>
+              <p style={{ fontWeight: 700, fontSize: 14, color: '#f59e0b', marginBottom: 10 }}>
+                ⚠️ {inativos7d.length} consultor{inativos7d.length > 1 ? 'es' : ''} sem estudar há mais de 7 dias
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {inativos7d.slice(0, 5).map(c => {
+                  const dias = diasSemEstudar(c)
+                  return (
+                    <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 14, fontWeight: 600 }}>{c.nome}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>
+                          {dias === null ? 'nunca estudou' : `${dias}d sem estudar`}
+                        </span>
+                        <a href={`https://wa.me/55${c.whatsapp}?text=${encodeURIComponent(`Olá ${c.nome}! 👋 Vi que você está há alguns dias sem acessar a plataforma. Que tal retomar hoje? 🎓`)}`}
+                          target="_blank" rel="noreferrer"
+                          style={{ background: '#25d36620', border: '1px solid #25d36640', color: '#25d366', borderRadius: 6, padding: '4px 10px', textDecoration: 'none', fontSize: 12, fontWeight: 700 }}>
+                          💬 WhatsApp
+                        </a>
+                      </div>
+                    </div>
+                  )
+                })}
+                {inativos7d.length > 5 && (
+                  <button onClick={() => handleSetAba('consultores')} style={{ background: 'none', border: 'none', color: '#f59e0b', cursor: 'pointer', fontSize: 13, fontWeight: 600, textAlign: 'left', padding: 0 }}>
+                    Ver mais {inativos7d.length - 5} →
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Atalhos */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 24 }}>
@@ -554,7 +613,7 @@ export default function GestorDashboard({
           <LiberacoesPendentes />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
             <div>
-              <h1 style={{ fontSize: 22, fontWeight: 800 }}>Consultores</h1>
+              <h1 style={{ fontSize: 22, fontWeight: 800 }}>UNIAVP FREE</h1>
               <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Acompanhe o progresso da sua equipe</p>
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -566,7 +625,7 @@ export default function GestorDashboard({
               </a>
               <button onClick={() => setShowNovoConsultor(true)}
                 style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
-                ➕ Cadastrar consultor
+                ➕ Cadastrar FREE
               </button>
             </div>
           </div>
@@ -611,14 +670,10 @@ export default function GestorDashboard({
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14, marginBottom: 28 }}>
-            <div style={{ background: 'var(--avp-card)', border: `1px solid ${vagasUsadas >= 50 ? 'var(--avp-danger)' : 'var(--avp-border)'}`, borderRadius: 12, padding: 20 }}>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, marginBottom: 6 }}>Vagas usadas</p>
-              <p style={{ fontSize: 32, fontWeight: 800, color: vagasUsadas >= 50 ? 'var(--avp-danger)' : 'var(--avp-text)' }}>{vagasUsadas}<span style={{ fontSize: 14, color: 'var(--avp-text-dim)', fontWeight: 400 }}>/50</span></p>
-            </div>
             {[
+              { label: 'Consultores ativos', value: totalAtivos },
               { label: 'Em andamento', value: emAndamento },
               { label: 'Concluídos', value: concluidos },
-              { label: 'Vagas livres', value: vagasLivres },
             ].map(s => (
               <div key={s.label} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20 }}>
                 <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, marginBottom: 6 }}>{s.label}</p>
@@ -633,7 +688,7 @@ export default function GestorDashboard({
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--avp-border)' }}>
-                    {['Nome', 'WhatsApp', 'Progresso', 'Status', 'Cadastro', ''].map(h => (
+                    {['Nome', 'Progresso', 'Último estudo', 'Indicou', 'Status', 'Ações'].map(h => (
                       <th key={h} style={{ padding: '13px 16px', textAlign: 'left', color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
                     ))}
                   </tr>
@@ -642,22 +697,58 @@ export default function GestorDashboard({
                   {listaConsultores.map(c => {
                     const pct = progressoMap[c.id] ?? 0
                     const badge = badgeStatus[c.status] ?? { label: c.status, color: 'var(--avp-text-dim)', bg: 'var(--avp-border)' }
+                    const dias = diasSemEstudar(c)
+                    const indicou = indicacoesMap[c.whatsapp] ?? 0
+                    const alertaInativo = c.status === 'ativo' && (dias === null || dias >= 7)
                     return (
-                      <tr key={c.id} style={{ borderBottom: '1px solid var(--avp-border)' }}>
-                        <td onClick={() => abrirConsultor(c)} style={{ padding: '13px 16px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>{c.nome}</td>
-                        <td style={{ padding: '13px 16px', color: 'var(--avp-text-dim)', fontSize: 14 }}>{c.whatsapp}</td>
-                        <td style={{ padding: '13px 16px', minWidth: 150 }}><BarraProgresso pct={pct} /></td>
-                        <td style={{ padding: '13px 16px' }}>
-                          <span style={{ background: badge.bg, color: badge.color, borderRadius: 20, padding: '3px 10px', fontSize: 12, fontWeight: 600 }}>{badge.label}</span>
+                      <tr key={c.id} style={{ borderBottom: '1px solid var(--avp-border)', background: alertaInativo ? '#92400e08' : 'transparent' }}>
+                        <td style={{ padding: '12px 16px' }}>
+                          <p onClick={() => abrirConsultor(c)} style={{ fontWeight: 700, cursor: 'pointer', fontSize: 14, marginBottom: 2 }}>{c.nome}</p>
+                          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>{c.whatsapp}</p>
                         </td>
-                        <td style={{ padding: '13px 16px', color: 'var(--avp-text-dim)', fontSize: 13 }}>{new Date(c.created_at).toLocaleDateString('pt-BR')}</td>
-                        <td style={{ padding: '13px 16px' }}>
-                          {c.status !== 'concluido' && (
-                            <button onClick={() => removerConsultor(c)}
-                              style={{ background: '#e6394615', border: '1px solid #e6394630', color: 'var(--avp-danger)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
-                              Remover
-                            </button>
-                          )}
+                        <td style={{ padding: '12px 16px', minWidth: 140 }}><BarraProgresso pct={pct} /></td>
+                        <td style={{ padding: '12px 16px' }}>
+                          {dias === null
+                            ? <span style={{ fontSize: 12, color: '#f59e0b' }}>Nunca estudou</span>
+                            : dias === 0
+                              ? <span style={{ fontSize: 12, color: 'var(--avp-green)', fontWeight: 600 }}>🔥 Hoje</span>
+                              : <span style={{ fontSize: 12, color: dias >= 7 ? '#f59e0b' : 'var(--avp-text-dim)' }}>{dias === 1 ? 'Ontem' : `${dias}d atrás`}</span>
+                          }
+                        </td>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                          {indicou > 0
+                            ? <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--avp-green)' }}>{indicou}</span>
+                            : <span style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>—</span>
+                          }
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <span style={{ background: badge.bg, color: badge.color, borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 600 }}>{badge.label}</span>
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                            <a href={`https://wa.me/55${c.whatsapp}`} target="_blank" rel="noreferrer"
+                              style={{ background: '#25d36620', border: '1px solid #25d36640', color: '#25d366', borderRadius: 6, padding: '4px 10px', textDecoration: 'none', fontSize: 12, fontWeight: 700 }}>
+                              💬
+                            </a>
+                            {c.status === 'ativo' && (
+                              <button onClick={() => alterarStatus(c, 'pausado')}
+                                style={{ background: '#f59e0b15', border: '1px solid #f59e0b30', color: '#f59e0b', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                                Pausar
+                              </button>
+                            )}
+                            {c.status === 'pausado' && (
+                              <button onClick={() => alterarStatus(c, 'ativo')}
+                                style={{ background: '#02A15320', border: '1px solid #02A15340', color: 'var(--avp-green)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                                Reativar
+                              </button>
+                            )}
+                            {c.status !== 'concluido' && (
+                              <button onClick={() => removerConsultor(c)}
+                                style={{ background: '#e6394615', border: '1px solid #e6394630', color: 'var(--avp-danger)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                                Remover
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     )
@@ -677,8 +768,11 @@ export default function GestorDashboard({
               {listaConsultores.map(c => {
                 const pct = progressoMap[c.id] ?? 0
                 const badge = badgeStatus[c.status] ?? { label: c.status, color: 'var(--avp-text-dim)', bg: 'var(--avp-border)' }
+                const dias = diasSemEstudar(c)
+                const indicou = indicacoesMap[c.whatsapp] ?? 0
+                const alertaInativo = c.status === 'ativo' && (dias === null || dias >= 7)
                 return (
-                  <div key={c.id} style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '14px 16px' }}>
+                  <div key={c.id} style={{ background: alertaInativo ? '#92400e10' : 'var(--avp-black)', border: `1px solid ${alertaInativo ? '#f59e0b30' : 'var(--avp-border)'}`, borderRadius: 12, padding: '14px 16px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                       <div>
                         <p onClick={() => abrirConsultor(c)} style={{ fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 2 }}>{c.nome}</p>
@@ -687,17 +781,20 @@ export default function GestorDashboard({
                       <span style={{ background: badge.bg, color: badge.color, borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 600, flexShrink: 0 }}>{badge.label}</span>
                     </div>
                     <BarraProgresso pct={pct} />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, alignItems: 'center' }}>
-                      <span style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>{new Date(c.created_at).toLocaleDateString('pt-BR')}</span>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button onClick={() => abrirConsultor(c)} style={{ background: 'var(--avp-border)', color: 'var(--avp-text)', border: 'none', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Ver progresso</button>
-                        <a href={`/gestor/artes/${c.whatsapp}`} style={{ background: '#8b5cf620', border: '1px solid #8b5cf640', color: '#a78bfa', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>🎨 Artes</a>
-                        <a href={`/aluno/${c.whatsapp}/carteira`} target="_blank" rel="noreferrer" style={{ background: '#fbbf2415', border: '1px solid #fbbf2440', color: '#fbbf24', borderRadius: 6, padding: '5px 12px', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>🪪 Carteira</a>
-                        {c.status !== 'concluido' && (
-                          <button onClick={() => removerConsultor(c)} style={{ background: '#e6394615', border: '1px solid #e6394630', color: 'var(--avp-danger)', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Remover</button>
-                        )}
-                      </div>
+                    <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap', fontSize: 11, color: 'var(--avp-text-dim)' }}>
+                      {dias === null ? <span style={{ color: '#f59e0b' }}>⚠ Nunca estudou</span>
+                        : dias === 0 ? <span style={{ color: 'var(--avp-green)' }}>🔥 Estudou hoje</span>
+                        : <span style={{ color: dias >= 7 ? '#f59e0b' : 'var(--avp-text-dim)' }}>{dias === 1 ? '📅 Ontem' : `📅 ${dias}d atrás`}</span>}
+                      {indicou > 0 && <span style={{ color: 'var(--avp-green)', fontWeight: 700 }}>🤝 {indicou} indicado{indicou > 1 ? 's' : ''}</span>}
                     </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+                        <button onClick={() => abrirConsultor(c)} style={{ background: 'var(--avp-border)', color: 'var(--avp-text)', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Ver progresso</button>
+                        <a href={`https://wa.me/55${c.whatsapp}`} target="_blank" rel="noreferrer" style={{ background: '#25d36620', border: '1px solid #25d36640', color: '#25d366', borderRadius: 6, padding: '5px 10px', textDecoration: 'none', fontSize: 12, fontWeight: 700 }}>💬 WhatsApp</a>
+                        <a href={`/gestor/artes/${c.whatsapp}`} style={{ background: '#8b5cf620', border: '1px solid #8b5cf640', color: '#a78bfa', borderRadius: 6, padding: '5px 10px', textDecoration: 'none', fontSize: 12, fontWeight: 600 }}>🎨 Artes</a>
+                        {c.status === 'ativo' && <button onClick={() => alterarStatus(c, 'pausado')} style={{ background: '#f59e0b15', border: '1px solid #f59e0b30', color: '#f59e0b', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Pausar</button>}
+                        {c.status === 'pausado' && <button onClick={() => alterarStatus(c, 'ativo')} style={{ background: '#02A15320', border: '1px solid #02A15340', color: 'var(--avp-green)', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Reativar</button>}
+                        {c.status !== 'concluido' && <button onClick={() => removerConsultor(c)} style={{ background: '#e6394615', border: '1px solid #e6394630', color: 'var(--avp-danger)', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Remover</button>}
+                      </div>
                   </div>
                 )
               })}

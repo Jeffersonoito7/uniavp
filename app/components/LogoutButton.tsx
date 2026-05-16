@@ -10,7 +10,7 @@ export default function LogoutButton({ style }: { style?: React.CSSProperties })
     await supabase.auth.signOut()
     // Apaga o cookie OTP para forçar nova verificação no próximo login
     document.cookie = 'otp_ok=; Max-Age=0; path=/'
-    window.location.href = '/login'
+    window.location.href = '/entrar'
   }
 
   return (

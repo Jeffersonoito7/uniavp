@@ -32,11 +32,11 @@ export async function POST(req: NextRequest) {
   const { data: aluno } = await (adminClient.from('alunos') as any)
     .select('whatsapp').eq('user_id', user.id).maybeSingle()
   if (aluno?.whatsapp) {
-    redirect = `/aluno/${aluno.whatsapp}`
+    redirect = `/free/${aluno.whatsapp}`
   } else {
     const { data: gestor } = await (adminClient.from('gestores') as any)
       .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-    if (gestor) redirect = '/gestor'
+    if (gestor) redirect = '/pro'
   }
 
   const response = NextResponse.json({ ok: true, redirect })

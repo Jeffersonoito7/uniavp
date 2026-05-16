@@ -16,12 +16,15 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const hostname = request.headers.get('host') || ''
 
-  // ── Roteamento transparente por subdomínio ──────────────────
-  if (hostname.startsWith('gestor.')) {
+  // ── Roteamento por subdomínio ───────────────────────────────────
+
+  // pro.dominio → painel PRO (= /gestor internamente)
+  if (hostname.startsWith('pro.') || hostname.startsWith('gestor.')) {
     const excluded =
       pathname.startsWith('/gestor') ||
       pathname.startsWith('/api/') ||
       pathname.startsWith('/_next/') ||
+      pathname.startsWith('/entrar') ||
       pathname.startsWith('/recuperar-senha') ||
       pathname.startsWith('/redefinir-senha') ||
       pathname.startsWith('/convite') ||
@@ -31,31 +34,40 @@ export function middleware(request: NextRequest) {
     if (!excluded) {
       if (!hasSession(request)) {
         const url = new URL(request.url)
-        url.pathname = '/gestor/login'
+        url.pathname = '/entrar'
         return NextResponse.redirect(url)
       }
       const url = new URL(request.url)
       url.pathname = pathname === '/' ? '/gestor' : `/gestor${pathname}`
       return NextResponse.rewrite(url)
     }
-  } else if (hostname.startsWith('adm.') && pathname === '/') {
+  }
+
+  // adm.dominio → painel admin
+  else if (hostname.startsWith('adm.') && pathname === '/') {
     if (!hasSession(request)) {
       const url = new URL(request.url)
-      url.pathname = '/login'
+      url.pathname = '/entrar'
       return NextResponse.redirect(url)
     }
     const url = new URL(request.url)
     url.pathname = '/admin'
     return NextResponse.rewrite(url)
-  } else if (hostname.startsWith('consultor.') && pathname === '/') {
-    const url = new URL(request.url)
-    url.pathname = '/captacao'
-    return NextResponse.rewrite(url)
   }
 
-  // ── Proteção de rotas (domínio principal) ───────────────────
+  // free.dominio ou consultor.dominio → página de captação
+  else if (hostname.startsWith('free.') || hostname.startsWith('consultor.')) {
+    if (pathname === '/') {
+      const url = new URL(request.url)
+      url.pathname = '/captacao'
+      return NextResponse.rewrite(url)
+    }
+  }
+
+  // ── Proteção de rotas (domínio principal) ───────────────────────
   const isPublic =
     pathname === '/' ||
+    pathname.startsWith('/entrar') ||
     pathname.startsWith('/login') ||
     pathname.startsWith('/consultor/login') ||
     pathname.startsWith('/consultor/otp') ||
@@ -70,28 +82,25 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/g/') ||
     pathname.startsWith('/planos') ||
     pathname.startsWith('/api/') ||
-    pathname.startsWith('/verificar/')
+    pathname.startsWith('/verificar/') ||
+    pathname.startsWith('/upgrade') ||
+    pathname.startsWith('/assinar-pro') ||
+    pathname.startsWith('/free/') ||
+    pathname.startsWith('/pro')
 
   if (isPublic) return NextResponse.next()
 
   if (!hasSession(request)) {
     const url = new URL(request.url)
-    if (pathname.startsWith('/aluno'))  { url.pathname = '/consultor/login'; return NextResponse.redirect(url) }
-    if (pathname.startsWith('/gestor')) { url.pathname = '/gestor/login';    return NextResponse.redirect(url) }
-    if (pathname.startsWith('/admin'))  { url.pathname = '/login';           return NextResponse.redirect(url) }
-    if (pathname.startsWith('/super'))  { url.pathname = '/super/login';     return NextResponse.redirect(url) }
-    return NextResponse.next()
+    url.pathname = '/entrar'
+    return NextResponse.redirect(url)
   }
 
-  // ── Verificação OTP obrigatória para aluno e gestor ─────────
+  // ── Verificação OTP obrigatória ─────────────────────────────────
   if (!hasOtp(request)) {
     const url = new URL(request.url)
-    if (pathname.startsWith('/aluno')) {
-      url.pathname = '/consultor/otp'
-      return NextResponse.redirect(url)
-    }
-    if (pathname.startsWith('/gestor') && !pathname.startsWith('/gestor/login') && !pathname.startsWith('/gestor/otp')) {
-      url.pathname = '/gestor/otp'
+    if (pathname.startsWith('/aluno') || pathname.startsWith('/gestor')) {
+      url.pathname = '/entrar/otp'
       return NextResponse.redirect(url)
     }
   }

@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
   // ── 3. Configurar domínio na Vercel ───────────────────────────
   if (dominio && process.env.VERCEL_TOKEN && process.env.VERCEL_PROJECT_ID) {
-    const subdomains = [`consultor.${dominio}`, `gestor.${dominio}`, `adm.${dominio}`]
+    const subdomains = [`free.${dominio}`, `pro.${dominio}`, `adm.${dominio}`]
     for (const sub of subdomains) {
       try {
         const res = await fetch(`https://api.vercel.com/v10/projects/${process.env.VERCEL_PROJECT_ID}/domains`, {
@@ -59,8 +59,8 @@ export async function POST(req: NextRequest) {
   // ── 4. Configurar DNS no Cloudflare ──────────────────────────
   if (dominio && process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ZONE_ID) {
     const registros = [
-      { name: `consultor.${dominio.split('.').slice(1).join('.')}`, content: dominio },
-      { name: `gestor.${dominio.split('.').slice(1).join('.')}`, content: dominio },
+      { name: `free.${dominio.split('.').slice(1).join('.')}`, content: dominio },
+      { name: `pro.${dominio.split('.').slice(1).join('.')}`, content: dominio },
       { name: `adm.${dominio.split('.').slice(1).join('.')}`, content: dominio },
     ]
     for (const r of registros) {
@@ -85,15 +85,19 @@ export async function POST(req: NextRequest) {
   if (cliente?.contato_whatsapp) {
     const { enviarWhatsApp } = await import('@/lib/whatsapp')
     const appUrl = dominio ? `https://${dominio}` : process.env.NEXT_PUBLIC_APP_URL
+    const linkFree = dominio ? `https://free.${dominio}/captacao` : `${appUrl}/captacao`
+    const linkPro = dominio ? `https://pro.${dominio}/assinar-pro` : `${appUrl}/assinar-pro`
+    const linkAdmin = dominio ? `https://adm.${dominio}/admin` : `${appUrl}/admin`
     await enviarWhatsApp(cliente.contato_whatsapp,
       `🎉 *Bem-vindo à plataforma, ${cliente.contato_nome || cliente.nome}!*\n\n` +
-      `Sua universidade está pronta. Aqui estão seus acessos:\n\n` +
-      `🛡 *Painel Admin:* ${appUrl}/admin\n` +
+      `Sua plataforma está pronta para uso. Aqui estão seus acessos:\n\n` +
+      `🛡 *Painel Admin (você):*\n${linkAdmin}\n` +
       `📧 Login: ${admin_email}\n` +
       `🔑 Senha: ${admin_senha}\n\n` +
-      `🔗 *Links para seus usuários:*\n` +
-      `👥 Consultores: ${dominio ? `https://consultor.${dominio}` : `${appUrl}/captacao`}\n` +
-      `🧑‍💼 Gestores: ${dominio ? `https://gestor.${dominio}` : `${appUrl}/convite/gestor`}\n\n` +
+      `🔗 *Links para compartilhar com seus usuários:*\n\n` +
+      `🆓 *UNIAVP FREE* (cadastro gratuito):\n${linkFree}\n\n` +
+      `✨ *UNIAVP PRO* (assinatura mensal):\n${linkPro}\n\n` +
+      `_Acesse o painel Admin para configurar logo, cores e conteúdo da sua plataforma._\n` +
       `_Recomendamos trocar a senha no primeiro acesso._`)
     resultados.push('✅ Credenciais enviadas por WhatsApp')
   }

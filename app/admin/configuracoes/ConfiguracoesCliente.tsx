@@ -4,10 +4,11 @@ import PhoneInput from '@/app/components/PhoneInput'
 
 type Config = { chave: string; valor: string; descricao?: string }
 
-function LogoCard({ label, campo, value, desc, rec, fileRef, uploading, onUpload }: {
+function LogoCard({ label, campo, value, desc, rec, fileRef, uploading, onUpload, onDelete }: {
   label: string; campo: string; value: string; desc: string; rec: string
   fileRef: React.RefObject<HTMLInputElement>; uploading: string
   onUpload: (campo: string, file: File) => void
+  onDelete?: (campo: string) => void
 }) {
   const temImagem = !!value && (value.startsWith('data:') || value.startsWith('blob:') || value.startsWith('http'))
 
@@ -30,12 +31,22 @@ function LogoCard({ label, campo, value, desc, rec, fileRef, uploading, onUpload
       <input type="file" accept="image/*" style={{ display: 'none' }} ref={fileRef}
         onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(campo, f); e.target.value = '' }}
       />
-      <button
-        onClick={() => fileRef.current?.click()}
-        disabled={uploading === campo}
-        style={{ background: uploading === campo ? 'var(--avp-border)' : temImagem ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700, width: '100%', opacity: uploading === campo ? 0.7 : 1 }}>
-        {uploading === campo ? '⏳ Lendo arquivo...' : temImagem ? '🔄 Trocar imagem' : '📤 Subir imagem'}
-      </button>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading === campo}
+          style={{ flex: 1, background: uploading === campo ? 'var(--avp-border)' : temImagem ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700, opacity: uploading === campo ? 0.7 : 1 }}>
+          {uploading === campo ? '⏳ Enviando...' : temImagem ? '🔄 Trocar' : '📤 Subir imagem'}
+        </button>
+        {temImagem && onDelete && (
+          <button
+            onClick={() => { if (confirm(`Remover "${label}"?`)) onDelete(campo) }}
+            style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700, flexShrink: 0 }}
+            title="Remover imagem">
+            🗑
+          </button>
+        )}
+      </div>
     </div>
   )
 }
@@ -58,6 +69,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
     return typeof parsed === 'string' ? parsed : String(parsed)
   }
 
+  const [planoPROValor, setPlanoPROValor] = useState(get('plano_pro_valor') || '147')
   const [logoUrl, setLogoUrl] = useState(() => bustCache(get('site_logo_url')))
   const [logoMenuUrl, setLogoMenuUrl] = useState(() => bustCache(get('logo_menu_url')))
   const [logoPaginaUrl, setLogoPaginaUrl] = useState(() => bustCache(get('logo_pagina_url')))
@@ -222,13 +234,31 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
     setUploading('')
   }
 
+  async function deletarImagem(campo: string) {
+    const isCert = campo === 'certUrl'
+    const chave = isCert ? 'certificado_template_url' : campoToChave[campo]
+    if (!chave) return
+    // Limpa o estado local
+    if (isCert) setCertUrl('')
+    else setters[campo]?.('')
+    // Persiste o vazio no banco (remove a imagem)
+    await fetch('/api/admin/configuracoes', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify([{ chave, valor: '' }]),
+    })
+    setMsg('🗑 Imagem removida.')
+    window.dispatchEvent(new CustomEvent('site-logo-updated', { detail: { chave, url: '' } }))
+  }
+
   async function salvar() {
     setSalvando(true)
     setMsg('')
     try {
       // Não salvar logos/cert no botão Salvar — eles são salvos individualmente no upload
       // Apenas salvar se forem URLs (não base64)
-      const urlSafe = (v: string) => v && !v.startsWith('data:') && !v.startsWith('blob:') ? v : undefined
+      // Aceita string vazia (deletar), rejeita apenas blobs/data: locais
+      const urlSafe = (v: string) => !v.startsWith('data:') && !v.startsWith('blob:') ? v : undefined
 
       const body = [
         { chave: 'site_nome', valor: nome },
@@ -255,6 +285,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         ...(urlSafe(carteiraLogoEsquerda) ? [{ chave: 'carteira_logo_esquerda', valor: carteiraLogoEsquerda }] : []),
         ...(urlSafe(carteiraLogoDireita) ? [{ chave: 'carteira_logo_direita', valor: carteiraLogoDireita }] : []),
         ...(urlSafe(carteiraAssinaturaUrl) ? [{ chave: 'carteira_assinatura_url', valor: carteiraAssinaturaUrl }] : []),
+        { chave: 'plano_pro_valor', valor: planoPROValor },
         { chave: 'boleto_mensagem', valor: boletoMensagem },
         { chave: 'boleto_instrucoes', valor: boletoInstrucoes },
         { chave: 'boleto_multa', valor: boletoMulta },
@@ -307,16 +338,16 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
           <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>🖥️ Versão Web (horizontal)</p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <LogoCard label="Logo principal" campo="logoUrl" value={logoUrl} desc="Fallback geral" rec="400×120px" fileRef={logoUrlRef} uploading={uploading} onUpload={uploadImagem} />
-          <LogoCard label="Logo do menu lateral" campo="logoMenuUrl" value={logoMenuUrl} desc="Sidebar admin/gestor" rec="200×56px" fileRef={logoMenuUrlRef} uploading={uploading} onUpload={uploadImagem} />
-          <LogoCard label="Logo da página de login" campo="logoPaginaUrl" value={logoPaginaUrl} desc="Login e captação" rec="300×90px" fileRef={logoPaginaUrlRef} uploading={uploading} onUpload={uploadImagem} />
+          <LogoCard label="Logo principal" campo="logoUrl" value={logoUrl} desc="Fallback geral" rec="400×120px" fileRef={logoUrlRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
+          <LogoCard label="Logo do menu lateral" campo="logoMenuUrl" value={logoMenuUrl} desc="Sidebar admin/PRO" rec="200×56px" fileRef={logoMenuUrlRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
+          <LogoCard label="Logo da página de login" campo="logoPaginaUrl" value={logoPaginaUrl} desc="Login e captação" rec="300×90px" fileRef={logoPaginaUrlRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
         </div>
         <div style={{ background: 'var(--avp-black)', borderRadius: 8, padding: '8px 12px', marginTop: 8 }}>
           <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>📱 Versão Mobile (quadrado)</p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <LogoCard label="Ícone mobile / PWA" campo="logoMobileUrl" value={logoMobileUrl} desc="Tela inicial do celular" rec="512×512px" fileRef={logoMobileUrlRef} uploading={uploading} onUpload={uploadImagem} />
-          <LogoCard label="Favicon" campo="logoFaviconUrl" value={logoFaviconUrl} desc="Aba do navegador" rec="64×64px" fileRef={logoFaviconUrlRef} uploading={uploading} onUpload={uploadImagem} />
+          <LogoCard label="Ícone mobile / PWA" campo="logoMobileUrl" value={logoMobileUrl} desc="Tela inicial do celular" rec="512×512px" fileRef={logoMobileUrlRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
+          <LogoCard label="Favicon" campo="logoFaviconUrl" value={logoFaviconUrl} desc="Aba do navegador" rec="64×64px" fileRef={logoFaviconUrlRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
         </div>
       </div>
 
@@ -344,7 +375,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
           {/* Sidebar preview */}
           <div style={{ width: 110, background: corSidebar, borderRight: `1px solid ${corBorda}`, padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div style={{ height: 8, borderRadius: 4, background: `linear-gradient(90deg,${corPrimaria},${corSecundaria})`, marginBottom: 8 }} />
-            {['Dashboard','Consultores','Aulas'].map((item, i) => (
+            {['Dashboard','FREE','Aulas'].map((item, i) => (
               <div key={item} style={{ borderRadius: 6, padding: '5px 8px', background: i === 0 ? `linear-gradient(135deg,${corPrimaria},${corSecundaria})` : 'transparent', color: i === 0 ? '#fff' : corTexto, fontSize: 10, fontWeight: i === 0 ? 700 : 400, opacity: i === 0 ? 1 : 0.6 }}>
                 {item}
               </div>
@@ -420,11 +451,29 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         <div><label style={lbl}>WhatsApp suporte</label><PhoneInput value={whatsapp} onChange={setWhatsapp} placeholder="suporte da empresa" /></div>
       </div>
 
+      {/* VALOR PLANO PRO — só no painel Oito7Digital */}
+      {isMaster && <div style={{ ...card, border: '2px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.05)' }}>
+        <p style={{ fontWeight: 800, fontSize: 16 }}>✨ Valor do Plano UNIAVP PRO</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
+          Valor cobrado mensalmente dos usuários que assinam o plano PRO via PIX. Gerado automaticamente ao assinar.
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: 240 }}>
+          <label style={{ ...lbl, whiteSpace: 'nowrap', marginBottom: 0 }}>R$</label>
+          <input style={inp} type="number" min="1" step="0.01"
+            value={planoPROValor}
+            onChange={e => setPlanoPROValor(e.target.value)}
+            placeholder="147.00" />
+        </div>
+        <p style={{ fontSize: 12, color: '#818cf8', marginTop: 4 }}>
+          Valor atual: <strong>R$ {parseFloat(planoPROValor || '0').toFixed(2).replace('.', ',')}</strong>/mês
+        </p>
+      </div>}
+
       {/* BOLETO — só no painel Oito7Digital */}
       {isMaster && <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
-        <p style={{ fontWeight: 800, fontSize: 16 }}>🧾 Boleto Bancário (Efí)</p>
+        <p style={{ fontWeight: 800, fontSize: 16 }}>🧾 Boleto Bancário (Efí) <span style={{ fontSize: 11, fontWeight: 600, color: '#f59e0b', background: '#f59e0b15', borderRadius: 6, padding: '2px 8px', marginLeft: 6 }}>Exclusivo Oito7Digital</span></p>
         <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
-          Configure a mensagem e as instruções que aparecem no boleto. A logo da empresa é configurada diretamente no painel da Efí em <strong style={{ color: 'var(--avp-text)' }}>app.efipay.com.br → Minha Conta → Personalização</strong>.
+          Configuração exclusiva do painel master Oito7Digital — não aparece para clientes white-label. Configure a mensagem e as instruções do boleto. A logo é configurada no painel da Efí: <strong style={{ color: 'var(--avp-text)' }}>app.efipay.com.br → Minha Conta → Personalização</strong>.
         </p>
         <div>
           <label style={lbl}>Mensagem no boleto</label>
@@ -470,11 +519,11 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
           Suba as logos que aparecem no cabeçalho da carteirinha. Use PNG com fundo transparente.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <LogoCard label="Logo esquerda (ex: UNIAVP)" campo="carteiraLogoEsquerda" value={carteiraLogoEsquerda} desc="Logo da universidade/escola" rec="PNG transparente · 200×200px" fileRef={carteiraLogoEsquerdaRef} uploading={uploading} onUpload={uploadImagem} />
-          <LogoCard label="Logo direita (ex: AUTOVALE)" campo="carteiraLogoDireita" value={carteiraLogoDireita} desc="Logo da empresa parceira" rec="PNG transparente · 300×150px" fileRef={carteiraLogoDireitaRef} uploading={uploading} onUpload={uploadImagem} />
+          <LogoCard label="Logo esquerda (ex: UNIAVP)" campo="carteiraLogoEsquerda" value={carteiraLogoEsquerda} desc="Logo da universidade/escola" rec="PNG transparente · 200×200px" fileRef={carteiraLogoEsquerdaRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
+          <LogoCard label="Logo direita (ex: AUTOVALE)" campo="carteiraLogoDireita" value={carteiraLogoDireita} desc="Logo da empresa parceira" rec="PNG transparente · 300×150px" fileRef={carteiraLogoDireitaRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 4 }}>
-          <LogoCard label="Imagem da assinatura" campo="carteiraAssinaturaUrl" value={carteiraAssinaturaUrl} desc="PNG da assinatura do presidente (fundo transparente)" rec="PNG transparente · 400×150px" fileRef={carteiraAssinaturaUrlRef} uploading={uploading} onUpload={uploadImagem} />
+          <LogoCard label="Imagem da assinatura" campo="carteiraAssinaturaUrl" value={carteiraAssinaturaUrl} desc="PNG da assinatura do presidente (fundo transparente)" rec="PNG transparente · 400×150px" fileRef={carteiraAssinaturaUrlRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
           <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center' }}>
             <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>
               💡 Suba o PNG da assinatura digitalizada do presidente. O nome abaixo da assinatura vem do campo <strong style={{ color: 'var(--avp-text)' }}>"Nome de quem assina"</strong>.
@@ -539,7 +588,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
       <div style={{ ...card }}>
         <p style={{ fontWeight: 800, fontSize: 16 }}>🎬 Vídeo de Captação (funil de cadastro)</p>
         <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8, lineHeight: 1.6 }}>
-          Este vídeo aparece no funil de cadastro de consultores (<strong>/g/seu-whatsapp</strong>). O candidato precisa assistir até o fim antes de se cadastrar. Cole o ID do YouTube (ex: <code style={{ background: 'var(--avp-black)', padding: '2px 6px', borderRadius: 4 }}>dQw4w9WgXcQ</code>) ou a URL completa.
+          Este vídeo aparece no funil de cadastro UNIAVP FREE (<strong>/g/seu-whatsapp</strong>). O candidato precisa assistir até o fim antes de se cadastrar. Cole o ID do YouTube (ex: <code style={{ background: 'var(--avp-black)', padding: '2px 6px', borderRadius: 4 }}>dQw4w9WgXcQ</code>) ou a URL completa.
         </p>
         <div>
           <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>ID ou URL do YouTube *</label>
@@ -582,12 +631,12 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
           Faça upload do template PNG e configure onde o nome do aluno aparece. O certificado baixado terá o nome gravado na posição definida.
         </p>
 
-        <LogoCard label="Template do certificado" campo="certUrl" value={certUrl} desc="PNG em alta resolução — A4 paisagem" rec="2480×1748px (mín.)" fileRef={certUrlRef} uploading={uploading} onUpload={uploadImagem} />
+        <LogoCard label="Template do certificado" campo="certUrl" value={certUrl} desc="PNG em alta resolução — A4 paisagem" rec="2480×1748px (mín.)" fileRef={certUrlRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
 
         {/* Logos esquerda e direita do certificado */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <LogoCard label="Logo esquerda (certificado)" campo="certLogoEsquerda" value={certLogoEsquerda} desc="Ex: logo da escola/empresa" rec="PNG transparente" fileRef={certLogoEsquerdaRef} uploading={uploading} onUpload={uploadImagem} />
-          <LogoCard label="Logo direita (certificado)" campo="certLogoDireita" value={certLogoDireita} desc="Ex: logo da parceira/credenciadora" rec="PNG transparente" fileRef={certLogoDireitaRef} uploading={uploading} onUpload={uploadImagem} />
+          <LogoCard label="Logo esquerda (certificado)" campo="certLogoEsquerda" value={certLogoEsquerda} desc="Ex: logo da escola/empresa" rec="PNG transparente" fileRef={certLogoEsquerdaRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
+          <LogoCard label="Logo direita (certificado)" campo="certLogoDireita" value={certLogoDireita} desc="Ex: logo da parceira/credenciadora" rec="PNG transparente" fileRef={certLogoDireitaRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
         </div>
 
         {/* Posição e tamanho dos logos */}
@@ -658,6 +707,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
                 fileRef={certAssinaturaUrlRef}
                 uploading={uploading}
                 onUpload={uploadImagem}
+                onDelete={deletarImagem}
               />
               {/* Nome e cargo */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -703,11 +753,11 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
                 position: 'absolute', left: '50%', transform: 'translateX(-50%)',
                 top: `${certNomeY}%`, width: '80%', textAlign: 'center',
                 fontFamily: 'Georgia, serif', fontWeight: 700,
-                fontSize: `${Number(certNomeTamanho) * 0.8}cqw`,
+                fontSize: `${Math.min(Number(certNomeTamanho) || 4.5, 15)}cqw`,
                 color: certNomeCor, textTransform: 'uppercase' as const,
                 letterSpacing: 2, pointerEvents: 'none', lineHeight: 1.2,
               }}>
-                NOME DO CONSULTOR
+                Nome do Aluno Exemplo
               </div>
               {/* Logo esquerda — usa cert ou fallback carteirinha */}
               {(certLogoEsquerda || carteiraLogoEsquerda) && (

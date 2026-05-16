@@ -180,7 +180,7 @@ export default function CertificadoPopup({
               position: 'absolute', left: '50%', transform: 'translateX(-50%)',
               top: `${nomeY}%`, width: '70%', textAlign: 'center',
               fontFamily: 'Georgia, serif', fontWeight: 700,
-              fontSize: `${nomeFontePct * 100}cqw`, color: nomeCor,
+              fontSize: `${Math.min(nomeFontePct * 100, 15)}cqw`, color: nomeCor,
               textTransform: 'uppercase', letterSpacing: 2, lineHeight: 1.2,
               pointerEvents: 'none',
             }}>

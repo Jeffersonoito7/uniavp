@@ -5,6 +5,9 @@ type Template = {
   id: string; tipo: string; titulo: string; arte_url: string;
   foto_x: number; foto_y: number; foto_largura: number; foto_altura: number;
   foto_redondo: boolean; ativo: boolean; formato: string; gestor_id: string | null;
+  texto_ativo?: boolean; texto_template?: string;
+  texto_x?: number; texto_y?: number; texto_tamanho?: number;
+  texto_cor?: string; texto_negrito?: boolean; texto_alinhamento?: string; texto_sombra?: boolean;
 }
 
 type Formato = 'feed' | 'stories'
@@ -317,6 +320,88 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
                         style={{ width: 15, height: 15, accentColor: 'var(--avp-green)' }} />
                       <span style={{ fontSize: 13, color: 'var(--avp-text-dim)' }}>Foto em formato circular</span>
                     </label>
+
+                    {/* ── TEXTO DE SOBREPOSIÇÃO ── */}
+                    <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 12, marginTop: 4 }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 10 }}>
+                        <input type="checkbox" checked={t.texto_ativo ?? false}
+                          onChange={e => atualizar(t.id, 'texto_ativo', e.target.checked)}
+                          style={{ width: 15, height: 15, accentColor: '#8b5cf6' }} />
+                        <span style={{ fontSize: 13, fontWeight: 700 }}>✍️ Sobrepor nome na arte</span>
+                      </label>
+
+                      {t.texto_ativo && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingLeft: 4 }}>
+                          <div>
+                            <label style={labelStyle}>Texto (use {'{nome}'} para o nome do consultor)</label>
+                            <input type="text" style={inputStyle}
+                              value={t.texto_template ?? '{nome}'}
+                              onChange={e => atualizar(t.id, 'texto_template', e.target.value)}
+                              placeholder="Ex: Parabéns {nome}!" />
+                            <p style={{ fontSize: 11, color: '#8b5cf6', marginTop: 3 }}>
+                              Preview: {(t.texto_template ?? '{nome}').replace('{nome}', 'Jefferson Soares')}
+                            </p>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                            <div>
+                              <label style={labelStyle}>X (%)</label>
+                              <input type="number" min={0} max={100} style={inputStyle}
+                                value={t.texto_x ?? 50}
+                                onChange={e => atualizar(t.id, 'texto_x', Number(e.target.value))} />
+                            </div>
+                            <div>
+                              <label style={labelStyle}>Y (%)</label>
+                              <input type="number" min={0} max={100} style={inputStyle}
+                                value={t.texto_y ?? 85}
+                                onChange={e => atualizar(t.id, 'texto_y', Number(e.target.value))} />
+                            </div>
+                            <div>
+                              <label style={labelStyle}>Tamanho (%)</label>
+                              <input type="number" min={1} max={20} step={0.5} style={inputStyle}
+                                value={t.texto_tamanho ?? 5}
+                                onChange={e => atualizar(t.id, 'texto_tamanho', Number(e.target.value))} />
+                            </div>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                            <div>
+                              <label style={labelStyle}>Cor do texto</label>
+                              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                <input type="color" value={t.texto_cor ?? '#FFFFFF'}
+                                  onChange={e => atualizar(t.id, 'texto_cor', e.target.value)}
+                                  style={{ width: 36, height: 32, border: 'none', borderRadius: 6, cursor: 'pointer', background: 'none' }} />
+                                <input type="text" style={{ ...inputStyle, flex: 1 }}
+                                  value={t.texto_cor ?? '#FFFFFF'}
+                                  onChange={e => atualizar(t.id, 'texto_cor', e.target.value)} />
+                              </div>
+                            </div>
+                            <div>
+                              <label style={labelStyle}>Alinhamento</label>
+                              <select style={{ ...inputStyle, cursor: 'pointer' }}
+                                value={t.texto_alinhamento ?? 'center'}
+                                onChange={e => atualizar(t.id, 'texto_alinhamento', e.target.value)}>
+                                <option value="left">Esquerda</option>
+                                <option value="center">Centro</option>
+                                <option value="right">Direita</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: 16 }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 13 }}>
+                              <input type="checkbox" checked={t.texto_negrito ?? true}
+                                onChange={e => atualizar(t.id, 'texto_negrito', e.target.checked)}
+                                style={{ accentColor: '#8b5cf6' }} />
+                              <span style={{ color: 'var(--avp-text-dim)' }}>Negrito</span>
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 13 }}>
+                              <input type="checkbox" checked={t.texto_sombra ?? true}
+                                onChange={e => atualizar(t.id, 'texto_sombra', e.target.checked)}
+                                style={{ accentColor: '#8b5cf6' }} />
+                              <span style={{ color: 'var(--avp-text-dim)' }}>Sombra (legibilidade)</span>
+                            </label>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {t.arte_url ? (

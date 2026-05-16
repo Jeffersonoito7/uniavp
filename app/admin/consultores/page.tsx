@@ -18,7 +18,7 @@ export default async function ConsultoresPage() {
   return (
     <AdminLayout>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Consultores</h1>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>UNIAVP FREE</h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Gerencie os consultores cadastrados</p>
       </div>
       <ConsultoresCliente consultoresIniciais={consultores ?? []} />
