@@ -70,11 +70,11 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   }
 
   const [planoPROValor, setPlanoPROValor] = useState(get('plano_pro_valor') || '97')
-  const [logoUrl, setLogoUrl] = useState(() => bustCache(get('site_logo_url')))
-  const [logoMenuUrl, setLogoMenuUrl] = useState(() => bustCache(get('logo_menu_url')))
-  const [logoPaginaUrl, setLogoPaginaUrl] = useState(() => bustCache(get('logo_pagina_url')))
-  const [logoFaviconUrl, setLogoFaviconUrl] = useState(() => bustCache(get('logo_favicon_url')))
-  const [logoMobileUrl, setLogoMobileUrl] = useState(() => bustCache(get('logo_mobile_url')))
+  const [logoUrl, setLogoUrl] = useState(get('site_logo_url'))
+  const [logoMenuUrl, setLogoMenuUrl] = useState(get('logo_menu_url'))
+  const [logoPaginaUrl, setLogoPaginaUrl] = useState(get('logo_pagina_url'))
+  const [logoFaviconUrl, setLogoFaviconUrl] = useState(get('logo_favicon_url'))
+  const [logoMobileUrl, setLogoMobileUrl] = useState(get('logo_mobile_url'))
   const [nome, setNome] = useState(get('site_nome'))
   const [slogan, setSlogan] = useState(get('site_slogan'))
   const [corPrimaria, setCorPrimaria] = useState(get('site_cor_primaria') || '#333687')
@@ -91,17 +91,17 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [carteiraAssinaturaEmpresa, setCarteiraAssinaturaEmpresa] = useState(get('carteira_assinatura_empresa'))
   const [carteiraUrlVerificacao, setCarteiraUrlVerificacao] = useState(get('carteira_url_verificacao'))
   const [carteiraTagline, setCarteiraTagline] = useState(get('carteira_tagline'))
-  const [carteiraLogoEsquerda, setCarteiraLogoEsquerda] = useState(() => bustCache(get('carteira_logo_esquerda')))
-  const [carteiraLogoDireita, setCarteiraLogoDireita] = useState(() => bustCache(get('carteira_logo_direita')))
-  const [carteiraAssinaturaUrl, setCarteiraAssinaturaUrl] = useState(() => bustCache(get('carteira_assinatura_url')))
+  const [carteiraLogoEsquerda, setCarteiraLogoEsquerda] = useState(get('carteira_logo_esquerda'))
+  const [carteiraLogoDireita, setCarteiraLogoDireita] = useState(get('carteira_logo_direita'))
+  const [carteiraAssinaturaUrl, setCarteiraAssinaturaUrl] = useState(get('carteira_assinatura_url'))
   const [boletoMensagem, setBoletoMensagem] = useState(get('boleto_mensagem'))
   const [boletoInstrucoes, setBoletoInstrucoes] = useState(get('boleto_instrucoes'))
   const [boletoMulta, setBoletoMulta] = useState(get('boleto_multa') || '2')
   const [boletoJuros, setBoletoJuros] = useState(get('boleto_juros') || '1')
-  const [moduloCapaPadrao, setModuloCapaPadrao] = useState(() => bustCache(get('modulo_capa_padrao')))
+  const [moduloCapaPadrao, setModuloCapaPadrao] = useState(get('modulo_capa_padrao'))
   const moduloCapaRef = useRef<HTMLInputElement>(null)
   const [captacaoVideoId, setCaptacaoVideoId] = useState(get('captacao_video_id') || '')
-  const [certUrl, setCertUrl] = useState(() => bustCache(get('certificado_template_url')))
+  const [certUrl, setCertUrl] = useState(get('certificado_template_url'))
   const [certNomeX, setCertNomeX] = useState(get('certificado_nome_x') || '50')
   const [certNomeY, setCertNomeY] = useState(get('certificado_nome_y') || '62')
   const [certNomeTamanho, setCertNomeTamanho] = useState(get('certificado_nome_tamanho') || '4.5')
@@ -111,14 +111,14 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [certDataY, setCertDataY] = useState(get('certificado_data_y') || '72')
   const [certDataTamanho, setCertDataTamanho] = useState(get('certificado_data_tamanho') || '36')
   const [certDataCor, setCertDataCor] = useState(get('certificado_data_cor') || '#1a1a2e')
-  const [certLogoEsquerda, setCertLogoEsquerda] = useState(() => bustCache(get('cert_logo_esquerda')))
-  const [certLogoDireita, setCertLogoDireita] = useState(() => bustCache(get('cert_logo_direita')))
+  const [certLogoEsquerda, setCertLogoEsquerda] = useState(get('cert_logo_esquerda'))
+  const [certLogoDireita, setCertLogoDireita] = useState(get('cert_logo_direita'))
   const [certLogoY, setCertLogoY] = useState(get('cert_logo_y') || '88')
   const [certLogoTam, setCertLogoTam] = useState(get('cert_logo_tam') || '10')
   const [certAssinaturaY, setCertAssinaturaY] = useState(get('cert_assinatura_y') || '82')
   // Padrão true: template limpo recebe sobreposição de assinatura
   const [certAssinaturaAtiva, setCertAssinaturaAtiva] = useState(get('cert_assinatura_ativa') !== 'false')
-  const [certAssinaturaUrl, setCertAssinaturaUrl] = useState(() => bustCache(get('cert_assinatura_url')))
+  const [certAssinaturaUrl, setCertAssinaturaUrl] = useState(get('cert_assinatura_url'))
   const [certAssinaturaNome, setCertAssinaturaNome] = useState(get('cert_assinatura_nome'))
   const [certAssinaturaCargo, setCertAssinaturaCargo] = useState(get('cert_assinatura_cargo'))
   const [salvando, setSalvando] = useState(false)
@@ -207,8 +207,8 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         return
       }
 
-      // Atualiza preview com URL permanente
-      const publicUrl = data.url
+      // Atualiza preview com URL permanente + cache bust para forçar reload
+      const publicUrl = bustCache(data.url)
       if (isCert) setCertUrl(publicUrl)
       else setters[campo]?.(publicUrl)
 
