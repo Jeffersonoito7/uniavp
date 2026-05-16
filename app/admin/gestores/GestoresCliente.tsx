@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import PhoneInput from '@/app/components/PhoneInput'
 
 type Gestor = {
@@ -13,8 +13,10 @@ type Gestor = {
 
 function LinkCopiavel({ label, url, desc }: { label: string; url: string; desc: string }) {
   const [copiado, setCopiado] = useState(false)
+  const [fullUrl, setFullUrl] = useState(url)
+  useEffect(() => { setFullUrl(`${window.location.origin}${url}`) }, [url])
   function copiar() {
-    navigator.clipboard.writeText(url)
+    navigator.clipboard.writeText(fullUrl)
     setCopiado(true)
     setTimeout(() => setCopiado(false), 2000)
   }
@@ -23,7 +25,7 @@ function LinkCopiavel({ label, url, desc }: { label: string; url: string; desc: 
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>{label}</p>
         <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 4 }}>{desc}</p>
-        <p style={{ fontSize: 12, color: 'var(--avp-blue)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{url}</p>
+        <p style={{ fontSize: 12, color: 'var(--avp-blue)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fullUrl}</p>
       </div>
       <button onClick={copiar}
         style={{ background: copiado ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
@@ -237,7 +239,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
         <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 16 }}>Envie este link para novos PROs se cadastrarem na plataforma.</p>
         <LinkCopiavel
           label="Cadastro PRO direto"
-          url={typeof window !== 'undefined' ? `${window.location.origin}/captacao?direto=1&plano=pro` : '/captacao?direto=1&plano=pro'}
+          url="/captacao?direto=1&plano=pro"
           desc="Cadastro rápido + pagamento PRO automático."
         />
       </div>

@@ -1,9 +1,10 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 function BotaoCopiar({ url, label, desc, icon }: { url: string; label: string; desc: string; icon: string }) {
   const [copiado, setCopiado] = useState(false)
-  const fullUrl = typeof window !== 'undefined' ? `${window.location.origin}${url}` : url
+  const [fullUrl, setFullUrl] = useState(url)
+  useEffect(() => { setFullUrl(`${window.location.origin}${url}`) }, [url])
 
   function copiar() {
     navigator.clipboard.writeText(fullUrl)

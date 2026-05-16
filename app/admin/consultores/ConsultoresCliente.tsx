@@ -1,11 +1,12 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ImportarXLS from './ImportarXLS'
 import PhoneInput from '@/app/components/PhoneInput'
 
 function LinkFreeCard() {
   const [copiado, setCopiado] = useState(false)
-  const url = typeof window !== 'undefined' ? `${window.location.origin}/captacao?direto=1` : '/captacao?direto=1'
+  const [url, setUrl] = useState('/captacao?direto=1')
+  useEffect(() => { setUrl(`${window.location.origin}/captacao?direto=1`) }, [])
   function copiar() { navigator.clipboard.writeText(url); setCopiado(true); setTimeout(() => setCopiado(false), 2000) }
   return (
     <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, marginBottom: 20 }}>
