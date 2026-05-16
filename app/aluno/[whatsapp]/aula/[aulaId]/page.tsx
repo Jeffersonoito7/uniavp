@@ -79,6 +79,30 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   const { data: arquivos } = await (adminClient.from('aula_arquivos') as any)
     .select('*').eq('aula_id', params.aulaId).order('created_at')
 
+  // Regras globais de aprendizado
+  const { data: regrasRaw } = await (adminClient.from('configuracoes') as any)
+    .select('chave, valor')
+    .in('chave', ['free_quiz_obrigatorio', 'free_bloquear_video', 'pro_quiz_obrigatorio', 'pro_bloquear_video'])
+  const regras: Record<string, string> = {}
+  for (const r of regrasRaw ?? []) regras[r.chave] = r.valor
+
+  // Verifica se o aluno é também gestor (PRO)
+  const { data: gestorRow } = await (adminClient.from('gestores') as any)
+    .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  const isPro = !!gestorRow
+
+  const quizObrigatorioGlobal = isPro
+    ? regras['pro_quiz_obrigatorio'] !== 'false'
+    : regras['free_quiz_obrigatorio'] !== 'false'
+  const bloquearVideoGlobal = isPro
+    ? regras['pro_bloquear_video'] !== 'false'
+    : regras['free_bloquear_video'] !== 'false'
+
+  // Aplica regra global: se quiz obrigatório, força tipo 'obrigatorio'; senão mantém o da aula
+  const quizTipoEfetivo = quizObrigatorioGlobal ? 'obrigatorio' : (aula.quiz_tipo ?? 'indicativo')
+  // Aplica regra global: bloquear vídeo substitui config da aula
+  const bloquearAvancarEfetivo = bloquearVideoGlobal || !!(aula as any).bloquear_avancar
+
   // Quiz
   const { data: questoesRaw } = await (adminClient.from('questoes') as any)
     .select('id, enunciado, alternativas, explicacao, ordem')
@@ -141,7 +165,7 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
             youtubeId={(!temAoVivo || aoVivoPassou) ? aula.youtube_video_id : null}
             videoUrl={(!temAoVivo || aoVivoPassou) ? (aula as any).video_url : null}
             titulo={aula.titulo}
-            bloquearAvancar={!!(aula as any).bloquear_avancar}
+            bloquearAvancar={bloquearAvancarEfetivo}
             aulaAnterior={aulaAnteriorNav}
             proximaAula={proximaAulaNav}
             proximaStatus={proximaStatus}
@@ -149,7 +173,7 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
             aprovacaoMinima={aula.quiz_aprovacao_minima}
             jaAprovado={jaAprovado}
             tentativasAnteriores={tentativasAnteriores}
-            quizTipo={aula.quiz_tipo ?? 'obrigatorio'}
+            quizTipo={quizTipoEfetivo}
             simNaoPergunta={(aula as any).quiz_sim_nao_pergunta ?? ''}
             simNaoNaoMensagem={(aula as any).quiz_sim_nao_nao_mensagem ?? ''}
             simNaoPerguntas={(aula as any).quiz_sim_nao_perguntas ?? []}

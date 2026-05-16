@@ -112,6 +112,10 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [boletoMulta, setBoletoMulta] = useState(get('boleto_multa') || '2')
   const [boletoJuros, setBoletoJuros] = useState(get('boleto_juros') || '1')
   const [moduloCapaPadrao, setModuloCapaPadrao] = useState(get('modulo_capa_padrao'))
+  const [freeQuizObrigatorio, setFreeQuizObrigatorio] = useState(get('free_quiz_obrigatorio') !== 'false')
+  const [freeBloquearVideo, setFreeBloquearVideo] = useState(get('free_bloquear_video') !== 'false')
+  const [proQuizObrigatorio, setProQuizObrigatorio] = useState(get('pro_quiz_obrigatorio') !== 'false')
+  const [proBloquearVideo, setProBloquearVideo] = useState(get('pro_bloquear_video') !== 'false')
   const moduloCapaRef = useRef<HTMLInputElement>(null)
   const [captacaoVideoId, setCaptacaoVideoId] = useState(get('captacao_video_id') || '')
   const [certUrl, setCertUrl] = useState(get('certificado_template_url'))
@@ -305,6 +309,10 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         { chave: 'boleto_juros', valor: boletoJuros },
         ...(urlSafe(moduloCapaPadrao) ? [{ chave: 'modulo_capa_padrao', valor: moduloCapaPadrao }] : []),
         { chave: 'captacao_video_id', valor: captacaoVideoId },
+        { chave: 'free_quiz_obrigatorio', valor: String(freeQuizObrigatorio) },
+        { chave: 'free_bloquear_video', valor: String(freeBloquearVideo) },
+        { chave: 'pro_quiz_obrigatorio', valor: String(proQuizObrigatorio) },
+        { chave: 'pro_bloquear_video', valor: String(proBloquearVideo) },
         ...(urlSafe(certUrl) ? [{ chave: 'certificado_template_url', valor: certUrl }] : []),
         ...(urlSafe(certLogoEsquerda) ? [{ chave: 'cert_logo_esquerda', valor: certLogoEsquerda }] : []),
         ...(urlSafe(certLogoDireita) ? [{ chave: 'cert_logo_direita', valor: certLogoDireita }] : []),
@@ -635,6 +643,54 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
             </div>
           )
         })()}
+      </div>
+
+      {/* REGRAS DE APRENDIZADO */}
+      <div style={card}>
+        <p style={{ fontWeight: 800, fontSize: 16 }}>📚 Regras de Aprendizado</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8, lineHeight: 1.6 }}>
+          Controle o comportamento das aulas para cada tipo de usuário. Essas regras se aplicam globalmente, independente da configuração individual de cada aula.
+        </p>
+
+        {([
+          { titulo: '🆓 Usuários FREE', quizKey: 'freeQuiz', videoKey: 'freeVideo', quiz: freeQuizObrigatorio, setQuiz: setFreeQuizObrigatorio, video: freeBloquearVideo, setVideo: setFreeBloquearVideo },
+          { titulo: '✨ Usuários PRO', quizKey: 'proQuiz', videoKey: 'proVideo', quiz: proQuizObrigatorio, setQuiz: setProQuizObrigatorio, video: proBloquearVideo, setVideo: setProBloquearVideo },
+        ] as const).map(({ titulo, quiz, setQuiz, video, setVideo, quizKey, videoKey }) => (
+          <div key={quizKey} style={{ background: 'var(--avp-black)', borderRadius: 10, padding: '16px 20px' }}>
+            <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 14 }}>{titulo}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+              {/* Quiz obrigatório */}
+              <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', gap: 12 }}>
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: 13, margin: 0 }}>Quiz obrigatório para avançar</p>
+                  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
+                    {quiz ? 'Aluno deve responder e ser aprovado no quiz antes da próxima aula' : 'Aluno pode pular o quiz e avançar livremente'}
+                  </p>
+                </div>
+                <div onClick={() => setQuiz(v => !v)}
+                  style={{ width: 44, height: 24, borderRadius: 12, background: quiz ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', flexShrink: 0, cursor: 'pointer', transition: 'background 0.2s' }}>
+                  <div style={{ position: 'absolute', top: 3, left: quiz ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.3)' }} />
+                </div>
+              </label>
+
+              {/* Bloquear avanço do vídeo */}
+              <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', gap: 12 }}>
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: 13, margin: 0 }}>Bloquear avanço do vídeo</p>
+                  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
+                    {video ? 'Aluno deve assistir o vídeo do início ao fim, sem poder avançar' : 'Aluno pode avançar o vídeo livremente'}
+                  </p>
+                </div>
+                <div onClick={() => setVideo(v => !v)}
+                  style={{ width: 44, height: 24, borderRadius: 12, background: video ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', flexShrink: 0, cursor: 'pointer', transition: 'background 0.2s' }}>
+                  <div style={{ position: 'absolute', top: 3, left: video ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.3)' }} />
+                </div>
+              </label>
+
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* CERTIFICADO */}
