@@ -3,6 +3,28 @@ import { useState } from 'react'
 import ImportarXLS from './ImportarXLS'
 import PhoneInput from '@/app/components/PhoneInput'
 
+function LinkFreeCard() {
+  const [copiado, setCopiado] = useState(false)
+  const url = typeof window !== 'undefined' ? `${window.location.origin}/captacao?direto=1` : '/captacao?direto=1'
+  function copiar() { navigator.clipboard.writeText(url); setCopiado(true); setTimeout(() => setCopiado(false), 2000) }
+  return (
+    <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, marginBottom: 20 }}>
+      <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>🔗 Link de Cadastro FREE</p>
+      <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 14 }}>Envie este link para novos membros FREE se cadastrarem na plataforma.</p>
+      <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>Cadastro FREE (sem funil)</p>
+          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 4 }}>Link direto para cadastro FREE sem vídeo de apresentação.</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-blue)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{url}</p>
+        </div>
+        <button onClick={copiar} style={{ background: copiado ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+          {copiado ? '✓ Copiado' : 'Copiar'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 type Consultor = {
   id: string
   nome: string
@@ -148,6 +170,9 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
           {msg.texto}
         </div>
       )}
+
+      {/* Link de captação FREE */}
+      <LinkFreeCard />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
         <input

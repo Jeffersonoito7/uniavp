@@ -231,22 +231,15 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
         </div>
       )}
 
-      {/* Links de captação */}
+      {/* Links de captação PRO */}
       <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, marginBottom: 20 }}>
-        <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>🔗 Links de Captação</p>
-        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 16 }}>Envie estes links para que PROs e FREEs se cadastrem na plataforma.</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <LinkCopiavel
-            label="Cadastro PRO direto"
-            url={typeof window !== 'undefined' ? `${window.location.origin}/captacao?direto=1&plano=pro` : '/captacao?direto=1&plano=pro'}
-            desc="Cadastro rápido + pagamento PRO automático."
-          />
-          <LinkCopiavel
-            label="Cadastro FREE (geral)"
-            url={typeof window !== 'undefined' ? `${window.location.origin}/captacao?direto=1` : '/captacao?direto=1'}
-            desc="Link direto para cadastro FREE sem funil."
-          />
-        </div>
+        <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>🔗 Link de Captação PRO</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 16 }}>Envie este link para novos PROs se cadastrarem na plataforma.</p>
+        <LinkCopiavel
+          label="Cadastro PRO direto"
+          url={typeof window !== 'undefined' ? `${window.location.origin}/captacao?direto=1&plano=pro` : '/captacao?direto=1&plano=pro'}
+          desc="Cadastro rápido + pagamento PRO automático."
+        />
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
