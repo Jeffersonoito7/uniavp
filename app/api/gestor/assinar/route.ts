@@ -44,7 +44,7 @@ export async function POST() {
   // Lê valor configurado no painel admin (padrão 97)
   const { data: valorCfg } = await (adminClient.from('configuracoes') as any)
     .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
-  const valorStr = valorCfg?.valor ? String(valorCfg.valor).replace(/"/g, '') : '147'
+  const valorStr = valorCfg?.valor ? String(valorCfg.valor).replace(/"/g, '') : '97'
   const valorPlano = Math.max(1, parseFloat(valorStr) || 97)
 
   // Gera vencimento: 3 dias a partir de hoje
