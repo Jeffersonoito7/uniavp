@@ -122,7 +122,7 @@ export default function PerfilCliente({ aluno, email }: { aluno: Aluno; email: s
                   }
                   {uploadando && (
                     <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <div style={{ width: 24, height: 24, border: '3px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                      <SpinnerCircle />
                     </div>
                   )}
                 </div>
@@ -232,7 +232,17 @@ export default function PerfilCliente({ aluno, email }: { aluno: Aluno; email: s
         </div>
       </div>
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </>
+  )
+}
+
+function SpinnerCircle() {
+  const [deg, setDeg] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setDeg(d => (d + 12) % 360), 33)
+    return () => clearInterval(id)
+  }, [])
+  return (
+    <div style={{ width: 24, height: 24, border: '3px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', transform: `rotate(${deg}deg)` }} />
   )
 }

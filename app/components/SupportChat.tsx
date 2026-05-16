@@ -73,7 +73,6 @@ export default function SupportChat({ painel }: { painel?: string }) {
             position: 'absolute', top: 0, right: 0,
             width: 14, height: 14, borderRadius: '50%',
             background: '#02A153', border: '2px solid var(--avp-black)',
-            animation: 'pulse 2s infinite',
           }} />
         )}
       </button>
@@ -87,7 +86,7 @@ export default function SupportChat({ painel }: { painel?: string }) {
           borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
           display: 'flex', flexDirection: 'column',
           maxHeight: '70vh', overflow: 'hidden',
-          animation: 'slideUp 0.2s ease',
+          transition: 'opacity 0.2s ease',
         }}>
           {/* Header */}
           <div style={{
@@ -123,9 +122,7 @@ export default function SupportChat({ painel }: { painel?: string }) {
             {loading && (
               <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
                 <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: '12px 12px 12px 4px', padding: '9px 16px', display: 'flex', gap: 4, alignItems: 'center' }}>
-                  {[0, 1, 2].map(i => (
-                    <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--avp-text-dim)', animation: `bounce 1s ${i * 0.2}s infinite` }} />
-                  ))}
+                  <span style={{ fontSize: 13, color: 'var(--avp-text-dim)' }}>digitando...</span>
                 </div>
               </div>
             )}
@@ -158,11 +155,6 @@ export default function SupportChat({ painel }: { painel?: string }) {
         </div>
       )}
 
-      <style>{`
-        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.3)} }
-        @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
-        @keyframes slideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-      `}</style>
     </>
   )
 }
