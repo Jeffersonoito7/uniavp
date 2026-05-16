@@ -7,12 +7,12 @@ import { z } from 'zod'
 export const dynamic = 'force-dynamic'
 
 const schema = z.object({
-  nome: z.string().min(2),
-  whatsapp: z.string().min(10),
-  email: z.string().email(),
-  senha: z.string().min(6),
-  gestor_nome: z.string().min(2),
-  gestor_whatsapp: z.string().regex(/^\d{10,13}$/),
+  nome: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
+  whatsapp: z.string().min(10, 'WhatsApp inválido'),
+  email: z.string().email('E-mail inválido'),
+  senha: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
+  gestor_nome: z.string().min(2, 'Nome do PRO deve ter pelo menos 2 caracteres'),
+  gestor_whatsapp: z.string().regex(/^\d{10,13}$/, 'WhatsApp do PRO inválido'),
   indicador_whatsapp: z.string().optional(),
 })
 
