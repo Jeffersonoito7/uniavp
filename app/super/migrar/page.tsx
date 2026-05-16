@@ -6,6 +6,8 @@ type Migration = { id: string; descricao: string; sql: string; aplicada: boolean
 export default function MigrarPage() {
   const [migrations, setMigrations] = useState<Migration[]>([])
   const [copiado, setCopiado] = useState<string | null>(null)
+  const [executando, setExecutando] = useState<string | null>(null)
+  const [resultado, setResultado] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -19,6 +21,25 @@ export default function MigrarPage() {
     navigator.clipboard.writeText(sql)
     setCopiado(id)
     setTimeout(() => setCopiado(null), 3000)
+  }
+
+  async function executar(id: string) {
+    setExecutando(id)
+    setResultado(prev => ({ ...prev, [id]: '' }))
+    const res = await fetch('/api/super/migrar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      setResultado(prev => ({ ...prev, [id]: 'ok' }))
+      // Recarrega status
+      fetch('/api/super/migrar').then(r => r.json()).then(d => setMigrations(d.migrations ?? []))
+    } else {
+      setResultado(prev => ({ ...prev, [id]: data.error || 'Erro desconhecido' }))
+    }
+    setExecutando(null)
   }
 
   const pendentes = migrations.filter(m => !m.aplicada)
@@ -57,19 +78,25 @@ export default function MigrarPage() {
                       <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>{m.id}</p>
                       <p style={{ color: '#8a8fa3', fontSize: 13, margin: '3px 0 0' }}>{m.descricao}</p>
                     </div>
-                    <button onClick={() => copiar(m.sql, m.id)}
-                      style={{ background: copiado === m.id ? '#22c55e' : 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s' }}>
-                      {copiado === m.id ? '✓ Copiado!' : '📋 Copiar SQL'}
-                    </button>
+                    <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                      <button onClick={() => executar(m.id)} disabled={executando === m.id}
+                        style={{ background: resultado[m.id] === 'ok' ? '#22c55e' : 'linear-gradient(135deg, #f59e0b, #ef4444)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: executando === m.id ? 0.7 : 1 }}>
+                        {executando === m.id ? '⏳ Executando...' : resultado[m.id] === 'ok' ? '✅ Aplicada!' : '▶ Executar'}
+                      </button>
+                      <button onClick={() => copiar(m.sql, m.id)}
+                        style={{ background: copiado === m.id ? '#22c55e' : '#252836', color: '#fff', border: '1px solid #252836', borderRadius: 8, padding: '9px 16px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                        {copiado === m.id ? '✓' : '📋'}
+                      </button>
+                    </div>
                   </div>
                   <pre style={{ margin: 0, padding: '16px 20px', fontSize: 12, color: '#a5b4fc', lineHeight: 1.7, overflowX: 'auto', background: 'rgba(99,102,241,0.05)' }}>
                     {m.sql}
                   </pre>
-                  <div style={{ padding: '12px 20px', background: 'rgba(248,113,113,0.05)', borderTop: '1px solid rgba(248,113,113,0.15)', fontSize: 12, color: '#8a8fa3' }}>
-                    1. Copie o SQL acima → 2. Abra o{' '}
-                    <a href="https://supabase.com/dashboard/project/_/sql/new" target="_blank" rel="noreferrer" style={{ color: '#818cf8' }}>Supabase SQL Editor</a>
-                    {' '}→ 3. Cole e clique em <strong style={{ color: '#f0f1f5' }}>Run</strong> → 4. Volte aqui para confirmar
-                  </div>
+                  {resultado[m.id] && resultado[m.id] !== 'ok' && (
+                    <div style={{ padding: '12px 20px', background: 'rgba(248,113,113,0.08)', borderTop: '1px solid rgba(248,113,113,0.2)', fontSize: 12, color: '#f87171', fontFamily: 'monospace' }}>
+                      ❌ {resultado[m.id]}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
