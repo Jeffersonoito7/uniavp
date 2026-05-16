@@ -5,24 +5,23 @@ import { useEffect, useState } from 'react'
 import {
   LayoutDashboard, BookOpen, Users, ShieldCheck,
   Trophy, Settings, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper, Star,
-  Menu, X, ChevronLeft, ChevronRight, UsersRound, Link2
+  Menu, X, ChevronLeft, ChevronRight, Link2
 } from 'lucide-react'
 import LogoutButton from '@/app/components/LogoutButton'
 import SupportChat from '@/app/components/SupportChat'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/captacao', label: 'Links de Captação', icon: Link2 },
-  { href: '/admin/crm', label: 'CRM', icon: BarChart3 },
-  { href: '/admin/modulos', label: 'Módulos', icon: BookOpen },
-  { href: '/admin/usuarios', label: 'Usuários', icon: UsersRound },
   { href: '/admin/consultores', label: 'FREE', icon: Users },
   { href: '/admin/gestores', label: 'PRO', icon: UserCog },
   { href: '/admin/admins', label: 'Gerentes', icon: ShieldCheck },
+  { href: '/admin/crm', label: 'CRM', icon: BarChart3 },
+  { href: '/admin/modulos', label: 'Módulos', icon: BookOpen },
+  { href: '/admin/eventos', label: 'Eventos', icon: Calendar },
+  { href: '/admin/noticias', label: 'Notícias', icon: Newspaper },
+  { href: '/admin/captacao', label: 'Links de Captação', icon: Link2 },
   { href: '/admin/ranking', label: 'Ranking', icon: Trophy },
   { href: '/admin/premios', label: 'Prêmios', icon: Gift },
-  { href: '/admin/noticias', label: 'Notícias', icon: Newspaper },
-  { href: '/admin/eventos', label: 'Eventos', icon: Calendar },
   { href: '/admin/artes', label: 'Artes', icon: Palette },
   { href: '/admin/reacoes', label: 'Reações', icon: Star },
   { href: '/admin/configuracoes', label: 'Configurações', icon: Settings },
