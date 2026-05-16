@@ -191,7 +191,7 @@ export default async function CRMPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ background: 'var(--avp-black)' }}>
-                {['Nome', 'WhatsApp', 'Gestor', 'Módulo Atual', 'Aulas', 'Pontos', 'Status', 'Cadastro'].map(h => (
+                {['Nome', 'WhatsApp', 'PRO', 'Módulo Atual', 'Aulas', 'Pontos', 'Status', 'Cadastro'].map(h => (
                   <th key={h} style={{ padding: '10px 16px', textAlign: 'left', color: 'var(--avp-text-dim)', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>

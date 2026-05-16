@@ -231,8 +231,8 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16, marginBottom: 28 }}>
               {[
-                { label: 'Consultores', valor: stats.totalAlunos, icon: '👥' },
-                { label: 'Gestores', valor: stats.totalGestores, icon: '🧑‍💼' },
+                { label: 'FREE', valor: stats.totalAlunos, icon: '👥' },
+                { label: 'PRO', valor: stats.totalGestores, icon: '🧑‍💼' },
                 { label: 'Admins', valor: stats.totalAdmins, icon: '🛡️' },
                 { label: 'Módulos', valor: stats.totalModulos, icon: '📚' },
                 { label: 'Aulas', valor: stats.totalAulas, icon: '🎬' },
@@ -293,7 +293,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
                 {[
                   { icon: '🛡️', label: 'Admin', link: `${BASE_URL}/admin`, cor: '#6366f1' },
-                  { icon: '🧑‍💼', label: 'Gestor', link: `${BASE_URL}/gestor`, cor: '#f59e0b' },
+                  { icon: '🧑‍💼', label: 'PRO', link: `${BASE_URL}/gestor`, cor: '#f59e0b' },
                   { icon: '🌐', label: 'Captação', link: `${BASE_URL}/captacao`, cor: '#02A153' },
                   { icon: '🔑', label: 'Login', link: `${BASE_URL}/login`, cor: '#8a8fa3' },
                 ].map(p => (
@@ -420,8 +420,8 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 32 }}>
                 {[
                   { tipo: 'empresa' as const, icon: '🏢', label: 'Empresa', desc: 'Nova empresa cliente da plataforma' },
-                  { tipo: 'gestor' as const, icon: '🧑‍💼', label: 'Gestor', desc: 'Gestor vinculado a uma empresa' },
-                  { tipo: 'consultor' as const, icon: '👤', label: 'Consultor', desc: 'Consultor de uma empresa cliente' },
+                  { tipo: 'gestor' as const, icon: '🧑‍💼', label: 'PRO', desc: 'Usuário PRO vinculado a uma empresa' },
+                  { tipo: 'consultor' as const, icon: '👤', label: 'FREE', desc: 'Usuário FREE de uma empresa cliente' },
                 ].map(({ tipo, icon, label, desc }) => (
                   <button key={tipo} onClick={() => setTipoNovo(tipo)}
                     style={{ background: '#181b24', border: '1px solid #252836', borderRadius: 14, padding: '28px 16px', cursor: 'pointer', textAlign: 'center', transition: 'border-color 0.2s' }}
@@ -458,8 +458,8 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                   <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '10px 12px', background: '#181b24', borderRadius: 8 }}>
                     <input type="checkbox" checked={form.gestor_ativo} onChange={e => setForm(p => ({ ...p, gestor_ativo: e.target.checked }))} style={{ width: 18, height: 18, accentColor: '#f59e0b', flexShrink: 0 }} />
                     <div>
-                      <p style={{ color: '#f0f1f5', fontSize: 13, fontWeight: 700 }}>Painel do Gestor <span style={{ color: '#f59e0b', fontSize: 11, fontWeight: 600 }}>(add-on — cobrado à parte)</span></p>
-                      <p style={{ fontSize: 11, color: '#8a8fa3', marginTop: 1 }}>A empresa cadastra seus próprios gestores · cada gestor gerencia até 30 consultores</p>
+                      <p style={{ color: '#f0f1f5', fontSize: 13, fontWeight: 700 }}>Painel PRO <span style={{ color: '#f59e0b', fontSize: 11, fontWeight: 600 }}>(add-on — cobrado à parte)</span></p>
+                      <p style={{ fontSize: 11, color: '#8a8fa3', marginTop: 1 }}>A empresa cadastra seus próprios PROs · cada PRO gerencia sua equipe FREE</p>
                     </div>
                   </label>
                 </div>
@@ -483,15 +483,15 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
               </div>
             )}
 
-            {/* Gestor — redireciona para o admin do cliente */}
+            {/* PRO — redireciona para o admin do cliente */}
             {tipoNovo === 'gestor' && (
               <div style={cardStyle}>
                 <button onClick={() => setTipoNovo('')} style={{ background: 'none', border: 'none', color: '#8a8fa3', cursor: 'pointer', fontSize: 13, padding: 0, marginBottom: 16 }}>
                   ← Voltar
                 </button>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>🧑‍💼</div>
-                <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Cadastrar Gestor</h2>
-                <p style={{ color: '#8a8fa3', fontSize: 14, marginBottom: 20 }}>Gestores são cadastrados pelo painel Admin de cada empresa cliente.</p>
+                <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Cadastrar PRO</h2>
+                <p style={{ color: '#8a8fa3', fontSize: 14, marginBottom: 20 }}>PROs são cadastrados pelo painel Admin de cada empresa cliente.</p>
                 <p style={{ fontSize: 13, color: '#8a8fa3', marginBottom: 16 }}>Acesse o painel Admin da empresa desejada:</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {clientes.filter(c => c.ativo).map(c => (

@@ -564,7 +564,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
       <div style={{ ...card }}>
         <p style={{ fontWeight: 800, fontSize: 16 }}>📚 Capa padrão dos módulos</p>
         <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8, lineHeight: 1.6 }}>
-          Imagem exibida nos módulos que não têm capa própria — aparece no painel Admin, Gestor e Consultor.
+          Imagem exibida nos módulos que não têm capa própria — aparece no painel Admin, PRO e FREE.
         </p>
         <LogoCard
           label="Imagem padrão dos módulos"

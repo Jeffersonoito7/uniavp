@@ -199,7 +199,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
               </div>
               <div>
                 <label style={labelStyle}>E-mail *</label>
-                <input type="email" style={inputStyle} value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} required placeholder="gestor@email.com" />
+                <input type="email" style={inputStyle} value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} required placeholder="pro@email.com" />
               </div>
               <div>
                 <label style={labelStyle}>WhatsApp *</label>
