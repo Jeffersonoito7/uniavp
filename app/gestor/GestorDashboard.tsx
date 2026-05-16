@@ -515,7 +515,7 @@ export default function GestorDashboard({
           {/* Cards de stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 14, marginBottom: 24 }}>
             {[
-              { label: 'Consultores ativos', value: totalAtivos, cor: 'var(--avp-text)' },
+              { label: 'FREE ativos', value: totalAtivos, cor: 'var(--avp-text)' },
               { label: 'Em andamento', value: emAndamento, cor: 'var(--avp-text)' },
               { label: 'Concluídos', value: concluidos, cor: 'var(--avp-green)' },
               { label: 'Progresso médio', value: `${mediaProgresso}%`, cor: '#3b82f6' },
@@ -573,8 +573,8 @@ export default function GestorDashboard({
               </button>
             </div>
             <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>👥 Consultores</p>
-              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 12 }}>{listaConsultores.length} consultor{listaConsultores.length !== 1 ? 'es' : ''} vinculado{listaConsultores.length !== 1 ? 's' : ''}</p>
+              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>👥 Minha Equipe FREE</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 12 }}>{listaConsultores.length} membro{listaConsultores.length !== 1 ? 's' : ''} vinculado{listaConsultores.length !== 1 ? 's' : ''}</p>
               <button onClick={() => handleSetAba('consultores')}
                 style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontWeight: 600, fontSize: 13, alignSelf: 'flex-start' }}>
                 Ver todos →
@@ -613,8 +613,8 @@ export default function GestorDashboard({
           <LiberacoesPendentes />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
             <div>
-              <h1 style={{ fontSize: 22, fontWeight: 800 }}>UNIAVP FREE</h1>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Acompanhe o progresso da sua equipe</p>
+              <h1 style={{ fontSize: 22, fontWeight: 800 }}>Minha Equipe</h1>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Membros UNIAVP FREE do seu painel PRO</p>
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               <MuralNoticias />
@@ -671,7 +671,7 @@ export default function GestorDashboard({
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14, marginBottom: 28 }}>
             {[
-              { label: 'Consultores ativos', value: totalAtivos },
+              { label: 'FREE ativos', value: totalAtivos },
               { label: 'Em andamento', value: emAndamento },
               { label: 'Concluídos', value: concluidos },
             ].map(s => (

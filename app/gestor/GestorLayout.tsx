@@ -6,7 +6,7 @@ import SupportChat from '@/app/components/SupportChat'
 
 const navItems = [
   { id: 'dashboard',   label: 'Dashboard',  icon: LayoutDashboard },
-  { id: 'consultores', label: 'Consultores', icon: Users },
+  { id: 'consultores', label: 'Minha Equipe', icon: Users },
   { id: 'aulas',       label: 'Aulas',       icon: BookOpen },
   { id: 'eventos',     label: 'Eventos',     icon: Calendar },
   { id: 'whatsapp',    label: 'WhatsApp',    icon: Smartphone },
