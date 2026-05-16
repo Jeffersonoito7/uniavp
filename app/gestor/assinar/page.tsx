@@ -46,6 +46,25 @@ export default function AssinarPage() {
       ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pag.pix_copia_cola)}&color=0D2B6E&bgcolor=ffffff`
       : null
 
+  if (!info) return (
+    <div style={{ minHeight: '100vh', background: 'var(--avp-black)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>Carregando...</p>
+    </div>
+  )
+
+  if (info?.status === 'pendente_upgrade') return (
+    <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div style={{ width: '100%', maxWidth: 480, textAlign: 'center' }}>
+        <div style={{ fontSize: 52, marginBottom: 16 }}>⏳</div>
+        <p style={{ fontWeight: 800, fontSize: 20, marginBottom: 8 }}>Pagamento pendente</p>
+        <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 24 }}>Você iniciou o upgrade para PRO. Conclua o pagamento para ativar o acesso.</p>
+        <a href="/assinar-pro" style={{ display: 'inline-block', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 12, padding: '14px 32px', fontWeight: 800, fontSize: 16, textDecoration: 'none' }}>
+          → Concluir pagamento
+        </a>
+      </div>
+    </div>
+  )
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
       <div style={{ width: '100%', maxWidth: 480 }}>

@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { LIMITE_PRO_GRATUITO } from '@/lib/pros-indicados'
 import GestorLayout from './GestorLayout'
 import LiberacoesPendentes from './LiberacoesPendentes'
 import WhatsAppConectar from '@/app/components/WhatsAppConectar'
@@ -178,8 +179,6 @@ function BarraProgresso({ pct }: { pct: number }) {
 }
 
 type ArteTemplate = { id: string; tipo: string; titulo: string; arte_url: string; foto_x: number; foto_y: number; foto_largura: number; foto_altura: number; foto_redondo: boolean; ativo: boolean; formato: string; gestor_id: string | null; texto_ativo?: boolean; texto_template?: string; texto_x?: number; texto_y?: number; texto_tamanho?: number; texto_cor?: string; texto_negrito?: boolean; texto_alinhamento?: string; texto_sombra?: boolean }
-
-const LIMITE_PRO_GRATUITO = 20
 
 function NavAulas({ aulas, aulaAtualId, onPrev, onNext }: { aulas: any[]; aulaAtualId: string; onPrev: (a: any) => void; onNext: (a: any) => void }) {
   const idx = aulas.findIndex(a => a.id === aulaAtualId)
