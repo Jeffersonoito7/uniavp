@@ -5,25 +5,24 @@ import { createBrowserClient } from '@supabase/ssr'
 
 type Estado = 'validando' | 'formulario' | 'erro' | 'sucesso'
 
-// Captura o hash ANTES de qualquer inicialização do Supabase
-function lerHashErro(): string | null {
-  if (typeof window === 'undefined') return null
-  const hash = window.location.hash
-  if (!hash.includes('error=')) return null
-  const params = new URLSearchParams(hash.slice(1))
-  const code = params.get('error_code') ?? ''
-  const desc = params.get('error_description') ?? ''
-  window.history.replaceState({}, '', window.location.pathname + window.location.search)
-  if (code === 'otp_expired' || desc.includes('expired') || desc.includes('invalid')) return 'expirado'
-  return 'invalido'
-}
-
-const hashErroInicial = lerHashErro()
-
 export default function RedefinirSenhaForm({ logoUrl, siteNome }: { logoUrl: string; siteNome: string }) {
   const router = useRouter()
-  const [estado, setEstado] = useState<Estado>(hashErroInicial ? 'erro' : 'validando')
-  const [msgErro, setMsgErro] = useState(hashErroInicial ?? '')
+  const [estado, setEstado] = useState<Estado>('validando')
+  const [msgErro, setMsgErro] = useState('')
+
+  useEffect(() => {
+    const hash = window.location.hash
+    if (hash.includes('error=')) {
+      const params = new URLSearchParams(hash.slice(1))
+      const code = params.get('error_code') ?? ''
+      const desc = params.get('error_description') ?? ''
+      window.history.replaceState({}, '', window.location.pathname + window.location.search)
+      const tipo = (code === 'otp_expired' || desc.includes('expired') || desc.includes('invalid')) ? 'expirado' : 'invalido'
+      setMsgErro(tipo)
+      setEstado('erro')
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [senha, setSenha] = useState('')
   const [confirmar, setConfirmar] = useState('')
   const [loading, setLoading] = useState(false)

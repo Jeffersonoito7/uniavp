@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import ImageCropModal from '@/app/components/ImageCropModal'
 
 const NAVY = '#0D2B6E'
@@ -44,7 +44,10 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
   const [cropSrc, setCropSrc] = useState<string | null>(null)
   const fotoRef = useRef<HTMLInputElement>(null)
 
-  const baseVerificacao = urlVerificacao || (typeof window !== 'undefined' ? window.location.origin : '')
+  const [baseVerificacao, setBaseVerificacao] = useState(urlVerificacao || '')
+  useEffect(() => {
+    setBaseVerificacao(urlVerificacao || window.location.origin)
+  }, [urlVerificacao])
   const verificacaoUrl = baseVerificacao.replace(/^https?:\/\//, '').replace(/\/$/, '')
   const verificacaoLink = `${baseVerificacao.startsWith('http') ? baseVerificacao : 'https://' + baseVerificacao}/verificar/${numRegistro}`
   const qrVerificacao = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(verificacaoLink)}&color=0A7A42&bgcolor=ffffff`
