@@ -11,7 +11,7 @@ const schema = z.object({
   whatsapp: z.string().min(10, 'WhatsApp inválido'),
   email: z.string().email('E-mail inválido'),
   senha: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
-  gestor_nome: z.string().min(2, 'Nome do PRO deve ter pelo menos 2 caracteres'),
+  gestor_nome: z.string().min(2, 'Informe o nome do seu PRO'),
   gestor_whatsapp: z.string().regex(/^\d{10,13}$/, 'WhatsApp do PRO inválido'),
   indicador_whatsapp: z.string().optional(),
 })

@@ -130,13 +130,13 @@ export default function CadastroPage() {
               </div>
             </div>
             <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 16, marginTop: 4 }}>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, marginBottom: 14 }}>Dados do seu gestor</p>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, marginBottom: 14 }}>Dados do seu PRO</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div>
-                  <label style={labelStyle}>Nome do seu gestor *</label>
+                  <label style={labelStyle}>Nome do seu PRO *</label>
                   <input
                     type="text"
-                    placeholder="Nome do gestor"
+                    placeholder="Nome do seu PRO"
                     value={form.gestor_nome}
                     onChange={e => setForm(p => ({ ...p, gestor_nome: e.target.value }))}
                     required
@@ -144,8 +144,8 @@ export default function CadastroPage() {
                   />
                 </div>
                 <div>
-                  <label style={labelStyle}>WhatsApp do gestor *</label>
-                  <PhoneInput value={form.gestor_whatsapp} onChange={v => setForm(p => ({ ...p, gestor_whatsapp: v }))} required placeholder="WhatsApp do seu gestor" />
+                  <label style={labelStyle}>WhatsApp do seu PRO *</label>
+                  <PhoneInput value={form.gestor_whatsapp} onChange={v => setForm(p => ({ ...p, gestor_whatsapp: v }))} required placeholder="WhatsApp do seu PRO" />
                 </div>
               </div>
             </div>
