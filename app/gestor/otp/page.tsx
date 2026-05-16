@@ -22,7 +22,7 @@ export default function GestorOtpPage() {
         </div>
 
         <p style={{ textAlign: 'center', marginTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>
-          🔒 Verificação obrigatória a cada acesso — Painel Gestor
+          🔒 Verificação obrigatória a cada acesso — Painel PRO
         </p>
       </div>
     </div>

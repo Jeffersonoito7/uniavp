@@ -70,7 +70,7 @@ export default function GestorLayout({
       onError={() => setLogoError(true)} />
   ) : (
     <span style={{ fontWeight: 800, fontSize: small ? 16 : 15, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-      {siteNome || 'Gestor'}
+      {siteNome || 'PRO'}
     </span>
   )
 
@@ -78,7 +78,7 @@ export default function GestorLayout({
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
-      <SupportChat painel="Gestor" />
+      <SupportChat painel="PRO" />
 
       {/* ── Barra superior mobile ── */}
       {isMobile && (
