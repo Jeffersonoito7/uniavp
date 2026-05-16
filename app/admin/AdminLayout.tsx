@@ -184,6 +184,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
 
+        {/* ── Acesso rápido ── */}
+        <div style={{ padding: colapsada ? '10px 8px' : '10px 12px', borderTop: '1px solid var(--avp-border)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {!colapsada && <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>Visualizar como</p>}
+          <a href="/api/admin/abrir-painel?destino=pro" target="_blank" rel="noopener noreferrer"
+            title="Abrir Painel PRO"
+            style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 8, justifyContent: colapsada ? 'center' : 'flex-start', background: '#6366f115', border: '1px solid #6366f130', color: '#6366f1', borderRadius: 8, padding: colapsada ? '8px 0' : '8px 12px', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
+            <span>✨</span>
+            {!colapsada && <span>Painel PRO</span>}
+          </a>
+          <Link href="/admin/ver-free"
+            title="Ver Painel FREE"
+            style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 8, justifyContent: colapsada ? 'center' : 'flex-start', background: '#02A15315', border: '1px solid #02A15330', color: 'var(--avp-green)', borderRadius: 8, padding: colapsada ? '8px 0' : '8px 12px', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
+            <span>🆓</span>
+            {!colapsada && <span>Painel FREE</span>}
+          </Link>
+        </div>
+
         {/* ── Rodapé ── */}
         <div style={{ padding: colapsada ? '12px 8px' : '12px 14px', borderTop: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', gap: 8, justifyContent: colapsada ? 'center' : 'space-between' }}>
           {!colapsada && <LogoutButton style={{ flex: 1 }} />}
