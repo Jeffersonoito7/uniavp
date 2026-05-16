@@ -8,11 +8,14 @@ export default function PWAInstallButton() {
 
   useEffect(() => {
     const handler = (e: any) => { e.preventDefault(); setPrompt(e); setShow(true) }
+    const installedHandler = () => { setInstalled(true); setShow(false) }
     window.addEventListener('beforeinstallprompt', handler)
-    window.addEventListener('appinstalled', () => { setInstalled(true); setShow(false) })
-    // Verifica se já está instalado
+    window.addEventListener('appinstalled', installedHandler)
     if (window.matchMedia('(display-mode: standalone)').matches) setInstalled(true)
-    return () => window.removeEventListener('beforeinstallprompt', handler)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler)
+      window.removeEventListener('appinstalled', installedHandler)
+    }
   }, [])
 
   if (installed || !show || !prompt) return null

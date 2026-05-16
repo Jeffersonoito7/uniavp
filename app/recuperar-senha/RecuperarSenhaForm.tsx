@@ -39,11 +39,16 @@ export default function RecuperarSenhaForm({ logoUrl, siteNome }: { logoUrl: str
     setLoading(false)
   }
 
+  useEffect(() => {
+    if (!copiado) return
+    const t = setTimeout(() => setCopiado(false), 3000)
+    return () => clearTimeout(t)
+  }, [copiado])
+
   function copiarLink() {
     if (!link) return
     navigator.clipboard.writeText(link)
     setCopiado(true)
-    setTimeout(() => setCopiado(false), 3000)
   }
 
   const inp: React.CSSProperties = {

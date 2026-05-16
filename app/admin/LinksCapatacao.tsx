@@ -9,8 +9,13 @@ function BotaoCopiar({ url, label, desc, icon }: { url: string; label: string; d
   function copiar() {
     navigator.clipboard.writeText(fullUrl)
     setCopiado(true)
-    setTimeout(() => setCopiado(false), 2000)
   }
+
+  useEffect(() => {
+    if (!copiado) return
+    const t = setTimeout(() => setCopiado(false), 2000)
+    return () => clearTimeout(t)
+  }, [copiado])
 
   return (
     <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>

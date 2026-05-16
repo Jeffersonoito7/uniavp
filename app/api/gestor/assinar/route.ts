@@ -44,8 +44,9 @@ export async function POST() {
   // Lê valor configurado no painel admin (padrão 97)
   const { data: valorCfg } = await (adminClient.from('configuracoes') as any)
     .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
-  const valorStr = valorCfg?.valor ? String(valorCfg.valor).replace(/"/g, '') : '97'
-  const valorPlano = Math.max(1, parseFloat(valorStr) || 97)
+  const valorStr = valorCfg?.valor ? String(valorCfg.valor).replace(/"/g, '') : ''
+  const valorParsed = parseFloat(valorStr)
+  const valorPlano = isNaN(valorParsed) ? 97 : Math.max(1, valorParsed)
 
   // Gera vencimento: 3 dias a partir de hoje
   const venc = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
@@ -108,7 +109,8 @@ export async function GET() {
 
   const { data: valorCfgGet } = await (adminClient.from('configuracoes') as any)
     .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
-  const valorPlanoGet = Math.max(1, parseFloat(String(valorCfgGet?.valor ?? '').replace(/"/g, '')) || 97)
+  const valorParsedGet = parseFloat(String(valorCfgGet?.valor ?? '').replace(/"/g, ''))
+  const valorPlanoGet = isNaN(valorParsedGet) ? 97 : Math.max(1, valorParsedGet)
 
   const prosIndicados = await contarPROsAtivosIndicados(gestor.id, adminClient)
   const ehGratuito = prosIndicados >= LIMITE_PRO_GRATUITO

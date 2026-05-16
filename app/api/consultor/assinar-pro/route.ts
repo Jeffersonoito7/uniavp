@@ -21,7 +21,8 @@ async function getAluno() {
 async function getValorPlano(adminClient: any): Promise<number> {
   const { data } = await (adminClient.from('configuracoes') as any)
     .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
-  return Math.max(1, parseFloat(String(data?.valor ?? '').replace(/"/g, '')) || 97)
+  const parsed = parseFloat(String(data?.valor ?? '').replace(/"/g, ''))
+  return isNaN(parsed) ? 97 : Math.max(1, parsed)
 }
 
 export async function GET() {
