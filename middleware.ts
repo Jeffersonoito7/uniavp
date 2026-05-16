@@ -84,9 +84,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/api/') ||
     pathname.startsWith('/verificar/') ||
     pathname.startsWith('/upgrade') ||
-    pathname.startsWith('/assinar-pro') ||
-    pathname.startsWith('/free/') ||
-    pathname.startsWith('/pro')
+    pathname.startsWith('/assinar-pro')
 
   if (isPublic) return NextResponse.next()
 
@@ -97,9 +95,16 @@ export function middleware(request: NextRequest) {
   }
 
   // ── Verificação OTP obrigatória ─────────────────────────────────
+  // /pro → internamente é /gestor; /free/ → internamente é /aluno/
   if (!hasOtp(request)) {
     const url = new URL(request.url)
-    if (pathname.startsWith('/aluno') || pathname.startsWith('/gestor')) {
+    const needsOtp =
+      pathname.startsWith('/aluno') ||
+      pathname.startsWith('/gestor') ||
+      pathname === '/pro' ||
+      pathname.startsWith('/pro/') ||
+      pathname.startsWith('/free/')
+    if (needsOtp) {
       url.pathname = '/entrar/otp'
       return NextResponse.redirect(url)
     }

@@ -64,7 +64,6 @@ export default function IndicacaoCard({ link, totalIndicados }: { link: string; 
           background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.35)',
           borderRadius: 10, padding: '10px 14px', marginBottom: 12,
           display: 'flex', alignItems: 'center', gap: 10,
-          animation: 'pulse 2s infinite',
         }}>
           <span style={{ fontSize: 18, flexShrink: 0 }}>⚠️</span>
           <div>
@@ -99,8 +98,6 @@ export default function IndicacaoCard({ link, totalIndicados }: { link: string; 
             : `${LIMITE - totalIndicados} vagas restantes no plano gratuito`}
         </p>
       </div>
-
-      <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }`}</style>
 
       {limiteBatido ? (
         /* CTA de upgrade */
