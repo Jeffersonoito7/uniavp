@@ -19,20 +19,22 @@ type Props = {
   assinaturaNome?: string
   assinaturaCargo?: string
   assinaturaY?: number
+  chaveStorage?: string  // chave customizada (ex: por módulo)
+  semCarteira?: boolean  // oculta botão de carteira
 }
 
 type Etapa = 'certificado' | 'carteira' | 'fechado'
 
-function jaViu(whatsapp: string) {
-  try { return !!localStorage.getItem(`formatura_vista_${whatsapp}`) } catch { return false }
+function jaViu(chave: string) {
+  try { return !!localStorage.getItem(`cert_visto_${chave}`) } catch { return false }
 }
 
-function marcarVisto(whatsapp: string) {
-  try { localStorage.setItem(`formatura_vista_${whatsapp}`, '1') } catch { /* */ }
+function marcarVisto(chave: string) {
+  try { localStorage.setItem(`cert_visto_${chave}`, '1') } catch { /* */ }
 }
 
-export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, numRegistro, nomeY, nomeFontePct, nomeCor, logoEsquerdaUrl, logoDireitaUrl, logoY, logoTamPct, assinaturaUrl, assinaturaNome, assinaturaCargo, assinaturaY }: Props) {
-  const chave = whatsapp ?? 'aluno'
+export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, numRegistro, nomeY, nomeFontePct, nomeCor, logoEsquerdaUrl, logoDireitaUrl, logoY, logoTamPct, assinaturaUrl, assinaturaNome, assinaturaCargo, assinaturaY, chaveStorage, semCarteira }: Props) {
+  const chave = chaveStorage ?? whatsapp ?? 'aluno'
   // Começa sempre 'fechado' no servidor — ajusta no useEffect para evitar hydration mismatch
   const [etapa, setEtapa] = useState<Etapa>('fechado')
 
@@ -95,7 +97,7 @@ export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, n
         assinaturaCargo={assinaturaCargo}
         assinaturaY={assinaturaY}
         onClose={fecharTudo}
-        onVerCarteira={whatsapp && numRegistro ? irParaCarteira : undefined}
+        onVerCarteira={!semCarteira && whatsapp && numRegistro ? irParaCarteira : undefined}
       />
     )
   }

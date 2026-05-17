@@ -4,10 +4,15 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import AulasCliente from './AulasCliente'
 
-type Modulo = { id: string; titulo: string; descricao: string | null; capa_url: string | null; ordem: number; publicado: boolean }
+type Modulo = {
+  id: string; titulo: string; descricao: string | null; capa_url: string | null; ordem: number; publicado: boolean
+  cert_ativo?: boolean; cert_template_url?: string | null; cert_nome_y?: number; cert_nome_tamanho?: number; cert_nome_cor?: string
+  cert_logo_esq_url?: string | null; cert_logo_dir_url?: string | null; cert_logo_y?: number; cert_logo_tam?: number
+  cert_assinatura_url?: string | null; cert_assinatura_nome?: string | null; cert_assinatura_cargo?: string | null; cert_assinatura_y?: number
+}
 type Aula = { id: string; titulo: string; descricao: string | null; ordem: number; youtube_video_id: string; duracao_minutos: number | null; quiz_qtd_questoes: number; quiz_aprovacao_minima: number; espera_horas: number; publicado: boolean; ao_vivo_link: string | null; ao_vivo_data: string | null; ao_vivo_plataforma: string | null; validade_meses: number | null; capa_url: string | null; video_url: string | null; liberacao_modo: 'automatico' | 'manual_gestor' | 'manual_admin'; quiz_tipo: 'obrigatorio' | 'indicativo' | 'sim_nao'; quiz_sim_nao_pergunta?: string | null }
 
-type Aba = 'geral' | 'aulas' | 'configuracoes'
+type Aba = 'geral' | 'aulas' | 'configuracoes' | 'certificado'
 
 export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo: Modulo; aulas: Aula[] }) {
   const searchParams = useSearchParams()
@@ -28,6 +33,22 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
   const [msg, setMsg] = useState<{ tipo: 'ok' | 'err'; texto: string } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
+  // ── Certificado por módulo ──
+  const [certAtivo, setCertAtivo] = useState(inicial.cert_ativo ?? false)
+  const [certTemplateUrl, setCertTemplateUrl] = useState(inicial.cert_template_url ?? '')
+  const [certNomeY, setCertNomeY] = useState(String(inicial.cert_nome_y ?? 52))
+  const [certNomeTamanho, setCertNomeTamanho] = useState(String(inicial.cert_nome_tamanho ?? 8))
+  const [certNomeCor, setCertNomeCor] = useState(inicial.cert_nome_cor ?? '#1a1a2e')
+  const [certLogoEsqUrl, setCertLogoEsqUrl] = useState(inicial.cert_logo_esq_url ?? '')
+  const [certLogoDirUrl, setCertLogoDirUrl] = useState(inicial.cert_logo_dir_url ?? '')
+  const [certLogoY, setCertLogoY] = useState(String(inicial.cert_logo_y ?? 15))
+  const [certLogoTam, setCertLogoTam] = useState(String(inicial.cert_logo_tam ?? 22))
+  const [certAssinaturaUrl, setCertAssinaturaUrl] = useState(inicial.cert_assinatura_url ?? '')
+  const [certAssinaturaNome, setCertAssinaturaNome] = useState(inicial.cert_assinatura_nome ?? '')
+  const [certAssinaturaCargo, setCertAssinaturaCargo] = useState(inicial.cert_assinatura_cargo ?? '')
+  const [certAssinaturaY, setCertAssinaturaY] = useState(String(inicial.cert_assinatura_y ?? 75))
+  const certFileRef = useRef<HTMLInputElement>(null)
+
   const inp: React.CSSProperties = { width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' }
   const lbl: React.CSSProperties = { display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 6, fontWeight: 500 }
   const card: React.CSSProperties = { background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24 }
@@ -44,7 +65,24 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
     setSalvando(true); setMsg(null)
     const res = await fetch('/api/admin/modulos', {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: modulo.id, titulo, descricao: descricao || null, capa_url: capaBase64 || modulo.capa_url || null, ordem: parseInt(ordem) || modulo.ordem, publicado }),
+      body: JSON.stringify({
+        id: modulo.id, titulo, descricao: descricao || null,
+        capa_url: capaBase64 || modulo.capa_url || null,
+        ordem: parseInt(ordem) || modulo.ordem, publicado,
+        cert_ativo: certAtivo,
+        cert_template_url: certTemplateUrl || null,
+        cert_nome_y: parseInt(certNomeY) || 52,
+        cert_nome_tamanho: parseInt(certNomeTamanho) || 8,
+        cert_nome_cor: certNomeCor || '#1a1a2e',
+        cert_logo_esq_url: certLogoEsqUrl || null,
+        cert_logo_dir_url: certLogoDirUrl || null,
+        cert_logo_y: parseInt(certLogoY) || 15,
+        cert_logo_tam: parseInt(certLogoTam) || 22,
+        cert_assinatura_url: certAssinaturaUrl || null,
+        cert_assinatura_nome: certAssinaturaNome || null,
+        cert_assinatura_cargo: certAssinaturaCargo || null,
+        cert_assinatura_y: parseInt(certAssinaturaY) || 75,
+      }),
     })
     const data = await res.json()
     if (data.modulo) {
@@ -61,6 +99,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
     { id: 'geral', label: 'Geral' },
     { id: 'aulas', label: 'Aulas' },
     { id: 'configuracoes', label: 'Configurações' },
+    { id: 'certificado', label: '🎓 Certificado' },
   ]
 
   return (
@@ -154,6 +193,118 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
       {/* ── Aba Aulas ── */}
       {aba === 'aulas' && (
         <AulasCliente moduloId={modulo.id} aulasIniciais={aulas} />
+      )}
+
+      {/* ── Aba Certificado ── */}
+      {aba === 'certificado' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 640 }}>
+          {/* Ativar */}
+          <div style={card}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: certAtivo ? 20 : 0 }}>
+              <div>
+                <p style={{ fontWeight: 700, fontSize: 15, margin: 0 }}>Certificado deste módulo</p>
+                <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: 4 }}>Quando ativado, o aluno recebe um certificado exclusivo ao concluir todas as aulas deste módulo.</p>
+              </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', flexShrink: 0 }}>
+                <input type="checkbox" checked={certAtivo} onChange={e => setCertAtivo(e.target.checked)} style={{ width: 18, height: 18, accentColor: 'var(--avp-green)', cursor: 'pointer' }} />
+                <span style={{ fontSize: 14, fontWeight: 700, color: certAtivo ? 'var(--avp-green)' : 'var(--avp-text-dim)' }}>{certAtivo ? 'Ativado' : 'Desativado'}</span>
+              </label>
+            </div>
+
+            {certAtivo && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {/* Template */}
+                <div>
+                  <label style={lbl}>URL do template (imagem do certificado) *</label>
+                  <input style={inp} value={certTemplateUrl} onChange={e => setCertTemplateUrl(e.target.value)} placeholder="https://..." />
+                  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 4 }}>Suba a imagem no Supabase Storage e cole a URL pública aqui. Tamanho recomendado: 2480×1754px (A4 paisagem).</p>
+                </div>
+                {certTemplateUrl && (
+                  <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid var(--avp-border)', maxHeight: 180 }}>
+                    <img src={certTemplateUrl} alt="preview" style={{ width: '100%', objectFit: 'cover' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {certAtivo && (
+            <>
+              {/* Nome do aluno */}
+              <div style={card}>
+                <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Posição do nome</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                  <div>
+                    <label style={lbl}>Posição Y (%)</label>
+                    <input type="number" style={inp} value={certNomeY} onChange={e => setCertNomeY(e.target.value)} min={0} max={100} />
+                    <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>0 = topo, 100 = base</p>
+                  </div>
+                  <div>
+                    <label style={lbl}>Tamanho fonte (%)</label>
+                    <input type="number" style={inp} value={certNomeTamanho} onChange={e => setCertNomeTamanho(e.target.value)} min={1} max={30} />
+                  </div>
+                  <div>
+                    <label style={lbl}>Cor do texto</label>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <input type="color" value={certNomeCor} onChange={e => setCertNomeCor(e.target.value)} style={{ width: 44, height: 36, borderRadius: 6, border: '1px solid var(--avp-border)', cursor: 'pointer', background: 'none', padding: 2 }} />
+                      <input style={{ ...inp, flex: 1 }} value={certNomeCor} onChange={e => setCertNomeCor(e.target.value)} placeholder="#1a1a2e" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Logos */}
+              <div style={card}>
+                <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Logos (opcional)</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div>
+                    <label style={lbl}>Logo esquerda (URL)</label>
+                    <input style={inp} value={certLogoEsqUrl} onChange={e => setCertLogoEsqUrl(e.target.value)} placeholder="https://..." />
+                  </div>
+                  <div>
+                    <label style={lbl}>Logo direita (URL)</label>
+                    <input style={inp} value={certLogoDirUrl} onChange={e => setCertLogoDirUrl(e.target.value)} placeholder="https://..." />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div>
+                      <label style={lbl}>Posição Y dos logos (%)</label>
+                      <input type="number" style={inp} value={certLogoY} onChange={e => setCertLogoY(e.target.value)} min={0} max={100} />
+                    </div>
+                    <div>
+                      <label style={lbl}>Tamanho dos logos (%)</label>
+                      <input type="number" style={inp} value={certLogoTam} onChange={e => setCertLogoTam(e.target.value)} min={1} max={80} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Assinatura */}
+              <div style={card}>
+                <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Assinatura (opcional)</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div>
+                    <label style={lbl}>URL da imagem da assinatura</label>
+                    <input style={inp} value={certAssinaturaUrl} onChange={e => setCertAssinaturaUrl(e.target.value)} placeholder="https://..." />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div>
+                      <label style={lbl}>Nome do signatário</label>
+                      <input style={inp} value={certAssinaturaNome} onChange={e => setCertAssinaturaNome(e.target.value)} placeholder="João Silva" />
+                    </div>
+                    <div>
+                      <label style={lbl}>Cargo</label>
+                      <input style={inp} value={certAssinaturaCargo} onChange={e => setCertAssinaturaCargo(e.target.value)} placeholder="Diretor" />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={lbl}>Posição Y da assinatura (%)</label>
+                    <input type="number" style={inp} value={certAssinaturaY} onChange={e => setCertAssinaturaY(e.target.value)} min={0} max={100} />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       )}
 
       {/* ── Aba Configurações ── */}

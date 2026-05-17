@@ -89,14 +89,18 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
 
   const trilha: TrilhaItem[] = trilhaBase.map(t => ({ ...t, quiz_aprovacao_minima: aprovMinMap[t.aula_id] ?? null }))
 
-  // Busca perfis_permitidos de cada módulo (controle de acesso FREE vs PRO)
+  // Busca perfis_permitidos e config de certificado de cada módulo
   const moduloIds = [...new Set(trilhaBase.map(t => t.modulo_id))]
   const { data: modulosConfig } = moduloIds.length > 0
-    ? await (adminClient.from('modulos') as any).select('id, perfis_permitidos').in('id', moduloIds)
+    ? await (adminClient.from('modulos') as any)
+        .select('id, perfis_permitidos, cert_ativo, cert_template_url, cert_nome_y, cert_nome_tamanho, cert_nome_cor, cert_logo_esq_url, cert_logo_dir_url, cert_logo_y, cert_logo_tam, cert_assinatura_url, cert_assinatura_nome, cert_assinatura_cargo, cert_assinatura_y')
+        .in('id', moduloIds)
     : { data: [] }
   const moduloPermissoes: Record<string, string[]> = {}
+  const moduloCerts: Record<string, any> = {}
   for (const m of (modulosConfig ?? [])) {
     moduloPermissoes[m.id] = m.perfis_permitidos ?? ['consultor', 'gestor']
+    if (m.cert_ativo && m.cert_template_url) moduloCerts[m.id] = m
   }
 
   const agrupado: Record<string, { modulo_id: string; modulo_titulo: string; modulo_ordem: number; aulas: TrilhaItem[]; apenasProPermissao: boolean }> = {}
@@ -507,6 +511,35 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
 
       <RankingWidget meuId={aluno.id} />
 
+      {/* Certificados por módulo — aparece para módulos 100% concluídos com cert configurado */}
+      {Object.entries(moduloCerts).map(([moduloId, cert]) => {
+        const mod = modulos.find(m => m.modulo_id === moduloId)
+        if (!mod) return null
+        const todasConcluidas = mod.aulas.length > 0 && mod.aulas.every(a => a.status === 'concluida')
+        if (!todasConcluidas) return null
+        return (
+          <CertificadoWrapper
+            key={moduloId}
+            nomeAluno={aluno.nome}
+            templateUrl={cert.cert_template_url}
+            chaveStorage={`modulo_${moduloId}_${aluno.whatsapp}`}
+            semCarteira
+            nomeY={cert.cert_nome_y ?? undefined}
+            nomeFontePct={cert.cert_nome_tamanho ? cert.cert_nome_tamanho / 100 : undefined}
+            nomeCor={cert.cert_nome_cor ?? undefined}
+            logoEsquerdaUrl={cert.cert_logo_esq_url ?? null}
+            logoDireitaUrl={cert.cert_logo_dir_url ?? null}
+            logoY={cert.cert_logo_y ?? undefined}
+            logoTamPct={cert.cert_logo_tam ? cert.cert_logo_tam / 100 : undefined}
+            assinaturaUrl={cert.cert_assinatura_url ?? null}
+            assinaturaNome={cert.cert_assinatura_nome ?? undefined}
+            assinaturaCargo={cert.cert_assinatura_cargo ?? undefined}
+            assinaturaY={cert.cert_assinatura_y ?? undefined}
+          />
+        )
+      })}
+
+      {/* Certificado geral do curso (quando aluno conclui tudo) */}
       {aluno.status === 'concluido' && certMap['certificado_template_url'] && (
         <CertificadoWrapper
           nomeAluno={aluno.nome}

@@ -57,7 +57,12 @@ export async function PUT(req: NextRequest) {
   const { id, ...updates } = body
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  const camposPermitidos = ['titulo', 'descricao', 'capa_url', 'publicado', 'ordem', 'perfis_permitidos']
+  const camposPermitidos = [
+    'titulo', 'descricao', 'capa_url', 'publicado', 'ordem', 'perfis_permitidos',
+    'cert_ativo', 'cert_template_url', 'cert_nome_y', 'cert_nome_tamanho', 'cert_nome_cor',
+    'cert_logo_esq_url', 'cert_logo_dir_url', 'cert_logo_y', 'cert_logo_tam',
+    'cert_assinatura_url', 'cert_assinatura_nome', 'cert_assinatura_cargo', 'cert_assinatura_y',
+  ]
   const atualizacoes: Record<string, unknown> = {}
   for (const campo of camposPermitidos) {
     if (campo in updates) atualizacoes[campo] = updates[campo]
