@@ -19,7 +19,6 @@ export async function GET(req: NextRequest) {
     .select('id, nome, whatsapp, user_id')
     .or(`whatsapp.eq.${wppLimpo},whatsapp.eq.${wppSem55}`)
   const aluno = alunos?.[0] ?? null
-  const alunoErr = null
 
   // 2. Busca aula
   const { data: aula, error: aulaErr } = await (adminClient.from('aulas') as any)
@@ -46,7 +45,6 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     aluno: aluno ? { id: aluno.id, nome: aluno.nome, whatsapp: aluno.whatsapp } : null,
-    aluno_err: alunoErr?.message,
     aula_com_join: aula ? { id: aula.id, titulo: aula.titulo, publicado: aula.publicado, bloquear_avancar: (aula as any).bloquear_avancar } : null,
     aula_join_err: aulaErr?.message,
     aula_simples: aulaSemJoin,
