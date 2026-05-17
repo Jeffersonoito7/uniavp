@@ -50,7 +50,6 @@ export async function GET(req: NextRequest) {
     trilha_status_desta_aula: trilhaStatus,
     modulo_perfis_permitidos: moduloPerm?.perfis_permitidos,
     checks: {
-      user_autenticado: !!user,
       aluno_encontrado: !!aluno,
       aula_encontrada_com_join: !!aula,
       aula_publicada: aula?.publicado,
