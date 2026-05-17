@@ -241,69 +241,19 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
             </p>
           </div>
 
-          {/* ── CONTINUE ASSISTINDO ── */}
+          {/* ── PRÓXIMA AULA ── */}
           {aulaAtual && (
-            <Link href={`/aluno/${params.whatsapp}/aula/${aulaAtual.aula_id}`} style={{
-              marginBottom: 28,
-              background: 'linear-gradient(135deg, rgba(30,58,138,0.6) 0%, rgba(17,24,39,0.9) 100%)',
-              border: '1px solid rgba(59,130,246,0.3)',
-              borderRadius: 16,
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'row',
-              minHeight: 140,
-              textDecoration: 'none',
-              cursor: 'pointer',
-            }}>
-              {/* Thumbnail */}
-              <div style={{ width: 220, flexShrink: 0, position: 'relative', background: 'linear-gradient(135deg, #1e3a8a, #1e40af)', overflow: 'hidden' }}
-                className="hide-mobile">
-                {(aulaAtual.capa_url || aulaAtual.youtube_video_id) && (
-                  <img
-                    src={aulaAtual.capa_url || `https://img.youtube.com/vi/${aulaAtual.youtube_video_id}/mqdefault.jpg`}
-                    alt={aulaAtual.aula_titulo}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
-                  />
-                )}
-                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#1e3a8a' }}>▶</div>
-                </div>
+            <div style={{ marginBottom: 24, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>{aulaAtual.modulo_titulo}</p>
+                <p style={{ fontSize: 16, fontWeight: 800, color: 'var(--avp-text)', margin: 0 }}>{aulaAtual.aula_titulo}</p>
+                {aulaAtual.duracao_minutos && <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 2 }}>⏱ {aulaAtual.duracao_minutos} min</p>}
               </div>
-
-              {/* Info */}
-              <div style={{ flex: 1, padding: '20px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ background: 'rgba(59,130,246,0.2)', color: '#60a5fa', borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
-                    ▶ Continue assistindo
-                  </span>
-                  <span style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>{aulaAtual.modulo_titulo}</span>
-                </div>
-                <h2 style={{ fontSize: 18, fontWeight: 800, color: '#fff', lineHeight: 1.3, margin: 0 }}>
-                  {aulaAtual.aula_titulo}
-                </h2>
-                {aulaAtual.aula_descricao && (
-                  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', lineHeight: 1.5, margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {aulaAtual.aula_descricao}
-                  </p>
-                )}
-                <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 8,
-                    background: 'linear-gradient(135deg, #1e40af, #3b82f6)',
-                    color: '#fff', borderRadius: 10,
-                    padding: '10px 22px', fontWeight: 700, fontSize: 14,
-                    boxShadow: '0 4px 16px rgba(59,130,246,0.4)',
-                  }}>
-                    ▶ Continuar agora
-                  </span>
-                  {aulaAtual.duracao_minutos && (
-                    <span style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>
-                      ⏱ {aulaAtual.duracao_minutos} min
-                    </span>
-                  )}
-                </div>
-              </div>
-            </Link>
+              <Link href={`/aluno/${params.whatsapp}/aula/${aulaAtual.aula_id}`}
+                style={{ flexShrink: 0, background: 'var(--grad-brand)', color: '#fff', borderRadius: 10, padding: '11px 24px', fontWeight: 700, fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                ▶ Continuar agora
+              </Link>
+            </div>
           )}
 
           {/* ── CARDS DE STATS + PROGRESSO ── */}
@@ -329,12 +279,12 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
             </div>
 
             {/* Card streak */}
-            <div style={{ background: 'linear-gradient(135deg, #92400e20, #f59e0b10)', border: `1px solid ${(aluno.streak_atual ?? 0) >= 3 ? '#f59e0b50' : '#37415130'}`, borderRadius: 14, padding: 20 }}>
-              <p style={{ color: '#fcd34d', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Sequência de Estudos</p>
-              <p style={{ fontSize: 26, fontWeight: 800, color: '#fff', marginBottom: 2 }}>
+            <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: 20 }}>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Sequência de Estudos</p>
+              <p style={{ fontSize: 26, fontWeight: 800, color: 'var(--avp-text)', marginBottom: 2 }}>
                 {(aluno.streak_atual ?? 0) >= 1 ? '🔥' : '💤'} {aluno.streak_atual ?? 0} {aluno.streak_atual === 1 ? 'dia' : 'dias'}
               </p>
-              <p style={{ color: '#fcd34d', fontSize: 11 }}>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 11 }}>
                 Recorde: {aluno.maior_streak ?? 0} {(aluno.maior_streak ?? 0) === 1 ? 'dia' : 'dias'} consecutivos
               </p>
             </div>
