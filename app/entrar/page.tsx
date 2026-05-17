@@ -166,17 +166,6 @@ export default function EntrarPage() {
             </button>
           </form>
 
-          {/* Separador */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '24px 0' }}>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>não tem conta?</span>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
-          </div>
-
-          <a href="/captacao"
-            style={{ display: 'block', textAlign: 'center', background: 'rgba(2,161,83,0.1)', border: '1px solid rgba(2,161,83,0.3)', color: '#22c55e', borderRadius: 12, padding: '13px', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
-            🆓 Criar conta UNIAVP FREE
-          </a>
         </div>
 
         {/* Badges de tipo de conta */}
@@ -184,7 +173,7 @@ export default function EntrarPage() {
           {[
             { icon: '🆓', label: 'FREE', color: '#22c55e' },
             { icon: '✨', label: 'PRO', color: '#818cf8' },
-            { icon: '🛡', label: 'Admin', color: '#f59e0b' },
+            { icon: '🛡', label: 'Admin', color: '#6366f1' },
           ].map(b => (
             <span key={b.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>
               <span>{b.icon}</span>
