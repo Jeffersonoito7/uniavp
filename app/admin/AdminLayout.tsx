@@ -72,7 +72,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const logoMarkup = (small = false) => siteLogoUrl && !isDominioMaster && !logoError ? (
     <img src={siteLogoUrl} alt={siteNome} className="logo-site"
-      style={{ maxHeight: small ? 28 : 32, maxWidth: small ? 120 : 140, objectFit: 'contain', display: 'block' }}
+      style={{ maxHeight: small ? 36 : 52, maxWidth: small ? 140 : 180, objectFit: 'contain', display: 'block' }}
       onError={() => setLogoError(true)} />
   ) : (
     <span style={{ fontWeight: 800, fontSize: small ? 16 : 15, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
