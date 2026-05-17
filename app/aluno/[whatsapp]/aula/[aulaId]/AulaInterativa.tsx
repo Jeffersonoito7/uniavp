@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import VideoPlayer from '@/app/components/VideoPlayer'
 import NavegacaoAulas from './NavegacaoAulas'
 import Quiz from './Quiz'
+import CelebracaoModulo from '@/app/components/CelebracaoModulo'
 
 type AulaNav = { id: string; titulo: string; ordem: number }
 type Questao = { id: string; enunciado: string; alternativas: { texto: string; correta: boolean }[]; explicacao: string | null }
@@ -37,16 +38,20 @@ export default function AulaInterativa({
   simNaoPergunta, simNaoNaoMensagem, simNaoPerguntas, temQuiz,
 }: Props) {
   const router = useRouter()
-  // Quiz aparece só após o vídeo terminar
   const [videoTerminou, setVideoTerminou] = useState(false)
+  const [mostrarCelebracao, setMostrarCelebracao] = useState(false)
+  const eUltimaAulaDoModulo = !proximaAula
 
   function handleVideoEnd() {
     setVideoTerminou(true)
+    if (eUltimaAulaDoModulo) setMostrarCelebracao(true)
     router.refresh()
   }
 
   return (
     <>
+      {mostrarCelebracao && <CelebracaoModulo onClose={() => setMostrarCelebracao(false)} />}
+
       {/* Vídeo */}
       <VideoPlayer
         youtubeId={youtubeId}
