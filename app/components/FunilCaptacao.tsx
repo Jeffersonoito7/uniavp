@@ -16,9 +16,10 @@ type Props = {
   indicadorWhatsapp?: string
   plano?: 'pro'
   linkExterno?: string
+  bloquearVideo?: boolean
 }
 
-export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, logoUrl, videoId, direto, indicadorWhatsapp, plano, linkExterno }: Props) {
+export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, logoUrl, videoId, direto, indicadorWhatsapp, plano, linkExterno, bloquearVideo = true }: Props) {
   const router = useRouter()
   const [etapa, setEtapa] = useState<Etapa>(direto ? 'cadastro' : 'pergunta1')
   const [videoAssistido, setVideoAssistido] = useState(false)
@@ -115,14 +116,16 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
             <h2 style={{ fontSize: 'clamp(1.2rem, 3vw, 1.8rem)', fontWeight: 800, color: '#fff', lineHeight: 1.3 }}>
               Antes de se cadastrar, assista a apresentação completa
             </h2>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, marginTop: 8 }}>
-              🔒 Não é possível avançar o vídeo — assista do início ao fim
-            </p>
+            {bloquearVideo && (
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, marginTop: 8 }}>
+                🔒 Não é possível avançar o vídeo — assista do início ao fim
+              </p>
+            )}
           </div>
 
           <VideoPlayer
             youtubeId={videoId}
-            bloquearAvancar
+            bloquearAvancar={bloquearVideo}
             onEnded={() => setVideoAssistido(true)}
           />
 

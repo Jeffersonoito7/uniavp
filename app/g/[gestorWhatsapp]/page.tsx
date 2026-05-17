@@ -33,6 +33,10 @@ export default async function GestorCaptacaoPage({ params, searchParams }: { par
 
   const { data: videoConfig } = await (adminClient.from('configuracoes') as any)
     .select('valor').eq('chave', 'captacao_video_id').maybeSingle()
+
+  const { data: bloquearConfig } = await (adminClient.from('configuracoes') as any)
+    .select('valor').eq('chave', 'free_bloquear_video').maybeSingle()
+  const bloquearVideo = bloquearConfig?.valor !== 'false'
   // JSONB pode vir como objeto parsed ou string raw — tenta os dois
   const valorRaw = videoConfig?.valor
   const valorStr = typeof valorRaw === 'string' ? valorRaw : JSON.stringify(valorRaw ?? '')
@@ -52,6 +56,7 @@ export default async function GestorCaptacaoPage({ params, searchParams }: { par
       indicadorWhatsapp={ref}
       plano={plano}
       linkExterno={gestor.link_externo ?? undefined}
+      bloquearVideo={bloquearVideo}
     />
   )
 }
