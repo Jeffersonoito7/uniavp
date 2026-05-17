@@ -693,8 +693,8 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         ))}
       </div>
 
-      {/* CERTIFICADO */}
-      <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
+      {/* CERTIFICADO — removido: cada módulo tem seu próprio certificado agora */}
+      {false && <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
         <p style={{ fontWeight: 800, fontSize: 16 }}>🎓 Certificado de Conclusão</p>
         <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
           Faça upload do template PNG e configure onde o nome do aluno aparece. O certificado baixado terá o nome gravado na posição definida.
@@ -866,7 +866,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
             </p>
           </div>
         )}
-      </div>
+      </div>}
 
       {msg && (
         <div style={{ padding: '12px 16px', background: msg.includes('✅') ? '#02A15320' : '#e6394620', border: `1px solid ${msg.includes('✅') ? 'var(--avp-green)' : 'var(--avp-danger)'}`, borderRadius: 8, color: msg.includes('✅') ? 'var(--avp-green)' : 'var(--avp-danger)', fontSize: 14 }}>

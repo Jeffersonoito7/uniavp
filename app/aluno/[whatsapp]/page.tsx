@@ -7,6 +7,7 @@ import EventosWidget from '@/app/components/EventosWidget'
 import MuralNoticias from '@/app/components/MuralNoticias'
 import LogoutButton from '@/app/components/LogoutButton'
 import CertificadoWrapper from '@/app/components/CertificadoWrapper'
+import CarteiraAutoShow from '@/app/components/CarteiraAutoShow'
 import SupportChat from '@/app/components/SupportChat'
 import PushButton from '@/app/components/PushButton'
 import PWAInstallButton from '@/app/components/PWAInstallButton'
@@ -539,24 +540,12 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
         )
       })}
 
-      {/* Certificado geral do curso (quando aluno conclui tudo) */}
-      {aluno.status === 'concluido' && certMap['certificado_template_url'] && (
-        <CertificadoWrapper
+      {/* Carteirinha — aparece automaticamente quando aluno conclui o curso */}
+      {aluno.status === 'concluido' && (
+        <CarteiraAutoShow
           nomeAluno={aluno.nome}
-          templateUrl={certMap['certificado_template_url']}
-          whatsapp={aluno.whatsapp}
           numRegistro={String(aluno.numero_registro ?? 1001).padStart(6, '0')}
-          nomeY={certMap['certificado_nome_y'] ? Number(certMap['certificado_nome_y']) : undefined}
-          nomeFontePct={certMap['certificado_nome_tamanho'] ? Number(certMap['certificado_nome_tamanho']) / 100 : undefined}
-          nomeCor={certMap['certificado_nome_cor'] ?? undefined}
-          logoEsquerdaUrl={certMap['cert_logo_esquerda'] || certMap['carteira_logo_esquerda'] || null}
-          logoDireitaUrl={certMap['cert_logo_direita'] || certMap['carteira_logo_direita'] || null}
-          logoY={certMap['cert_logo_y'] ? Number(certMap['cert_logo_y']) : undefined}
-          logoTamPct={certMap['cert_logo_tam'] ? Number(certMap['cert_logo_tam']) / 100 : undefined}
-          assinaturaUrl={certMap['cert_assinatura_ativa'] !== 'false' ? (certMap['cert_assinatura_url'] || certMap['carteira_assinatura_url'] || null) : null}
-          assinaturaNome={certMap['cert_assinatura_ativa'] !== 'false' ? (certMap['cert_assinatura_nome'] || certMap['carteira_assinatura_nome'] || undefined) : undefined}
-          assinaturaCargo={certMap['cert_assinatura_ativa'] !== 'false' ? (certMap['cert_assinatura_cargo'] || certMap['carteira_assinatura_cargo'] || undefined) : undefined}
-          assinaturaY={certMap['cert_assinatura_y'] ? Number(certMap['cert_assinatura_y']) : undefined}
+          whatsapp={aluno.whatsapp}
         />
       )}
     </>
