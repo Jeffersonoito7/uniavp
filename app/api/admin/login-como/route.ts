@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     if (!gestor) return NextResponse.json({ error: 'PRO não encontrado' }, { status: 404 })
     email = gestor.email
     nome = gestor.nome
-    destino = `https://gestor.${baseDomain}/gestor`
+    destino = `https://uniavp.${baseDomain}/pro`
   } else {
     const { data: aluno } = await (adminClient.from('alunos') as any)
       .select('email, nome').eq('whatsapp', whatsapp).maybeSingle()

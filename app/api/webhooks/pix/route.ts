@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
             .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
             .eq('id', gestor.id)
 
-          const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://uniavp.autovaleprevencoes.org.br'
+          const appUrl = 'https://uniavp.autovaleprevencoes.org.br'
           const valor = Number(pagGestor.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
           if (gestor.whatsapp) {

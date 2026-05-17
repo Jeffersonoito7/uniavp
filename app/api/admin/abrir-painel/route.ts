@@ -22,9 +22,9 @@ export async function GET(req: NextRequest) {
 
   let redirectUrl: string
   if (destino === 'pro') {
-    redirectUrl = `https://gestor.${baseDomain}/gestor`
+    redirectUrl = `https://uniavp.${baseDomain}/pro`
   } else if (destino === 'free' && whatsapp) {
-    redirectUrl = `https://${baseDomain}/aluno/${whatsapp}`
+    redirectUrl = `https://uniavp.${baseDomain}/aluno/${whatsapp}`
   } else {
     return NextResponse.json({ error: 'Destino inválido' }, { status: 400 })
   }
