@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   if (!adminRecord) return NextResponse.redirect(new URL('/entrar', req.url))
 
   const whatsapp = req.nextUrl.searchParams.get('whatsapp')
-  const tipo = req.nextUrl.searchParams.get('tipo') ?? 'free' // 'free' | 'pro'
+  const tipo = req.nextUrl.searchParams.get('tipo') ?? 'free'
   if (!whatsapp) return NextResponse.json({ error: 'whatsapp obrigatório' }, { status: 400 })
 
   const host = (req.headers.get('host') || '').replace(/:\d+$/, '')
@@ -22,32 +22,39 @@ export async function GET(req: NextRequest) {
   const baseDomain = partes.length > 2 ? partes.slice(1).join('.') : host
 
   let email: string
-  let redirectTo: string
+  let nextPath: string
+  let targetDomain: string
 
   if (tipo === 'pro') {
     const { data: gestor } = await (adminClient.from('gestores') as any)
       .select('email, whatsapp').eq('whatsapp', whatsapp).maybeSingle()
     if (!gestor) return NextResponse.json({ error: 'PRO não encontrado' }, { status: 404 })
     email = gestor.email
-    redirectTo = `https://gestor.${baseDomain}/gestor`
+    nextPath = '/gestor'
+    targetDomain = `gestor.${baseDomain}`
   } else {
     const { data: aluno } = await (adminClient.from('alunos') as any)
       .select('email, whatsapp').eq('whatsapp', whatsapp).maybeSingle()
     if (!aluno) return NextResponse.json({ error: 'FREE não encontrado' }, { status: 404 })
     email = aluno.email
-    redirectTo = `https://uniavp.${baseDomain}/aluno/${whatsapp}`
+    nextPath = `/aluno/${whatsapp}`
+    targetDomain = `uniavp.${baseDomain}`
   }
+
+  // Callback na URL do domínio alvo para que os cookies sejam gravados corretamente
+  const callbackUrl = `https://${targetDomain}/api/auth/callback?next=${encodeURIComponent(nextPath)}`
 
   const { data: linkData, error } = await adminClient.auth.admin.generateLink({
     type: 'magiclink',
     email,
-    options: { redirectTo },
+    options: { redirectTo: callbackUrl },
   })
 
   if (error || !linkData?.properties?.action_link) {
     return NextResponse.json({ error: error?.message ?? 'Erro ao gerar link' }, { status: 500 })
   }
 
+  // Define otp_ok para pular verificação OTP
   const res = NextResponse.redirect(linkData.properties.action_link)
   res.cookies.set('otp_ok', '1', {
     domain: `.${baseDomain}`,

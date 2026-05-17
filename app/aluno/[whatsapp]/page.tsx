@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
 import Link from 'next/link'
@@ -44,7 +45,9 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/entrar')
 
-  const [adminClient, siteConfig] = [createServiceRoleClient(), await getSiteConfig()]
+  const [adminClient, siteConfig, hdrs] = [createServiceRoleClient(), await getSiteConfig(), await headers()]
+  const host = hdrs.get('host') || ''
+  const baseUrl = siteConfig.dominioCustomizado ? `https://${siteConfig.dominioCustomizado}` : `https://${host}`
   const { data: aluno } = await (adminClient.from('alunos') as any)
     .select('id, nome, whatsapp, status, numero_registro, streak_atual, maior_streak')
     .eq('user_id', user.id)
@@ -341,7 +344,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
           {/* ── INDICAÇÃO ── */}
           {!moduloAtivo && (
             <IndicacaoCard
-              link={`${process.env.NEXT_PUBLIC_APP_URL || 'https://uniavp.autovaleprevencoes.org.br'}/captacao?ref=${aluno.whatsapp}`}
+              link={`${baseUrl}/captacao?ref=${aluno.whatsapp}`}
               totalIndicados={totalIndicadosReal ?? 0}
             />
           )}
