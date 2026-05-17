@@ -130,24 +130,9 @@ export default function CadastroPage() {
               </div>
             </div>
             <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 16, marginTop: 4 }}>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, marginBottom: 14 }}>Dados do seu PRO</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div>
-                  <label style={labelStyle}>Nome do seu PRO *</label>
-                  <input
-                    type="text"
-                    placeholder="Nome do seu PRO"
-                    value={form.gestor_nome}
-                    onChange={e => setForm(p => ({ ...p, gestor_nome: e.target.value }))}
-                    required
-                    style={inputStyle}
-                  />
-                </div>
-                <div>
-                  <label style={labelStyle}>WhatsApp do seu PRO *</label>
-                  <PhoneInput value={form.gestor_whatsapp} onChange={v => setForm(p => ({ ...p, gestor_whatsapp: v }))} required placeholder="WhatsApp do seu PRO" />
-                </div>
-              </div>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, marginBottom: 14 }}>Quem te indicou? <span style={{ opacity: 0.6 }}>(opcional)</span></p>
+              <PhoneInput value={form.gestor_whatsapp} onChange={v => setForm(p => ({ ...p, gestor_whatsapp: v }))} placeholder="WhatsApp de quem te indicou" />
+              <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 6 }}>Se alguém te indicou, informe o WhatsApp dessa pessoa</p>
             </div>
             <button
               type="submit"

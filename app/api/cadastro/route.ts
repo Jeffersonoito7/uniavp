@@ -11,8 +11,8 @@ const schema = z.object({
   whatsapp: z.string().min(10, 'WhatsApp inválido'),
   email: z.string().email('E-mail inválido'),
   senha: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
-  gestor_nome: z.string().min(2, 'Informe o nome do seu PRO'),
-  gestor_whatsapp: z.string().regex(/^\d{10,13}$/, 'WhatsApp do PRO inválido'),
+  gestor_nome: z.string().optional().default(''),
+  gestor_whatsapp: z.string().optional().default(''),
   indicador_whatsapp: z.string().optional(),
 })
 
@@ -45,12 +45,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.errors[0]?.message ?? 'Dados inválidos' }, { status: 400 })
   }
 
-  const { nome, whatsapp, email, senha, gestor_nome, gestor_whatsapp, indicador_whatsapp } = parsed.data
+  const { nome, whatsapp, email, senha, indicador_whatsapp } = parsed.data
+  let { gestor_nome, gestor_whatsapp } = parsed.data
 
   const whatsappLimpo = whatsapp.replace(/\D/g, '')
-
-  // Conta PRO (gestor) não tem limite de consultores
   const emailLimpo = email.toLowerCase().trim()
+
+  // Se informou WhatsApp do indicador mas não o nome, busca o nome automaticamente
+  if (gestor_whatsapp && !gestor_nome) {
+    const wppIndicador = gestor_whatsapp.replace(/\D/g, '')
+    const { data: gestorEncontrado } = await (adminClient.from('gestores') as any)
+      .select('nome').eq('whatsapp', wppIndicador).eq('ativo', true).maybeSingle()
+    if (gestorEncontrado) gestor_nome = gestorEncontrado.nome
+  }
 
   const { data: authUser, error: authErr } = await adminClient.auth.admin.createUser({
     email: emailLimpo,

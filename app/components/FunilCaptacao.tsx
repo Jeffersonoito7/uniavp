@@ -236,14 +236,16 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
                 </div>
               </div>
 
-              {/* Campos do gestor só aparecem se não vier de link de gestor */}
+              {/* Só aparece se não veio pelo link direto de um PRO */}
               {!gestorWhatsapp && (
                 <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 16 }}>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 14 }}>PRO que te indicou</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <input type="text" placeholder="Nome do gestor (opcional)" onChange={e => setForm(p => ({ ...p, gestor_nome: e.target.value }))} style={inp} />
-                    <PhoneInput value={form.gestor_whatsapp} onChange={v => setForm(p => ({ ...p, gestor_whatsapp: v }))} placeholder="WhatsApp do gestor (opcional)" />
-                  </div>
+                  <label style={{ display: 'block', color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
+                    Quem te indicou? <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(opcional)</span>
+                  </label>
+                  <PhoneInput value={form.gestor_whatsapp} onChange={v => setForm(p => ({ ...p, gestor_whatsapp: v }))} placeholder="WhatsApp de quem te indicou" />
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 6 }}>
+                    Se alguém te indicou, informe o WhatsApp dessa pessoa
+                  </p>
                 </div>
               )}
 
