@@ -18,33 +18,8 @@ export function middleware(request: NextRequest) {
 
   // ── Roteamento por subdomínio ───────────────────────────────────
 
-  // pro.dominio → painel PRO (= /gestor internamente)
-  if (hostname.startsWith('pro.') || hostname.startsWith('gestor.')) {
-    const excluded =
-      pathname.startsWith('/gestor') ||
-      pathname.startsWith('/api/') ||
-      pathname.startsWith('/_next/') ||
-      pathname.startsWith('/entrar') ||
-      pathname.startsWith('/recuperar-senha') ||
-      pathname.startsWith('/redefinir-senha') ||
-      pathname.startsWith('/convite') ||
-      pathname.startsWith('/g/') ||
-      pathname.startsWith('/captacao')
-
-    if (!excluded) {
-      if (!hasSession(request)) {
-        const url = new URL(request.url)
-        url.pathname = '/entrar'
-        return NextResponse.redirect(url)
-      }
-      const url = new URL(request.url)
-      url.pathname = pathname === '/' ? '/gestor' : `/gestor${pathname}`
-      return NextResponse.rewrite(url)
-    }
-  }
-
   // adm.dominio → painel admin
-  else if (hostname.startsWith('adm.') && pathname === '/') {
+  if (hostname.startsWith('adm.') && pathname === '/') {
     if (!hasSession(request)) {
       const url = new URL(request.url)
       url.pathname = '/entrar'
@@ -53,15 +28,6 @@ export function middleware(request: NextRequest) {
     const url = new URL(request.url)
     url.pathname = '/admin'
     return NextResponse.rewrite(url)
-  }
-
-  // free.dominio ou consultor.dominio → página de captação
-  else if (hostname.startsWith('free.') || hostname.startsWith('consultor.')) {
-    if (pathname === '/') {
-      const url = new URL(request.url)
-      url.pathname = '/captacao'
-      return NextResponse.rewrite(url)
-    }
   }
 
   // ── Proteção de rotas (domínio principal) ───────────────────────
