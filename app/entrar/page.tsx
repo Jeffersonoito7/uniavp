@@ -73,7 +73,7 @@ export default function EntrarPage() {
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           {logoUrl ? (
             <img src={logoUrl} alt={siteNome}
-              style={{ height: 72, objectFit: 'contain', marginBottom: 16, filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.4))' }} />
+              style={{ height: 72, width: 'auto', display: 'block', margin: '0 auto 16px', objectFit: 'contain', transform: 'none' }} />
           ) : (
             <div style={{ fontSize: 48, marginBottom: 12 }}>🎓</div>
           )}
