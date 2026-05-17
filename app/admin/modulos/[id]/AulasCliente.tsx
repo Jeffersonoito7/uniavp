@@ -289,7 +289,11 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
       ao_vivo_plataforma: aula.ao_vivo_plataforma ?? 'zoom',
       capaPreview: temCapa ? aula.capa_url : null, capaBase64: temCapa ? aula.capa_url : null,
       quiz_tipo: aula.quiz_tipo ?? 'obrigatorio',
-    })
+      bloquear_avancar: !!(aula as any).bloquear_avancar,
+      mostrar_link_externo: !!(aula as any).mostrar_link_externo,
+      link_externo_titulo: (aula as any).link_externo_titulo ?? '',
+      mostrar_links_app: !!(aula as any).mostrar_links_app,
+    } as any)
   }
 
   async function salvarEdicaoAula(id: string) {
