@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { getSiteConfig } from '@/lib/site-config'
 import CarteiraDisplay from './CarteiraDisplay'
 
 export default async function CarteiraPage({ params }: { params: { whatsapp: string } }) {
@@ -35,6 +37,10 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
   const numRegistro = String(aluno.numero_registro ?? 1001).padStart(6, '0')
 
   // Configurações da carteira
+  const [siteConfig, hdrs] = [await getSiteConfig(), await headers()]
+  const host = hdrs.get('host') || ''
+  const baseUrl = siteConfig.dominioCustomizado ? `https://${siteConfig.dominioCustomizado}` : `https://${host}`
+
   const { data: cfgRows } = await (adminClient.from('configuracoes') as any)
     .select('chave, valor')
     .in('chave', ['site_nome', 'site_logo_url', 'carteira_assinatura_nome', 'carteira_assinatura_cargo', 'carteira_assinatura_empresa', 'carteira_url_verificacao', 'carteira_tagline', 'carteira_logo_esquerda', 'carteira_logo_direita', 'carteira_assinatura_url'])
@@ -58,7 +64,7 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
       assinaturaCargo={cfg['carteira_assinatura_cargo'] || 'PRESIDENTE'}
       assinaturaEmpresa={cfg['carteira_assinatura_empresa'] || cfg['site_nome'] || ''}
       assinaturaUrl={cfg['carteira_assinatura_url'] || null}
-      urlVerificacao={cfg['carteira_url_verificacao'] || process.env.NEXT_PUBLIC_APP_URL || ''}
+      urlVerificacao={cfg['carteira_url_verificacao'] || baseUrl}
       tagline={cfg['carteira_tagline'] || ''}
       logoEsquerdaUrl={cfg['carteira_logo_esquerda'] || null}
       logoDireitaUrl={cfg['carteira_logo_direita'] || null}
