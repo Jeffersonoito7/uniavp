@@ -20,7 +20,7 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
   const { data: aula } = await (adminClient.from('aulas') as any)
-    .select('*, modulo:modulos(titulo), bloquear_avancar').eq('id', params.aulaId).single()
+    .select('*, modulo:modulos(titulo)').eq('id', params.aulaId).single()
   if (!aula || !aula.publicado) redirect(`/aluno/${params.whatsapp}`)
 
   // ── Verificação server-side: aula bloqueada? ──

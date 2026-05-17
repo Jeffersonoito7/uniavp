@@ -12,9 +12,14 @@ export async function GET(req: NextRequest) {
   const whatsapp = req.nextUrl.searchParams.get('whatsapp') ?? ''
   const aulaId = req.nextUrl.searchParams.get('aulaId') ?? ''
 
-  // 1. Busca aluno
-  const { data: aluno, error: alunoErr } = await (adminClient.from('alunos') as any)
-    .select('id, nome, whatsapp, user_id').eq('whatsapp', whatsapp).maybeSingle()
+  // 1. Busca aluno por whatsapp (tenta com e sem 55)
+  const wppLimpo = whatsapp.replace(/\D/g, '')
+  const wppSem55 = wppLimpo.startsWith('55') ? wppLimpo.slice(2) : wppLimpo
+  const { data: alunos } = await (adminClient.from('alunos') as any)
+    .select('id, nome, whatsapp, user_id')
+    .or(`whatsapp.eq.${wppLimpo},whatsapp.eq.${wppSem55}`)
+  const aluno = alunos?.[0] ?? null
+  const alunoErr = null
 
   // 2. Busca aula
   const { data: aula, error: aulaErr } = await (adminClient.from('aulas') as any)
