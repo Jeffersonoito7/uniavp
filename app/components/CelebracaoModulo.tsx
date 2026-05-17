@@ -12,6 +12,8 @@ export default function CelebracaoModulo({ onClose }: { onClose: () => void }) {
 
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
+    const W = canvas.width
+    const H = canvas.height
 
     const cores = ['#6366f1', '#22c55e', '#f59e0b', '#ec4899', '#3b82f6', '#a855f7', '#f97316', '#14b8a6']
 
@@ -24,7 +26,7 @@ export default function CelebracaoModulo({ onClose }: { onClose: () => void }) {
     const particulas: Particula[] = []
     for (let i = 0; i < 180; i++) {
       particulas.push({
-        x: Math.random() * canvas.width,
+        x: Math.random() * W,
         y: -20 - Math.random() * 300,
         vx: (Math.random() - 0.5) * 6,
         vy: 2 + Math.random() * 5,
@@ -52,7 +54,7 @@ export default function CelebracaoModulo({ onClose }: { onClose: () => void }) {
     }
 
     function animar() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.clearRect(0, 0, W, H)
       frame++
 
       for (const p of particulas) {
@@ -66,7 +68,7 @@ export default function CelebracaoModulo({ onClose }: { onClose: () => void }) {
         ctx.translate(p.x, p.y)
         ctx.rotate(p.rotacao)
         ctx.fillStyle = p.cor
-        ctx.globalAlpha = Math.max(0, 1 - p.y / (canvas.height * 0.9))
+        ctx.globalAlpha = Math.max(0, 1 - p.y / (H * 0.9))
 
         if (p.forma === 'rect') {
           ctx.fillRect(-p.tamanho / 2, -p.tamanho / 4, p.tamanho, p.tamanho / 2)
@@ -82,9 +84,9 @@ export default function CelebracaoModulo({ onClose }: { onClose: () => void }) {
         ctx.restore()
 
         // Reinicia partícula quando sai da tela
-        if (p.y > canvas.height + 20) {
+        if (p.y > H + 20) {
           p.y = -20
-          p.x = Math.random() * canvas.width
+          p.x = Math.random() * W
           p.vy = 2 + Math.random() * 4
         }
       }
