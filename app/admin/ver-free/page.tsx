@@ -45,14 +45,16 @@ export default async function VerFreePage() {
                 <span style={{ color: statusCor[a.status] ?? 'var(--avp-text-dim)', fontWeight: 600 }}>{a.status}</span>
               </p>
             </div>
-            <a
-              href={`/api/admin/abrir-painel?destino=free&whatsapp=${a.whatsapp}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ flexShrink: 0, background: 'var(--grad-brand)', color: '#fff', borderRadius: 8, padding: '8px 18px', fontSize: 13, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}
-            >
-              Abrir painel →
-            </a>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <a
+                href={`/api/admin/login-como?whatsapp=${a.whatsapp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ background: 'var(--grad-brand)', color: '#fff', borderRadius: 8, padding: '8px 18px', fontSize: 13, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}
+              >
+                🔑 Entrar como
+              </a>
+            </div>
           </div>
         ))}
         {(!alunos || alunos.length === 0) && (
