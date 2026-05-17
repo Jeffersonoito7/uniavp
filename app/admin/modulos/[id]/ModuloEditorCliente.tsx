@@ -246,34 +246,49 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
 
           {certAtivo && (<>
 
-            {/* Template */}
+            {/* Template + Preview + Posição — tudo num card só */}
             <div style={card}>
-              <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 12 }}>Template do certificado</p>
-              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 14 }}>
-                Faça upload do PNG de fundo. O nome do aluno será sobreposto na posição configurada abaixo.<br />
+              <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>Template do certificado</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 12 }}>
                 <strong style={{ color: 'var(--avp-green)' }}>📐 2480×1748px · A4 paisagem · mín. 150 dpi</strong>
               </p>
-              {/* Upload template */}
-              <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 14, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100, background: 'var(--avp-card)', borderRadius: 8, border: `2px dashed ${certTemplateUrl ? 'var(--avp-green)' : 'var(--avp-border)'}`, padding: 8 }}>
-                  {certTemplateUrl
-                    ? <img src={certTemplateUrl} alt="template" style={{ maxHeight: 90, maxWidth: '100%', objectFit: 'contain' }} />
-                    : <span style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>Nenhum template · 2480×1748px</span>}
-                </div>
-                <input ref={certTemplateRef} type="file" accept="image/*" style={{ display: 'none' }}
-                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadCertImg('template', f); e.target.value = '' }} />
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button onClick={() => certTemplateRef.current?.click()} disabled={certUploading === 'template'}
-                    style={{ flex: 1, background: certUploading === 'template' ? 'var(--avp-border)' : certTemplateUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
-                    {certUploading === 'template' ? '⏳ Enviando...' : certTemplateUrl ? '🔄 Trocar template' : '📤 Subir template'}
-                  </button>
-                  {certTemplateUrl && <button onClick={() => setCertTemplateUrl('')}
-                    style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>🗑</button>}
-                </div>
+
+              {/* Botões de upload */}
+              <input ref={certTemplateRef} type="file" accept="image/*" style={{ display: 'none' }}
+                onChange={e => { const f = e.target.files?.[0]; if (f) uploadCertImg('template', f); e.target.value = '' }} />
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                <button onClick={() => certTemplateRef.current?.click()} disabled={certUploading === 'template'}
+                  style={{ flex: 1, background: certUploading === 'template' ? 'var(--avp-border)' : certTemplateUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+                  {certUploading === 'template' ? '⏳ Enviando...' : certTemplateUrl ? '🔄 Trocar template' : '📤 Subir template'}
+                </button>
+                {certTemplateUrl && <button onClick={() => setCertTemplateUrl('')}
+                  style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>🗑</button>}
               </div>
 
-              {/* Posição nome */}
-              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}>Posição do nome do aluno</p>
+              {/* Preview grande com nome sobreposto — sempre visível quando tem template */}
+              {certTemplateUrl ? (
+                <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', border: '2px solid var(--avp-green)', marginBottom: 20, containerType: 'inline-size' as any }}>
+                  <img src={certTemplateUrl} alt="preview" style={{ width: '100%', display: 'block' }} />
+                  <div style={{
+                    position: 'absolute', left: '50%', transform: 'translateX(-50%)',
+                    top: `${certNomeY}%`, width: '80%', textAlign: 'center' as const,
+                    fontFamily: 'Georgia, serif', fontWeight: 700,
+                    fontSize: `${Math.min(Number(certNomeTamanho) || 4.5, 6)}cqw`,
+                    color: certNomeCor, textTransform: 'uppercase' as const,
+                    letterSpacing: 2, pointerEvents: 'none' as const, lineHeight: 1.2,
+                    textShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                  }}>
+                    NOME DO ALUNO
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 120, background: 'var(--avp-black)', borderRadius: 8, border: '2px dashed var(--avp-border)', marginBottom: 20 }}>
+                  <span style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>📄 Faça upload para ver o preview</span>
+                </div>
+              )}
+
+              {/* Controles de posição ABAIXO do preview */}
+              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 10, borderTop: '1px solid var(--avp-border)', paddingTop: 16 }}>Posição do nome do aluno</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Posição vertical (%)</label>
@@ -392,18 +407,6 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
               )}
             </div>
 
-            {/* Preview */}
-            {certTemplateUrl && certTemplateUrl.startsWith('http') && (
-              <div style={card}>
-                <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 10 }}>Preview do certificado</p>
-                <div style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid var(--avp-border)', position: 'relative' }}>
-                  <img src={certTemplateUrl} alt="Certificado" style={{ width: '100%', display: 'block', objectFit: 'contain' }} />
-                  <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: `${certNomeY}%`, width: '80%', textAlign: 'center', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: `${Math.min(Number(certNomeTamanho) || 4.5, 6)}cqw`, color: certNomeCor, textTransform: 'uppercase' as const, letterSpacing: 2, pointerEvents: 'none', lineHeight: 1.2 }}>
-                    NOME DO ALUNO
-                  </div>
-                </div>
-              </div>
-            )}
 
           </>)}
         </div>
