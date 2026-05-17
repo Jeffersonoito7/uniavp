@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
         resolvedId = indNovo?.id ?? null
       }
       if (resolvedId) {
-        // Limite de 50 indicações para consultor free
+        // Limite de 20 indicações para consultor free
         const { count: jaIndicou } = await (adminClient.from('alunos') as any)
           .select('id', { count: 'exact', head: true })
           .eq('indicador_id', resolvedId)

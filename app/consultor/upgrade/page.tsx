@@ -21,7 +21,7 @@ export default async function UpgradePage() {
     { icon: '📊', titulo: 'Relatórios e métricas', desc: 'Veja o progresso da equipe, inativos e progresso médio' },
     { icon: '💬', titulo: 'WhatsApp direto', desc: 'Envie mensagens para consultores diretamente do painel' },
     { icon: '🎨', titulo: 'Templates de arte', desc: 'Crie e personalize artes para sua equipe compartilhar' },
-    { icon: '🤝', titulo: 'Indicações ilimitadas', desc: 'Indique sem limite — na UNIAVP FREE o limite é 50' },
+    { icon: '🤝', titulo: 'Indicações ilimitadas', desc: 'Indique sem limite — na UNIAVP FREE o limite é 20' },
     { icon: '🏆', titulo: 'Carteira de Formação', desc: 'Certificado e carteirinha para sua equipe' },
   ]
 
@@ -61,7 +61,7 @@ export default async function UpgradePage() {
             <p style={{ fontSize: 28, fontWeight: 900, marginBottom: 16 }}>Grátis</p>
             {[
               '✅ 20 aulas',
-              '✅ Indicar até 50 pessoas',
+              '✅ Indicar até 20 pessoas',
               '❌ Gestão de equipe',
               '❌ Aulas ilimitadas',
               '❌ Relatórios',
