@@ -356,55 +356,40 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
 
             {/* Assinatura */}
             <div style={card}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: certAssinaturaAtiva ? 16 : 0 }}>
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>✍️ Sobrepor assinatura no certificado</p>
-                  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0', lineHeight: 1.5 }}>
-                    Ative <strong>somente</strong> se o template <strong>não</strong> tiver assinatura gravada.
-                  </p>
+              <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>✍️ Assinatura (opcional)</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 14 }}>
+                Use somente se o template <strong>não</strong> tiver assinatura gravada. Deixe em branco caso contrário.
+              </p>
+              <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 14, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
+                <p style={{ fontWeight: 700, fontSize: 13, margin: 0 }}>PNG com fundo transparente · <span style={{ color: 'var(--avp-green)' }}>400×150px</span></p>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 70, background: 'var(--avp-card)', borderRadius: 8, border: `2px dashed ${certAssinaturaUrl ? 'var(--avp-green)' : 'var(--avp-border)'}`, padding: 6 }}>
+                  {certAssinaturaUrl ? <img src={certAssinaturaUrl} alt="assinatura" style={{ maxHeight: 56, maxWidth: '100%', objectFit: 'contain' }} /> : <span style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>Nenhuma assinatura</span>}
                 </div>
-                <button onClick={() => setCertAssinaturaAtiva(v => !v)}
-                  style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: certAssinaturaAtiva ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
-                  <span style={{ position: 'absolute', top: 3, left: certAssinaturaAtiva ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
-                </button>
+                <input ref={certAssinaturaRef} type="file" accept="image/*" style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadCertImg('assinatura', f); e.target.value = '' }} />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => certAssinaturaRef.current?.click()} disabled={certUploading === 'assinatura'}
+                    style={{ flex: 1, background: certUploading === 'assinatura' ? 'var(--avp-border)' : certAssinaturaUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+                    {certUploading === 'assinatura' ? '⏳ Enviando...' : certAssinaturaUrl ? '🔄 Trocar' : '📤 Subir assinatura'}
+                  </button>
+                  {certAssinaturaUrl && <button onClick={() => setCertAssinaturaUrl('')} style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>🗑</button>}
+                </div>
               </div>
-              {certAssinaturaAtiva && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <div>
-                      <p style={{ fontWeight: 700, fontSize: 13, margin: 0 }}>Assinatura do Presidente (PNG transparente)</p>
-                      <span style={{ fontSize: 11, color: 'var(--avp-green)', fontWeight: 700 }}>📐 PNG transparente · 400×150px</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 70, background: 'var(--avp-card)', borderRadius: 8, border: `2px dashed ${certAssinaturaUrl ? 'var(--avp-green)' : 'var(--avp-border)'}`, padding: 6 }}>
-                      {certAssinaturaUrl ? <img src={certAssinaturaUrl} alt="assinatura" style={{ maxHeight: 56, maxWidth: '100%', objectFit: 'contain' }} /> : <span style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>Nenhuma assinatura</span>}
-                    </div>
-                    <input ref={certAssinaturaRef} type="file" accept="image/*" style={{ display: 'none' }}
-                      onChange={e => { const f = e.target.files?.[0]; if (f) uploadCertImg('assinatura', f); e.target.value = '' }} />
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button onClick={() => certAssinaturaRef.current?.click()} disabled={certUploading === 'assinatura'}
-                        style={{ flex: 1, background: certUploading === 'assinatura' ? 'var(--avp-border)' : certAssinaturaUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
-                        {certUploading === 'assinatura' ? '⏳ Enviando...' : certAssinaturaUrl ? '🔄 Trocar' : '📤 Subir assinatura'}
-                      </button>
-                      {certAssinaturaUrl && <button onClick={() => setCertAssinaturaUrl('')} style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>🗑</button>}
-                    </div>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Nome de quem assina</label>
-                      <input style={inp} value={certAssinaturaNome} onChange={e => setCertAssinaturaNome(e.target.value)} placeholder="Ex: TIBURCIO FILHO" />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Cargo</label>
-                      <input style={inp} value={certAssinaturaCargo} onChange={e => setCertAssinaturaCargo(e.target.value)} placeholder="Ex: PRESIDENTE" />
-                    </div>
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Posição vertical da assinatura (%)</label>
-                    <input type="number" min={0} max={100} style={inp} value={certAssinaturaY} onChange={e => setCertAssinaturaY(e.target.value)} />
-                    <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>0 = topo · 100 = base · padrão: 82</p>
-                  </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={lbl}>Nome de quem assina</label>
+                  <input style={inp} value={certAssinaturaNome} onChange={e => setCertAssinaturaNome(e.target.value)} placeholder="Ex: TIBURCIO FILHO" />
                 </div>
-              )}
+                <div>
+                  <label style={lbl}>Cargo</label>
+                  <input style={inp} value={certAssinaturaCargo} onChange={e => setCertAssinaturaCargo(e.target.value)} placeholder="Ex: PRESIDENTE" />
+                </div>
+                <div>
+                  <label style={lbl}>Posição vertical (%)</label>
+                  <input type="number" min={0} max={100} style={inp} value={certAssinaturaY} onChange={e => setCertAssinaturaY(e.target.value)} />
+                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>0 = topo · padrão: 82</p>
+                </div>
+              </div>
             </div>
 
 
