@@ -112,9 +112,12 @@ function PerfilGestor({ gestor, onNomeAtualizado }: { gestor: Gestor; onNomeAtua
               <input style={inp} value={nome} onChange={e => setNome(e.target.value)} required />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>🔗 Link da Plataforma Parceira</label>
-              <input style={inp} value={linkExterno} onChange={e => setLinkExterno(e.target.value)} placeholder="https://link-da-outra-plataforma.com.br" />
-              <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>Enviado automaticamente para seus FREE ao se cadastrarem</p>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>🔗 Seu link da plataforma parceira</label>
+              <input style={inp} value={linkExterno} onChange={e => setLinkExterno(e.target.value)} placeholder="Cole aqui o seu link de indicação (qualquer formato)" />
+              <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>
+                Este é o seu link pessoal de indicação — cada PRO tem o seu. Cole exatamente como você recebeu.<br />
+                Ele aparece para seus FREE ao se cadastrarem e também nas aulas configuradas pelo admin.
+              </p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div>
