@@ -24,6 +24,10 @@ export default async function CaptacaoPage({ searchParams }: { searchParams?: { 
   const valorRaw = videoConfig?.valor
   const valorStr = typeof valorRaw === 'string' ? valorRaw : JSON.stringify(valorRaw ?? '')
   const videoId = extrairIdYoutube(valorStr)
+
+  const { data: bloquearConfig } = await (adminClient.from('configuracoes') as any)
+    .select('valor').eq('chave', 'free_bloquear_video').maybeSingle()
+  const bloquearVideo = bloquearConfig?.valor !== 'false'
   const direto = searchParams?.direto === '1'
   const ref = searchParams?.ref ?? undefined
   const plano = searchParams?.plano === 'pro' ? 'pro' : undefined
@@ -36,6 +40,7 @@ export default async function CaptacaoPage({ searchParams }: { searchParams?: { 
       direto={direto}
       indicadorWhatsapp={ref}
       plano={plano}
+      bloquearVideo={bloquearVideo}
     />
   )
 }
