@@ -70,6 +70,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   }
 
   const [planoPROValor, setPlanoPROValor] = useState(get('plano_pro_valor') || '97')
+  const [freePodeConfigurarLink, setFreePodeConfigurarLink] = useState(get('free_pode_configurar_link') === 'true')
   const [logoUrl, setLogoUrl] = useState(get('site_logo_url'))
   const [logoMenuUrl, setLogoMenuUrl] = useState(get('logo_menu_url'))
   const [logoPaginaUrl, setLogoPaginaUrl] = useState(get('logo_pagina_url'))
@@ -303,6 +304,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         ...(urlSafe(carteiraLogoDireita) ? [{ chave: 'carteira_logo_direita', valor: carteiraLogoDireita }] : []),
         ...(urlSafe(carteiraAssinaturaUrl) ? [{ chave: 'carteira_assinatura_url', valor: carteiraAssinaturaUrl }] : []),
         { chave: 'plano_pro_valor', valor: planoPROValor },
+        { chave: 'free_pode_configurar_link', valor: String(freePodeConfigurarLink) },
         { chave: 'boleto_mensagem', valor: boletoMensagem },
         { chave: 'boleto_instrucoes', valor: boletoInstrucoes },
         { chave: 'boleto_multa', valor: boletoMulta },
@@ -488,6 +490,29 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         <p style={{ fontSize: 12, color: '#818cf8', marginTop: 4 }}>
           Valor atual: <strong>R$ {parseFloat(planoPROValor || '0').toFixed(2).replace('.', ',')}</strong>/mês
         </p>
+      </div>}
+
+      {/* PERMISSÕES FREE — só no super admin */}
+      {isMaster && <div style={{ ...card, border: '2px solid rgba(34,197,94,0.3)', background: 'rgba(34,197,94,0.03)' }}>
+        <p style={{ fontWeight: 800, fontSize: 16 }}>🆓 Permissões do Painel FREE</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8, marginBottom: 16 }}>
+          Controle o que os usuários FREE podem configurar no próprio perfil.
+        </p>
+        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div>
+              <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>🔗 FREE pode configurar link da plataforma parceira</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0', lineHeight: 1.5 }}>
+                Quando ativado, cada FREE pode colocar o próprio link de indicação no perfil dele.
+                Se não tiver link próprio, usa o link do PRO que o indicou.
+              </p>
+            </div>
+            <button onClick={() => setFreePodeConfigurarLink(v => !v)}
+              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: freePodeConfigurarLink ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+              <span style={{ position: 'absolute', top: 3, left: freePodeConfigurarLink ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+            </button>
+          </div>
+        </div>
       </div>}
 
       {/* BOLETO — só no painel Oito7Digital */}

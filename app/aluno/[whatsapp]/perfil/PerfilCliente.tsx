@@ -12,6 +12,7 @@ type Aluno = {
   status: string
   numero_registro?: number | null
   data_formacao?: string | null
+  link_externo?: string | null
 }
 
 const STATUS_LABEL: Record<string, { label: string; color: string; bg: string }> = {
@@ -21,14 +22,15 @@ const STATUS_LABEL: Record<string, { label: string; color: string; bg: string }>
   desligado:  { label: 'Desligado',  color: '#ef4444', bg: '#ef444415' },
 }
 
-export default function PerfilCliente({ aluno, email }: { aluno: Aluno; email: string }) {
+export default function PerfilCliente({ aluno, email, podeCfgLink }: { aluno: Aluno; email: string; podeCfgLink?: boolean }) {
   const [siteNome, setSiteNome] = useState('')
   useEffect(() => {
     fetch('/api/site-config').then(r => r.json()).then(d => setSiteNome(d.nome)).catch(() => {})
   }, [])
 
-  const [nome, setNome]     = useState(aluno.nome)
-  const [bio, setBio]       = useState(aluno.bio ?? '')
+  const [nome, setNome]         = useState(aluno.nome)
+  const [bio, setBio]           = useState(aluno.bio ?? '')
+  const [linkExterno, setLinkExterno] = useState(aluno.link_externo ?? '')
   const [fotoUrl, setFotoUrl] = useState<string | null>(aluno.foto_url)
   const [salvando, setSalvando]   = useState(false)
   const [uploadando, setUploadando] = useState(false)
@@ -67,7 +69,7 @@ export default function PerfilCliente({ aluno, email }: { aluno: Aluno; email: s
     const res = await fetch('/api/perfil', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ aluno_id: aluno.id, nome, bio }),
+      body: JSON.stringify({ aluno_id: aluno.id, nome, bio, link_externo: podeCfgLink ? linkExterno || null : undefined }),
     })
     const data = await res.json()
     if (data.ok) setMsg({ tipo: 'ok', texto: 'Perfil atualizado!' })
@@ -189,6 +191,16 @@ export default function PerfilCliente({ aluno, email }: { aluno: Aluno; email: s
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Bio</label>
                 <textarea style={{ ...inp, resize: 'vertical', minHeight: 90, lineHeight: 1.6 }} value={bio} onChange={e => setBio(e.target.value)} placeholder="Fale um pouco sobre você..." />
               </div>
+
+              {podeCfgLink && (
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>🔗 Meu link da plataforma parceira</label>
+                  <input style={inp} value={linkExterno} onChange={e => setLinkExterno(e.target.value)} placeholder="Cole aqui o seu link de indicação" />
+                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>
+                    Cole exatamente como você recebeu. Aparece para quem você indicar ao completar certas aulas.
+                  </p>
+                </div>
+              )}
 
               {aluno.data_formacao && (
                 <div style={{ background: '#6366f115', border: '1px solid #6366f130', borderRadius: 10, padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'center' }}>

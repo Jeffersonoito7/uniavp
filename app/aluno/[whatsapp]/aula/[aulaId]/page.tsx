@@ -71,11 +71,11 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   const { data: arquivos } = await (adminClient.from('aula_arquivos') as any)
     .select('*').eq('aula_id', params.aulaId).order('created_at')
 
-  // Link externo do PRO que indicou este aluno
+  // Link externo: usa o do próprio aluno (se configurado) ou fallback pro link do PRO
   const { data: alunoCompleto } = await (adminClient.from('alunos') as any)
-    .select('gestor_whatsapp').eq('id', aluno.id).maybeSingle()
-  let linkExternoPro: string | null = null
-  if (alunoCompleto?.gestor_whatsapp) {
+    .select('gestor_whatsapp, link_externo').eq('id', aluno.id).maybeSingle()
+  let linkExternoPro: string | null = alunoCompleto?.link_externo ?? null
+  if (!linkExternoPro && alunoCompleto?.gestor_whatsapp) {
     const { data: gestorLink } = await (adminClient.from('gestores') as any)
       .select('link_externo').eq('whatsapp', alunoCompleto.gestor_whatsapp).eq('ativo', true).maybeSingle()
     linkExternoPro = gestorLink?.link_externo ?? null
