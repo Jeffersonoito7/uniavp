@@ -37,8 +37,8 @@ export default function AulaInterativa({
   simNaoPergunta, simNaoNaoMensagem, simNaoPerguntas, temQuiz,
 }: Props) {
   const router = useRouter()
-  // Quiz aparece só após o vídeo terminar (ou imediatamente se já aprovado)
-  const [videoTerminou, setVideoTerminou] = useState(jaAprovado)
+  // Quiz aparece só após o vídeo terminar
+  const [videoTerminou, setVideoTerminou] = useState(false)
 
   function handleVideoEnd() {
     setVideoTerminou(true)
