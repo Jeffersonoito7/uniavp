@@ -133,7 +133,13 @@ export async function POST(req: NextRequest) {
 
   const siteConfig = await getSiteConfig()
   const nomePlataforma = siteConfig.nome || 'Universidade'
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://uniavp.autovaleprevencoes.org.br'
+
+  // Usa o domínio configurado ou o host da requisição — nunca o domínio master
+  const host = req.headers.get('host') || ''
+  const proto = 'https'
+  const appUrl = siteConfig.dominioCustomizado
+    ? `${proto}://${siteConfig.dominioCustomizado}`
+    : `${proto}://${host}`
 
   // Busca o gestor (PRO) para pegar o link externo configurado
   const gestorWppLimpo = gestor_whatsapp.replace(/\D/g, '')
