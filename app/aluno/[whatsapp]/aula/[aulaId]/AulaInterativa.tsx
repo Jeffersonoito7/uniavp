@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import VideoPlayer from '@/app/components/VideoPlayer'
 import NavegacaoAulas from './NavegacaoAulas'
@@ -18,7 +19,6 @@ type Props = {
   aulaAnterior: AulaNav | null
   proximaAula: AulaNav | null
   proximaStatus: string
-  // Quiz props
   questoes: Questao[]
   aprovacaoMinima: number
   jaAprovado: boolean
@@ -37,8 +37,11 @@ export default function AulaInterativa({
   simNaoPergunta, simNaoNaoMensagem, simNaoPerguntas, temQuiz,
 }: Props) {
   const router = useRouter()
+  // Quiz aparece só após o vídeo terminar (ou imediatamente se já aprovado)
+  const [videoTerminou, setVideoTerminou] = useState(jaAprovado)
 
-  function atualizarTrilha() {
+  function handleVideoEnd() {
+    setVideoTerminou(true)
     router.refresh()
   }
 
@@ -49,12 +52,12 @@ export default function AulaInterativa({
         youtubeId={youtubeId}
         videoUrl={videoUrl}
         titulo={titulo}
-        onEnded={atualizarTrilha}
+        onEnded={handleVideoEnd}
         bloquearAvancar={bloquearAvancar}
       />
 
-      {/* Quiz */}
-      {temQuiz && (
+      {/* Quiz — aparece só após o vídeo terminar */}
+      {temQuiz && videoTerminou && (
         <div style={{ padding: '0 24px' }}>
           <Quiz
             aulaId={aulaId}
@@ -66,8 +69,18 @@ export default function AulaInterativa({
             simNaoPergunta={simNaoPergunta}
             simNaoNaoMensagem={simNaoNaoMensagem}
             simNaoPerguntas={simNaoPerguntas}
-            onAprovado={atualizarTrilha}
+            onAprovado={handleVideoEnd}
           />
+        </div>
+      )}
+
+      {/* Mensagem enquanto vídeo não terminou */}
+      {temQuiz && !videoTerminou && (
+        <div style={{ padding: '16px 24px' }}>
+          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, color: 'var(--avp-text-dim)', fontSize: 14 }}>
+            <span style={{ fontSize: 20 }}>📝</span>
+            <span>O quiz desta aula será liberado ao final do vídeo.</span>
+          </div>
         </div>
       )}
 
