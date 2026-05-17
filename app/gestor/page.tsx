@@ -90,7 +90,7 @@ export default async function GestorPage() {
   const siteConfig = await getSiteConfig()
   const baseUrl = siteConfig.dominioCustomizado
     ? `https://${siteConfig.dominioCustomizado}`
-    : (process.env.NEXT_PUBLIC_APP_URL || 'https://uniavp.autovaleprevencoes.org.br')
+    : 'https://uniavp.autovaleprevencoes.org.br'
 
   const { data: capaCfg } = await (adminClient.from('configuracoes') as any)
     .select('valor').eq('chave', 'modulo_capa_padrao').maybeSingle()

@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
 import AdminLayout from '../AdminLayout'
@@ -19,10 +20,11 @@ export default async function CaptacaoPage() {
   const { data: gestores } = await (adminClient.from('gestores') as any)
     .select('id, nome, whatsapp').eq('ativo', true).order('nome')
 
-  const siteConfig = await getSiteConfig()
+  const [siteConfig, hdrs] = [await getSiteConfig(), await headers()]
+  const host = hdrs.get('host') || ''
   const baseUrl = siteConfig.dominioCustomizado
     ? `https://${siteConfig.dominioCustomizado}`
-    : (process.env.NEXT_PUBLIC_APP_URL || 'https://uniavp.autovaleprevencoes.org.br')
+    : `https://${host.replace(/^adm\./, 'uniavp.')}`
 
   return (
     <AdminLayout>

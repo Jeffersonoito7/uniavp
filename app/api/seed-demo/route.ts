@@ -1,9 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const token = req.nextUrl.searchParams.get('token')
+  if (!process.env.CRON_SECRET || token !== process.env.CRON_SECRET) {
+    return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
+  }
   const admin = createServiceRoleClient()
   const log: string[] = []
 

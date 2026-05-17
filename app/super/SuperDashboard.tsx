@@ -7,7 +7,7 @@ type Cliente = { id: string; nome: string; dominio: string; ativo: boolean; cont
 type Stats = { totalAlunos: number; totalGestores: number; totalAdmins: number; totalModulos: number; totalAulas: number }
 type Config = { chave: string; valor: string; descricao?: string }
 
-const BASE_URL = 'https://universidade.oito7digital.com.br'
+const BASE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://universidade.oito7digital.com.br'
 
 export default function SuperDashboard({ nome, clientes: inicial, stats, recentesAlunos, configs }: {
   nome: string; clientes: Cliente[]; stats: Stats; recentesAlunos: { nome: string; created_at: string; status: string }[]; configs: Config[]
@@ -625,7 +625,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
               <p>• O sistema gera e envia cobranças automaticamente <strong style={{ color: '#f0f1f5' }}>5 dias antes do vencimento</strong></p>
               <p>• Após <strong style={{ color: '#f0f1f5' }}>3 dias de atraso</strong> o acesso é suspenso automaticamente</p>
               <p>• Quando o pagamento é confirmado, o acesso é reativado instantaneamente</p>
-              <p style={{ marginTop: 8, color: '#6366f1', fontWeight: 600 }}>⚙️ Registre o webhook da Efí em: <span style={{ fontFamily: 'monospace' }}>{process.env.NEXT_PUBLIC_APP_URL || 'https://universidade.oito7digital.com.br'}/api/webhooks/pix</span></p>
+              <p style={{ marginTop: 8, color: '#6366f1', fontWeight: 600 }}>⚙️ Registre o webhook da Efí em: <span style={{ fontFamily: 'monospace' }}>{BASE_URL}/api/webhooks/pix</span></p>
             </div>
           </div>
         )}

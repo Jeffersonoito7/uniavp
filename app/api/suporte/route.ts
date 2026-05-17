@@ -6,7 +6,7 @@ const SYSTEM_PROMPT = `Você é o assistente de suporte da Universidade AVP, uma
 
 ## PAINÉIS DA PLATAFORMA
 - **Painel Admin** (adm.autovaleprevencoes.org.br): cria módulos/aulas, gerencia consultores e gestores, configura a plataforma
-- **Painel PRO** (gestor.autovaleprevencoes.org.br): acompanha sua equipe de consultores FREE, libera aulas, cria eventos
+- **Painel PRO** (uniavp.autovaleprevencoes.org.br/pro): acompanha sua equipe de consultores FREE, libera aulas, cria eventos
 - **Painel Consultor**: acessa as aulas, faz quizzes, acumula pontos, baixa certificado
 
 ## PROBLEMAS MAIS COMUNS E SOLUÇÕES
@@ -34,10 +34,11 @@ const SYSTEM_PROMPT = `Você é o assistente de suporte da Universidade AVP, uma
 - Certificado não gera: verificar se o template foi configurado em Admin → Configurações → Certificado
 - Cores não mudaram: após salvar as cores, pode levar alguns segundos para atualizar
 
-### Subdomínios / Acesso
-- consultor.autovaleprevencoes.org.br → vai para a página de captação (cadastro de novos consultores)
-- gestor.autovaleprevencoes.org.br → vai para o login do painel PRO
-- adm.autovaleprevencoes.org.br → vai para o login do painel admin
+### Acesso aos Painéis
+- uniavp.autovaleprevencoes.org.br/entrar → login unificado (FREE, PRO e Admin)
+- uniavp.autovaleprevencoes.org.br/pro → painel PRO
+- uniavp.autovaleprevencoes.org.br/aluno/[whatsapp] → painel FREE
+- adm.autovaleprevencoes.org.br → painel Admin
 
 ### WhatsApp automático
 - Mensagens não chegando: verificar se o WhatsApp está conectado (Admin → Configurações → WhatsApp ou Gestor → Configurações)

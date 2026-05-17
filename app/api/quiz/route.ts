@@ -91,10 +91,9 @@ export async function POST(req: NextRequest) {
     if (modo === 'manual_gestor' && alunoInfo?.gestor_whatsapp) {
       const { enviarWhatsApp, getInstanciaGestorPorNome } = await import('@/lib/whatsapp')
       const inst = await getInstanciaGestorPorNome(alunoInfo.gestor_nome, adminClient)
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || ''
       await enviarWhatsApp(
         alunoInfo.gestor_whatsapp,
-        `📋 *${alunoInfo.nome}* foi aprovado na aula *${aulaInfo?.titulo}* e está aguardando sua liberação para continuar.\n\nAcesse o painel: ${appUrl}/pro`,
+        `📋 *${alunoInfo.nome}* foi aprovado na aula *${aulaInfo?.titulo}* e está aguardando sua liberação para continuar.\n\nAcesse o painel: https://uniavp.autovaleprevencoes.org.br/pro`,
         inst
       )
     }

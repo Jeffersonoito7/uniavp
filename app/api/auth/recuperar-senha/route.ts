@@ -7,7 +7,9 @@ export async function POST(req: NextRequest) {
   const { email, redirectTo } = await req.json()
   if (!email) return NextResponse.json({ error: 'E-mail obrigatório' }, { status: 400 })
 
-  const dest = redirectTo || `${process.env.NEXT_PUBLIC_APP_URL}/redefinir-senha`
+  const host = req.headers.get('host') || ''
+  const origin = `https://${host}`
+  const dest = redirectTo || `${origin}/redefinir-senha`
   const adminClient = createServiceRoleClient()
 
   // 1. Gera o link para exibir na tela (funciona sempre)
