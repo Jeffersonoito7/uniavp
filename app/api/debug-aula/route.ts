@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
 
   // 2. Busca aula
   const { data: aula, error: aulaErr } = await (adminClient.from('aulas') as any)
-    .select('*, modulo:modulos(titulo), bloquear_avancar').eq('id', aulaId).single()
+    .select('*, modulo:modulos(titulo)').eq('id', aulaId).single()
 
   // 3. Busca aula simples (sem join)
   const { data: aulaSemJoin, error: aulaSemJoinErr } = await (adminClient.from('aulas') as any)
