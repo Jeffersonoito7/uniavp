@@ -37,14 +37,6 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   const moduloApenasProPermissao = !perfisPermitidos.includes('consultor') && perfisPermitidos.includes('gestor')
   if (moduloApenasProPermissao) redirect(`/upgrade`)
 
-  // ── Limite Conta Free: 20 aulas ──
-  const LIMITE_FREE = 20
-  const trilhaOrdenada = ((trilhaRaw ?? []) as any[])
-    .slice()
-    .sort((a: any, b: any) => a.modulo_ordem !== b.modulo_ordem ? a.modulo_ordem - b.modulo_ordem : a.aula_ordem - b.aula_ordem)
-  const posicaoNaTrilha = trilhaOrdenada.findIndex((t: any) => t.aula_id === params.aulaId) + 1
-  if (posicaoNaTrilha > LIMITE_FREE) redirect(`/upgrade`)
-
   // Trilha do módulo para sidebar
   const { data: trilhaSidebar } = await (adminClient as any)
     .rpc('obter_trilha_aluno', { p_aluno_id: aluno.id })

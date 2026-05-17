@@ -140,12 +140,6 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
   const nivel = calcularNivel(totalPontos)
   const progressoPct = nivel.prox ? Math.round(((nivel.atual - nivel.min) / (nivel.max - nivel.min)) * 100) : 100
 
-  const LIMITE_FREE = 20
-  const trilhaOrdenada = [...trilha].sort((a, b) =>
-    a.modulo_ordem !== b.modulo_ordem ? a.modulo_ordem - b.modulo_ordem : a.aula_ordem - b.aula_ordem
-  )
-  const posicaoMap: Record<string, number> = {}
-  trilhaOrdenada.forEach((t, i) => { posicaoMap[t.aula_id] = i + 1 })
 
   const totalAulas = trilha.length
   const aulasConcluidas = trilha.filter(a => a.status === 'concluida').length
@@ -375,10 +369,9 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                     const concluidas = mod.aulas.filter(a => a.status === 'concluida').length
                     const total = mod.aulas.length
                     const pct = total > 0 ? Math.round(concluidas / total * 100) : 0
-                    const temDisponivel = !eProExclusivo && mod.aulas.some(a => a.status === 'disponivel' && (posicaoMap[a.aula_id] ?? 0) <= LIMITE_FREE)
+                    const temDisponivel = !eProExclusivo && mod.aulas.some(a => a.status === 'disponivel')
                     const todasConcluidas = !eProExclusivo && concluidas === total && total > 0
                     const thumb = mod.aulas[0]?.capa_url || (mod.aulas[0]?.youtube_video_id ? `https://img.youtube.com/vi/${mod.aulas[0].youtube_video_id}/mqdefault.jpg` : null) || certMap['modulo_capa_padrao'] || null
-                    const aulasPro = mod.aulas.filter(a => (posicaoMap[a.aula_id] ?? 0) > LIMITE_FREE).length
                     const cardStyle = { background: eProExclusivo ? 'linear-gradient(135deg, rgba(99,102,241,0.08), var(--avp-card))' : 'var(--avp-card)', border: `1px solid ${eProExclusivo ? 'rgba(99,102,241,0.35)' : todasConcluidas ? '#22c55e40' : temDisponivel ? '#3b82f640' : 'var(--avp-border)'}`, borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column' as const, textDecoration: 'none', color: 'inherit' }
                     const conteudo = (
                       <>
@@ -392,7 +385,6 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                             </div>
                           )}
                           {!eProExclusivo && <div style={{ position: 'absolute', top: 12, right: 12, background: todasConcluidas ? '#22c55e' : 'rgba(0,0,0,0.65)', borderRadius: 20, padding: '4px 10px', fontSize: 12, fontWeight: 700, color: '#fff' }}>{todasConcluidas ? '✓ Concluído' : `${concluidas}/${total} aulas`}</div>}
-                          {!eProExclusivo && aulasPro > 0 && !todasConcluidas && <div style={{ position: 'absolute', top: 12, left: 12, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 20, padding: '4px 10px', fontSize: 11, fontWeight: 800, color: '#fff' }}>✨ {aulasPro} Pro</div>}
                         </div>
                         <div style={{ padding: '16px 18px', flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
                           <p style={{ fontSize: 16, fontWeight: 800, lineHeight: 1.3, color: eProExclusivo ? '#c4b5fd' : 'var(--avp-text)', margin: 0 }}>{mod.modulo_titulo}</p>
@@ -433,7 +425,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
                 {moduloAtivo.aulas.map(aula => {
                   const recertNeeded = getStatusRecertificacao(aula)
-                  const isPro = (posicaoMap[aula.aula_id] ?? 0) > LIMITE_FREE
+                  const isPro = moduloAtivo.apenasProPermissao
                   const isDisponivel = !isPro && aula.status === 'disponivel'
                   const isConcluida = aula.status === 'concluida'
                   const isBloqueada = !isPro && aula.status === 'bloqueada'
