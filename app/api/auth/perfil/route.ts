@@ -35,20 +35,25 @@ export async function GET(req: Request) {
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (superRecord) return NextResponse.json({ tipo: 'super', redirect: '/super' })
 
-  // Bloqueia gestor e aluno no domínio adm.
+  const { data: gestorRecord } = await (admin.from('gestores') as any)
+    .select('id, ativo').eq('user_id', user.id).maybeSingle()
+
+  const { data: alunoRecord } = await (admin.from('alunos') as any)
+    .select('whatsapp').eq('user_id', user.id).maybeSingle()
+
+  // Se está no domínio admin mas é aluno/gestor → redireciona pro domínio correto
   if (isDominioAdmin) {
+    const dominioFree = host.replace(/^adm\./, 'uniavp.')
+    if (gestorRecord?.ativo) return NextResponse.json({ tipo: 'gestor', redirect: `https://${dominioFree}/pro` })
+    if (alunoRecord?.whatsapp) return NextResponse.json({ tipo: 'aluno', redirect: `https://${dominioFree}/free/${alunoRecord.whatsapp}` })
     return NextResponse.json({ tipo: 'acesso_negado' })
   }
 
-  const { data: gestorRecord } = await (admin.from('gestores') as any)
-    .select('id, ativo').eq('user_id', user.id).maybeSingle()
   if (gestorRecord) {
     if (!gestorRecord.ativo) return NextResponse.json({ tipo: 'gestor_inativo' })
     return NextResponse.json({ tipo: 'gestor', redirect: '/pro' })
   }
 
-  const { data: alunoRecord } = await (admin.from('alunos') as any)
-    .select('whatsapp').eq('user_id', user.id).maybeSingle()
   if (alunoRecord?.whatsapp) return NextResponse.json({ tipo: 'aluno', redirect: `/free/${alunoRecord.whatsapp}` })
 
   return NextResponse.json({ tipo: null })

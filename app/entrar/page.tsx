@@ -42,7 +42,7 @@ export default function EntrarPage() {
     const perfil = await res.json()
 
     if (perfil.redirect) {
-      window.location.href = '/entrar/otp'
+      window.location.href = perfil.redirect.startsWith('http') ? perfil.redirect : '/entrar/otp'
     } else {
       await supabase.auth.signOut()
       setErro('Nenhuma conta encontrada com este e-mail.')

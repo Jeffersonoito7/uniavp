@@ -134,12 +134,13 @@ export async function POST(req: NextRequest) {
   const siteConfig = await getSiteConfig()
   const nomePlataforma = siteConfig.nome || 'Universidade'
 
-  // Usa o domínio configurado ou o host da requisição — nunca o domínio master
   const host = req.headers.get('host') || ''
   const proto = 'https'
+  // Nunca usar domínio admin (adm.) como URL da plataforma do aluno
+  const hostLimpo = host.startsWith('adm.') ? host.replace(/^adm\./, 'uniavp.') : host
   const appUrl = siteConfig.dominioCustomizado
     ? `${proto}://${siteConfig.dominioCustomizado}`
-    : `${proto}://${host}`
+    : `${proto}://${hostLimpo}`
 
   // Busca o gestor (PRO) para pegar o link externo configurado
   const gestorWppLimpo = gestor_whatsapp.replace(/\D/g, '')
