@@ -47,6 +47,36 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
   const [certAssinaturaNome, setCertAssinaturaNome] = useState(inicial.cert_assinatura_nome ?? '')
   const [certAssinaturaCargo, setCertAssinaturaCargo] = useState(inicial.cert_assinatura_cargo ?? '')
   const [certAssinaturaY, setCertAssinaturaY] = useState(String(inicial.cert_assinatura_y ?? 75))
+  const [certAssinaturaAtiva, setCertAssinaturaAtiva] = useState(!!(inicial.cert_assinatura_url))
+  const [certUploading, setCertUploading] = useState('')
+  const certTemplateRef = useRef<HTMLInputElement>(null)
+  const certLogoEsqRef = useRef<HTMLInputElement>(null)
+  const certLogoDirRef = useRef<HTMLInputElement>(null)
+  const certAssinaturaRef = useRef<HTMLInputElement>(null)
+
+  async function uploadCertImg(campo: string, file: File) {
+    setCertUploading(campo)
+    const maxSize = campo === 'template' ? 8 * 1024 * 1024 : 2 * 1024 * 1024
+    if (file.size > maxSize) { setMsg({ tipo: 'err', texto: `Arquivo muito grande. Limite: ${campo === 'template' ? '8MB' : '2MB'}` }); setCertUploading(''); return }
+    const ext = file.name.split('.').pop() || 'png'
+    const path = `modulo_${modulo.id}_cert_${campo}.${ext}`
+    const form = new FormData()
+    form.append('file', file)
+    form.append('bucket', 'logos')
+    form.append('path', path)
+    try {
+      const res = await fetch('/api/admin/upload', { method: 'POST', body: form })
+      const data = await res.json()
+      if (!res.ok || !data.url) { setMsg({ tipo: 'err', texto: data.error ?? 'Erro no upload' }); setCertUploading(''); return }
+      const url = data.url + '?t=' + Date.now()
+      if (campo === 'template') setCertTemplateUrl(url)
+      else if (campo === 'logo_esq') setCertLogoEsqUrl(url)
+      else if (campo === 'logo_dir') setCertLogoDirUrl(url)
+      else if (campo === 'assinatura') setCertAssinaturaUrl(url)
+      setMsg({ tipo: 'ok', texto: 'Imagem enviada! Clique em "Salvar módulo" para confirmar.' })
+    } catch { setMsg({ tipo: 'err', texto: 'Erro no upload' }) }
+    setCertUploading('')
+  }
 
   const inp: React.CSSProperties = { width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' }
   const lbl: React.CSSProperties = { display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 6, fontWeight: 500 }
@@ -197,112 +227,185 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
       {/* ── Aba Certificado ── */}
       {aba === 'certificado' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 640 }}>
-          {/* Ativar */}
-          <div style={card}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: certAtivo ? 20 : 0 }}>
-              <div>
-                <p style={{ fontWeight: 700, fontSize: 15, margin: 0 }}>Certificado deste módulo</p>
-                <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: 4 }}>Quando ativado, o aluno recebe um certificado exclusivo ao concluir todas as aulas deste módulo.</p>
-              </div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', flexShrink: 0 }}>
-                <input type="checkbox" checked={certAtivo} onChange={e => setCertAtivo(e.target.checked)} style={{ width: 18, height: 18, accentColor: 'var(--avp-green)', cursor: 'pointer' }} />
-                <span style={{ fontSize: 14, fontWeight: 700, color: certAtivo ? 'var(--avp-green)' : 'var(--avp-text-dim)' }}>{certAtivo ? 'Ativado' : 'Desativado'}</span>
-              </label>
-            </div>
 
-            {certAtivo && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {/* Template */}
-                <div>
-                  <label style={lbl}>URL do template (imagem do certificado) *</label>
-                  <input style={inp} value={certTemplateUrl} onChange={e => setCertTemplateUrl(e.target.value)} placeholder="https://..." />
-                  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 4 }}>Suba a imagem no Supabase Storage e cole a URL pública aqui. Tamanho recomendado: 2480×1754px (A4 paisagem).</p>
-                </div>
-                {certTemplateUrl && (
-                  <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid var(--avp-border)', maxHeight: 180 }}>
-                    <img src={certTemplateUrl} alt="preview" style={{ width: '100%', objectFit: 'cover' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-                  </div>
-                )}
+          {/* Toggle ativar */}
+          <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+              <div>
+                <p style={{ fontWeight: 800, fontSize: 16, margin: 0 }}>🎓 Certificado deste módulo</p>
+                <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: 6 }}>
+                  Quando ativado, o aluno recebe um certificado exclusivo ao concluir todas as aulas deste módulo.
+                </p>
               </div>
-            )}
+              <button onClick={() => setCertAtivo(v => !v)}
+                style={{ flexShrink: 0, width: 52, height: 28, borderRadius: 14, border: 'none', cursor: 'pointer', background: certAtivo ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+                <span style={{ position: 'absolute', top: 4, left: certAtivo ? 28 : 4, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+              </button>
+            </div>
           </div>
 
-          {certAtivo && (
-            <>
-              {/* Nome do aluno */}
-              <div style={card}>
-                <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Posição do nome</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-                  <div>
-                    <label style={lbl}>Posição Y (%)</label>
-                    <input type="number" style={inp} value={certNomeY} onChange={e => setCertNomeY(e.target.value)} min={0} max={100} />
-                    <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>0 = topo, 100 = base</p>
-                  </div>
-                  <div>
-                    <label style={lbl}>Tamanho fonte (%)</label>
-                    <input type="number" style={inp} value={certNomeTamanho} onChange={e => setCertNomeTamanho(e.target.value)} min={1} max={30} />
-                  </div>
-                  <div>
-                    <label style={lbl}>Cor do texto</label>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <input type="color" value={certNomeCor} onChange={e => setCertNomeCor(e.target.value)} style={{ width: 44, height: 36, borderRadius: 6, border: '1px solid var(--avp-border)', cursor: 'pointer', background: 'none', padding: 2 }} />
-                      <input style={{ ...inp, flex: 1 }} value={certNomeCor} onChange={e => setCertNomeCor(e.target.value)} placeholder="#1a1a2e" />
-                    </div>
-                  </div>
+          {certAtivo && (<>
+
+            {/* Template */}
+            <div style={card}>
+              <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 12 }}>Template do certificado</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 14 }}>
+                Faça upload do PNG de fundo. O nome do aluno será sobreposto na posição configurada abaixo.<br />
+                <strong style={{ color: 'var(--avp-green)' }}>📐 2480×1748px · A4 paisagem · mín. 150 dpi</strong>
+              </p>
+              {/* Upload template */}
+              <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 14, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100, background: 'var(--avp-card)', borderRadius: 8, border: `2px dashed ${certTemplateUrl ? 'var(--avp-green)' : 'var(--avp-border)'}`, padding: 8 }}>
+                  {certTemplateUrl
+                    ? <img src={certTemplateUrl} alt="template" style={{ maxHeight: 90, maxWidth: '100%', objectFit: 'contain' }} />
+                    : <span style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>Nenhum template · 2480×1748px</span>}
+                </div>
+                <input ref={certTemplateRef} type="file" accept="image/*" style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadCertImg('template', f); e.target.value = '' }} />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => certTemplateRef.current?.click()} disabled={certUploading === 'template'}
+                    style={{ flex: 1, background: certUploading === 'template' ? 'var(--avp-border)' : certTemplateUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+                    {certUploading === 'template' ? '⏳ Enviando...' : certTemplateUrl ? '🔄 Trocar template' : '📤 Subir template'}
+                  </button>
+                  {certTemplateUrl && <button onClick={() => setCertTemplateUrl('')}
+                    style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>🗑</button>}
                 </div>
               </div>
 
-              {/* Logos */}
-              <div style={card}>
-                <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Logos (opcional)</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div>
-                    <label style={lbl}>Logo esquerda (URL)</label>
-                    <input style={inp} value={certLogoEsqUrl} onChange={e => setCertLogoEsqUrl(e.target.value)} placeholder="https://..." />
+              {/* Posição nome */}
+              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}>Posição do nome do aluno</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Posição vertical (%)</label>
+                  <input type="number" min={0} max={100} style={inp} value={certNomeY} onChange={e => setCertNomeY(e.target.value)} />
+                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>0 = topo · 100 = base · padrão: 63</p>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Tamanho fonte (%)</label>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <input type="number" min={1} max={8} step={0.1} style={{ ...inp, flex: 1 }} value={certNomeTamanho} onChange={e => setCertNomeTamanho(e.target.value)} />
+                    <button onClick={() => setCertNomeTamanho('4.5')} style={{ background: 'var(--avp-border)', border: 'none', borderRadius: 8, padding: '0 10px', color: 'var(--avp-text-dim)', fontSize: 11, cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' as const }}>Padrão</button>
                   </div>
-                  <div>
-                    <label style={lbl}>Logo direita (URL)</label>
-                    <input style={inp} value={certLogoDirUrl} onChange={e => setCertLogoDirUrl(e.target.value)} placeholder="https://..." />
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div>
-                      <label style={lbl}>Posição Y dos logos (%)</label>
-                      <input type="number" style={inp} value={certLogoY} onChange={e => setCertLogoY(e.target.value)} min={0} max={100} />
-                    </div>
-                    <div>
-                      <label style={lbl}>Tamanho dos logos (%)</label>
-                      <input type="number" style={inp} value={certLogoTam} onChange={e => setCertLogoTam(e.target.value)} min={1} max={80} />
-                    </div>
+                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>% da largura · padrão: 4.5</p>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Cor do nome</label>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <input type="color" value={certNomeCor} onChange={e => setCertNomeCor(e.target.value)} style={{ width: 44, height: 40, borderRadius: 6, border: '1px solid var(--avp-border)', background: 'none', cursor: 'pointer', padding: 2 }} />
+                    <input style={{ ...inp, flex: 1 }} value={certNomeCor} onChange={e => setCertNomeCor(e.target.value)} placeholder="#1a1a2e" />
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Assinatura */}
-              <div style={card}>
-                <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Assinatura (opcional)</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div>
-                    <label style={lbl}>URL da imagem da assinatura</label>
-                    <input style={inp} value={certAssinaturaUrl} onChange={e => setCertAssinaturaUrl(e.target.value)} placeholder="https://..." />
+            {/* Logos */}
+            <div style={card}>
+              <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>Logomarcas (opcional)</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 14 }}>PNG com fundo transparente.</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+                {/* Logo esquerda */}
+                {[
+                  { label: 'Logo esquerda', campo: 'logo_esq', val: certLogoEsqUrl, setVal: setCertLogoEsqUrl, ref: certLogoEsqRef },
+                  { label: 'Logo direita', campo: 'logo_dir', val: certLogoDirUrl, setVal: setCertLogoDirUrl, ref: certLogoDirRef },
+                ].map(({ label, campo, val, setVal, ref }) => (
+                  <div key={campo} style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <p style={{ fontWeight: 700, fontSize: 13, margin: 0 }}>{label}</p>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 70, background: 'var(--avp-card)', borderRadius: 8, border: `2px dashed ${val ? 'var(--avp-green)' : 'var(--avp-border)'}`, padding: 6 }}>
+                      {val ? <img src={val} alt={label} style={{ maxHeight: 56, maxWidth: '100%', objectFit: 'contain' }} /> : <span style={{ color: 'var(--avp-text-dim)', fontSize: 11 }}>PNG transparente</span>}
+                    </div>
+                    <input ref={ref} type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={e => { const f = e.target.files?.[0]; if (f) uploadCertImg(campo, f); e.target.value = '' }} />
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button onClick={() => ref.current?.click()} disabled={certUploading === campo}
+                        style={{ flex: 1, background: certUploading === campo ? 'var(--avp-border)' : val ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
+                        {certUploading === campo ? '⏳' : val ? '🔄 Trocar' : '📤 Subir'}
+                      </button>
+                      {val && <button onClick={() => setVal('')} style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '8px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>🗑</button>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Posição vertical dos logos (%)</label>
+                  <input type="number" min={0} max={100} style={inp} value={certLogoY} onChange={e => setCertLogoY(e.target.value)} />
+                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>0 = topo · 100 = base · padrão: 88</p>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Tamanho dos logos (%)</label>
+                  <input type="number" min={1} max={30} step={0.5} style={inp} value={certLogoTam} onChange={e => setCertLogoTam(e.target.value)} />
+                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>% da altura · padrão: 10</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Assinatura */}
+            <div style={card}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: certAssinaturaAtiva ? 16 : 0 }}>
+                <div>
+                  <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>✍️ Sobrepor assinatura no certificado</p>
+                  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0', lineHeight: 1.5 }}>
+                    Ative <strong>somente</strong> se o template <strong>não</strong> tiver assinatura gravada.
+                  </p>
+                </div>
+                <button onClick={() => setCertAssinaturaAtiva(v => !v)}
+                  style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: certAssinaturaAtiva ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+                  <span style={{ position: 'absolute', top: 3, left: certAssinaturaAtiva ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+                </button>
+              </div>
+              {certAssinaturaAtiva && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div>
+                      <p style={{ fontWeight: 700, fontSize: 13, margin: 0 }}>Assinatura do Presidente (PNG transparente)</p>
+                      <span style={{ fontSize: 11, color: 'var(--avp-green)', fontWeight: 700 }}>📐 PNG transparente · 400×150px</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 70, background: 'var(--avp-card)', borderRadius: 8, border: `2px dashed ${certAssinaturaUrl ? 'var(--avp-green)' : 'var(--avp-border)'}`, padding: 6 }}>
+                      {certAssinaturaUrl ? <img src={certAssinaturaUrl} alt="assinatura" style={{ maxHeight: 56, maxWidth: '100%', objectFit: 'contain' }} /> : <span style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>Nenhuma assinatura</span>}
+                    </div>
+                    <input ref={certAssinaturaRef} type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={e => { const f = e.target.files?.[0]; if (f) uploadCertImg('assinatura', f); e.target.value = '' }} />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={() => certAssinaturaRef.current?.click()} disabled={certUploading === 'assinatura'}
+                        style={{ flex: 1, background: certUploading === 'assinatura' ? 'var(--avp-border)' : certAssinaturaUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+                        {certUploading === 'assinatura' ? '⏳ Enviando...' : certAssinaturaUrl ? '🔄 Trocar' : '📤 Subir assinatura'}
+                      </button>
+                      {certAssinaturaUrl && <button onClick={() => setCertAssinaturaUrl('')} style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>🗑</button>}
+                    </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                     <div>
-                      <label style={lbl}>Nome do signatário</label>
-                      <input style={inp} value={certAssinaturaNome} onChange={e => setCertAssinaturaNome(e.target.value)} placeholder="João Silva" />
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Nome de quem assina</label>
+                      <input style={inp} value={certAssinaturaNome} onChange={e => setCertAssinaturaNome(e.target.value)} placeholder="Ex: TIBURCIO FILHO" />
                     </div>
                     <div>
-                      <label style={lbl}>Cargo</label>
-                      <input style={inp} value={certAssinaturaCargo} onChange={e => setCertAssinaturaCargo(e.target.value)} placeholder="Diretor" />
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Cargo</label>
+                      <input style={inp} value={certAssinaturaCargo} onChange={e => setCertAssinaturaCargo(e.target.value)} placeholder="Ex: PRESIDENTE" />
                     </div>
                   </div>
                   <div>
-                    <label style={lbl}>Posição Y da assinatura (%)</label>
-                    <input type="number" style={inp} value={certAssinaturaY} onChange={e => setCertAssinaturaY(e.target.value)} min={0} max={100} />
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Posição vertical da assinatura (%)</label>
+                    <input type="number" min={0} max={100} style={inp} value={certAssinaturaY} onChange={e => setCertAssinaturaY(e.target.value)} />
+                    <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>0 = topo · 100 = base · padrão: 82</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Preview */}
+            {certTemplateUrl && certTemplateUrl.startsWith('http') && (
+              <div style={card}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 10 }}>Preview do certificado</p>
+                <div style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid var(--avp-border)', position: 'relative' }}>
+                  <img src={certTemplateUrl} alt="Certificado" style={{ width: '100%', display: 'block', objectFit: 'contain' }} />
+                  <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: `${certNomeY}%`, width: '80%', textAlign: 'center', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: `${Math.min(Number(certNomeTamanho) || 4.5, 6)}cqw`, color: certNomeCor, textTransform: 'uppercase' as const, letterSpacing: 2, pointerEvents: 'none', lineHeight: 1.2 }}>
+                    NOME DO ALUNO
                   </div>
                 </div>
               </div>
-            </>
-          )}
+            )}
+
+          </>)}
         </div>
       )}
 
