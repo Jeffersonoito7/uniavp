@@ -39,6 +39,12 @@ export async function POST(req: NextRequest, { params }: { params: { moduloId: s
       validade_meses: body.validade_meses ?? null,
       capa_url: body.capa_url ?? null,
       video_url: body.video_url ?? null,
+      quiz_tipo: body.quiz_tipo ?? 'obrigatorio',
+      bloquear_avancar: body.bloquear_avancar ?? false,
+      mostrar_link_externo: body.mostrar_link_externo ?? false,
+      link_externo_titulo: body.link_externo_titulo ?? null,
+      mostrar_links_app: body.mostrar_links_app ?? false,
+      liberacao_modo: body.liberacao_modo ?? 'automatico',
     })
     .select('*')
     .single()
@@ -63,7 +69,9 @@ export async function PUT(req: NextRequest, { params }: { params: { moduloId: st
 
   const camposPermitidos = ['titulo', 'descricao', 'capa_url', 'youtube_video_id', 'video_url', 'duracao_minutos', 'quiz_qtd_questoes',
     'quiz_aprovacao_minima', 'espera_horas', 'publicado', 'ao_vivo_link', 'ao_vivo_data',
-    'ao_vivo_plataforma', 'validade_meses', 'ordem', 'liberacao_modo']
+    'ao_vivo_plataforma', 'validade_meses', 'ordem', 'liberacao_modo',
+    'quiz_tipo', 'bloquear_avancar', 'mostrar_link_externo', 'link_externo_titulo', 'mostrar_links_app',
+    'quiz_sim_nao_pergunta', 'quiz_sim_nao_nao_mensagem', 'quiz_sim_nao_perguntas']
 
   const atualizacoes: Record<string, unknown> = {}
   for (const campo of camposPermitidos) {
