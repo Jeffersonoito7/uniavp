@@ -81,6 +81,14 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
     linkExternoPro = gestorLink?.link_externo ?? null
   }
 
+  // Links do app consultor
+  const { data: appCfgRows } = await (adminClient.from('configuracoes') as any)
+    .select('chave, valor').in('chave', ['app_ios_url', 'app_android_url'])
+  const appCfg: Record<string, string> = {}
+  for (const r of appCfgRows ?? []) { try { appCfg[r.chave] = JSON.parse(r.valor) } catch { appCfg[r.chave] = r.valor } }
+  const appIosUrl = appCfg['app_ios_url'] || null
+  const appAndroidUrl = appCfg['app_android_url'] || null
+
   // Regras globais de aprendizado
   const { data: regrasRaw } = await (adminClient.from('configuracoes') as any)
     .select('chave, valor')
@@ -170,6 +178,8 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
             bloquearAvancar={bloquearAvancarEfetivo}
             linkExterno={(aula as any).mostrar_link_externo ? linkExternoPro : null}
             linkExternoTitulo={(aula as any).link_externo_titulo || 'Cadastre-se na plataforma parceira'}
+            appIosUrl={(aula as any).mostrar_links_app ? appIosUrl : null}
+            appAndroidUrl={(aula as any).mostrar_links_app ? appAndroidUrl : null}
             aulaAnterior={aulaAnteriorNav}
             proximaAula={proximaAulaNav}
             proximaStatus={proximaStatus}

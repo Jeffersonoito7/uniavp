@@ -71,6 +71,8 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
   const [planoPROValor, setPlanoPROValor] = useState(get('plano_pro_valor') || '97')
   const [freePodeConfigurarLink, setFreePodeConfigurarLink] = useState(get('free_pode_configurar_link') === 'true')
+  const [appIosUrl, setAppIosUrl] = useState(get('app_ios_url') || '')
+  const [appAndroidUrl, setAppAndroidUrl] = useState(get('app_android_url') || '')
   const [logoUrl, setLogoUrl] = useState(get('site_logo_url'))
   const [logoMenuUrl, setLogoMenuUrl] = useState(get('logo_menu_url'))
   const [logoPaginaUrl, setLogoPaginaUrl] = useState(get('logo_pagina_url'))
@@ -305,6 +307,8 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         ...(urlSafe(carteiraAssinaturaUrl) ? [{ chave: 'carteira_assinatura_url', valor: carteiraAssinaturaUrl }] : []),
         { chave: 'plano_pro_valor', valor: planoPROValor },
         { chave: 'free_pode_configurar_link', valor: String(freePodeConfigurarLink) },
+        { chave: 'app_ios_url', valor: appIosUrl },
+        { chave: 'app_android_url', valor: appAndroidUrl },
         { chave: 'boleto_mensagem', valor: boletoMensagem },
         { chave: 'boleto_instrucoes', valor: boletoInstrucoes },
         { chave: 'boleto_multa', valor: boletoMulta },
@@ -716,6 +720,32 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
             </div>
           </div>
         ))}
+      </div>
+
+      {/* LINKS DO APP */}
+      <div style={{ ...card, border: '2px solid rgba(99,102,241,0.25)' }}>
+        <p style={{ fontWeight: 800, fontSize: 16 }}>📱 Links de Download do App Consultor</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8, marginBottom: 20 }}>
+          Configure os links da loja para o app consultor. Quando ativado em uma aula, o aluno verá dois botões para baixar o app após concluir o vídeo.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
+              🍎 Link App Store (iOS)
+            </label>
+            <input style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }}
+              value={appIosUrl} onChange={e => setAppIosUrl(e.target.value)}
+              placeholder="https://apps.apple.com/..." />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
+              🤖 Link Google Play (Android)
+            </label>
+            <input style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const }}
+              value={appAndroidUrl} onChange={e => setAppAndroidUrl(e.target.value)}
+              placeholder="https://play.google.com/..." />
+          </div>
+        </div>
       </div>
 
       {/* CERTIFICADO — removido: cada módulo tem seu próprio certificado agora */}
