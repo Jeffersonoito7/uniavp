@@ -93,9 +93,7 @@ export default function OtpForm() {
       ) : info ? (
         <div style={{ marginBottom: 24 }}>
           <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 14, lineHeight: 1.6 }}>
-            Código enviado via <strong style={{ color: '#fff' }}>
-              {info.canal === 'whatsapp' ? '📱 WhatsApp' : '✉️ e-mail'}
-            </strong><br />
+            Código enviado via <strong style={{ color: '#25d366' }}>📱 WhatsApp</strong><br />
             para <strong style={{ color: '#60a5fa' }}>{info.destino}</strong>
           </p>
           {info.codigoDev && (
