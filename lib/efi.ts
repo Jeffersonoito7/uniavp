@@ -66,17 +66,22 @@ export async function criarCobrancaPix(params: {
 }): Promise<{ pixCopiaECola: string; qrcodeBase64: string; locId: number }> {
   const token = await getToken()
 
+  const devedor: Record<string, string> = { nome: params.nomeDevedor }
+  if (params.cpfCnpj) {
+    const digits = params.cpfCnpj.replace(/\D/g, '')
+    if (digits.length === 11) devedor.cpf = digits
+    else if (digits.length === 14) devedor.cnpj = digits
+  }
+
   const payload: Record<string, unknown> = {
     calendario: { dataDeVencimento: params.vencimento, validadeAposVencimento: 30 },
     valor: { original: params.valor.toFixed(2) },
     chave: process.env.EFI_PIX_KEY,
     solicitacaoPagador: params.descricao || 'Mensalidade plataforma',
-    devedor: { nome: params.nomeDevedor },
   }
-  if (params.cpfCnpj) {
-    const digits = params.cpfCnpj.replace(/\D/g, '')
-    if (digits.length === 11) (payload.devedor as Record<string, string>).cpf = digits
-    else if (digits.length === 14) (payload.devedor as Record<string, string>).cnpj = digits
+  // devedor sem CPF/CNPJ é rejeitado pela API Efi cobv — só inclui se tiver documento
+  if (devedor.cpf || devedor.cnpj) {
+    payload.devedor = devedor
   }
 
   const { data: cob } = await httpsRequest(`${BASE}/v2/cobv/${params.txid}`, {
