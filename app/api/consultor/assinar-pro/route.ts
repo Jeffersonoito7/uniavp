@@ -59,7 +59,12 @@ export async function GET() {
     ultimoPag = pag
   }
 
-  return NextResponse.json({ jaEhPro: false, valorPlano, ultimoPagamento: ultimoPag, whatsapp: aluno.whatsapp })
+  const { data: siteNomeCfg } = await (adminClient.from('configuracoes') as any)
+    .select('valor').eq('chave', 'site_nome').maybeSingle()
+  let nomeSite = 'Universidade'
+  try { nomeSite = JSON.parse(siteNomeCfg?.valor ?? '') || nomeSite } catch { /* */ }
+
+  return NextResponse.json({ jaEhPro: false, valorPlano, ultimoPagamento: ultimoPag, whatsapp: aluno.whatsapp, nomeSite })
 }
 
 export async function POST() {

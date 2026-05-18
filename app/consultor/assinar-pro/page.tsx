@@ -5,6 +5,7 @@ type Info = {
   jaEhPro: boolean
   valorPlano: number
   whatsapp: string | null
+  nomeSite?: string
   ultimoPagamento: { pix_copia_cola: string; qrcode_base64: string; vencimento: string; status: string } | null
 }
 
@@ -85,6 +86,8 @@ export default function AssinarProPage() {
       : null
 
   const valor = info?.valorPlano ?? 97
+  const nomeSite = info?.nomeSite || 'Universidade'
+  const nomePro = `${nomeSite} PRO`
   const wppFormatado = info?.whatsapp
     ? info.whatsapp.replace(/(\d{2})(\d{2})(\d{4,5})(\d{4})/, '+$1 ($2) $3-$4')
     : null
@@ -99,7 +102,7 @@ export default function AssinarProPage() {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.4)', borderRadius: 100, padding: '6px 20px', fontSize: 13, fontWeight: 800, color: '#818cf8', marginBottom: 20 }}>
-            ✨ UNIAVP PRO
+            ✨ {nomePro}
           </div>
           <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 8 }}>Faça o upgrade agora</h1>
           <p style={{ color: '#8a8fa3', fontSize: 15 }}>Acesso completo + gestão de equipe ilimitada</p>
@@ -109,7 +112,7 @@ export default function AssinarProPage() {
         {info?.jaEhPro && (
           <div style={{ background: 'rgba(2,161,83,0.1)', border: '1px solid #02A153', borderRadius: 14, padding: '24px', textAlign: 'center' }}>
             <p style={{ fontSize: 32, marginBottom: 8 }}>✅</p>
-            <p style={{ fontWeight: 800, fontSize: 18, color: '#22c55e', marginBottom: 8 }}>Você já é UNIAVP PRO!</p>
+            <p style={{ fontWeight: 800, fontSize: 18, color: '#22c55e', marginBottom: 8 }}>Você já é {nomePro}!</p>
             <a href="/pro" style={{ display: 'inline-block', background: '#22c55e', color: '#fff', borderRadius: 10, padding: '12px 28px', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
               → Acessar painel PRO
             </a>
@@ -237,7 +240,7 @@ export default function AssinarProPage() {
                     </div>
                     <button onClick={gerarPix} disabled={gerando}
                       style={{ width: '100%', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', border: 'none', borderRadius: 12, padding: '18px', fontWeight: 900, fontSize: 18, cursor: gerando ? 'not-allowed' : 'pointer', opacity: gerando ? 0.7 : 1, boxShadow: '0 8px 32px rgba(99,102,241,0.4)' }}>
-                      {gerando ? '⏳ Gerando PIX...' : `🚀 Assinar UNIAVP PRO — R$ ${valor.toFixed(2).replace('.', ',')} /mês`}
+                      {gerando ? '⏳ Gerando PIX...' : `🚀 Assinar ${nomePro} — R$ ${valor.toFixed(2).replace('.', ',')} /mês`}
                     </button>
                   </div>
                 )}

@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react'
 
 type Msg = { role: 'user' | 'assistant'; content: string }
 
-export default function SupportChat({ painel }: { painel?: string }) {
+export default function SupportChat({ painel, bottomOffset = 24 }: { painel?: string; bottomOffset?: number }) {
   const [aberto, setAberto] = useState(false)
   const [msgs, setMsgs] = useState<Msg[]>([
     { role: 'assistant', content: 'Olá! 👋 Sou o suporte da Universidade AVP. Como posso te ajudar?' }
@@ -57,7 +57,7 @@ export default function SupportChat({ painel }: { painel?: string }) {
         onClick={() => setAberto(o => !o)}
         title="Suporte"
         style={{
-          position: 'fixed', bottom: 24, right: 24, zIndex: 9000,
+          position: 'fixed', bottom: bottomOffset, right: 24, zIndex: 9000,
           width: 52, height: 52, borderRadius: '50%',
           background: 'linear-gradient(135deg, #333687, #02A153)',
           border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(51,54,135,0.5)',
@@ -80,7 +80,7 @@ export default function SupportChat({ painel }: { painel?: string }) {
       {/* ── Janela do chat ── */}
       {aberto && (
         <div style={{
-          position: 'fixed', bottom: 88, right: 24, zIndex: 9000,
+          position: 'fixed', bottom: bottomOffset + 64, right: 24, zIndex: 9000,
           width: 340, maxWidth: 'calc(100vw - 48px)',
           background: 'var(--avp-card)', border: '1px solid var(--avp-border)',
           borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.5)',

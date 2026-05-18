@@ -7,7 +7,7 @@ import SupportChat from '@/app/components/SupportChat'
 const navItems = [
   { id: 'dashboard',   label: 'Dashboard',  icon: LayoutDashboard },
   { id: 'consultores', label: 'Minha Equipe', icon: Users },
-  { id: 'aulas',       label: 'Aulas',       icon: BookOpen },
+  { id: 'aulas',       label: 'Módulos',     icon: BookOpen },
   { id: 'eventos',     label: 'Eventos',     icon: Calendar },
   { id: 'whatsapp',    label: 'WhatsApp',    icon: Smartphone },
   { id: 'artes',       label: 'Artes',       icon: Palette },
@@ -78,7 +78,7 @@ export default function GestorLayout({
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
-      <SupportChat painel="PRO" />
+      <SupportChat painel="PRO" bottomOffset={isMobile ? 84 : 24} />
 
       {/* ── Barra superior mobile ── */}
       {isMobile && (

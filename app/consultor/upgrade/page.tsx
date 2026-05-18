@@ -12,7 +12,15 @@ export default async function UpgradePage() {
     .select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
   if (!aluno) redirect('/entrar')
 
+  // Se já é PRO ativo, redireciona direto
+  const { data: gestorAtivo } = await (adminClient.from('gestores') as any)
+    .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  if (gestorAtivo) redirect('/pro')
+
   const config = await getSiteConfig()
+  const nomeSite = config.nome || 'Universidade'
+  const nomeFree = `${nomeSite} FREE`
+  const nomePro = `${nomeSite} PRO`
 
   const beneficios = [
     { icon: '📚', titulo: 'Módulos ilimitados', desc: 'Acesse todos os módulos da plataforma sem restrições' },
@@ -21,7 +29,7 @@ export default async function UpgradePage() {
     { icon: '📊', titulo: 'Relatórios e métricas', desc: 'Veja o progresso da equipe, inativos e progresso médio' },
     { icon: '💬', titulo: 'WhatsApp direto', desc: 'Envie mensagens para consultores diretamente do painel' },
     { icon: '🎨', titulo: 'Templates de arte', desc: 'Crie e personalize artes para sua equipe compartilhar' },
-    { icon: '🤝', titulo: 'Indicações ilimitadas', desc: 'Indique sem limite — na UNIAVP FREE o limite é 20' },
+    { icon: '🤝', titulo: 'Indicações ilimitadas', desc: `Indique sem limite — no plano ${nomeFree} o limite é 20` },
     { icon: '🏆', titulo: 'Carteira de Formação', desc: 'Certificado e carteirinha para sua equipe' },
   ]
 
@@ -29,7 +37,7 @@ export default async function UpgradePage() {
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
       {/* Header */}
       <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 24px', height: 62, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
-        <a href={`/free/${aluno.whatsapp}`} style={{ color: 'var(--avp-text-dim)', textDecoration: 'none', fontSize: 14, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <a href={`/aluno/${aluno.whatsapp}`} style={{ color: 'var(--avp-text-dim)', textDecoration: 'none', fontSize: 14, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
           ← Voltar
         </a>
         <span style={{ fontWeight: 800, fontSize: 15 }}>🚀 Faça Upgrade</span>
@@ -41,15 +49,15 @@ export default async function UpgradePage() {
         {/* Hero */}
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 100, padding: '6px 18px', fontSize: 12, fontWeight: 700, color: '#818cf8', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 20 }}>
-            ✨ UNIAVP PRO
+            ✨ {nomePro}
           </div>
           <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.6rem)', fontWeight: 900, lineHeight: 1.2, marginBottom: 16 }}>
-            Você chegou ao limite da<br />
-            <span style={{ background: 'linear-gradient(90deg, #6366f1, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>UNIAVP FREE</span>
+            Você chegou ao limite do<br />
+            <span style={{ background: 'linear-gradient(90deg, #6366f1, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{nomeFree}</span>
           </h1>
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 16, lineHeight: 1.7, maxWidth: 480, margin: '0 auto' }}>
-            Na UNIAVP FREE você acessa <strong style={{ color: 'var(--avp-text)' }}>módulos limitados</strong>.
-            Faça upgrade para a <strong style={{ color: '#818cf8' }}>UNIAVP PRO</strong> e desbloqueie todos os módulos — sem limites.
+            No <strong style={{ color: 'var(--avp-text)' }}>{nomeFree}</strong> você acessa módulos limitados.
+            Faça upgrade para o <strong style={{ color: '#818cf8' }}>{nomePro}</strong> e desbloqueie tudo — sem limites.
           </p>
         </div>
 
@@ -57,7 +65,7 @@ export default async function UpgradePage() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 36 }}>
           {/* Free */}
           <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 24 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>UNIAVP FREE</p>
+            <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>{nomeFree}</p>
             <p style={{ fontSize: 28, fontWeight: 900, marginBottom: 16 }}>Grátis</p>
             {[
               '✅ Módulos limitados',
@@ -74,7 +82,7 @@ export default async function UpgradePage() {
             <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 100, padding: '4px 16px', fontSize: 11, fontWeight: 800, color: '#fff', whiteSpace: 'nowrap' }}>
               RECOMENDADO
             </div>
-            <p style={{ fontSize: 11, fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>UNIAVP PRO</p>
+            <p style={{ fontSize: 11, fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>{nomePro}</p>
             <p style={{ fontSize: 28, fontWeight: 900, marginBottom: 16, color: '#818cf8' }}>Mensal</p>
             {[
               '✅ Módulos ilimitados',
@@ -90,7 +98,7 @@ export default async function UpgradePage() {
 
         {/* Benefícios */}
         <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: '24px 28px', marginBottom: 32 }}>
-          <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 20 }}>🎯 Tudo que você ganha na UNIAVP PRO</p>
+          <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 20 }}>🎯 Tudo que você ganha no {nomePro}</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
             {beneficios.map(b => (
               <div key={b.titulo} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
@@ -108,12 +116,12 @@ export default async function UpgradePage() {
         <div style={{ textAlign: 'center' }}>
           <a href="/assinar-pro"
             style={{ display: 'inline-block', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 14, padding: '18px 48px', fontWeight: 900, fontSize: 18, textDecoration: 'none', boxShadow: '0 8px 32px rgba(99,102,241,0.4)', marginBottom: 12 }}>
-            🚀 Quero ser UNIAVP PRO
+            🚀 Quero ser {nomePro}
           </a>
           <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 10 }}>
             Você terá acesso imediato a todos os módulos e ao painel de gestão.
           </p>
-          <a href={`/free/${aluno.whatsapp}`} style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 16, textDecoration: 'none' }}>
+          <a href={`/aluno/${aluno.whatsapp}`} style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 16, textDecoration: 'none' }}>
             Voltar para meus módulos →
           </a>
         </div>
