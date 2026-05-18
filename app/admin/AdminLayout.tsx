@@ -189,13 +189,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {!colapsada && <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>Visualizar como</p>}
           <Link href="/admin/ver-pro"
             title="Ver Painel PRO"
-            style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 8, justifyContent: colapsada ? 'center' : 'flex-start', background: '#6366f115', border: '1px solid #6366f130', color: '#6366f1', borderRadius: 8, padding: colapsada ? '8px 0' : '8px 12px', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 8, justifyContent: colapsada ? 'center' : 'flex-start', background: pathname.startsWith('/admin/ver-pro') ? '#6366f1' : '#6366f115', border: `1px solid ${pathname.startsWith('/admin/ver-pro') ? '#6366f1' : '#6366f130'}`, color: pathname.startsWith('/admin/ver-pro') ? '#fff' : '#6366f1', borderRadius: 8, padding: colapsada ? '8px 0' : '8px 12px', fontSize: 13, fontWeight: 700, textDecoration: 'none', transition: 'all 0.15s' }}>
             <span>✨</span>
             {!colapsada && <span>Painel PRO</span>}
           </Link>
           <Link href="/admin/ver-free"
             title="Ver Painel FREE"
-            style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 8, justifyContent: colapsada ? 'center' : 'flex-start', background: '#02A15315', border: '1px solid #02A15330', color: 'var(--avp-green)', borderRadius: 8, padding: colapsada ? '8px 0' : '8px 12px', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 8, justifyContent: colapsada ? 'center' : 'flex-start', background: pathname.startsWith('/admin/ver-free') ? 'var(--avp-green)' : '#02A15315', border: `1px solid ${pathname.startsWith('/admin/ver-free') ? 'var(--avp-green)' : '#02A15330'}`, color: pathname.startsWith('/admin/ver-free') ? '#fff' : 'var(--avp-green)', borderRadius: 8, padding: colapsada ? '8px 0' : '8px 12px', fontSize: 13, fontWeight: 700, textDecoration: 'none', transition: 'all 0.15s' }}>
             <span>🆓</span>
             {!colapsada && <span>Painel FREE</span>}
           </Link>
