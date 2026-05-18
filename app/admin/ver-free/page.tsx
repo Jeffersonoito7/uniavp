@@ -15,10 +15,18 @@ export default async function VerFreePage() {
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/login')
 
-  const { data: alunos } = await (adminClient.from('alunos') as any)
-    .select('id, nome, whatsapp, status, gestor_nome')
+  // Busca user_ids dos gestores ativos para excluir da lista FREE
+  const { data: gestoresAtivos } = await (adminClient.from('gestores') as any)
+    .select('user_id').eq('ativo', true)
+  const userIdsPro = new Set((gestoresAtivos ?? []).map((g: any) => g.user_id).filter(Boolean))
+
+  const { data: alunosRaw } = await (adminClient.from('alunos') as any)
+    .select('id, nome, whatsapp, status, gestor_nome, user_id')
     .order('nome')
-    .limit(100)
+    .limit(200)
+
+  // Filtra apenas FREE (quem não tem gestor ativo)
+  const alunos = (alunosRaw ?? []).filter((a: any) => !userIdsPro.has(a.user_id))
 
   const statusCor: Record<string, string> = {
     ativo: '#02A153', concluido: '#6366f1', pausado: '#6366f1', desligado: '#e63946',
