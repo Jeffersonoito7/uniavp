@@ -16,9 +16,10 @@ type Props = {
   simNaoNaoMensagem?: string
   simNaoPerguntas?: SimNaoItem[]
   onAprovado?: () => void
+  onPrecisaReassistir?: () => void
 }
 
-export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, tentativasAnteriores, quizTipo, simNaoPergunta, simNaoNaoMensagem, simNaoPerguntas, onAprovado }: Props) {
+export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, tentativasAnteriores, quizTipo, simNaoPergunta, simNaoNaoMensagem, simNaoPerguntas, onAprovado, onPrecisaReassistir }: Props) {
   const [respostas, setRespostas] = useState<Record<string, number>>({})
   const [enviando, setEnviando] = useState(false)
   const [resultado, setResultado] = useState<{ acertos: number; total: number; percentual: number; aprovado: boolean; pulado?: boolean } | null>(null)
@@ -27,6 +28,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
   const [modoLiberacao, setModoLiberacao] = useState('')
   const [simNaoIndex, setSimNaoIndex] = useState(0)
   const [simNaoRecusado, setSimNaoRecusado] = useState(false)
+  const [tentativasLocal, setTentativasLocal] = useState(0)
 
   // ── Quiz Sim/Não ──
   if (quizTipo === 'sim_nao') {
@@ -160,7 +162,11 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
       setModoLiberacao(data.modo)
     }
     setResultado({ acertos: data.acertos, total: data.total, percentual: data.percentual, aprovado: data.aprovado })
-    if (data.aprovado) onAprovado?.()
+    if (data.aprovado) {
+      onAprovado?.()
+    } else {
+      setTentativasLocal(t => t + 1)
+    }
     setEnviando(false)
   }
 
@@ -219,15 +225,39 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
             </p>
           </div>
         )}
-        {!resultado.aprovado && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
-            <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Revise o conteúdo do vídeo e tente novamente.</p>
-            <button onClick={() => { setResultado(null); setRespostas({}); setIniciado(false) }}
-              style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>
-              Tentar novamente
-            </button>
-          </div>
-        )}
+        {!resultado.aprovado && (() => {
+          const totalTentativas = tentativasAnteriores + tentativasLocal
+          const deveReassistir = totalTentativas >= 3
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
+              {deveReassistir ? (
+                <>
+                  <div style={{ background: '#f59e0b15', border: '1px solid #f59e0b50', borderRadius: 10, padding: '14px 20px', textAlign: 'center' }}>
+                    <p style={{ color: '#f59e0b', fontWeight: 800, fontSize: 15, marginBottom: 6 }}>📺 Você errou 3 vezes!</p>
+                    <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, lineHeight: 1.6 }}>
+                      Para tentar novamente, você precisa reassistir ao vídeo desta aula antes de refazer o quiz.
+                    </p>
+                  </div>
+                  <button onClick={() => { setResultado(null); setRespostas({}); setIniciado(false); onPrecisaReassistir?.() }}
+                    style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 28px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>
+                    📺 Reassistir ao vídeo
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>
+                    Revise o conteúdo do vídeo e tente novamente.
+                    {totalTentativas >= 2 && <strong style={{ color: '#f87171' }}> Atenção: próximo erro exigirá reassistir o vídeo.</strong>}
+                  </p>
+                  <button onClick={() => { setResultado(null); setRespostas({}); setIniciado(false) }}
+                    style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>
+                    Tentar novamente
+                  </button>
+                </>
+              )}
+            </div>
+          )
+        })()}
       </div>
     )
   }

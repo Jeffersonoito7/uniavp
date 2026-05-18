@@ -13,6 +13,7 @@ type SimNaoItem = { pergunta: string; nao_mensagem?: string }
 type Props = {
   whatsapp: string
   aulaId: string
+  moduloId: string
   youtubeId?: string | null
   videoUrl?: string | null
   titulo: string
@@ -39,7 +40,7 @@ type Props = {
 }
 
 export default function AulaInterativa({
-  whatsapp, aulaId, youtubeId, videoUrl, titulo, bloquearAvancar,
+  whatsapp, aulaId, moduloId, youtubeId, videoUrl, titulo, bloquearAvancar,
   aulaAnterior, proximaAula, proximaStatus,
   questoes, aprovacaoMinima, jaAprovado, tentativasAnteriores, quizTipo,
   simNaoPergunta, simNaoNaoMensagem, simNaoPerguntas, temQuiz,
@@ -85,8 +86,14 @@ export default function AulaInterativa({
     dispararCelebracao()
   }
 
+  function handlePrecisaReassistir() {
+    setVideoTerminou(false)
+  }
+
   function handleCelebracaoClose() {
     setMostrarCelebracao(false)
+    // Limpa o "já visto" do certificado para garantir que ele apareça na listagem
+    try { localStorage.removeItem(`cert_visto_modulo_${moduloId}_${whatsapp}`) } catch { /* */ }
     router.push(`/aluno/${whatsapp}`)
   }
 
@@ -131,6 +138,7 @@ export default function AulaInterativa({
             simNaoNaoMensagem={simNaoNaoMensagem}
             simNaoPerguntas={simNaoPerguntas}
             onAprovado={handleQuizAprovado}
+            onPrecisaReassistir={handlePrecisaReassistir}
           />
         </div>
       )}

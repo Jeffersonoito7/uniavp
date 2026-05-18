@@ -182,6 +182,7 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
           <AulaInterativa
             whatsapp={params.whatsapp}
             aulaId={params.aulaId}
+            moduloId={aula.modulo_id}
             youtubeId={(!temAoVivo || aoVivoPassou) ? aula.youtube_video_id : null}
             videoUrl={(!temAoVivo || aoVivoPassou) ? (aula as any).video_url : null}
             titulo={aula.titulo}

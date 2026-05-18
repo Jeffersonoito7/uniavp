@@ -105,9 +105,21 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
     : { data: [] }
   const moduloPermissoes: Record<string, string[]> = {}
   const moduloCerts: Record<string, any> = {}
+  const certGlobalUrl = certMap['certificado_template_url'] ?? null
   for (const m of (modulosConfig ?? [])) {
     moduloPermissoes[m.id] = m.perfis_permitidos ?? ['consultor', 'gestor']
-    if (m.cert_ativo && m.cert_template_url) moduloCerts[m.id] = m
+    if (m.cert_ativo && m.cert_template_url) {
+      moduloCerts[m.id] = m
+    } else if (certGlobalUrl) {
+      // Usa cert global como fallback para módulos sem cert próprio
+      moduloCerts[m.id] = {
+        ...m,
+        cert_template_url: certGlobalUrl,
+        cert_nome_y: m.cert_nome_y ?? certMap['certificado_nome_y'],
+        cert_nome_tamanho: m.cert_nome_tamanho ?? certMap['certificado_nome_tamanho'],
+        cert_nome_cor: m.cert_nome_cor ?? certMap['certificado_nome_cor'],
+      }
+    }
   }
 
   const agrupado: Record<string, { modulo_id: string; modulo_titulo: string; modulo_ordem: number; aulas: TrilhaItem[]; apenasProPermissao: boolean }> = {}
@@ -354,7 +366,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
           {/* ── INDICAÇÃO ── */}
           {!moduloAtivo && (
             <IndicacaoCard
-              link={`${baseUrl}/captacao?ref=${aluno.whatsapp}`}
+              link={`${baseUrl}/c/${aluno.whatsapp}`}
               totalIndicados={totalIndicadosReal ?? 0}
             />
           )}
