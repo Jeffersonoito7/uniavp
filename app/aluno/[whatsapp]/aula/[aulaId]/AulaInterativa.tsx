@@ -63,13 +63,26 @@ export default function AulaInterativa({
   const exigeApp = !!(appIosUrl || appAndroidUrl) && !!bloquearLinksApp
   const podeProsseguir = (!exigeLink || linkClicado) && (!exigeApp || appClicado)
 
-  function handleVideoEnd() {
-    setVideoTerminou(true)
+  function dispararCelebracao() {
     if (eUltimaAulaDoModulo && podeProsseguir) {
       setMostrarCelebracao(true)
     } else {
       router.refresh()
     }
+  }
+
+  function handleVideoEnd() {
+    setVideoTerminou(true)
+    // Se não tem quiz ou quiz já estava aprovado antes: pode disparar celebração agora
+    // Se tem quiz pendente: apenas exibe o quiz (videoTerminou = true já faz isso)
+    if (!temQuiz || jaAprovado) {
+      dispararCelebracao()
+    }
+  }
+
+  function handleQuizAprovado() {
+    // Quiz recém aprovado — agora sim verifica celebração
+    dispararCelebracao()
   }
 
   function handleCelebracaoClose() {
@@ -117,7 +130,7 @@ export default function AulaInterativa({
             simNaoPergunta={simNaoPergunta}
             simNaoNaoMensagem={simNaoNaoMensagem}
             simNaoPerguntas={simNaoPerguntas}
-            onAprovado={handleVideoEnd}
+            onAprovado={handleQuizAprovado}
           />
         </div>
       )}
