@@ -1,12 +1,23 @@
 'use client'
 import { useState } from 'react'
 
+const FONTES = {
+  'bold-georgia':   { family: 'Georgia, serif',          weight: '700', style: 'normal' },
+  'normal-georgia': { family: 'Georgia, serif',          weight: '400', style: 'normal' },
+  'italic-georgia': { family: 'Georgia, serif',          weight: '700', style: 'italic' },
+  'bold-arial':     { family: 'Arial, sans-serif',       weight: '700', style: 'normal' },
+  'normal-arial':   { family: 'Arial, sans-serif',       weight: '400', style: 'normal' },
+  'bold-times':     { family: 'Times New Roman, serif',  weight: '700', style: 'normal' },
+} as const
+type FonteKey = keyof typeof FONTES
+
 type Props = {
   nomeAluno: string
   templateUrl: string
   nomeY?: number          // % da altura, padrão 40
   nomeFontePct?: number   // % da largura, padrão 0.04
   nomeCor?: string        // padrão #1a1a1a
+  nomeEstilo?: FonteKey   // padrão 'bold-georgia'
   logoEsquerdaUrl?: string | null
   logoDireitaUrl?: string | null
   logoY?: number          // posição vertical logos %, padrão 88
@@ -33,11 +44,12 @@ async function carregarImg(url: string): Promise<HTMLImageElement> {
 
 export default function CertificadoPopup({
   nomeAluno, templateUrl,
-  nomeY = 40, nomeFontePct = 0.04, nomeCor = '#1a1a1a',
+  nomeY = 40, nomeFontePct = 0.04, nomeCor = '#1a1a1a', nomeEstilo = 'bold-georgia',
   logoEsquerdaUrl, logoDireitaUrl, logoY = 88, logoTamPct = 0.10,
   assinaturaUrl, assinaturaNome, assinaturaCargo, assinaturaY = 82,
   onClose, onVerCarteira,
 }: Props) {
+  const fonte = FONTES[nomeEstilo] ?? FONTES['bold-georgia']
   const [baixando, setBaixando] = useState(false)
   const [imgCarregada, setImgCarregada] = useState(false)
 
@@ -53,9 +65,15 @@ export default function CertificadoPopup({
       // 1. Template
       ctx.drawImage(base, 0, 0)
 
-      // 2. Nome
-      const fs = Math.round(W * nomeFontePct)
-      ctx.font = `700 ${fs}px Georgia, serif`
+      // 2. Nome — auto-escala para caber em 80% da largura
+      let fs = Math.round(W * nomeFontePct)
+      const maxNomeW = W * 0.80
+      const canvasFonte = `${fonte.style !== 'normal' ? fonte.style + ' ' : ''}${fonte.weight} ${fs}px ${fonte.family}`
+      ctx.font = canvasFonte
+      while (ctx.measureText(nomeAluno.toUpperCase()).width > maxNomeW && fs > 16) {
+        fs -= 2
+        ctx.font = `${fonte.style !== 'normal' ? fonte.style + ' ' : ''}${fonte.weight} ${fs}px ${fonte.family}`
+      }
       ctx.fillStyle = nomeCor
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
@@ -177,14 +195,18 @@ export default function CertificadoPopup({
           {imgCarregada && (<>
             {/* Nome */}
             <div style={{
-              position: 'absolute', left: '50%', transform: 'translateX(-50%)',
-              top: `${nomeY}%`, width: '70%', textAlign: 'center',
-              fontFamily: 'Georgia, serif', fontWeight: 700,
-              fontSize: `${Math.min(nomeFontePct * 100, 8)}cqw`, color: nomeCor,
+              position: 'absolute', left: '50%', top: `${nomeY}%`,
+              transform: 'translate(-50%, -50%)',
+              width: '82%', textAlign: 'center',
+              fontFamily: fonte.family, fontWeight: Number(fonte.weight), fontStyle: fonte.style as any,
+              fontSize: `${Math.min(nomeFontePct * 100, 5.5)}cqw`, color: nomeCor,
               textTransform: 'uppercase', letterSpacing: 2, lineHeight: 1.2,
+              whiteSpace: 'nowrap', overflow: 'hidden',
               pointerEvents: 'none',
             }}>
-              {nomeAluno}
+              <span style={{ display: 'inline-block', transform: `scaleX(${Math.min(1, 18 / Math.max(nomeAluno.length, 1))})`, transformOrigin: 'center' }}>
+                {nomeAluno}
+              </span>
             </div>
 
             {/* Logo esquerda */}

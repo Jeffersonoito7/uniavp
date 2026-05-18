@@ -77,6 +77,12 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
     .maybeSingle()
   if (gestorAtivo) redirect('/pro')
 
+  // Limite de módulos para FREE (0 = ilimitado)
+  const { data: limiteRow } = await (adminClient.from('configuracoes') as any)
+    .select('valor').eq('chave', 'free_max_modulos').maybeSingle()
+  let freeMaxModulos = 0
+  try { freeMaxModulos = parseInt(JSON.parse(limiteRow?.valor ?? '0')) || 0 } catch { freeMaxModulos = 0 }
+
   const { data: trilhaRaw } = await (adminClient as any).rpc('obter_trilha_aluno', { p_aluno_id: aluno.id })
   const trilhaBase: TrilhaItem[] = (trilhaRaw ?? []) as TrilhaItem[]
 
@@ -94,7 +100,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
   const moduloIds = [...new Set(trilhaBase.map(t => t.modulo_id))]
   const { data: modulosConfig } = moduloIds.length > 0
     ? await (adminClient.from('modulos') as any)
-        .select('id, perfis_permitidos, cert_ativo, cert_template_url, cert_nome_y, cert_nome_tamanho, cert_nome_cor, cert_logo_esq_url, cert_logo_dir_url, cert_logo_y, cert_logo_tam, cert_assinatura_url, cert_assinatura_nome, cert_assinatura_cargo, cert_assinatura_y')
+        .select('id, perfis_permitidos, cert_ativo, cert_template_url, cert_nome_y, cert_nome_tamanho, cert_nome_cor, cert_nome_estilo, cert_logo_esq_url, cert_logo_dir_url, cert_logo_y, cert_logo_tam, cert_assinatura_url, cert_assinatura_nome, cert_assinatura_cargo, cert_assinatura_y')
         .in('id', moduloIds)
     : { data: [] }
   const moduloPermissoes: Record<string, string[]> = {}
@@ -113,7 +119,12 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
     }
     agrupado[item.modulo_id].aulas.push(item)
   }
-  const modulos = Object.values(agrupado).sort((a, b) => a.modulo_ordem - b.modulo_ordem)
+  const modulosOrdenados = Object.values(agrupado).sort((a, b) => a.modulo_ordem - b.modulo_ordem)
+  // Aplica limite FREE: módulos além do limite ficam como "apenas PRO"
+  const modulos = modulosOrdenados.map((mod, idx) => {
+    if (freeMaxModulos > 0 && idx >= freeMaxModulos) return { ...mod, apenasProPermissao: true }
+    return mod
+  })
   const moduloSelecionadoId = searchParams?.modulo
   const moduloAtivo = moduloSelecionadoId ? modulos.find(m => m.modulo_id === moduloSelecionadoId) ?? null : null
 
@@ -520,6 +531,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
             nomeY={cert.cert_nome_y ?? undefined}
             nomeFontePct={cert.cert_nome_tamanho ? cert.cert_nome_tamanho / 100 : undefined}
             nomeCor={cert.cert_nome_cor ?? undefined}
+            nomeEstilo={cert.cert_nome_estilo ?? undefined}
             logoEsquerdaUrl={cert.cert_logo_esq_url ?? null}
             logoDireitaUrl={cert.cert_logo_dir_url ?? null}
             logoY={cert.cert_logo_y ?? undefined}

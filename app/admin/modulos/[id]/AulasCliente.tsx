@@ -292,7 +292,9 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
       bloquear_avancar: !!(aula as any).bloquear_avancar,
       mostrar_link_externo: !!(aula as any).mostrar_link_externo,
       link_externo_titulo: (aula as any).link_externo_titulo ?? '',
+      bloquear_link_externo: !!(aula as any).bloquear_link_externo,
       mostrar_links_app: !!(aula as any).mostrar_links_app,
+      bloquear_links_app: !!(aula as any).bloquear_links_app,
     } as any)
   }
 
@@ -316,7 +318,9 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
         bloquear_avancar: !!(editForm as any).bloquear_avancar,
         mostrar_link_externo: !!(editForm as any).mostrar_link_externo,
         link_externo_titulo: (editForm as any).link_externo_titulo || null,
+        bloquear_link_externo: !!(editForm as any).bloquear_link_externo,
         mostrar_links_app: !!(editForm as any).mostrar_links_app,
+        bloquear_links_app: !!(editForm as any).bloquear_links_app,
       }),
     })
     const data = await res.json()
@@ -376,7 +380,9 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
       bloquear_avancar: !!(form as any).bloquear_avancar,
       mostrar_link_externo: !!(form as any).mostrar_link_externo,
       link_externo_titulo: (form as any).link_externo_titulo || null,
+      bloquear_link_externo: !!(form as any).bloquear_link_externo,
       mostrar_links_app: !!(form as any).mostrar_links_app,
+      bloquear_links_app: !!(form as any).bloquear_links_app,
     }
     if (aoVivo && form.ao_vivo_link) {
       body.ao_vivo_link = form.ao_vivo_link
@@ -567,29 +573,46 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                   </label>
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ ...labelStyle, marginBottom: 8 }}>🔗 Link obrigatório após conclusão</label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${(form as any).mostrar_link_externo ? '#6366f1' : 'var(--avp-border)'}`, background: (form as any).mostrar_link_externo ? '#6366f115' : 'transparent', marginBottom: 8 }}>
+                  <label style={{ ...labelStyle, marginBottom: 8 }}>🔗 Link da plataforma parceira</label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${(form as any).mostrar_link_externo ? '#6366f1' : 'var(--avp-border)'}`, background: (form as any).mostrar_link_externo ? '#6366f115' : 'transparent', marginBottom: 6 }}>
                     <input type="checkbox" checked={!!(form as any).mostrar_link_externo} onChange={e => setForm(p => ({ ...p, mostrar_link_externo: e.target.checked } as typeof p))} style={{ width: 16, height: 16, accentColor: '#6366f1' }} />
                     <div>
-                      <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>🔗 Exigir acesso à plataforma parceira</p>
-                      <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Após o vídeo, aluno deve clicar no link do PRO antes de avançar</p>
+                      <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>🔗 Mostrar link da plataforma parceira</p>
+                      <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Exibe botão com o link do PRO após o vídeo</p>
                     </div>
                   </label>
-                  {(form as any).mostrar_link_externo && (
+                  {(form as any).mostrar_link_externo && (<>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${(form as any).bloquear_link_externo ? '#e63946' : 'var(--avp-border)'}`, background: (form as any).bloquear_link_externo ? '#e6394610' : 'transparent', marginBottom: 6 }}>
+                      <input type="checkbox" checked={!!(form as any).bloquear_link_externo} onChange={e => setForm(p => ({ ...p, bloquear_link_externo: e.target.checked } as typeof p))} style={{ width: 16, height: 16, accentColor: '#e63946' }} />
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>🚫 Bloquear avanço até clicar no link</p>
+                        <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Aluno não avança para próxima aula sem clicar no link parceiro</p>
+                      </div>
+                    </label>
                     <div>
                       <label style={labelStyle}>Texto do botão</label>
                       <input style={inputStyle} placeholder="Ex: Cadastre-se na plataforma parceira" value={(form as any).link_externo_titulo ?? ''} onChange={e => setForm(p => ({ ...p, link_externo_titulo: e.target.value } as typeof p))} />
                     </div>
-                  )}
+                  </>)}
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${(form as any).mostrar_links_app ? '#22c55e' : 'var(--avp-border)'}`, background: (form as any).mostrar_links_app ? '#22c55e10' : 'transparent' }}>
+                  <label style={{ ...labelStyle, marginBottom: 8 }}>📱 App consultor</label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${(form as any).mostrar_links_app ? '#22c55e' : 'var(--avp-border)'}`, background: (form as any).mostrar_links_app ? '#22c55e10' : 'transparent', marginBottom: 6 }}>
                     <input type="checkbox" checked={!!(form as any).mostrar_links_app} onChange={e => setForm(p => ({ ...p, mostrar_links_app: e.target.checked } as typeof p))} style={{ width: 16, height: 16, accentColor: '#22c55e' }} />
                     <div>
                       <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>📱 Mostrar botões de download do app</p>
-                      <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Após o vídeo, exibe botões de baixar o app no iOS e Android (links configurados em Configurações)</p>
+                      <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Exibe botões iOS e Android após o vídeo</p>
                     </div>
                   </label>
+                  {(form as any).mostrar_links_app && (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${(form as any).bloquear_links_app ? '#e63946' : 'var(--avp-border)'}`, background: (form as any).bloquear_links_app ? '#e6394610' : 'transparent' }}>
+                      <input type="checkbox" checked={!!(form as any).bloquear_links_app} onChange={e => setForm(p => ({ ...p, bloquear_links_app: e.target.checked } as typeof p))} style={{ width: 16, height: 16, accentColor: '#e63946' }} />
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>🚫 Bloquear avanço até baixar o app</p>
+                        <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Aluno não avança para próxima aula sem clicar no link do app</p>
+                      </div>
+                    </label>
+                  )}
                 </div>
                 <div><label style={labelStyle}>Duração (min)</label><input type="number" style={inputStyle} value={form.duracao_minutos} onChange={e => setForm(p => ({ ...p, duracao_minutos: e.target.value }))} placeholder="Ex: 12" /></div>
                 <div><label style={labelStyle}>Qtd. de questões no quiz</label><input type="number" style={inputStyle} value={form.quiz_qtd_questoes} onChange={e => setForm(p => ({ ...p, quiz_qtd_questoes: parseInt(e.target.value) }))} min={1} max={20} /></div>
@@ -716,29 +739,46 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
                       </label>
                     </div>
                     <div style={{ gridColumn: '1 / -1' }}>
-                      <label style={{ ...labelStyle, marginBottom: 8 }}>🔗 Link obrigatório após conclusão</label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${(editForm as any).mostrar_link_externo ? '#6366f1' : 'var(--avp-border)'}`, background: (editForm as any).mostrar_link_externo ? '#6366f115' : 'transparent', marginBottom: 8 }}>
+                      <label style={{ ...labelStyle, marginBottom: 8 }}>🔗 Link da plataforma parceira</label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${(editForm as any).mostrar_link_externo ? '#6366f1' : 'var(--avp-border)'}`, background: (editForm as any).mostrar_link_externo ? '#6366f115' : 'transparent', marginBottom: 6 }}>
                         <input type="checkbox" checked={!!(editForm as any).mostrar_link_externo} onChange={e => setEditForm(p => ({ ...p, mostrar_link_externo: e.target.checked } as typeof p))} style={{ width: 16, height: 16, accentColor: '#6366f1' }} />
                         <div>
-                          <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>🔗 Exigir acesso à plataforma parceira</p>
-                          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Após o vídeo, aluno deve clicar no link do PRO antes de avançar</p>
+                          <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>🔗 Mostrar link da plataforma parceira</p>
+                          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Exibe botão com o link do PRO após o vídeo</p>
                         </div>
                       </label>
-                      {(editForm as any).mostrar_link_externo && (
+                      {(editForm as any).mostrar_link_externo && (<>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${(editForm as any).bloquear_link_externo ? '#e63946' : 'var(--avp-border)'}`, background: (editForm as any).bloquear_link_externo ? '#e6394610' : 'transparent', marginBottom: 6 }}>
+                          <input type="checkbox" checked={!!(editForm as any).bloquear_link_externo} onChange={e => setEditForm(p => ({ ...p, bloquear_link_externo: e.target.checked } as typeof p))} style={{ width: 16, height: 16, accentColor: '#e63946' }} />
+                          <div>
+                            <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>🚫 Bloquear avanço até clicar no link</p>
+                            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Aluno não avança sem clicar no link parceiro</p>
+                          </div>
+                        </label>
                         <div>
                           <label style={labelStyle}>Texto do botão</label>
                           <input style={inputStyle} placeholder="Ex: Cadastre-se na plataforma parceira" value={(editForm as any).link_externo_titulo ?? ''} onChange={e => setEditForm(p => ({ ...p, link_externo_titulo: e.target.value } as typeof p))} />
                         </div>
-                      )}
+                      </>)}
                     </div>
                     <div style={{ gridColumn: '1 / -1' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${(editForm as any).mostrar_links_app ? '#22c55e' : 'var(--avp-border)'}`, background: (editForm as any).mostrar_links_app ? '#22c55e10' : 'transparent' }}>
+                      <label style={{ ...labelStyle, marginBottom: 8 }}>📱 App consultor</label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${(editForm as any).mostrar_links_app ? '#22c55e' : 'var(--avp-border)'}`, background: (editForm as any).mostrar_links_app ? '#22c55e10' : 'transparent', marginBottom: 6 }}>
                         <input type="checkbox" checked={!!(editForm as any).mostrar_links_app} onChange={e => setEditForm(p => ({ ...p, mostrar_links_app: e.target.checked } as typeof p))} style={{ width: 16, height: 16, accentColor: '#22c55e' }} />
                         <div>
                           <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>📱 Mostrar botões de download do app</p>
-                          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Após o vídeo, exibe botões de baixar o app no iOS e Android</p>
+                          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Exibe botões iOS e Android após o vídeo</p>
                         </div>
                       </label>
+                      {(editForm as any).mostrar_links_app && (
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${(editForm as any).bloquear_links_app ? '#e63946' : 'var(--avp-border)'}`, background: (editForm as any).bloquear_links_app ? '#e6394610' : 'transparent' }}>
+                          <input type="checkbox" checked={!!(editForm as any).bloquear_links_app} onChange={e => setEditForm(p => ({ ...p, bloquear_links_app: e.target.checked } as typeof p))} style={{ width: 16, height: 16, accentColor: '#e63946' }} />
+                          <div>
+                            <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>🚫 Bloquear avanço até baixar o app</p>
+                            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Aluno não avança sem clicar no link do app</p>
+                          </div>
+                        </label>
+                      )}
                     </div>
                     <div><label style={labelStyle}>Qtd. de questões no quiz</label><input type="number" style={inputStyle} value={editForm.quiz_qtd_questoes} onChange={e => setEditForm(p => ({ ...p, quiz_qtd_questoes: parseInt(e.target.value) }))} min={1} max={20} /></div>
                     <div><label style={labelStyle}>Aprovação mínima (%)</label><input type="number" style={inputStyle} value={editForm.quiz_aprovacao_minima} onChange={e => setEditForm(p => ({ ...p, quiz_aprovacao_minima: parseInt(e.target.value) }))} min={50} max={100} /></div>

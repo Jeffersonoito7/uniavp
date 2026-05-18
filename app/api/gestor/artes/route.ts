@@ -63,6 +63,7 @@ export async function PUT(req: NextRequest) {
   const textoCampos = (t: any) => ({
     texto_ativo: t.texto_ativo ?? false,
     texto_template: t.texto_template ?? '{nome}',
+    texto_fonte: t.texto_fonte ?? 'Inter, Arial, sans-serif',
     texto_x: t.texto_x ?? 50,
     texto_y: t.texto_y ?? 85,
     texto_tamanho: t.texto_tamanho ?? 5,

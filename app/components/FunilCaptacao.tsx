@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import VideoPlayer from './VideoPlayer'
 import PhoneInput from './PhoneInput'
 import { useRouter } from 'next/navigation'
@@ -23,7 +23,16 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
   const router = useRouter()
   const [etapa, setEtapa] = useState<Etapa>(direto ? 'cadastro' : 'pergunta1')
   const [videoAssistido, setVideoAssistido] = useState(false)
+  const btnContinuarRef = useRef<HTMLDivElement>(null)
   const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', senha: '', gestor_nome: '', gestor_whatsapp: '' })
+
+  useEffect(() => {
+    if (videoAssistido && btnContinuarRef.current) {
+      setTimeout(() => {
+        btnContinuarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 300)
+    }
+  }, [videoAssistido])
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const [verSenha, setVerSenha] = useState(false)
@@ -106,21 +115,17 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
   // ── 2. VÍDEO DE APRESENTAÇÃO ─────────────────────────────────────
   if (etapa === 'video' && videoId) {
     return (
-      <div style={{ minHeight: '100vh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '32px 20px' }}>
+      <>
+      <div style={{ minHeight: '100vh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', fontFamily: 'Inter, sans-serif', padding: '12px 20px 140px' }}>
         <div style={{ maxWidth: 800, width: '100%' }}>
-          <div style={{ textAlign: 'center', marginBottom: 28 }}>
-            {logoUrl && <img src={logoUrl} alt={siteNome} style={{ height: 48, objectFit: 'contain', marginBottom: 20 }} />}
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 100, padding: '6px 18px', fontSize: 12, fontWeight: 700, color: '#ef4444', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 16 }}>
+          <div style={{ textAlign: 'center', marginBottom: 10 }}>
+            {logoUrl && <img src={logoUrl} alt={siteNome} style={{ height: 32, objectFit: 'contain', marginBottom: 8 }} />}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 100, padding: '5px 14px', fontSize: 11, fontWeight: 700, color: '#ef4444', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>
               🎬 Vídeo obrigatório — assista até o fim
             </div>
-            <h2 style={{ fontSize: 'clamp(1.2rem, 3vw, 1.8rem)', fontWeight: 800, color: '#fff', lineHeight: 1.3 }}>
+            <h2 style={{ fontSize: 'clamp(1rem, 2.5vw, 1.5rem)', fontWeight: 800, color: '#fff', lineHeight: 1.3, margin: 0 }}>
               Antes de se cadastrar, assista a apresentação completa
             </h2>
-            {bloquearVideo && (
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, marginTop: 8 }}>
-                🔒 Não é possível avançar o vídeo — assista do início ao fim
-              </p>
-            )}
           </div>
 
           <VideoPlayer
@@ -129,28 +134,42 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
             onEnded={() => setVideoAssistido(true)}
           />
 
-          {videoAssistido && (
-            <div style={{ marginTop: 24, textAlign: 'center' }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>🎯</div>
-              <p style={{ color: '#22c55e', fontSize: 18, fontWeight: 700, marginBottom: 20 }}>
-                Ótimo! Você assistiu ao vídeo completo.
-              </p>
-              <button
-                onClick={() => setEtapa('pergunta2')}
-                style={{ background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', border: 'none', borderRadius: 14, padding: '18px 48px', fontWeight: 800, fontSize: 18, cursor: 'pointer', boxShadow: '0 8px 32px rgba(2,161,83,0.4)' }}
-              >
-                Continuar →
-              </button>
-            </div>
-          )}
-
           {!videoAssistido && (
-            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13, marginTop: 16 }}>
+            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 12, marginTop: 10 }}>
               O botão "Continuar" aparece ao terminar o vídeo
             </p>
           )}
         </div>
       </div>
+
+      {/* Botão fixo no rodapé — aparece quando vídeo termina */}
+      {videoAssistido && (
+        <div style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 999,
+          background: 'linear-gradient(to top, rgba(2,13,26,0.98) 70%, transparent)',
+          padding: '20px 24px 32px',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+          animation: 'slideUp 0.4s ease',
+        }}>
+          <p style={{ color: '#22c55e', fontSize: 15, fontWeight: 700, margin: 0 }}>
+            🎯 Ótimo! Você assistiu ao vídeo completo.
+          </p>
+          <button
+            onClick={() => setEtapa('pergunta2')}
+            style={{
+              background: 'linear-gradient(135deg, #02A153, #059669)',
+              color: '#fff', border: 'none', borderRadius: 14,
+              padding: '18px 0', fontWeight: 800, fontSize: 18,
+              cursor: 'pointer', boxShadow: '0 8px 32px rgba(2,161,83,0.5)',
+              width: '100%', maxWidth: 480,
+            }}
+          >
+            Continuar →
+          </button>
+        </div>
+      )}
+      <style>{`@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`}</style>
+      </>
     )
   }
 

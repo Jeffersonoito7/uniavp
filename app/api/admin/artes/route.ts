@@ -65,12 +65,21 @@ export async function PUT(req: NextRequest) {
   const adminClient = createServiceRoleClient()
   if (!await verificarAdmin(user, adminClient)) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
-  const body: { id: string; titulo: string; tipo: string; arte_url: string; foto_x: number; foto_y: number; foto_largura: number; foto_altura: number; foto_redondo: boolean; ativo: boolean }[] = await req.json()
+  const body: any[] = await req.json()
 
   for (const t of body) {
     if (!t.id) continue
     await (adminClient.from('artes_templates') as any)
-      .update({ titulo: t.titulo, tipo: t.tipo, arte_url: t.arte_url, foto_x: t.foto_x, foto_y: t.foto_y, foto_largura: t.foto_largura, foto_altura: t.foto_altura, foto_redondo: t.foto_redondo, ativo: t.ativo })
+      .update({
+        titulo: t.titulo, tipo: t.tipo, arte_url: t.arte_url,
+        foto_x: t.foto_x, foto_y: t.foto_y, foto_largura: t.foto_largura, foto_altura: t.foto_altura,
+        foto_redondo: t.foto_redondo, ativo: t.ativo,
+        texto_ativo: t.texto_ativo ?? false, texto_template: t.texto_template ?? null,
+        texto_fonte: t.texto_fonte ?? null,
+        texto_x: t.texto_x ?? null, texto_y: t.texto_y ?? null, texto_tamanho: t.texto_tamanho ?? null,
+        texto_cor: t.texto_cor ?? null, texto_negrito: t.texto_negrito ?? null,
+        texto_alinhamento: t.texto_alinhamento ?? null, texto_sombra: t.texto_sombra ?? null,
+      })
       .eq('id', t.id)
   }
 

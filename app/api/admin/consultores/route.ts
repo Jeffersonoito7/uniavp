@@ -17,7 +17,7 @@ export async function PUT(req: NextRequest) {
   const adminClient = createServiceRoleClient()
   if (!await verificarAdmin(adminClient, user.id)) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
-  const { id, nome, email, whatsapp, status, gestor_nome, gestor_whatsapp } = await req.json()
+  const { id, nome, email, whatsapp, status, gestor_nome, gestor_whatsapp, nova_senha, user_id } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
   const updates: Record<string, unknown> = {}
@@ -32,12 +32,17 @@ export async function PUT(req: NextRequest) {
     .update(updates).eq('id', id).select('*').single()
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  // Atualiza email no auth se mudou
-  if (email && aluno.user_id) {
-    await adminClient.auth.admin.updateUserById(aluno.user_id, { email }).catch(() => {})
+  const authUserId = aluno.user_id ?? user_id
+  if (authUserId) {
+    const authUpdates: Record<string, unknown> = {}
+    if (email) authUpdates.email = email
+    if (nova_senha && nova_senha.length >= 6) authUpdates.password = nova_senha
+    if (Object.keys(authUpdates).length > 0) {
+      await adminClient.auth.admin.updateUserById(authUserId, authUpdates).catch(() => {})
+    }
   }
 
-  return NextResponse.json({ aluno })
+  return NextResponse.json({ ok: true, aluno })
 }
 
 export async function DELETE(req: NextRequest) {

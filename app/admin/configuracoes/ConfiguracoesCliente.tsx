@@ -71,6 +71,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
   const [planoPROValor, setPlanoPROValor] = useState(get('plano_pro_valor') || '97')
   const [freePodeConfigurarLink, setFreePodeConfigurarLink] = useState(get('free_pode_configurar_link') === 'true')
+  const [freeMaxModulos, setFreeMaxModulos] = useState(get('free_max_modulos') || '0')
   const [appIosUrl, setAppIosUrl] = useState(get('app_ios_url') || '')
   const [appAndroidUrl, setAppAndroidUrl] = useState(get('app_android_url') || '')
   const [logoUrl, setLogoUrl] = useState(get('site_logo_url'))
@@ -307,6 +308,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         ...(urlSafe(carteiraAssinaturaUrl) ? [{ chave: 'carteira_assinatura_url', valor: carteiraAssinaturaUrl }] : []),
         { chave: 'plano_pro_valor', valor: planoPROValor },
         { chave: 'free_pode_configurar_link', valor: String(freePodeConfigurarLink) },
+        { chave: 'free_max_modulos', valor: String(parseInt(freeMaxModulos) || 0) },
         { chave: 'app_ios_url', valor: appIosUrl },
         { chave: 'app_android_url', valor: appAndroidUrl },
         { chave: 'boleto_mensagem', valor: boletoMensagem },
@@ -502,19 +504,43 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8, marginBottom: 16 }}>
           Controle o que os usuários FREE podem configurar no próprio perfil.
         </p>
-        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <div>
-              <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>🔗 FREE pode configurar link da plataforma parceira</p>
-              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0', lineHeight: 1.5 }}>
-                Quando ativado, cada FREE pode colocar o próprio link de indicação no perfil dele.
-                Se não tiver link próprio, usa o link do PRO que o indicou.
-              </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Limite de módulos FREE */}
+          <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>📚 Limite de módulos FREE</p>
+                <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0', lineHeight: 1.5 }}>
+                  Quantos módulos o FREE pode acessar (em ordem). Os demais aparecem travados como "Exclusivo PRO". Use <strong>0</strong> para ilimitado.
+                </p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                <input
+                  type="number" min={0} max={99} step={1}
+                  value={freeMaxModulos}
+                  onChange={e => setFreeMaxModulos(e.target.value)}
+                  style={{ width: 72, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '8px 10px', color: 'var(--avp-text)', fontSize: 16, fontWeight: 700, textAlign: 'center', outline: 'none' }}
+                />
+                <span style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>módulos</span>
+              </div>
             </div>
-            <button onClick={() => setFreePodeConfigurarLink(v => !v)}
-              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: freePodeConfigurarLink ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
-              <span style={{ position: 'absolute', top: 3, left: freePodeConfigurarLink ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
-            </button>
+          </div>
+
+          {/* Link da plataforma parceira */}
+          <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <div>
+                <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>🔗 FREE pode configurar link da plataforma parceira</p>
+                <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0', lineHeight: 1.5 }}>
+                  Quando ativado, cada FREE pode colocar o próprio link de indicação no perfil dele.
+                  Se não tiver link próprio, usa o link do PRO que o indicou.
+                </p>
+              </div>
+              <button onClick={() => setFreePodeConfigurarLink(v => !v)}
+                style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: freePodeConfigurarLink ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+                <span style={{ position: 'absolute', top: 3, left: freePodeConfigurarLink ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+              </button>
+            </div>
           </div>
         </div>
       </div>}

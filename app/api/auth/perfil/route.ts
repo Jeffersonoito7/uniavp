@@ -45,7 +45,7 @@ export async function GET(req: Request) {
   if (isDominioAdmin) {
     const dominioFree = host.replace(/^adm\./, 'uniavp.')
     if (gestorRecord?.ativo) return NextResponse.json({ tipo: 'gestor', redirect: `https://${dominioFree}/pro` })
-    if (alunoRecord?.whatsapp) return NextResponse.json({ tipo: 'aluno', redirect: `https://${dominioFree}/free/${alunoRecord.whatsapp}` })
+    if (alunoRecord?.whatsapp) return NextResponse.json({ tipo: 'aluno', redirect: `https://${dominioFree}/aluno/${alunoRecord.whatsapp}` })
     return NextResponse.json({ tipo: 'acesso_negado' })
   }
 
@@ -54,7 +54,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ tipo: 'gestor', redirect: '/pro' })
   }
 
-  if (alunoRecord?.whatsapp) return NextResponse.json({ tipo: 'aluno', redirect: `/free/${alunoRecord.whatsapp}` })
+  if (alunoRecord?.whatsapp) return NextResponse.json({ tipo: 'aluno', redirect: `/aluno/${alunoRecord.whatsapp}` })
 
   return NextResponse.json({ tipo: null })
 }

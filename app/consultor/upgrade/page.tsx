@@ -15,7 +15,7 @@ export default async function UpgradePage() {
   const config = await getSiteConfig()
 
   const beneficios = [
-    { icon: '📚', titulo: 'Aulas ilimitadas', desc: 'Acesse todo o conteúdo da plataforma sem restrições' },
+    { icon: '📚', titulo: 'Módulos ilimitados', desc: 'Acesse todos os módulos da plataforma sem restrições' },
     { icon: '👥', titulo: 'Gerencie sua equipe', desc: 'Cadastre, acompanhe e reengaje consultores da sua equipe' },
     { icon: '🔗', titulo: 'Links de captação', desc: 'Links personalizados para captar novos consultores' },
     { icon: '📊', titulo: 'Relatórios e métricas', desc: 'Veja o progresso da equipe, inativos e progresso médio' },
@@ -48,8 +48,8 @@ export default async function UpgradePage() {
             <span style={{ background: 'linear-gradient(90deg, #6366f1, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>UNIAVP FREE</span>
           </h1>
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 16, lineHeight: 1.7, maxWidth: 480, margin: '0 auto' }}>
-            Na UNIAVP FREE você acessa as primeiras <strong style={{ color: 'var(--avp-text)' }}>20 aulas</strong>.
-            Faça upgrade para a <strong style={{ color: '#818cf8' }}>UNIAVP PRO</strong> e desbloqueie tudo — sem limites.
+            Na UNIAVP FREE você acessa <strong style={{ color: 'var(--avp-text)' }}>módulos limitados</strong>.
+            Faça upgrade para a <strong style={{ color: '#818cf8' }}>UNIAVP PRO</strong> e desbloqueie todos os módulos — sem limites.
           </p>
         </div>
 
@@ -60,10 +60,10 @@ export default async function UpgradePage() {
             <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>UNIAVP FREE</p>
             <p style={{ fontSize: 28, fontWeight: 900, marginBottom: 16 }}>Grátis</p>
             {[
-              '✅ 20 aulas',
+              '✅ Módulos limitados',
               '✅ Indicar até 20 pessoas',
               '❌ Gestão de equipe',
-              '❌ Aulas ilimitadas',
+              '❌ Módulos ilimitados',
               '❌ Relatórios',
             ].map(item => (
               <p key={item} style={{ fontSize: 13, color: item.startsWith('❌') ? 'var(--avp-text-dim)' : 'var(--avp-text)', marginBottom: 6, opacity: item.startsWith('❌') ? 0.5 : 1 }}>{item}</p>
@@ -77,7 +77,7 @@ export default async function UpgradePage() {
             <p style={{ fontSize: 11, fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>UNIAVP PRO</p>
             <p style={{ fontSize: 28, fontWeight: 900, marginBottom: 16, color: '#818cf8' }}>Mensal</p>
             {[
-              '✅ Aulas ilimitadas',
+              '✅ Módulos ilimitados',
               '✅ Indicações ilimitadas',
               '✅ Gestão de equipe',
               '✅ Relatórios e métricas',
@@ -111,10 +111,10 @@ export default async function UpgradePage() {
             🚀 Quero ser UNIAVP PRO
           </a>
           <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 10 }}>
-            Você terá acesso imediato a todas as aulas e ao painel de gestão.
+            Você terá acesso imediato a todos os módulos e ao painel de gestão.
           </p>
           <a href={`/free/${aluno.whatsapp}`} style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 16, textDecoration: 'none' }}>
-            Voltar para minhas aulas →
+            Voltar para meus módulos →
           </a>
         </div>
       </div>

@@ -48,6 +48,40 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
   const [novaSenha, setNovaSenha] = useState('')
   const [verNovaSenha, setVerNovaSenha] = useState(false)
   const [resetando, setResetando] = useState(false)
+  const [editando, setEditando] = useState<Gestor | null>(null)
+  const [editForm, setEditForm] = useState({ nome: '', email: '', whatsapp: '', nova_senha: '' })
+
+  function abrirEdicao(g: Gestor) {
+    setEditForm({ nome: g.nome, email: g.email, whatsapp: g.whatsapp, nova_senha: '' })
+    setEditando(g)
+  }
+
+  async function salvarEdicao(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editando) return
+    setSalvando(true)
+    const res = await fetch('/api/admin/gestores', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: editando.id,
+        nome: editForm.nome,
+        email: editForm.email,
+        whatsapp: editForm.whatsapp.replace(/\D/g, ''),
+        nova_senha: editForm.nova_senha || null,
+      }),
+    })
+    const data = await res.json()
+    if (data.gestor) {
+      setGestores(prev => prev.map(g => g.id === editando.id ? { ...g, ...data.gestor } : g))
+      setEditando(null)
+      setMsg({ tipo: 'ok', texto: `${editForm.nome} atualizado!` })
+    } else {
+      setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao salvar.' })
+    }
+    setSalvando(false)
+    setTimeout(() => setMsg(null), 4000)
+  }
 
   const inputStyle: React.CSSProperties = {
     background: 'var(--avp-black)',
@@ -141,6 +175,42 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
 
   return (
     <>
+      {/* Modal Editar PRO */}
+      {editando && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={e => e.target === e.currentTarget && setEditando(null)}>
+          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32, width: 480, maxWidth: '95vw' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 700 }}>✏️ Editar PRO — {editando.nome}</h2>
+              <button onClick={() => setEditando(null)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 22 }}>×</button>
+            </div>
+            <form onSubmit={salvarEdicao} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <label style={labelStyle}>Nome *</label>
+                <input style={inputStyle} value={editForm.nome} onChange={e => setEditForm(p => ({ ...p, nome: e.target.value }))} required />
+              </div>
+              <div>
+                <label style={labelStyle}>E-mail *</label>
+                <input type="email" style={inputStyle} value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} required />
+              </div>
+              <div>
+                <label style={labelStyle}>WhatsApp *</label>
+                <PhoneInput value={editForm.whatsapp} onChange={v => setEditForm(p => ({ ...p, whatsapp: v }))} required style={{ background: 'var(--avp-black)', borderRadius: 8 }} />
+              </div>
+              <div>
+                <label style={labelStyle}>Nova senha <span style={{ color: 'var(--avp-text-dim)', fontWeight: 400 }}>(deixe em branco para não alterar)</span></label>
+                <input type="password" style={inputStyle} value={editForm.nova_senha} onChange={e => setEditForm(p => ({ ...p, nova_senha: e.target.value }))} placeholder="Mínimo 6 caracteres" minLength={6} />
+              </div>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setEditando(null)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
+                <button type="submit" disabled={salvando} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, cursor: 'pointer', fontSize: 14, opacity: salvando ? 0.6 : 1 }}>
+                  {salvando ? 'Salvando...' : '✓ Salvar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Modal Redefinir Senha */}
       {resetGestor && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
@@ -285,6 +355,10 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
                 <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 13 }}>{new Date(g.created_at).toLocaleDateString('pt-BR')}</td>
                 <td style={{ padding: '14px 16px' }}>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button onClick={() => abrirEdicao(g)}
+                      style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                      ✏️ Editar
+                    </button>
                     <button onClick={() => toggleAtivo(g)}
                       style={{ background: g.ativo ? '#e6394620' : '#02A15320', color: g.ativo ? 'var(--avp-danger)' : 'var(--avp-green)', border: `1px solid ${g.ativo ? 'var(--avp-danger)' : 'var(--avp-green)'}`, borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                       {g.ativo ? 'Desativar' : 'Ativar'}

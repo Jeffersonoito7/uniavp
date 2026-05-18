@@ -53,6 +53,16 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
     : null
   const proximaStatus = proximaAulaNav ? (aulasModulo[idxAtual + 1]?.status ?? 'bloqueada') : 'nenhuma'
 
+  // Determina se é realmente a última aula publicada do módulo (por ordem)
+  const { data: ultimaAulaPublicada } = await (adminClient.from('aulas') as any)
+    .select('id')
+    .eq('modulo_id', aula.modulo_id)
+    .eq('publicado', true)
+    .order('ordem', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const eUltimaAula = ultimaAulaPublicada?.id === params.aulaId
+
   // Avaliação existente
   const { data: avaliacaoExistente } = await (adminClient.from('aula_avaliacoes') as any)
     .select('estrelas, sugestao').eq('aluno_id', aluno.id).eq('aula_id', params.aulaId).maybeSingle()
@@ -178,11 +188,14 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
             bloquearAvancar={bloquearAvancarEfetivo}
             linkExterno={(aula as any).mostrar_link_externo ? linkExternoPro : null}
             linkExternoTitulo={(aula as any).link_externo_titulo || 'Cadastre-se na plataforma parceira'}
+            bloquearLinkExterno={!!(aula as any).bloquear_link_externo}
             appIosUrl={(aula as any).mostrar_links_app ? appIosUrl : null}
             appAndroidUrl={(aula as any).mostrar_links_app ? appAndroidUrl : null}
+            bloquearLinksApp={!!(aula as any).bloquear_links_app}
             aulaAnterior={aulaAnteriorNav}
             proximaAula={proximaAulaNav}
             proximaStatus={proximaStatus}
+            eUltimaAula={eUltimaAula}
             questoes={questoes}
             aprovacaoMinima={aula.quiz_aprovacao_minima}
             jaAprovado={jaAprovado}

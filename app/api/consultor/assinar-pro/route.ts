@@ -145,6 +145,13 @@ export async function POST() {
 
     return NextResponse.json({ ok: true, pagamento })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    const raw: string = e.message ?? ''
+    const msgUsuario = raw.includes('invalid_client') || raw.includes('credentials')
+      ? 'Erro na integração de pagamento. Entre em contato com o suporte.'
+      : raw.includes('Auth') || raw.includes('token')
+      ? 'Serviço de pagamento temporariamente indisponível. Tente novamente em alguns minutos.'
+      : 'Erro ao gerar cobrança. Tente novamente.'
+    console.error('[assinar-pro] Erro Efi:', raw)
+    return NextResponse.json({ error: msgUsuario }, { status: 500 })
   }
 }

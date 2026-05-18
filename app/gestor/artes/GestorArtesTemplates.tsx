@@ -5,7 +5,7 @@ type Template = {
   id: string; tipo: string; titulo: string; arte_url: string;
   foto_x: number; foto_y: number; foto_largura: number; foto_altura: number;
   foto_redondo: boolean; ativo: boolean; formato: string; gestor_id: string | null;
-  texto_ativo?: boolean; texto_template?: string;
+  texto_ativo?: boolean; texto_template?: string; texto_fonte?: string;
   texto_x?: number; texto_y?: number; texto_tamanho?: number;
   texto_cor?: string; texto_negrito?: boolean; texto_alinhamento?: string; texto_sombra?: boolean;
 }
@@ -364,15 +364,17 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
                           </div>
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                             <div>
-                              <label style={labelStyle}>Cor do texto</label>
-                              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                                <input type="color" value={t.texto_cor ?? '#FFFFFF'}
-                                  onChange={e => atualizar(t.id, 'texto_cor', e.target.value)}
-                                  style={{ width: 36, height: 32, border: 'none', borderRadius: 6, cursor: 'pointer', background: 'none' }} />
-                                <input type="text" style={{ ...inputStyle, flex: 1 }}
-                                  value={t.texto_cor ?? '#FFFFFF'}
-                                  onChange={e => atualizar(t.id, 'texto_cor', e.target.value)} />
-                              </div>
+                              <label style={labelStyle}>Fonte</label>
+                              <select style={{ ...inputStyle, cursor: 'pointer' }}
+                                value={t.texto_fonte ?? 'Inter, Arial, sans-serif'}
+                                onChange={e => atualizar(t.id, 'texto_fonte', e.target.value)}>
+                                <option value="Inter, Arial, sans-serif">Inter / Arial (padrão)</option>
+                                <option value="Georgia, serif">Georgia (Serif)</option>
+                                <option value="'Times New Roman', serif">Times New Roman</option>
+                                <option value="'Palatino Linotype', serif">Palatino</option>
+                                <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                                <option value="Impact, sans-serif">Impact (forte)</option>
+                              </select>
                             </div>
                             <div>
                               <label style={labelStyle}>Alinhamento</label>
@@ -383,6 +385,19 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
                                 <option value="center">Centro</option>
                                 <option value="right">Direita</option>
                               </select>
+                            </div>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                            <div>
+                              <label style={labelStyle}>Cor do texto</label>
+                              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                <input type="color" value={t.texto_cor ?? '#FFFFFF'}
+                                  onChange={e => atualizar(t.id, 'texto_cor', e.target.value)}
+                                  style={{ width: 36, height: 32, border: 'none', borderRadius: 6, cursor: 'pointer', background: 'none' }} />
+                                <input type="text" style={{ ...inputStyle, flex: 1 }}
+                                  value={t.texto_cor ?? '#FFFFFF'}
+                                  onChange={e => atualizar(t.id, 'texto_cor', e.target.value)} />
+                              </div>
                             </div>
                           </div>
                           <div style={{ display: 'flex', gap: 16 }}>

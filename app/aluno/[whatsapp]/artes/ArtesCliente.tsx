@@ -9,6 +9,7 @@ type Template = {
   texto_ativo?: boolean; texto_template?: string;
   texto_x?: number; texto_y?: number; texto_tamanho?: number;
   texto_cor?: string; texto_negrito?: boolean; texto_alinhamento?: string; texto_sombra?: boolean;
+  texto_fonte?: string;
 }
 
 type Formato = 'feed' | 'stories'
@@ -219,7 +220,8 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
         const texto = templateSelecionado.texto_template.replace('{nome}', nomeAluno)
         const tam = Math.round(h * (templateSelecionado.texto_tamanho ?? 5) / 100)
         const peso = templateSelecionado.texto_negrito !== false ? 'bold' : 'normal'
-        ctx.font = `${peso} ${tam}px Inter, Arial, sans-serif`
+        const fontFamily = templateSelecionado.texto_fonte ?? 'Inter, Arial, sans-serif'
+        ctx.font = `${peso} ${tam}px ${fontFamily}`
         ctx.fillStyle = templateSelecionado.texto_cor ?? '#FFFFFF'
         ctx.textAlign = (templateSelecionado.texto_alinhamento ?? 'center') as CanvasTextAlign
         const tx = Math.round(w * (templateSelecionado.texto_x ?? 50) / 100)

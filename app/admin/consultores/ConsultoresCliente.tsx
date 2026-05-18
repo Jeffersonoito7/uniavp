@@ -33,6 +33,7 @@ type Consultor = {
   email: string
   status: string
   created_at: string
+  user_id: string | null
   indicador: { nome: string } | null
   gestor_nome?: string
   gestor_whatsapp?: string
@@ -51,17 +52,71 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
   const [consultores, setConsultores] = useState<Consultor[]>(consultoresIniciais)
   const [showImport, setShowImport] = useState(false)
   const [showCadastro, setShowCadastro] = useState(false)
+  const [editando, setEditando] = useState<Consultor | null>(null)
+  const [editForm, setEditForm] = useState({ nome: '', whatsapp: '', email: '', status: 'ativo', gestor_nome: '', gestor_whatsapp: '', nova_senha: '' })
   const [busca, setBusca] = useState('')
   const [form, setForm] = useState<typeof formVazio>(formVazio)
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState<{ tipo: 'ok' | 'err'; texto: string } | null>(null)
   const [verSenha, setVerSenha] = useState(false)
 
+  function abrirEdicao(c: Consultor) {
+    setEditForm({ nome: c.nome, whatsapp: c.whatsapp, email: c.email, status: c.status, gestor_nome: c.gestor_nome ?? '', gestor_whatsapp: c.gestor_whatsapp ?? '', nova_senha: '' })
+    setEditando(c)
+  }
+
+  async function salvarEdicao(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editando) return
+    setSalvando(true)
+    const res = await fetch('/api/admin/consultores', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: editando.id,
+        user_id: editando.user_id,
+        nome: editForm.nome,
+        whatsapp: editForm.whatsapp.replace(/\D/g, ''),
+        email: editForm.email,
+        status: editForm.status,
+        gestor_nome: editForm.gestor_nome || null,
+        gestor_whatsapp: editForm.gestor_whatsapp.replace(/\D/g, '') || null,
+        nova_senha: editForm.nova_senha || null,
+      }),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      setConsultores(prev => prev.map(x => x.id === editando.id ? { ...x, ...data.aluno } : x))
+      setEditando(null)
+      setMsg({ tipo: 'ok', texto: `${editForm.nome} atualizado com sucesso!` })
+    } else {
+      setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao salvar.' })
+    }
+    setSalvando(false)
+    setTimeout(() => setMsg(null), 4000)
+  }
+
   const filtrados = consultores.filter(c =>
     c.nome.toLowerCase().includes(busca.toLowerCase()) ||
     c.whatsapp.includes(busca) ||
     c.email.toLowerCase().includes(busca.toLowerCase())
   )
+
+  async function reenviarAcesso(c: Consultor) {
+    if (!confirm(`Reenviar link de acesso para ${c.nome} (${c.email})?\n\nIsso vai criar ou vincular a conta e enviar um link de redefinição de senha por e-mail.`)) return
+    const res = await fetch('/api/admin/reenviar-acesso', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: c.email, aluno_id: c.id }),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      setConsultores(prev => prev.map(x => x.id === c.id ? { ...x, user_id: 'vinculado' } : x))
+      setMsg({ tipo: 'ok', texto: `✅ Conta vinculada e link de acesso enviado para ${c.email}` })
+    } else {
+      setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao reenviar acesso.' })
+    }
+  }
 
   async function excluirConsultor(c: Consultor) {
     if (!confirm(`Excluir "${c.nome}" permanentemente? Isso remove o acesso e todos os dados do consultor.`)) return
@@ -114,6 +169,66 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
   return (
     <>
       {showImport && <ImportarXLS onClose={() => setShowImport(false)} />}
+
+      {/* Modal Editar FREE */}
+      {editando && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={e => e.target === e.currentTarget && setEditando(null)}>
+          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32, width: 540, maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 700 }}>✏️ Editar FREE — {editando.nome}</h2>
+              <button onClick={() => setEditando(null)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 22 }}>×</button>
+            </div>
+            <form onSubmit={salvarEdicao} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Nome *</label>
+                  <input style={inputStyle} value={editForm.nome} onChange={e => setEditForm(p => ({ ...p, nome: e.target.value }))} required />
+                </div>
+                <div>
+                  <label style={labelStyle}>WhatsApp *</label>
+                  <PhoneInput value={editForm.whatsapp} onChange={v => setEditForm(p => ({ ...p, whatsapp: v }))} required style={{ background: 'var(--avp-black)', borderRadius: 8 }} />
+                </div>
+                <div>
+                  <label style={labelStyle}>E-mail *</label>
+                  <input type="email" style={inputStyle} value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} required />
+                </div>
+                <div>
+                  <label style={labelStyle}>Status</label>
+                  <select style={{ ...inputStyle, cursor: 'pointer' }} value={editForm.status} onChange={e => setEditForm(p => ({ ...p, status: e.target.value }))}>
+                    <option value="ativo">Ativo</option>
+                    <option value="pausado">Pausado</option>
+                    <option value="concluido">Formado</option>
+                    <option value="desligado">Desligado</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={labelStyle}>Nome do PRO</label>
+                  <input style={inputStyle} value={editForm.gestor_nome} onChange={e => setEditForm(p => ({ ...p, gestor_nome: e.target.value }))} placeholder="Nome do gestor" />
+                </div>
+                <div>
+                  <label style={labelStyle}>WhatsApp do PRO</label>
+                  <PhoneInput value={editForm.gestor_whatsapp} onChange={v => setEditForm(p => ({ ...p, gestor_whatsapp: v }))} style={{ background: 'var(--avp-black)', borderRadius: 8 }} />
+                </div>
+              </div>
+              <div>
+                <label style={labelStyle}>Nova senha <span style={{ color: 'var(--avp-text-dim)', fontWeight: 400 }}>(deixe em branco para não alterar)</span></label>
+                <input type="password" style={inputStyle} value={editForm.nova_senha} onChange={e => setEditForm(p => ({ ...p, nova_senha: e.target.value }))} placeholder="Mínimo 6 caracteres" minLength={6} />
+              </div>
+              {msg && (
+                <div style={{ padding: '10px 14px', background: msg.tipo === 'ok' ? '#02A15320' : '#e6394620', border: `1px solid ${msg.tipo === 'ok' ? 'var(--avp-green)' : 'var(--avp-danger)'}`, borderRadius: 8, color: msg.tipo === 'ok' ? 'var(--avp-green)' : 'var(--avp-danger)', fontSize: 13 }}>
+                  {msg.texto}
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setEditando(null)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
+                <button type="submit" disabled={salvando} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, cursor: 'pointer', fontSize: 14, opacity: salvando ? 0.6 : 1 }}>
+                  {salvando ? 'Salvando...' : '✓ Salvar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {showCadastro && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={e => e.target === e.currentTarget && setShowCadastro(false)}>
@@ -214,6 +329,11 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
                   <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 14 }}>{c.whatsapp}</td>
                   <td style={{ padding: '14px 16px', fontSize: 14 }}>
                     <span style={{ color: 'var(--avp-text-dim)' }}>{c.email}</span>
+                    {!c.user_id && (
+                      <span style={{ display: 'inline-block', marginLeft: 6, background: '#f59e0b20', color: '#f59e0b', border: '1px solid #f59e0b40', borderRadius: 6, padding: '1px 6px', fontSize: 11, fontWeight: 700 }}>
+                        ⚠️ Sem acesso
+                      </span>
+                    )}
                     {c.gestor_nome && (
                       <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--avp-text-dim)' }}>
                         PRO: {c.gestor_nome} · {c.gestor_whatsapp}
@@ -230,7 +350,11 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
                     {new Date(c.created_at).toLocaleDateString('pt-BR')}
                   </td>
                   <td style={{ padding: '14px 16px' }}>
-                    <div style={{ display: 'flex', gap: 6 }}>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      <button onClick={() => abrirEdicao(c)}
+                        style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                        ✏️ Editar
+                      </button>
                       <a href={`/admin/artes/${c.whatsapp}`} target="_blank" rel="noreferrer"
                         style={{ background: '#a855f720', border: '1px solid #a855f740', color: '#a855f7', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
                         🎨 Arte
@@ -239,6 +363,12 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
                         style={{ background: '#fbbf2420', border: '1px solid #fbbf2440', color: '#fbbf24', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
                         🪪 Carteira
                       </a>
+                      {!c.user_id && (
+                        <button onClick={() => reenviarAcesso(c)}
+                          style={{ background: '#f59e0b20', border: '1px solid #f59e0b40', color: '#f59e0b', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                          📧 Reenviar
+                        </button>
+                      )}
                       <button onClick={() => excluirConsultor(c)}
                         style={{ background: 'var(--avp-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                         Excluir

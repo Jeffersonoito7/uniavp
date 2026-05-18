@@ -5,6 +5,9 @@ type Template = {
   id: string; tipo: string; titulo: string; arte_url: string;
   foto_x: number; foto_y: number; foto_largura: number; foto_altura: number;
   foto_redondo: boolean; ativo: boolean; formato: string;
+  texto_ativo?: boolean; texto_template?: string;
+  texto_fonte?: string; texto_x?: number; texto_y?: number; texto_tamanho?: number;
+  texto_cor?: string; texto_negrito?: boolean; texto_alinhamento?: string; texto_sombra?: boolean;
 }
 
 function supabase() { return null } // não usado diretamente
@@ -240,6 +243,81 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
                       style={{ width: 15, height: 15, accentColor: 'var(--avp-green)' }} />
                     <span style={{ fontSize: 13, color: 'var(--avp-text-dim)' }}>Foto em formato circular</span>
                   </label>
+
+                  {/* ── Configurações do texto sobreposto ── */}
+                  <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 12, marginTop: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase' as const, letterSpacing: 1, margin: 0 }}>Texto sobreposto na arte</p>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                        <input type="checkbox" checked={!!t.texto_ativo} onChange={e => atualizar(t.id, 'texto_ativo', e.target.checked)} style={{ width: 15, height: 15, accentColor: 'var(--avp-green)' }} />
+                        <span style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>Ativar texto</span>
+                      </label>
+                    </div>
+                    {t.texto_ativo && (<>
+                    <div style={{ marginBottom: 10 }}>
+                      <label style={labelStyle}>Texto <span style={{ color: 'var(--avp-text-dim)', fontWeight: 400 }}>— use <code style={{ background: 'var(--avp-black)', padding: '1px 5px', borderRadius: 4 }}>{'{nome}'}</code> para inserir o nome</span></label>
+                      <input style={inputStyle} value={t.texto_template ?? '{nome}'} onChange={e => atualizar(t.id, 'texto_template', e.target.value)} placeholder="Ex: Parabéns, {nome}! 🏆" />
+                      <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>
+                        Exemplos: <em>Parabéns, {'{nome}'}!</em> · <em>Seja bem-vindo, {'{nome}'}!</em> · <em>{'{nome}'} — Placa 40</em>
+                      </p>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                      <div>
+                        <label style={labelStyle}>Fonte</label>
+                        <select style={{ ...inputStyle, cursor: 'pointer' }} value={t.texto_fonte ?? 'Inter, Arial, sans-serif'}
+                          onChange={e => atualizar(t.id, 'texto_fonte', e.target.value)}>
+                          <option value="Inter, Arial, sans-serif">Inter / Arial (padrão)</option>
+                          <option value="Georgia, serif">Georgia (Serif)</option>
+                          <option value="'Times New Roman', serif">Times New Roman</option>
+                          <option value="'Palatino Linotype', serif">Palatino</option>
+                          <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                          <option value="Impact, sans-serif">Impact (forte)</option>
+                          <option value="'Courier New', monospace">Courier New (mono)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Cor do texto</label>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <input type="color" value={t.texto_cor ?? '#FFFFFF'} onChange={e => atualizar(t.id, 'texto_cor', e.target.value)}
+                            style={{ width: 40, height: 36, borderRadius: 6, border: '1px solid var(--avp-border)', background: 'none', cursor: 'pointer', padding: 2 }} />
+                          <input style={{ ...inputStyle, flex: 1 }} value={t.texto_cor ?? '#FFFFFF'} onChange={e => atualizar(t.id, 'texto_cor', e.target.value)} placeholder="#FFFFFF" />
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 10 }}>
+                      <div>
+                        <label style={labelStyle}>X (%)</label>
+                        <input type="number" min={0} max={100} style={inputStyle} value={t.texto_x ?? 50} onChange={e => atualizar(t.id, 'texto_x', Number(e.target.value))} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Y (%)</label>
+                        <input type="number" min={0} max={100} style={inputStyle} value={t.texto_y ?? 85} onChange={e => atualizar(t.id, 'texto_y', Number(e.target.value))} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Tamanho (%)</label>
+                        <input type="number" min={1} max={20} step={0.5} style={inputStyle} value={t.texto_tamanho ?? 5} onChange={e => atualizar(t.id, 'texto_tamanho', Number(e.target.value))} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Alinhamento</label>
+                        <select style={{ ...inputStyle, cursor: 'pointer' }} value={t.texto_alinhamento ?? 'center'} onChange={e => atualizar(t.id, 'texto_alinhamento', e.target.value)}>
+                          <option value="center">Centro</option>
+                          <option value="left">Esquerda</option>
+                          <option value="right">Direita</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 16 }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                        <input type="checkbox" checked={t.texto_negrito !== false} onChange={e => atualizar(t.id, 'texto_negrito', e.target.checked)} style={{ width: 15, height: 15, accentColor: 'var(--avp-green)' }} />
+                        <span style={{ fontSize: 13, color: 'var(--avp-text-dim)' }}>Negrito</span>
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                        <input type="checkbox" checked={t.texto_sombra !== false} onChange={e => atualizar(t.id, 'texto_sombra', e.target.checked)} style={{ width: 15, height: 15, accentColor: 'var(--avp-green)' }} />
+                        <span style={{ fontSize: 13, color: 'var(--avp-text-dim)' }}>Sombra no texto</span>
+                      </label>
+                    </div>
+                    </>)}
+                  </div>
                 </div>
 
                 {t.arte_url ? (

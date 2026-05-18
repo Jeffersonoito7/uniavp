@@ -134,7 +134,7 @@ export default function AssinarProPage() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 {[
-                  '📚 Aulas ilimitadas', '👥 Equipe ilimitada',
+                  '📚 Módulos ilimitados', '👥 Equipe ilimitada',
                   '🔗 Links de captação', '📊 Relatórios da equipe',
                   '💬 WhatsApp direto', '🎨 Templates de arte',
                   '🤝 Indicações ilimitadas', '🏆 Certificados',

@@ -11,6 +11,7 @@ type Props = {
   nomeY?: number
   nomeFontePct?: number
   nomeCor?: string
+  nomeEstilo?: string
   logoEsquerdaUrl?: string | null
   logoDireitaUrl?: string | null
   logoY?: number
@@ -19,8 +20,8 @@ type Props = {
   assinaturaNome?: string
   assinaturaCargo?: string
   assinaturaY?: number
-  chaveStorage?: string  // chave customizada (ex: por módulo)
-  semCarteira?: boolean  // oculta botão de carteira
+  chaveStorage?: string
+  semCarteira?: boolean
 }
 
 type Etapa = 'certificado' | 'carteira' | 'fechado'
@@ -33,7 +34,7 @@ function marcarVisto(chave: string) {
   try { localStorage.setItem(`cert_visto_${chave}`, '1') } catch { /* */ }
 }
 
-export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, numRegistro, nomeY, nomeFontePct, nomeCor, logoEsquerdaUrl, logoDireitaUrl, logoY, logoTamPct, assinaturaUrl, assinaturaNome, assinaturaCargo, assinaturaY, chaveStorage, semCarteira }: Props) {
+export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, numRegistro, nomeY, nomeFontePct, nomeCor, nomeEstilo, logoEsquerdaUrl, logoDireitaUrl, logoY, logoTamPct, assinaturaUrl, assinaturaNome, assinaturaCargo, assinaturaY, chaveStorage, semCarteira }: Props) {
   const chave = chaveStorage ?? whatsapp ?? 'aluno'
   // Começa sempre 'fechado' no servidor — ajusta no useEffect para evitar hydration mismatch
   const [etapa, setEtapa] = useState<Etapa>('fechado')
@@ -88,6 +89,7 @@ export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, n
         nomeY={nomeY}
         nomeFontePct={nomeFontePct}
         nomeCor={nomeCor}
+        nomeEstilo={nomeEstilo as any}
         logoEsquerdaUrl={logoEsquerdaUrl}
         logoDireitaUrl={logoDireitaUrl}
         logoY={logoY}

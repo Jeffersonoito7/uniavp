@@ -45,10 +45,10 @@ export async function GET(req: NextRequest) {
     // 1. Avisa o próprio consultor
     if (aluno.whatsapp) {
       const msgConsultor = dias === 3
-        ? `📚 Olá, *${aluno.nome}*! Sentimos sua falta na *${nomePlat}*.\n\nFaz ${dias} dias que você não avança nos estudos. Que tal retomar agora?\n\n👉 ${appUrl}/free/${aluno.whatsapp}`
+        ? `📚 Olá, *${aluno.nome}*! Sentimos sua falta na *${nomePlat}*.\n\nFaz ${dias} dias que você não avança nos estudos. Que tal retomar agora?\n\n👉 ${appUrl}/aluno/${aluno.whatsapp}`
         : dias === 7
-        ? `⏰ *${aluno.nome}*, já faz uma semana sem estudar!\n\nSeu progresso está esperando por você na *${nomePlat}*. Não perca o fio! 💪\n\n👉 ${appUrl}/free/${aluno.whatsapp}`
-        : `🚨 *${aluno.nome}*, ${dias} dias sem acessar a plataforma!\n\nNão deixe sua formação parar aqui. Volte agora e continue de onde parou.\n\n👉 ${appUrl}/free/${aluno.whatsapp}`
+        ? `⏰ *${aluno.nome}*, já faz uma semana sem estudar!\n\nSeu progresso está esperando por você na *${nomePlat}*. Não perca o fio! 💪\n\n👉 ${appUrl}/aluno/${aluno.whatsapp}`
+        : `🚨 *${aluno.nome}*, ${dias} dias sem acessar a plataforma!\n\nNão deixe sua formação parar aqui. Volte agora e continue de onde parou.\n\n👉 ${appUrl}/aluno/${aluno.whatsapp}`
       await enviarWhatsApp(aluno.whatsapp, msgConsultor)
       notificacoes++
     }

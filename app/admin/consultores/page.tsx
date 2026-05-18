@@ -12,7 +12,7 @@ export default async function ConsultoresPage() {
   if (!adminRecord) redirect('/login')
 
   const { data: consultores } = await (adminClient.from('alunos') as any)
-    .select('id, nome, whatsapp, email, status, created_at, indicador:indicadores(nome)')
+    .select('id, nome, whatsapp, email, status, created_at, user_id, indicador:indicadores(nome)')
     .order('created_at', { ascending: false })
 
   return (

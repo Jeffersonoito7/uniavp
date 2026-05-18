@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { registrarWebhook } from '@/lib/efi'
+import { getAppUrl } from '@/lib/get-app-url'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
   const adminClient = createServiceRoleClient()
   if (!await isSuperAdmin(user.id, adminClient)) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
-  const appUrl = 'https://universidade.oito7digital.com.br'
+  const appUrl = await getAppUrl()
   const webhookUrl = `${appUrl}/api/webhooks/pix`
 
   try {

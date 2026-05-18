@@ -70,7 +70,7 @@ export async function PUT(req: NextRequest, { params }: { params: { moduloId: st
   const camposPermitidos = ['titulo', 'descricao', 'capa_url', 'youtube_video_id', 'video_url', 'duracao_minutos', 'quiz_qtd_questoes',
     'quiz_aprovacao_minima', 'espera_horas', 'publicado', 'ao_vivo_link', 'ao_vivo_data',
     'ao_vivo_plataforma', 'validade_meses', 'ordem', 'liberacao_modo',
-    'quiz_tipo', 'bloquear_avancar', 'mostrar_link_externo', 'link_externo_titulo', 'mostrar_links_app',
+    'quiz_tipo', 'bloquear_avancar', 'mostrar_link_externo', 'link_externo_titulo', 'bloquear_link_externo', 'mostrar_links_app', 'bloquear_links_app',
     'quiz_sim_nao_pergunta', 'quiz_sim_nao_nao_mensagem', 'quiz_sim_nao_perguntas']
 
   const atualizacoes: Record<string, unknown> = {}

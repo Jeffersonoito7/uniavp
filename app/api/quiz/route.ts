@@ -91,9 +91,10 @@ export async function POST(req: NextRequest) {
     if (modo === 'manual_gestor' && alunoInfo?.gestor_whatsapp) {
       const { enviarWhatsApp, getInstanciaGestorPorNome } = await import('@/lib/whatsapp')
       const inst = await getInstanciaGestorPorNome(alunoInfo.gestor_nome, adminClient)
+      const appUrl = await getAppUrl()
       await enviarWhatsApp(
         alunoInfo.gestor_whatsapp,
-        `📋 *${alunoInfo.nome}* foi aprovado na aula *${aulaInfo?.titulo}* e está aguardando sua liberação para continuar.\n\nAcesse o painel: https://uniavp.autovaleprevencoes.org.br/pro`,
+        `📋 *${alunoInfo.nome}* foi aprovado na aula *${aulaInfo?.titulo}* e está aguardando sua liberação para continuar.\n\nAcesse o painel: ${appUrl}/pro`,
         inst
       )
     }
@@ -217,79 +218,72 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const { data: alunoComGestor } = await (adminClient.from('alunos') as any)
-      .select('nome, gestor_nome, gestor_whatsapp, status')
+    // Busca estado atualizado do aluno (após possível update de status acima)
+    const { data: alunoAtualizado } = await (adminClient.from('alunos') as any)
+      .select('status, gestor_nome, gestor_whatsapp, nome, whatsapp')
       .eq('id', aluno.id)
       .maybeSingle()
 
-    const { data: aulaAtual } = await (adminClient.from('aulas') as any)
-      .select('modulo_id, modulo:modulos(titulo, ordem)')
-      .eq('id', aula_id)
-      .maybeSingle()
+    const formacaoConcluida = alunoAtualizado?.status === 'concluido'
 
-    if (aulaAtual && alunoComGestor?.gestor_whatsapp) {
-      const { data: todasAulasModulo } = await (adminClient.from('aulas') as any)
-        .select('id')
-        .eq('modulo_id', aulaAtual.modulo_id)
-        .eq('publicado', true)
+    // Notificação de módulo concluído — só envia se a formação completa NÃO foi concluída agora
+    // (se foi, o bloco abaixo já envia uma mensagem mais completa)
+    if (!formacaoConcluida) {
+      const { data: aulaAtual } = await (adminClient.from('aulas') as any)
+        .select('modulo_id, modulo:modulos(titulo, ordem)')
+        .eq('id', aula_id)
+        .maybeSingle()
 
-      if (todasAulasModulo) {
-        const { data: progressoModulo } = await (adminClient.from('progresso') as any)
-          .select('aula_id')
-          .eq('aluno_id', aluno.id)
-          .eq('aprovado', true)
-          .in('aula_id', todasAulasModulo.map((a: any) => a.id))
+      if (aulaAtual && alunoAtualizado?.gestor_whatsapp) {
+        const { data: todasAulasModulo } = await (adminClient.from('aulas') as any)
+          .select('id')
+          .eq('modulo_id', aulaAtual.modulo_id)
+          .eq('publicado', true)
 
-        const idsConcluidosModulo = [...new Set((progressoModulo ?? []).map((p: any) => p.aula_id))]
-        const moduloConcluido = idsConcluidosModulo.length === todasAulasModulo.length
+        if (todasAulasModulo) {
+          const { data: progressoModulo } = await (adminClient.from('progresso') as any)
+            .select('aula_id')
+            .eq('aluno_id', aluno.id)
+            .eq('aprovado', true)
+            .in('aula_id', todasAulasModulo.map((a: any) => a.id))
 
-        if (moduloConcluido) {
-          // Notifica gestor usando instância dele
-          if (alunoComGestor?.gestor_whatsapp) {
-            const instanciaGestor = await getInstanciaGestorPorNome(alunoComGestor.gestor_nome, adminClient)
+          const idsConcluidosModulo = [...new Set((progressoModulo ?? []).map((p: any) => p.aula_id))]
+          const moduloConcluido = idsConcluidosModulo.length === todasAulasModulo.length
+
+          if (moduloConcluido) {
+            const instanciaGestor = await getInstanciaGestorPorNome(alunoAtualizado.gestor_nome, adminClient)
             await enviarWhatsApp(
-              alunoComGestor.gestor_whatsapp,
-              `📚 *${alunoComGestor.gestor_nome || 'UNIAVP PRO'}!* Seu membro FREE *${alunoComGestor.nome}* concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🎉`,
+              alunoAtualizado.gestor_whatsapp,
+              `📚 *${alunoAtualizado.gestor_nome || 'UNIAVP PRO'}!* Seu membro FREE *${alunoAtualizado.nome}* concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🎉`,
               instanciaGestor
             )
-          }
-          // Notifica o próprio consultor com link para gerar arte comemorativa
-          const { data: alunoInfo } = await (adminClient.from('alunos') as any)
-            .select('whatsapp, nome').eq('id', aluno.id).maybeSingle()
-          if (alunoInfo?.whatsapp) {
             const appUrl = await getAppUrl()
             await enviarWhatsApp(
-              alunoInfo.whatsapp,
-              `🎉 Parabéns, *${alunoInfo.nome}*!\n\nVocê concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🏆\n\nContinue acessando a plataforma:\n👉 ${appUrl}/free/${alunoInfo.whatsapp}`
+              alunoAtualizado.whatsapp,
+              `🎉 Parabéns, *${alunoAtualizado.nome}*!\n\nVocê concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🏆\n\nContinue acessando a plataforma:\n👉 ${appUrl}/aluno/${alunoAtualizado.whatsapp}`
             )
           }
         }
       }
     }
 
-    const { data: alunoAtualizado } = await (adminClient.from('alunos') as any)
-      .select('status, gestor_nome, gestor_whatsapp, nome, whatsapp')
-      .eq('id', aluno.id)
-      .maybeSingle()
-
-    if (alunoAtualizado?.status === 'concluido') {
+    // Notificação de formação 100% concluída
+    if (formacaoConcluida) {
       const appUrl = await getAppUrl()
-      const instanciaGestor = alunoAtualizado?.gestor_nome
+      const instanciaGestor = alunoAtualizado.gestor_nome
         ? await getInstanciaGestorPorNome(alunoAtualizado.gestor_nome, adminClient)
         : null
-      // Notifica gestor usando instância dele
-      if (alunoAtualizado?.gestor_whatsapp) {
+      if (alunoAtualizado.gestor_whatsapp) {
         await enviarWhatsApp(
           alunoAtualizado.gestor_whatsapp,
-          `🏆 *PARABÉNS, ${alunoAtualizado.gestor_nome || 'UNIAVP PRO'}!*\n\nSeu membro FREE *${alunoAtualizado.nome}* concluiu *100% da formação!* 🎓✨\n\nVer progresso: ${appUrl}/free/${alunoAtualizado.whatsapp}`,
+          `🏆 *PARABÉNS, ${alunoAtualizado.gestor_nome || 'UNIAVP PRO'}!*\n\nSeu membro FREE *${alunoAtualizado.nome}* concluiu *100% da formação!* 🎓✨\n\nVer progresso: ${appUrl}/aluno/${alunoAtualizado.whatsapp}`,
           instanciaGestor
         )
       }
-      // Notifica o próprio consultor — usa instância global (não a do gestor)
-      if (alunoAtualizado?.whatsapp) {
+      if (alunoAtualizado.whatsapp) {
         await enviarWhatsApp(
           alunoAtualizado.whatsapp,
-          `🎓 *PARABÉNS, ${alunoAtualizado.nome}!*\n\nVocê concluiu 100% da formação! 🏆✨\n\nCrie sua arte de formatura:\n👉 ${appUrl}/free/${alunoAtualizado.whatsapp}/artes`
+          `🎓 *PARABÉNS, ${alunoAtualizado.nome}!*\n\nVocê concluiu 100% da formação! 🏆✨\n\nCrie sua arte de formatura:\n👉 ${appUrl}/aluno/${alunoAtualizado.whatsapp}/artes`
         )
       }
     }

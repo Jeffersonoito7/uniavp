@@ -6,7 +6,7 @@ import AulasCliente from './AulasCliente'
 
 type Modulo = {
   id: string; titulo: string; descricao: string | null; capa_url: string | null; ordem: number; publicado: boolean
-  cert_ativo?: boolean; cert_template_url?: string | null; cert_nome_y?: number; cert_nome_tamanho?: number; cert_nome_cor?: string
+  cert_ativo?: boolean; cert_template_url?: string | null; cert_nome_y?: number; cert_nome_tamanho?: number; cert_nome_cor?: string; cert_nome_estilo?: string
   cert_logo_esq_url?: string | null; cert_logo_dir_url?: string | null; cert_logo_y?: number; cert_logo_tam?: number
   cert_assinatura_url?: string | null; cert_assinatura_nome?: string | null; cert_assinatura_cargo?: string | null; cert_assinatura_y?: number
 }
@@ -39,6 +39,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
   const [certNomeY, setCertNomeY] = useState(String(inicial.cert_nome_y ?? 52))
   const [certNomeTamanho, setCertNomeTamanho] = useState(String(inicial.cert_nome_tamanho ?? 8))
   const [certNomeCor, setCertNomeCor] = useState(inicial.cert_nome_cor ?? '#1a1a2e')
+  const [certNomeEstilo, setCertNomeEstilo] = useState(inicial.cert_nome_estilo ?? 'bold-georgia')
   const [certLogoEsqUrl, setCertLogoEsqUrl] = useState(inicial.cert_logo_esq_url ?? '')
   const [certLogoDirUrl, setCertLogoDirUrl] = useState(inicial.cert_logo_dir_url ?? '')
   const [certLogoY, setCertLogoY] = useState(String(inicial.cert_logo_y ?? 15))
@@ -103,6 +104,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
         cert_nome_y: parseInt(certNomeY) || 52,
         cert_nome_tamanho: parseInt(certNomeTamanho) || 8,
         cert_nome_cor: certNomeCor || '#1a1a2e',
+        cert_nome_estilo: certNomeEstilo || 'bold-georgia',
         cert_logo_esq_url: certLogoEsqUrl || null,
         cert_logo_dir_url: certLogoDirUrl || null,
         cert_logo_y: parseInt(certLogoY) || 15,
@@ -269,17 +271,33 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
               {certTemplateUrl ? (
                 <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', border: '2px solid var(--avp-green)', marginBottom: 20, containerType: 'inline-size' as any }}>
                   <img src={certTemplateUrl} alt="preview" style={{ width: '100%', display: 'block' }} />
-                  <div style={{
-                    position: 'absolute', left: '50%', transform: 'translateX(-50%)',
-                    top: `${certNomeY}%`, width: '80%', textAlign: 'center' as const,
-                    fontFamily: 'Georgia, serif', fontWeight: 700,
-                    fontSize: `${Math.min(Number(certNomeTamanho) || 4.5, 6)}cqw`,
-                    color: certNomeCor, textTransform: 'uppercase' as const,
-                    letterSpacing: 2, pointerEvents: 'none' as const, lineHeight: 1.2,
-                    textShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                  }}>
-                    NOME DO ALUNO
-                  </div>
+                  {(() => {
+                    const FONTES_MAP: Record<string, { family: string; weight: string; style: string }> = {
+                      'bold-georgia':   { family: 'Georgia, serif',         weight: '700', style: 'normal' },
+                      'normal-georgia': { family: 'Georgia, serif',         weight: '400', style: 'normal' },
+                      'italic-georgia': { family: 'Georgia, serif',         weight: '700', style: 'italic' },
+                      'bold-arial':     { family: 'Arial, sans-serif',      weight: '700', style: 'normal' },
+                      'normal-arial':   { family: 'Arial, sans-serif',      weight: '400', style: 'normal' },
+                      'bold-times':     { family: 'Times New Roman, serif', weight: '700', style: 'normal' },
+                    }
+                    const f = FONTES_MAP[certNomeEstilo] ?? FONTES_MAP['bold-georgia']
+                    return (
+                      <div style={{
+                        position: 'absolute', left: '50%', top: `${certNomeY}%`,
+                        transform: 'translate(-50%, -50%)',
+                        width: '82%', textAlign: 'center' as const,
+                        fontFamily: f.family, fontWeight: Number(f.weight), fontStyle: f.style as any,
+                        fontSize: `${Math.min(Number(certNomeTamanho) || 4.5, 5.5)}cqw`,
+                        color: certNomeCor, textTransform: 'uppercase' as const,
+                        letterSpacing: 2, pointerEvents: 'none' as const, lineHeight: 1.2,
+                        whiteSpace: 'nowrap' as const, overflow: 'hidden',
+                      }}>
+                        <span style={{ display: 'inline-block', transform: 'scaleX(1)', transformOrigin: 'center' }}>
+                          NOME DO ALUNO
+                        </span>
+                      </div>
+                    )
+                  })()}
                   {/* Assinatura no preview — só quando toggle ativo */}
                   {certAssinaturaAtiva && certAssinaturaUrl && (
                     <div style={{ position: 'absolute', left: '8%', top: `${certAssinaturaY}%`, transform: 'translateY(-100%)', pointerEvents: 'none' }}>
@@ -298,20 +316,33 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
 
               {/* Nome — controles abaixo do preview */}
               <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 16, marginTop: 4 }}>
-                <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}>Posição do nome do aluno</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}>Posição e estilo do nome</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
                   <div>
                     <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Posição vertical (%)</label>
                     <input type="number" min={0} max={100} style={inp} value={certNomeY} onChange={e => setCertNomeY(e.target.value)} />
-                    <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>0 = topo · 100 = base · padrão: 63</p>
+                    <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>0 = topo · 100 = base</p>
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Tamanho fonte (%)</label>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Tamanho (%)</label>
                     <div style={{ display: 'flex', gap: 6 }}>
                       <input type="number" min={1} max={8} step={0.1} style={{ ...inp, flex: 1 }} value={certNomeTamanho} onChange={e => setCertNomeTamanho(e.target.value)} />
-                      <button onClick={() => setCertNomeTamanho('4.5')} style={{ background: 'var(--avp-border)', border: 'none', borderRadius: 8, padding: '0 10px', color: 'var(--avp-text-dim)', fontSize: 11, cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' as const }}>Padrão</button>
+                      <button onClick={() => setCertNomeTamanho('4.5')} style={{ background: 'var(--avp-border)', border: 'none', borderRadius: 8, padding: '0 10px', color: 'var(--avp-text-dim)', fontSize: 11, cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' as const }}>⟳</button>
                     </div>
                     <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>% da largura · padrão: 4.5</p>
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Estilo da fonte</label>
+                    <select style={{ ...inp, cursor: 'pointer' }} value={certNomeEstilo} onChange={e => setCertNomeEstilo(e.target.value)}>
+                      <option value="bold-georgia">Georgia — Negrito</option>
+                      <option value="normal-georgia">Georgia — Normal</option>
+                      <option value="italic-georgia">Georgia — Negrito Itálico</option>
+                      <option value="bold-arial">Arial — Negrito</option>
+                      <option value="normal-arial">Arial — Normal</option>
+                      <option value="bold-times">Times New Roman — Negrito</option>
+                    </select>
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Cor do nome</label>

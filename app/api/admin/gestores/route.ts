@@ -64,7 +64,7 @@ export async function PUT(request: NextRequest) {
   if (!isAdmin) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
   const body = await request.json()
-  const { id, ativo, nome, email, whatsapp } = body
+  const { id, ativo, nome, email, whatsapp, nova_senha } = body
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
   const updates: Record<string, unknown> = {}
@@ -77,9 +77,13 @@ export async function PUT(request: NextRequest) {
     .update(updates).eq('id', id).select('*').single()
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  // Atualiza email no auth se mudou
-  if (email && gestor.user_id) {
-    await adminClient.auth.admin.updateUserById(gestor.user_id, { email }).catch(() => {})
+  if (gestor.user_id) {
+    const authUpdates: Record<string, unknown> = {}
+    if (email) authUpdates.email = email
+    if (nova_senha && nova_senha.length >= 6) authUpdates.password = nova_senha
+    if (Object.keys(authUpdates).length > 0) {
+      await adminClient.auth.admin.updateUserById(gestor.user_id, authUpdates).catch(() => {})
+    }
   }
 
   return NextResponse.json({ gestor })
