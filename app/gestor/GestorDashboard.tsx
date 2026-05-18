@@ -892,7 +892,7 @@ export default function GestorDashboard({
               </h1>
               <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: '3px 0 0' }}>
                 {moduloAberto
-                  ? `${moduloAberto.aulas.length} aula${moduloAberto.aulas.length !== 1 ? 's' : ''} — visão administrativa`
+                  ? `${moduloAberto.aulas.length} vídeo${moduloAberto.aulas.length !== 1 ? 's' : ''} neste módulo — visão administrativa`
                   : 'Visão geral do currículo · Os consultores seguem a ordem com quiz obrigatório'}
               </p>
             </div>
@@ -1124,7 +1124,7 @@ export default function GestorDashboard({
                     <div key={i} style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: 16 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                         <span style={{ fontWeight: 600, fontSize: 14 }}>{m.titulo}</span>
-                        <span style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>{m.aulas_concluidas}/{m.aulas_total} aulas</span>
+                        <span style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>{m.aulas_concluidas}/{m.aulas_total} aulas concluídas</span>
                       </div>
                       <div style={{ background: 'var(--avp-border)', borderRadius: 100, height: 6, overflow: 'hidden' }}>
                         <div style={{ width: `${m.percentual}%`, background: cor, height: '100%', borderRadius: 100 }} />
