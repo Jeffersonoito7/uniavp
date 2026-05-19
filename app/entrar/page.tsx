@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 
@@ -58,7 +58,7 @@ const TEMAS = {
   },
 }
 
-export default function EntrarPage() {
+function EntrarForm() {
   const searchParams = useSearchParams()
   const p = (searchParams.get('p') ?? 'default') as keyof typeof TEMAS
   const tema = TEMAS[p] ?? TEMAS.default
@@ -229,5 +229,17 @@ export default function EntrarPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function EntrarPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', background: '#020d1a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>⏳ Carregando...</div>
+      </div>
+    }>
+      <EntrarForm />
+    </Suspense>
   )
 }
