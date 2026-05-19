@@ -12,7 +12,7 @@ import ImageCropModal from '@/app/components/ImageCropModal'
 import GestorArtesTemplates from './artes/GestorArtesTemplates'
 
 // ── Componente de Perfil do Gestor ──────────────────────────────────────────
-function PerfilGestor({ gestor, onNomeAtualizado }: { gestor: Gestor; onNomeAtualizado: (n: string) => void }) {
+function PerfilGestor({ gestor, onNomeAtualizado, cncpvHabilitado }: { gestor: Gestor; onNomeAtualizado: (n: string) => void; cncpvHabilitado?: boolean }) {
   const [nome, setNome]         = useState(gestor.nome)
   const [linkExterno, setLinkExterno] = useState(gestor.link_externo ?? '')
   const [fotoUrl, setFotoUrl]   = useState<string | null>(gestor.foto_perfil ?? null)
@@ -155,19 +155,21 @@ function PerfilGestor({ gestor, onNomeAtualizado }: { gestor: Gestor; onNomeAtua
         </div>
 
         {/* CNCPV */}
-        <a href={`/cncpv?nome=${encodeURIComponent(gestor.nome)}&whatsapp=${gestor.whatsapp}&email=${encodeURIComponent(gestor.email ?? '')}`}
-          style={{ display: 'block', textDecoration: 'none', marginTop: 20 }}>
-          <div style={{ background: 'linear-gradient(135deg, rgba(2,161,83,0.12), rgba(1,122,62,0.06))', border: '1px solid rgba(2,161,83,0.35)', borderRadius: 16, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}>
-            <div style={{ fontSize: 40, flexShrink: 0 }}>🪪</div>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontWeight: 800, fontSize: 16, color: '#fff', margin: '0 0 2px' }}>Carteira Nacional do Consultor — CNCPV</p>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, margin: 0 }}>Assine o contrato de conduta e emita sua credencial profissional oficial</p>
+        {cncpvHabilitado !== false && (
+          <a href={`/cncpv?nome=${encodeURIComponent(gestor.nome)}&whatsapp=${gestor.whatsapp}&email=${encodeURIComponent(gestor.email ?? '')}`}
+            style={{ display: 'block', textDecoration: 'none', marginTop: 20 }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(2,161,83,0.12), rgba(1,122,62,0.06))', border: '1px solid rgba(2,161,83,0.35)', borderRadius: 16, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}>
+              <div style={{ fontSize: 40, flexShrink: 0 }}>🪪</div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontWeight: 800, fontSize: 16, color: '#fff', margin: '0 0 2px' }}>Carteira Nacional do Consultor — CNCPV</p>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, margin: 0 }}>Assine o contrato de conduta e emita sua credencial profissional oficial</p>
+              </div>
+              <div style={{ background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                Emitir →
+              </div>
             </div>
-            <div style={{ background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap', flexShrink: 0 }}>
-              Emitir →
-            </div>
-          </div>
-        </a>
+          </a>
+        )}
       </div>
     </>
   )
@@ -273,9 +275,9 @@ function CardProGratuito({ prosIndicados }: { prosIndicados: number }) {
 }
 
 export default function GestorDashboard({
-  gestor, consultores, progressoMap, indicacoesMap, artesTemplatesIniciais, baseUrl, capaDefault, prosIndicados,
+  gestor, consultores, progressoMap, indicacoesMap, artesTemplatesIniciais, baseUrl, capaDefault, prosIndicados, cncpvHabilitado,
 }: {
-  gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; indicacoesMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string; capaDefault?: string | null; prosIndicados?: number
+  gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; indicacoesMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string; capaDefault?: string | null; prosIndicados?: number; cncpvHabilitado?: boolean
 }) {
   const [aba, setAba] = useState('dashboard')
   const [listaConsultores, setListaConsultores] = useState(consultores)
@@ -1224,7 +1226,7 @@ export default function GestorDashboard({
 
       {/* ── PERFIL DO GESTOR ── */}
       {aba === 'perfil' && (
-        <PerfilGestor gestor={gestor} onNomeAtualizado={(_nome) => { /* update handled internally */ }} />
+        <PerfilGestor gestor={gestor} onNomeAtualizado={(_nome) => { /* update handled internally */ }} cncpvHabilitado={cncpvHabilitado} />
       )}
 
     </GestorLayout>

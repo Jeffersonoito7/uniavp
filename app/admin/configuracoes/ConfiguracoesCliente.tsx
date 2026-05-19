@@ -142,6 +142,8 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [certAssinaturaUrl, setCertAssinaturaUrl] = useState(get('cert_assinatura_url'))
   const [certAssinaturaNome, setCertAssinaturaNome] = useState(get('cert_assinatura_nome'))
   const [certAssinaturaCargo, setCertAssinaturaCargo] = useState(get('cert_assinatura_cargo'))
+  const [cncpvHabilitado, setCncpvHabilitado] = useState(get('cncpv_habilitado') !== 'false')
+  const [linkCopiadoCNCPV, setLinkCopiadoCNCPV] = useState(false)
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
   const [uploading, setUploading] = useState('')
@@ -317,6 +319,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         { chave: 'boleto_juros', valor: boletoJuros },
         ...(urlSafe(moduloCapaPadrao) ? [{ chave: 'modulo_capa_padrao', valor: moduloCapaPadrao }] : []),
         { chave: 'captacao_video_id', valor: captacaoVideoId },
+        { chave: 'cncpv_habilitado', valor: String(cncpvHabilitado) },
         { chave: 'free_quiz_obrigatorio', valor: String(freeQuizObrigatorio) },
         { chave: 'free_bloquear_video', valor: String(freeBloquearVideo) },
         { chave: 'pro_quiz_obrigatorio', valor: String(proQuizObrigatorio) },
@@ -948,6 +951,59 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
           </div>
         )}
       </div>}
+
+      {/* CNCPV */}
+      <div style={{ ...card, border: '2px solid rgba(200,165,53,0.25)', background: 'rgba(200,165,53,0.03)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+          <div>
+            <p style={{ fontWeight: 800, fontSize: 16 }}>🪪 CNCPV — Carteira Nacional do Consultor</p>
+            <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: 4 }}>
+              Contrato digital + carteira profissional com hash SHA-256 e comprovante via WhatsApp.
+            </p>
+          </div>
+          <a href="/admin/cncpv" style={{ background: 'rgba(200,165,53,0.12)', border: '1px solid rgba(200,165,53,0.3)', color: '#c8a535', borderRadius: 8, padding: '7px 16px', fontWeight: 700, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+            Ver assinaturas →
+          </a>
+        </div>
+
+        {/* Toggle habilitar/desabilitar */}
+        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div>
+              <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>Exibir botão CNCPV nos painéis FREE e PRO</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0', lineHeight: 1.5 }}>
+                Quando desativado, o botão da carteira some dos painéis dos consultores. A página <code style={{ background: 'var(--avp-card)', padding: '1px 5px', borderRadius: 4 }}>/cncpv</code> continua acessível pelo link direto.
+              </p>
+            </div>
+            <button onClick={() => setCncpvHabilitado(v => !v)}
+              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: cncpvHabilitado ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+              <span style={{ position: 'absolute', top: 3, left: cncpvHabilitado ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+            </button>
+          </div>
+        </div>
+
+        {/* Link direto */}
+        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+          <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 8px' }}>🔗 Link direto (página pública)</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 10px', lineHeight: 1.5 }}>
+            Qualquer pessoa pode acessar este link para assinar o contrato e emitir a carteira, mesmo sem login.
+          </p>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <code style={{ flex: 1, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: 'var(--avp-text)', wordBreak: 'break-all' }}>
+              {typeof window !== 'undefined' ? window.location.origin : ''}/cncpv
+            </code>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/cncpv`)
+                setLinkCopiadoCNCPV(true)
+                setTimeout(() => setLinkCopiadoCNCPV(false), 2000)
+              }}
+              style={{ background: linkCopiadoCNCPV ? 'var(--avp-green)' : 'var(--avp-border)', border: 'none', borderRadius: 8, padding: '9px 16px', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', transition: 'background 0.2s', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              {linkCopiadoCNCPV ? '✅ Copiado!' : '📋 Copiar'}
+            </button>
+          </div>
+        </div>
+      </div>
 
       {msg && (
         <div style={{ padding: '12px 16px', background: msg.includes('✅') ? '#02A15320' : '#e6394620', border: `1px solid ${msg.includes('✅') ? 'var(--avp-green)' : 'var(--avp-danger)'}`, borderRadius: 8, color: msg.includes('✅') ? 'var(--avp-green)' : 'var(--avp-danger)', fontSize: 14 }}>

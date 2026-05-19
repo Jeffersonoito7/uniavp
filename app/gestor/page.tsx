@@ -113,6 +113,7 @@ export default async function GestorPage() {
       baseUrl={baseUrl}
       capaDefault={capaDefault}
       prosIndicados={prosIndicados ?? 0}
+      cncpvHabilitado={siteConfig.cncpvHabilitado}
     />
   )
 }
