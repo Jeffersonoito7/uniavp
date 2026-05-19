@@ -14,7 +14,7 @@ const TERMOS = [
   'Não captarei associados de outras associações nem levarei minha base de clientes para concorrentes — multa de 40 salários mínimos.',
 ]
 
-type DadosContrato = {
+export type DadosContrato = {
   nome: string
   cpf: string | null
   whatsapp: string
@@ -25,6 +25,12 @@ type DadosContrato = {
   assinado_em: string
   appUrl: string
   siteNome: string
+  // Testemunha (configurada no admin)
+  testemunhaNome?: string
+  testemunhaCargo?: string
+  testemunhaEmpresa?: string
+  // Logo da empresa (URL pública)
+  logoUrl?: string
 }
 
 function wrapText(text: string, maxWidth: number, font: PDFFont, size: number): string[] {
@@ -57,259 +63,290 @@ function formatWpp(w: string): string {
   return w
 }
 
+function cabecalhoPagina(
+  page: PDFPage, bold: PDFFont, regular: PDFFont,
+  width: number, height: number,
+  verde: ReturnType<typeof rgb>, dourado: ReturnType<typeof rgb>, branco: ReturnType<typeof rgb>,
+  registro: string, siteNome: string, isPrimeira = false
+) {
+  const headerH = isPrimeira ? 72 : 48
+  page.drawRectangle({ x: 0, y: height - headerH, width, height: headerH, color: verde })
+  page.drawRectangle({ x: 0, y: height - headerH - 3, width, height: 3, color: dourado })
+
+  if (isPrimeira) {
+    page.drawText('CNCPV', { x: 48, y: height - 34, size: 26, font: bold, color: branco })
+    page.drawText('Carteira Nacional do Consultor de Proteção Veicular', { x: 48, y: height - 52, size: 10, font: regular, color: rgb(0.85, 1, 0.9) })
+    page.drawText(siteNome.toUpperCase(), { x: 48, y: height - 65, size: 8, font: regular, color: rgb(0.7, 0.95, 0.8) })
+  } else {
+    page.drawText('CNCPV', { x: 48, y: height - 22, size: 14, font: bold, color: branco })
+    page.drawText('Carteira Nacional do Consultor de Proteção Veicular', { x: 48, y: height - 36, size: 8, font: regular, color: rgb(0.85, 1, 0.9) })
+  }
+
+  const rW = bold.widthOfTextAtSize(registro, 11)
+  page.drawText(registro, { x: width - 48 - rW, y: height - (isPrimeira ? 30 : 22), size: 11, font: bold, color: branco })
+  const pageLabel = `cncpv.com.br/verificar/${registro}`
+  const pW = regular.widthOfTextAtSize(pageLabel, 7.5)
+  page.drawText(pageLabel, { x: width - 48 - pW, y: height - (isPrimeira ? 48 : 38), size: 7.5, font: regular, color: rgb(0.8, 0.95, 0.85) })
+}
+
+function rodape(
+  page: PDFPage, regular: PDFFont, bold: PDFFont,
+  width: number, verde: ReturnType<typeof rgb>, dourado: ReturnType<typeof rgb>,
+  registro: string, siteNome: string, assinado_em: string
+) {
+  page.drawRectangle({ x: 0, y: 0, width, height: 36, color: verde })
+  page.drawRectangle({ x: 0, y: 36, width, height: 2, color: dourado })
+  const linha1 = `${siteNome} · CNCPV ${registro} · Emitido em ${new Date(assinado_em).toLocaleDateString('pt-BR')}`
+  const l1W = regular.widthOfTextAtSize(linha1, 7)
+  page.drawText(linha1, { x: (width - l1W) / 2, y: 22, size: 7, font: regular, color: rgb(0.9, 1, 0.95) })
+  const linha2 = `Validade jurídica: MP 2.200-2/2001 · Art. 107 do Código Civil · Lei 14.063/2020`
+  const l2W = regular.widthOfTextAtSize(linha2, 6.5)
+  page.drawText(linha2, { x: (width - l2W) / 2, y: 10, size: 6.5, font: regular, color: rgb(0.75, 0.95, 0.82) })
+}
+
 export async function gerarPDFContratoCNCPV(dados: DadosContrato): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create()
-  const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica)
-  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
-  const fontOblique = await pdfDoc.embedFont(StandardFonts.HelveticaOblique)
+  const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+  const regular = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const oblique = await pdfDoc.embedFont(StandardFonts.HelveticaOblique)
 
-  // Cores
   const verde = rgb(0.008, 0.631, 0.325)
-  const verdeEscuro = rgb(0.004, 0.435, 0.22)
   const dourado = rgb(0.78, 0.647, 0.204)
   const preto = rgb(0.08, 0.08, 0.08)
-  const cinzaEscuro = rgb(0.3, 0.3, 0.3)
-  const cinzaClaro = rgb(0.92, 0.92, 0.92)
-  const cinzaMedio = rgb(0.75, 0.75, 0.75)
+  const cinzaE = rgb(0.35, 0.35, 0.35)
+  const cinzaL = rgb(0.93, 0.93, 0.93)
   const branco = rgb(1, 1, 1)
-  const vermelho = rgb(0.8, 0.15, 0.15)
+  const verdeEscuro = rgb(0.004, 0.435, 0.22)
 
-  const verUrl = `${dados.appUrl}/cncpv/verificar/${dados.numero_registro}`
+  const verUrl = `https://cncpv.com.br/verificar/${dados.numero_registro}`
+  const width = 595.28
+  const height = 841.89
+  const M = 48
 
-  // Gera QR code como PNG base64
+  // QR Code server-side (lib local, sem dependência externa)
   const qrDataUrl = await QRCode.toDataURL(verUrl, {
-    errorCorrectionLevel: 'H',
-    margin: 1,
-    width: 200,
+    errorCorrectionLevel: 'H', margin: 1, width: 220,
     color: { dark: '#141414', light: '#ffffff' },
   })
-  const qrBase64 = qrDataUrl.replace('data:image/png;base64,', '')
-  const qrImageBytes = Buffer.from(qrBase64, 'base64')
-  const qrImage = await pdfDoc.embedPng(qrImageBytes)
+  const qrBytes = Buffer.from(qrDataUrl.replace('data:image/png;base64,', ''), 'base64')
+  const qrImage = await pdfDoc.embedPng(qrBytes)
 
-  // ── PÁGINA 1: CAPA + DADOS DO CONSULTOR ────────────────────────────
-  let page = pdfDoc.addPage([595.28, 841.89]) // A4
-  const { width, height } = page.getSize()
-  const M = 48 // margem lateral
+  // Logo do cliente (se configurada)
+  let logoImage = null
+  if (dados.logoUrl) {
+    try {
+      const logoResp = await fetch(dados.logoUrl)
+      const logoBytes = await logoResp.arrayBuffer()
+      const ct = logoResp.headers.get('content-type') || ''
+      logoImage = ct.includes('png')
+        ? await pdfDoc.embedPng(new Uint8Array(logoBytes))
+        : await pdfDoc.embedJpg(new Uint8Array(logoBytes))
+    } catch { logoImage = null }
+  }
 
-  // Faixa verde no topo
-  page.drawRectangle({ x: 0, y: height - 80, width, height: 80, color: verde })
+  // ── PÁGINA 1: IDENTIFICAÇÃO + CLÁUSULAS ─────────────────────────────
+  let page = pdfDoc.addPage([width, height])
+  cabecalhoPagina(page, bold, regular, width, height, verde, dourado, branco, dados.numero_registro, dados.siteNome, true)
 
-  // Título no topo
-  page.drawText('CNCPV', { x: M, y: height - 34, size: 28, font: fontBold, color: branco })
-  page.drawText('Carteira Nacional do Consultor de Proteção Veicular', { x: M, y: height - 54, size: 10, font: fontRegular, color: rgb(0.85, 1, 0.9) })
+  // Logo do cliente no header
+  if (logoImage) {
+    const logoDims = logoImage.scaleToFit(90, 38)
+    page.drawImage(logoImage, { x: width - M - logoDims.width, y: height - 20 - logoDims.height, ...logoDims, opacity: 0.92 })
+  }
 
-  // Número de registro no topo direito
-  const regText = dados.numero_registro
-  const regW = fontBold.widthOfTextAtSize(regText, 20)
-  page.drawText(regText, { x: width - M - regW, y: height - 38, size: 20, font: fontBold, color: branco })
-  const subReg = 'Nº de Registro'
-  const subRegW = fontRegular.widthOfTextAtSize(subReg, 9)
-  page.drawText(subReg, { x: width - M - subRegW, y: height - 54, size: 9, font: fontRegular, color: rgb(0.8, 0.95, 0.85) })
-
-  // Linha dourada abaixo do header
-  page.drawRectangle({ x: 0, y: height - 84, width, height: 4, color: dourado })
-
-  let y = height - 110
+  let y = height - 90
 
   // Título do documento
   page.drawText('CONTRATO DE ADESÃO E CÓDIGO DE CONDUTA PROFISSIONAL', {
-    x: M, y, size: 13, font: fontBold, color: preto,
+    x: M, y, size: 12.5, font: bold, color: preto,
   })
-  y -= 18
-  page.drawText('Documento eletrônico com validade jurídica — MP 2.200-2/2001 e Art. 107 do Código Civil Brasileiro', {
-    x: M, y, size: 8.5, font: fontOblique, color: cinzaEscuro,
+  y -= 16
+  page.drawText('Documento assinado eletronicamente — autenticidade verificável em cncpv.com.br', {
+    x: M, y, size: 8.5, font: oblique, color: cinzaE,
   })
-  y -= 24
-
-  // Linha separadora
-  page.drawRectangle({ x: M, y, width: width - M * 2, height: 1, color: cinzaMedio })
+  y -= 22
+  page.drawRectangle({ x: M, y, width: width - M * 2, height: 1, color: dourado })
   y -= 20
 
-  // Box DADOS DO CONSULTOR
-  const boxH = 160
-  page.drawRectangle({ x: M, y: y - boxH, width: width - M * 2, height: boxH, color: rgb(0.97, 0.99, 0.98), borderColor: rgb(0.008, 0.631, 0.325), borderWidth: 1 })
-
-  // Título do box
+  // Box dados do consultor
+  const boxH = 148
+  page.drawRectangle({ x: M, y: y - boxH, width: width - M * 2, height: boxH, color: rgb(0.97, 0.99, 0.98), borderColor: verde, borderWidth: 1 })
   page.drawRectangle({ x: M, y: y - 28, width: width - M * 2, height: 28, color: verde })
-  page.drawText('IDENTIFICAÇÃO DO CONSULTOR', { x: M + 12, y: y - 18, size: 10, font: fontBold, color: branco })
-
+  page.drawText('PARTE CONTRATANTE — CONSULTOR(A)', { x: M + 12, y: y - 18, size: 9.5, font: bold, color: branco })
   y -= 42
+
   const col2 = M + (width - M * 2) / 2
-
-  // Campos
-  const campos = [
-    ['Nome Completo', dados.nome.toUpperCase()],
-    ['CPF', formatCPF(dados.cpf)],
+  const pares = [
+    [['Nome Completo', dados.nome.toUpperCase()], ['CPF', formatCPF(dados.cpf)]],
+    [['WhatsApp', formatWpp(dados.whatsapp)], ['E-mail', dados.email]],
   ]
-  const campos2 = [
-    ['WhatsApp', formatWpp(dados.whatsapp)],
-    ['E-mail', dados.email],
-  ]
-  for (let i = 0; i < campos.length; i++) {
-    page.drawText(campos[i][0], { x: M + 12, y, size: 8, font: fontBold, color: cinzaEscuro })
-    page.drawText(campos[i][1], { x: M + 12, y: y - 14, size: 11, font: fontBold, color: preto })
-    page.drawText(campos2[i][0], { x: col2 + 12, y, size: 8, font: fontBold, color: cinzaEscuro })
-    page.drawText(campos2[i][1], { x: col2 + 12, y: y - 14, size: 11, font: fontBold, color: preto })
-    y -= 36
+  for (const par of pares) {
+    for (let c = 0; c < 2; c++) {
+      const cx = c === 0 ? M + 12 : col2 + 12
+      page.drawText(par[c][0], { x: cx, y, size: 8, font: bold, color: cinzaE })
+      const val = par[c][1].length > 38 ? par[c][1].slice(0, 38) + '…' : par[c][1]
+      page.drawText(val, { x: cx, y: y - 14, size: 10.5, font: bold, color: preto })
+    }
+    y -= 34
   }
+  y -= 12
 
-  y -= 8
+  page.drawRectangle({ x: M, y, width: width - M * 2, height: 1, color: cinzaL })
+  y -= 18
 
-  // Linha separadora
-  page.drawRectangle({ x: M, y, width: width - M * 2, height: 1, color: cinzaMedio })
-  y -= 20
-
-  // Texto introdutório
-  const intro = `Eu, ${dados.nome}, identificado(a) acima, declaro ter lido, compreendido e aceito integralmente os termos e condições estabelecidos neste Contrato de Adesão e Código de Conduta Profissional, comprometendo-me a cumprir todas as obrigações nele descritas como condição para exercer a função de Consultor(a) de Proteção Veicular credenciado(a).`
-  const introLines = wrapText(intro, width - M * 2, fontRegular, 10)
-  for (const line of introLines) {
-    page.drawText(line, { x: M, y, size: 10, font: fontRegular, color: preto })
-    y -= 14
+  // Introdução
+  const intro = `Eu, ${dados.nome}, qualificado(a) acima, declaro ter lido, compreendido e aceito integralmente os termos deste Contrato de Adesão e Código de Conduta Profissional, comprometendo-me a cumprir todas as obrigações nele descritas como condição para exercer a atividade de Consultor(a) de Proteção Veicular.`
+  for (const line of wrapText(intro, width - M * 2, regular, 9.5)) {
+    page.drawText(line, { x: M, y, size: 9.5, font: regular, color: preto })
+    y -= 13
   }
-  y -= 10
+  y -= 12
 
-  // Linha separadora
-  page.drawRectangle({ x: M, y, width: width - M * 2, height: 1, color: cinzaMedio })
+  page.drawRectangle({ x: M, y, width: width - M * 2, height: 1, color: cinzaL })
   y -= 20
 
-  // Título dos termos
-  page.drawText('CLÁUSULAS E CONDIÇÕES', { x: M, y, size: 12, font: fontBold, color: verde })
-  y -= 20
+  page.drawText('CLÁUSULAS E CONDIÇÕES', { x: M, y, size: 11.5, font: bold, color: verde })
+  y -= 18
 
-  // Termos
+  // Cláusulas
   for (let i = 0; i < TERMOS.length; i++) {
-    if (y < 100) {
-      // Nova página
-      page = pdfDoc.addPage([595.28, 841.89])
-      adicionarCabecalhoSecundario(page, fontBold, fontRegular, width, height, verde, dourado, branco, dados.numero_registro)
-      y = height - 100
+    if (y < 90) {
+      rodape(page, regular, bold, width, verde, dourado, dados.numero_registro, dados.siteNome, dados.assinado_em)
+      page = pdfDoc.addPage([width, height])
+      cabecalhoPagina(page, bold, regular, width, height, verde, dourado, branco, dados.numero_registro, dados.siteNome)
+      y = height - 72
     }
 
-    // Número da cláusula
     page.drawRectangle({ x: M, y: y - 2, width: 22, height: 22, color: verde })
-    page.drawText(`${i + 1}`, { x: M + (i < 9 ? 8 : 4), y: y + 2, size: 11, font: fontBold, color: branco })
+    page.drawText(`${i + 1}`, { x: M + (i < 9 ? 8 : 4), y: y + 2, size: 11, font: bold, color: branco })
 
-    // Texto da cláusula
-    const clausulaLines = wrapText(`Cláusula ${i + 1}ª — ${TERMOS[i]}`, width - M * 2 - 32, fontRegular, 9.5)
-    const clausulaH = clausulaLines.length * 13 + 12
-    page.drawRectangle({ x: M + 28, y: y - clausulaH + 18, width: width - M * 2 - 28, height: clausulaH, color: i % 2 === 0 ? rgb(0.97, 0.99, 0.98) : branco, borderColor: cinzaClaro, borderWidth: 0.5 })
+    const lines = wrapText(`Cláusula ${i + 1}ª — ${TERMOS[i]}`, width - M * 2 - 32, regular, 9.5)
+    const bH = lines.length * 13 + 14
+    page.drawRectangle({ x: M + 28, y: y - bH + 20, width: width - M * 2 - 28, height: bH, color: i % 2 === 0 ? rgb(0.97, 0.99, 0.98) : branco, borderColor: cinzaL, borderWidth: 0.5 })
 
     let cy = y + 4
-    page.drawText(`Cláusula ${i + 1}ª`, { x: M + 36, y: cy, size: 8, font: fontBold, color: verde })
+    page.drawText(`Cláusula ${i + 1}ª`, { x: M + 36, y: cy, size: 8, font: bold, color: verde })
     cy -= 13
-    for (const line of clausulaLines.slice(1)) {
-      page.drawText(line, { x: M + 36, y: cy, size: 9.5, font: fontRegular, color: preto })
+    for (const l of wrapText(TERMOS[i], width - M * 2 - 44, regular, 9.5)) {
+      page.drawText(l, { x: M + 36, y: cy, size: 9.5, font: regular, color: preto })
       cy -= 13
     }
-    y -= (clausulaH + 8)
+    y -= bH + 6
   }
 
-  // ── PÁGINA FINAL: ASSINATURA E AUTENTICAÇÃO ─────────────────────────
-  page = pdfDoc.addPage([595.28, 841.89])
-  adicionarCabecalhoSecundario(page, fontBold, fontRegular, width, height, verde, dourado, branco, dados.numero_registro)
-  y = height - 110
+  rodape(page, regular, bold, width, verde, dourado, dados.numero_registro, dados.siteNome, dados.assinado_em)
 
-  // Título
-  page.drawText('ASSINATURA ELETRÔNICA E AUTENTICAÇÃO', { x: M, y, size: 13, font: fontBold, color: preto })
+  // ── PÁGINA FINAL: ASSINATURA ─────────────────────────────────────────
+  page = pdfDoc.addPage([width, height])
+  cabecalhoPagina(page, bold, regular, width, height, verde, dourado, branco, dados.numero_registro, dados.siteNome)
+  y = height - 82
+
+  page.drawText('REGISTRO DE ASSINATURA ELETRÔNICA', { x: M, y, size: 13, font: bold, color: preto })
   y -= 8
-  page.drawRectangle({ x: M, y, width: width - M * 2, height: 2, color: dourado })
-  y -= 24
+  page.drawRectangle({ x: M, y, width: width - M * 2, height: 3, color: dourado })
+  y -= 20
+  page.drawText('Este documento foi assinado eletronicamente e seu conteúdo está protegido por hash criptográfico SHA-256.', { x: M, y, size: 8.5, font: oblique, color: cinzaE })
+  page.drawText('Qualquer alteração invalida automaticamente a assinatura.', { x: M, y: y - 12, size: 8.5, font: oblique, color: cinzaE })
+  y -= 32
 
-  // Box de dados de assinatura
-  const assinH = 180
-  page.drawRectangle({ x: M, y: y - assinH, width: width - M * 2, height: assinH, color: rgb(0.96, 0.98, 0.97), borderColor: verde, borderWidth: 1.5 })
-  page.drawRectangle({ x: M, y: y - 30, width: width - M * 2, height: 30, color: verdeEscuro })
-  page.drawText('✔  DOCUMENTO ASSINADO ELETRONICAMENTE', { x: M + 12, y: y - 20, size: 11, font: fontBold, color: branco })
+  // Bloco signatário
+  const bSigH = 130
+  page.drawRectangle({ x: M, y: y - bSigH, width: (width - M * 2) / 2 - 8, height: bSigH, color: rgb(0.97, 0.99, 0.98), borderColor: verde, borderWidth: 1 })
+  page.drawRectangle({ x: M, y: y - 28, width: (width - M * 2) / 2 - 8, height: 28, color: verdeEscuro })
+  page.drawText('SIGNATÁRIO', { x: M + 12, y: y - 18, size: 9.5, font: bold, color: branco })
 
-  y -= 44
-  const dadosAssinatura = [
-    ['Signatário', dados.nome.toUpperCase()],
+  let sy = y - 44
+  for (const [lbl, val] of [
+    ['Nome', dados.nome.toUpperCase()],
     ['CPF', formatCPF(dados.cpf)],
     ['WhatsApp', formatWpp(dados.whatsapp)],
-    ['E-mail', dados.email],
-    ['Data e hora da assinatura', new Date(dados.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' (horário de Brasília)'],
-    ['Endereço IP', dados.ip],
+    ['Assinou em', new Date(dados.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })],
+  ]) {
+    page.drawText(lbl, { x: M + 12, y: sy, size: 7.5, font: bold, color: cinzaE })
+    page.drawText(val.length > 32 ? val.slice(0, 32) + '…' : val, { x: M + 12, y: sy - 12, size: 9.5, font: bold, color: preto })
+    sy -= 26
+  }
+
+  // Bloco testemunha
+  const txOff = (width - M * 2) / 2 + M + 8
+  const tesNome = dados.testemunhaNome || 'Testemunha Eletrônica'
+  const tesCargo = dados.testemunhaCargo || 'Diretor(a)'
+  const tesEmpresa = dados.testemunhaEmpresa || dados.siteNome
+
+  page.drawRectangle({ x: txOff, y: y - bSigH, width: (width - M * 2) / 2 - 8, height: bSigH, color: rgb(0.97, 0.98, 1), borderColor: rgb(0.3, 0.3, 0.8), borderWidth: 1 })
+  page.drawRectangle({ x: txOff, y: y - 28, width: (width - M * 2) / 2 - 8, height: 28, color: rgb(0.2, 0.2, 0.6) })
+  page.drawText('TESTEMUNHA ELETRÔNICA', { x: txOff + 12, y: y - 18, size: 9.5, font: bold, color: branco })
+
+  let ty = y - 44
+  for (const [lbl, val] of [
+    ['Nome', tesNome.toUpperCase()],
+    ['Cargo', tesCargo.toUpperCase()],
+    ['Empresa', tesEmpresa.toUpperCase()],
+    ['Registrado em', new Date(dados.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })],
+  ]) {
+    page.drawText(lbl, { x: txOff + 12, y: ty, size: 7.5, font: bold, color: cinzaE })
+    page.drawText(val.length > 28 ? val.slice(0, 28) + '…' : val, { x: txOff + 12, y: ty - 12, size: 9.5, font: bold, color: preto })
+    ty -= 26
+  }
+
+  y -= bSigH + 24
+
+  // Metadados técnicos
+  page.drawRectangle({ x: M, y: y - 68, width: width - M * 2, height: 68, color: rgb(0.97, 0.97, 0.97), borderColor: cinzaL, borderWidth: 0.5 })
+  page.drawText('DADOS TÉCNICOS DA ASSINATURA', { x: M + 12, y: y - 14, size: 8.5, font: bold, color: preto })
+
+  const metaDados = [
     ['Nº de Registro', dados.numero_registro],
+    ['Endereço IP', dados.ip],
+    ['Data/Hora (UTC)', dados.assinado_em],
   ]
-  for (const [label, valor] of dadosAssinatura) {
-    page.drawText(label + ':', { x: M + 16, y, size: 8.5, font: fontBold, color: cinzaEscuro })
-    page.drawText(valor, { x: M + 16, y: y - 13, size: 10, font: fontBold, color: preto })
-    y -= 24
+  let mx = M + 12; let mxStep = (width - M * 2 - 24) / 3
+  for (const [l, v] of metaDados) {
+    page.drawText(l + ':', { x: mx, y: y - 30, size: 7.5, font: bold, color: cinzaE })
+    page.drawText(v.length > 28 ? v.slice(0, 28) : v, { x: mx, y: y - 43, size: 9, font: bold, color: preto })
+    mx += mxStep
   }
+  y -= 84
 
-  y -= 16
+  // Hash SHA-256
+  page.drawRectangle({ x: M, y: y - 52, width: width - M * 2, height: 52, color: rgb(0.05, 0.06, 0.09), borderColor: dourado, borderWidth: 1 })
+  page.drawText('HASH SHA-256 — IMPRESSÃO DIGITAL DO CONTRATO', { x: M + 12, y: y - 14, size: 8, font: bold, color: dourado })
+  page.drawText(dados.hash_contrato.slice(0, 45), { x: M + 12, y: y - 28, size: 8.5, font: bold, color: rgb(0.8, 0.82, 0.85) })
+  page.drawText(dados.hash_contrato.slice(45), { x: M + 12, y: y - 42, size: 8.5, font: bold, color: rgb(0.8, 0.82, 0.85) })
+  y -= 68
 
-  // Box hash SHA-256
-  page.drawRectangle({ x: M, y: y - 58, width: width - M * 2, height: 58, color: rgb(0.05, 0.05, 0.08), borderColor: dourado, borderWidth: 1 })
-  page.drawText('🔐  CÓDIGO DE AUTENTICIDADE — SHA-256', { x: M + 12, y: y - 16, size: 9, font: fontBold, color: dourado })
-  page.drawText(dados.hash_contrato.slice(0, 44), { x: M + 12, y: y - 30, size: 8, font: fontBold, color: rgb(0.85, 0.85, 0.85) })
-  page.drawText(dados.hash_contrato.slice(44), { x: M + 12, y: y - 43, size: 8, font: fontBold, color: rgb(0.85, 0.85, 0.85) })
-  y -= 74
-
-  // QR Code + dados
-  const qrSize = 110
+  // QR + verificação
+  const qrSize = 112
+  page.drawRectangle({ x: M - 4, y: y - qrSize - 6, width: qrSize + 8, height: qrSize + 8, color: branco, borderColor: dourado, borderWidth: 1.5 })
   page.drawImage(qrImage, { x: M, y: y - qrSize, width: qrSize, height: qrSize })
-  page.drawText('Escaneie para verificar', { x: M + 2, y: y - qrSize - 14, size: 8, font: fontBold, color: cinzaEscuro })
-  page.drawText('a autenticidade deste documento', { x: M + 2, y: y - qrSize - 25, size: 7.5, font: fontRegular, color: cinzaEscuro })
+  page.drawText('ESCANEAR PARA VERIFICAR', { x: M, y: y - qrSize - 18, size: 7, font: bold, color: cinzaE })
 
-  const qrTextX = M + qrSize + 16
-  page.drawText('URL DE VERIFICAÇÃO:', { x: qrTextX, y: y - 14, size: 8, font: fontBold, color: cinzaEscuro })
-  const urlLines = wrapText(verUrl, width - M - qrTextX, fontRegular, 9)
-  let uy = y - 28
-  for (const line of urlLines) {
-    page.drawText(line, { x: qrTextX, y: uy, size: 9, font: fontBold, color: verde })
-    uy -= 13
-  }
-  page.drawText('Este documento pode ser verificado por qualquer pessoa,', { x: qrTextX, y: uy - 10, size: 8, font: fontRegular, color: cinzaEscuro })
-  page.drawText('em qualquer momento, pelo QR code ou pela URL acima.', { x: qrTextX, y: uy - 21, size: 8, font: fontRegular, color: cinzaEscuro })
+  const qrRX = M + qrSize + 20
+  page.drawText('URL DE VERIFICAÇÃO OFICIAL:', { x: qrRX, y: y - 12, size: 8, font: bold, color: cinzaE })
+  page.drawText(verUrl, { x: qrRX, y: y - 26, size: 10, font: bold, color: verde })
+  page.drawText('Este QR code e esta URL permitem a qualquer pessoa verificar', { x: qrRX, y: y - 44, size: 8, font: regular, color: cinzaE })
+  page.drawText('a autenticidade deste documento em tempo real.', { x: qrRX, y: y - 55, size: 8, font: regular, color: cinzaE })
+  page.drawText('O hash acima é a impressão digital criptográfica do contrato.', { x: qrRX, y: y - 66, size: 8, font: regular, color: cinzaE })
+  page.drawText('Qualquer alteração no conteúdo invalida a assinatura.', { x: qrRX, y: y - 77, size: 8, font: regular, color: cinzaE })
 
-  y -= qrSize + 40
+  // Validade jurídica
+  y -= qrSize + 28
+  page.drawRectangle({ x: M, y: y - 42, width: width - M * 2, height: 42, color: rgb(0.97, 0.98, 1), borderColor: rgb(0.7, 0.7, 0.9), borderWidth: 0.5 })
+  page.drawText('VALIDADE JURÍDICA', { x: M + 12, y: y - 12, size: 8.5, font: bold, color: preto })
+  page.drawText('Assinado eletronicamente conforme a Medida Provisória 2.200-2/2001, o Art. 107 do Código Civil Brasileiro', { x: M + 12, y: y - 25, size: 7.5, font: regular, color: cinzaE })
+  page.drawText('e a Lei 14.063/2020. Este documento possui presunção de autoria e integridade nos termos da legislação vigente.', { x: M + 12, y: y - 36, size: 7.5, font: regular, color: cinzaE })
 
-  // Linha de validade jurídica
-  page.drawRectangle({ x: M, y: y - 36, width: width - M * 2, height: 36, color: rgb(0.97, 0.97, 0.97), borderColor: cinzaMedio, borderWidth: 0.5 })
-  page.drawText('VALIDADE JURÍDICA', { x: M + 10, y: y - 12, size: 8, font: fontBold, color: preto })
-  page.drawText('Este documento eletrônico tem plena validade jurídica nos termos da Medida Provisória 2.200-2/2001,', { x: M + 10, y: y - 24, size: 7.5, font: fontRegular, color: cinzaEscuro })
-  page.drawText('do Art. 107 do Código Civil Brasileiro e da Lei 14.063/2020, que regulam as assinaturas eletrônicas no Brasil.', { x: M + 10, y: y - 34, size: 7.5, font: fontRegular, color: cinzaEscuro })
-  y -= 52
-
-  // Rodapé
-  adicionarRodape(page, fontRegular, fontBold, width, verde, dourado, dados, dados.siteNome)
+  rodape(page, regular, bold, width, verde, dourado, dados.numero_registro, dados.siteNome, dados.assinado_em)
 
   // Metadados do PDF
-  pdfDoc.setTitle(`Contrato CNCPV — ${dados.nome} — ${dados.numero_registro}`)
+  pdfDoc.setTitle(`Contrato CNCPV — ${dados.numero_registro} — ${dados.nome}`)
   pdfDoc.setAuthor(dados.siteNome)
   pdfDoc.setSubject('Carteira Nacional do Consultor de Proteção Veicular')
-  pdfDoc.setKeywords(['CNCPV', 'contrato', 'proteção veicular', dados.numero_registro])
+  pdfDoc.setKeywords(['CNCPV', 'contrato', 'proteção veicular', dados.numero_registro, 'assinatura eletrônica'])
   pdfDoc.setCreationDate(new Date(dados.assinado_em))
   pdfDoc.setModificationDate(new Date(dados.assinado_em))
+  pdfDoc.setCreator('cncpv.com.br')
+  pdfDoc.setProducer('CNCPV Digital — cncpv.com.br')
 
   return pdfDoc.save()
-}
-
-function adicionarCabecalhoSecundario(
-  page: PDFPage, fontBold: PDFFont, fontRegular: PDFFont,
-  width: number, height: number,
-  verde: ReturnType<typeof rgb>, dourado: ReturnType<typeof rgb>, branco: ReturnType<typeof rgb>,
-  registro: string
-) {
-  page.drawRectangle({ x: 0, y: height - 44, width, height: 44, color: verde })
-  page.drawText('CNCPV', { x: 48, y: height - 28, size: 14, font: fontBold, color: branco })
-  page.drawText('Carteira Nacional do Consultor de Proteção Veicular', { x: 48, y: height - 40, size: 8, font: fontRegular, color: rgb(0.85, 1, 0.9) })
-  const rW = fontBold.widthOfTextAtSize(registro, 10)
-  page.drawText(registro, { x: width - 48 - rW, y: height - 24, size: 10, font: fontBold, color: branco })
-  page.drawRectangle({ x: 0, y: height - 48, width, height: 4, color: dourado })
-}
-
-function adicionarRodape(
-  page: PDFPage, fontRegular: PDFFont, fontBold: PDFFont,
-  width: number,
-  verde: ReturnType<typeof rgb>, dourado: ReturnType<typeof rgb>,
-  dados: DadosContrato, siteNome: string
-) {
-  page.drawRectangle({ x: 0, y: 0, width, height: 40, color: verde })
-  page.drawRectangle({ x: 0, y: 40, width, height: 2, color: dourado })
-  const rodapeTexto = `${siteNome} · ${dados.numero_registro} · Emitido em ${new Date(dados.assinado_em).toLocaleDateString('pt-BR')} · ${dados.appUrl}/cncpv/verificar/${dados.numero_registro}`
-  const rW = fontRegular.widthOfTextAtSize(rodapeTexto, 7)
-  page.drawText(rodapeTexto, { x: (width - rW) / 2, y: 15, size: 7, font: fontRegular, color: rgb(0.9, 1, 0.95) })
 }

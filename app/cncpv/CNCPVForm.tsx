@@ -171,7 +171,7 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
     ctx.font = 'bold 11px Arial, sans-serif'
     ctx.textAlign = 'left'
     ctx.letterSpacing = '2px'
-    ctx.fillText('REPÚBLICA FEDERATIVA DO BRASIL', 22, 20)
+    ctx.fillText(siteNome ? siteNome.toUpperCase() : 'PROTEÇÃO VEICULAR', 22, 20)
     ctx.font = 'bold 13px Arial, sans-serif'
     ctx.fillText('CARTEIRA NACIONAL DO CONSULTOR DE PROTEÇÃO VEICULAR', 22, 38)
 
@@ -348,7 +348,7 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
 
     ctx.fillStyle = 'rgba(255,255,255,0.4)'
     ctx.font = '10px Arial, sans-serif'
-    ctx.fillText(`Verificar autenticidade: cncpv.com.br/${registro}  |  Emitido em ${new Date().toLocaleDateString('pt-BR')}`, W / 2, H - 20)
+    ctx.fillText(`Verificar: cncpv.com.br/verificar/${registro}  |  Emitido em ${new Date().toLocaleDateString('pt-BR')}`, W / 2, H - 20)
 
     // Hash SHA-256 (prova de integridade)
     if (hashContrato) {

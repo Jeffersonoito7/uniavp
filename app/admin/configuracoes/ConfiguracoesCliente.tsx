@@ -143,6 +143,10 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [certAssinaturaNome, setCertAssinaturaNome] = useState(get('cert_assinatura_nome'))
   const [certAssinaturaCargo, setCertAssinaturaCargo] = useState(get('cert_assinatura_cargo'))
   const [cncpvHabilitado, setCncpvHabilitado] = useState(get('cncpv_habilitado') !== 'false')
+  const [cncpvTestemunhaNome, setCncpvTestemunhaNome] = useState(get('cncpv_testemunha_nome'))
+  const [cncpvTestemunhaCargo, setCncpvTestemunhaCargo] = useState(get('cncpv_testemunha_cargo'))
+  const [cncpvTestemunhaEmpresa, setCncpvTestemunhaEmpresa] = useState(get('cncpv_testemunha_empresa'))
+  const [cncpvLogoPdfUrl, setCncpvLogoPdfUrl] = useState(get('cncpv_logo_pdf_url'))
   const [linkCopiadoCNCPV, setLinkCopiadoCNCPV] = useState(false)
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
@@ -320,6 +324,10 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         ...(urlSafe(moduloCapaPadrao) ? [{ chave: 'modulo_capa_padrao', valor: moduloCapaPadrao }] : []),
         { chave: 'captacao_video_id', valor: captacaoVideoId },
         { chave: 'cncpv_habilitado', valor: String(cncpvHabilitado) },
+        { chave: 'cncpv_testemunha_nome', valor: cncpvTestemunhaNome },
+        { chave: 'cncpv_testemunha_cargo', valor: cncpvTestemunhaCargo },
+        { chave: 'cncpv_testemunha_empresa', valor: cncpvTestemunhaEmpresa },
+        ...(urlSafe(cncpvLogoPdfUrl) ? [{ chave: 'cncpv_logo_pdf_url', valor: cncpvLogoPdfUrl }] : []),
         { chave: 'free_quiz_obrigatorio', valor: String(freeQuizObrigatorio) },
         { chave: 'free_bloquear_video', valor: String(freeBloquearVideo) },
         { chave: 'pro_quiz_obrigatorio', valor: String(proQuizObrigatorio) },
@@ -979,6 +987,42 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
               style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: cncpvHabilitado ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
               <span style={{ position: 'absolute', top: 3, left: cncpvHabilitado ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
             </button>
+          </div>
+        </div>
+
+        {/* Testemunha eletrônica */}
+        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+          <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>✍️ Testemunha Eletrônica</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.5 }}>
+            Esta pessoa aparece como segunda parte no contrato PDF. Pode ser o diretor ou representante da associação.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={lbl}>Nome completo</label>
+              <input style={inp} value={cncpvTestemunhaNome} onChange={e => setCncpvTestemunhaNome(e.target.value)} placeholder="Ex: João da Silva" />
+            </div>
+            <div>
+              <label style={lbl}>Cargo</label>
+              <input style={inp} value={cncpvTestemunhaCargo} onChange={e => setCncpvTestemunhaCargo(e.target.value)} placeholder="Ex: Diretor Geral" />
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={lbl}>Nome da empresa</label>
+              <input style={inp} value={cncpvTestemunhaEmpresa} onChange={e => setCncpvTestemunhaEmpresa(e.target.value)} placeholder="Ex: AUTO VALE PREVENÇÕES LTDA" />
+            </div>
+          </div>
+        </div>
+
+        {/* Logo no PDF */}
+        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+          <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>🖼️ Logo no cabeçalho do PDF</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.5 }}>
+            Aparece no canto superior direito do contrato PDF. Se não configurada, usa o logo principal do site.
+          </p>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <input style={{ ...inp, flex: 1 }} value={cncpvLogoPdfUrl} onChange={e => setCncpvLogoPdfUrl(e.target.value)} placeholder="URL da imagem (PNG recomendado)" />
+            {cncpvLogoPdfUrl && cncpvLogoPdfUrl.startsWith('http') && (
+              <img src={cncpvLogoPdfUrl} alt="preview" style={{ height: 40, maxWidth: 80, objectFit: 'contain', borderRadius: 6, border: '1px solid var(--avp-border)' }} />
+            )}
           </div>
         </div>
 
