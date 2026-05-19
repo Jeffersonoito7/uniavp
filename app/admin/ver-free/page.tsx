@@ -8,12 +8,12 @@ export const dynamic = 'force-dynamic'
 export default async function VerFreePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/entrar?p=adm')
 
   const adminClient = createServiceRoleClient()
   const { data: adminRecord } = await (adminClient.from('admins') as any)
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (!adminRecord) redirect('/login')
+  if (!adminRecord) redirect('/entrar?p=adm')
 
   // Busca user_ids dos gestores ativos para excluir da lista FREE
   const { data: gestoresAtivos } = await (adminClient.from('gestores') as any)

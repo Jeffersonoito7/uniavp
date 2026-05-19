@@ -16,10 +16,10 @@ export default async function ConfiguracoesPage() {
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/entrar?p=adm')
   const adminClient = createServiceRoleClient()
   const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (!adminRecord) redirect('/login')
+  if (!adminRecord) redirect('/entrar?p=adm')
 
   const { data: configs } = await (adminClient.from('configuracoes') as any).select('chave, valor, descricao').order('chave')
 

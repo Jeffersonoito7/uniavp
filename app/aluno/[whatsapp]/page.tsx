@@ -44,7 +44,7 @@ function calcularNivel(pontos: number) {
 export default async function AlunoHomePage({ params, searchParams }: { params: { whatsapp: string }; searchParams?: { modulo?: string } }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/entrar')
+  if (!user) redirect('/entrar?p=free')
 
   const [adminClient, siteConfig, hdrs] = [createServiceRoleClient(), await getSiteConfig(), await headers()]
   const host = hdrs.get('host') || ''
@@ -66,7 +66,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
     ])
   const certMap: Record<string, string> = {}
   for (const r of certConfigs ?? []) { try { certMap[r.chave] = JSON.parse(r.valor) } catch { certMap[r.chave] = r.valor } }
-  if (!aluno) redirect('/entrar')
+  if (!aluno) redirect('/entrar?p=free')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
   // Se o FREE fez upgrade e já tem conta PRO ativa → redireciona para o painel PRO

@@ -6,12 +6,12 @@ import ArtesCliente from '@/app/aluno/[whatsapp]/artes/ArtesCliente'
 export default async function GestorArtesPage({ params }: { params: { whatsapp: string } }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/entrar')
+  if (!user) redirect('/entrar?p=pro')
 
   const adminClient = createServiceRoleClient()
   const { data: gestor } = await (adminClient.from('gestores') as any)
     .select('id, nome, whatsapp').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (!gestor) redirect('/entrar')
+  if (!gestor) redirect('/entrar?p=pro')
 
   // Verifica se o consultor pertence a este gestor
   const { data: consultor } = await (adminClient.from('alunos') as any)

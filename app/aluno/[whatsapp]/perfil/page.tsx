@@ -5,7 +5,7 @@ import PerfilCliente from './PerfilCliente'
 export default async function PerfilPage({ params }: { params: { whatsapp: string } }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/entrar')
+  if (!user) redirect('/entrar?p=free')
 
   const adminClient = createServiceRoleClient()
   const { data: aluno } = await (adminClient.from('alunos') as any)
@@ -13,7 +13,7 @@ export default async function PerfilPage({ params }: { params: { whatsapp: strin
     .eq('user_id', user.id)
     .maybeSingle()
 
-  if (!aluno) redirect('/entrar')
+  if (!aluno) redirect('/entrar?p=free')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}/perfil`)
 
   const { data: cfg } = await (adminClient.from('configuracoes') as any)

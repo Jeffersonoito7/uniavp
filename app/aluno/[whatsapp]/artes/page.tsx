@@ -8,12 +8,12 @@ import EventosWidget from '@/app/components/EventosWidget'
 export default async function ArtesPage({ params }: { params: { whatsapp: string } }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/entrar')
+  if (!user) redirect('/entrar?p=free')
 
   const [adminClient, siteConfig] = [createServiceRoleClient(), await getSiteConfig()]
   const { data: aluno } = await (adminClient.from('alunos') as any)
     .select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
-  if (!aluno) redirect('/entrar')
+  if (!aluno) redirect('/entrar?p=free')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}/artes`)
 
   const { data: templates } = await (adminClient.from('artes_templates') as any)

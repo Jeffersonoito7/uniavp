@@ -6,11 +6,11 @@ import EventosCliente from './EventosCliente'
 export default async function EventosPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/entrar?p=adm')
 
   const adminClient = createServiceRoleClient()
   const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (!adminRecord) redirect('/login')
+  if (!adminRecord) redirect('/entrar?p=adm')
 
   const { data: eventos } = await (adminClient.from('eventos') as any)
     .select('*').order('data_hora')

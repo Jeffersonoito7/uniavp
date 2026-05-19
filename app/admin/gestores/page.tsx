@@ -6,7 +6,7 @@ import GestoresCliente from './GestoresCliente'
 export default async function GestoresPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/entrar?p=adm')
 
   const adminClient = createServiceRoleClient()
   const { data: adminRecord } = await (adminClient.from('admins') as any)
@@ -14,7 +14,7 @@ export default async function GestoresPage() {
     .eq('user_id', user.id)
     .eq('ativo', true)
     .maybeSingle()
-  if (!adminRecord) redirect('/login')
+  if (!adminRecord) redirect('/entrar?p=adm')
 
   const { data: gestores } = await (adminClient.from('gestores') as any)
     .select('id, nome, email, whatsapp, ativo, created_at')

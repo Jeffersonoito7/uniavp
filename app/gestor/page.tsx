@@ -6,7 +6,7 @@ import GestorDashboard from './GestorDashboard'
 export default async function GestorPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/entrar')
+  if (!user) redirect('/entrar?p=pro')
 
   const adminClient = createServiceRoleClient()
 
@@ -15,7 +15,7 @@ export default async function GestorPage() {
     .eq('user_id', user.id)
     .eq('ativo', true)
     .maybeSingle()
-  if (!gestor) redirect('/entrar')
+  if (!gestor) redirect('/entrar?p=pro')
 
   // Se trial sem data de expiração → auto-concede 7 dias (bug da migration DEFAULT)
   if (gestor.status_assinatura === 'trial' && !gestor.trial_expira_em) {

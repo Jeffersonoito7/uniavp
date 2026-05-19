@@ -10,12 +10,12 @@ export const dynamic = 'force-dynamic'
 export default async function CaptacaoPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/entrar?p=adm')
 
   const adminClient = createServiceRoleClient()
   const { data: adminRecord } = await (adminClient.from('admins') as any)
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (!adminRecord) redirect('/login')
+  if (!adminRecord) redirect('/entrar?p=adm')
 
   const { data: gestores } = await (adminClient.from('gestores') as any)
     .select('id, nome, whatsapp').eq('ativo', true).order('nome')

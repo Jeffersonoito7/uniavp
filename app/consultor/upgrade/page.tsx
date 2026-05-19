@@ -5,12 +5,12 @@ import { getSiteConfig } from '@/lib/site-config'
 export default async function UpgradePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/entrar')
+  if (!user) redirect('/entrar?p=free')
 
   const adminClient = createServiceRoleClient()
   const { data: aluno } = await (adminClient.from('alunos') as any)
     .select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
-  if (!aluno) redirect('/entrar')
+  if (!aluno) redirect('/entrar?p=free')
 
   // Se já é PRO ativo, redireciona direto
   const { data: gestorAtivo } = await (adminClient.from('gestores') as any)

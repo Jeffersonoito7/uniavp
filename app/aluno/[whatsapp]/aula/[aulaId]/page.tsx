@@ -11,12 +11,12 @@ import AulaInterativa from './AulaInterativa'
 export default async function AulaPage({ params }: { params: { whatsapp: string; aulaId: string } }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/entrar')
+  if (!user) redirect('/entrar?p=free')
 
   const adminClient = createServiceRoleClient()
   const { data: aluno } = await (adminClient.from('alunos') as any)
     .select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
-  if (!aluno) redirect('/entrar')
+  if (!aluno) redirect('/entrar?p=free')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
   const { data: aula } = await (adminClient.from('aulas') as any)
