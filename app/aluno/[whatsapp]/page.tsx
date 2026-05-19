@@ -359,6 +359,10 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                   style={{ background: '#fbbf24', color: '#1a1a1a', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                   🪪 Carteira
                 </Link>
+                <Link href={`/cncpv?nome=${encodeURIComponent(aluno.nome)}&whatsapp=${aluno.whatsapp}&email=${encodeURIComponent(aluno.email ?? '')}`}
+                  style={{ background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  🪪 Carteira CNCPV
+                </Link>
               </div>
             </div>
           )}
