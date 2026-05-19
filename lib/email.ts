@@ -1,6 +1,9 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  if (!process.env.RESEND_API_KEY) return null
+  return new Resend(process.env.RESEND_API_KEY)
+}
 const FROM = process.env.EMAIL_FROM || 'CNCPV <noreply@cncpv.com.br>'
 
 export async function enviarEmailCNCPV(opts: {
@@ -12,7 +15,8 @@ export async function enviarEmailCNCPV(opts: {
   appUrl: string
   pdfBytes?: Uint8Array
 }): Promise<boolean> {
-  if (!process.env.RESEND_API_KEY) return false
+  const resend = getResend()
+  if (!resend) return false
 
   const { para, nome, numero_registro, hash_contrato, assinado_em, appUrl, pdfBytes } = opts
   const verUrl = `${appUrl}/cncpv/verificar/${numero_registro}`
