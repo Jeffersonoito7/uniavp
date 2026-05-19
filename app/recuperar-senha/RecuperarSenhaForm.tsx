@@ -6,6 +6,8 @@ export default function RecuperarSenhaForm({ logoUrl, siteNome }: { logoUrl: str
   const [loading, setLoading] = useState(false)
   const [enviado, setEnviado] = useState(false)
   const [link, setLink] = useState<string | null>(null)
+  const [enviadoWpp, setEnviadoWpp] = useState(false)
+  const [whatsappMask, setWhatsappMask] = useState<string | null>(null)
   const [copiado, setCopiado] = useState(false)
   const [erro, setErro] = useState('')
   const [cooldown, setCooldown] = useState(0)
@@ -32,6 +34,8 @@ export default function RecuperarSenhaForm({ logoUrl, siteNome }: { logoUrl: str
       const data = await res.json()
       setEnviado(true)
       setLink(data.link ?? null)
+      setEnviadoWpp(data.enviadoWpp ?? false)
+      setWhatsappMask(data.whatsappMask ?? null)
       setCooldown(60)
     } catch {
       setErro('Erro de conexão. Verifique sua internet.')
@@ -98,44 +102,50 @@ export default function RecuperarSenhaForm({ logoUrl, siteNome }: { logoUrl: str
           ) : (
             <>
               <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>🔑</div>
-                <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Link gerado!</h2>
-                <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, lineHeight: 1.6 }}>
-                  Para <strong style={{ color: 'var(--avp-text)' }}>{email}</strong>
-                </p>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>{enviadoWpp ? '📱' : '🔑'}</div>
+                <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>
+                  {enviadoWpp ? 'Link enviado pelo WhatsApp!' : 'Link gerado!'}
+                </h2>
+                {enviadoWpp && whatsappMask && (
+                  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, lineHeight: 1.6 }}>
+                    Enviado para o WhatsApp <strong style={{ color: '#25d366' }}>{whatsappMask}</strong>
+                  </p>
+                )}
               </div>
 
-              {/* Link para copiar */}
-              {link && (
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ background: '#02A15310', border: '1px solid #02A15340', borderRadius: 10, padding: '14px 16px', marginBottom: 10 }}>
-                    <p style={{ fontSize: 12, color: 'var(--avp-green)', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
-                      ✅ Copie e abra no navegador
-                    </p>
-                    <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', lineHeight: 1.6, marginBottom: 10 }}>
-                      Copie o link abaixo e cole <strong>no mesmo navegador</strong> onde vai redefinir a senha.
-                    </p>
-                    <button onClick={copiarLink}
-                      style={{ width: '100%', background: copiado ? 'var(--avp-green)' : 'var(--avp-card)', border: `1px solid ${copiado ? 'var(--avp-green)' : 'var(--avp-border)'}`, borderRadius: 8, padding: '10px 14px', color: copiado ? '#fff' : 'var(--avp-text)', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'all 0.2s' }}>
-                      {copiado ? '✅ Link copiado!' : '📋 Copiar link de redefinição'}
-                    </button>
-                  </div>
-
-                  {/* Abre direto via JS para evitar pré-fetch do navegador */}
-                  <button onClick={() => window.open(link!, '_self')}
-                    style={{ width: '100%', background: 'var(--avp-border)', color: 'var(--avp-text)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', textAlign: 'center', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
-                    🔗 Ou clique aqui para abrir direto
-                  </button>
+              {/* WhatsApp enviado com sucesso */}
+              {enviadoWpp && (
+                <div style={{ background: '#25d36615', border: '1px solid #25d36640', borderRadius: 10, padding: '14px 16px', marginBottom: 16, textAlign: 'center' }}>
+                  <p style={{ fontSize: 14, color: '#25d366', fontWeight: 700, marginBottom: 4 }}>
+                    ✅ Abra o WhatsApp e clique no link recebido
+                  </p>
+                  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>
+                    O link expira em 1 hora e funciona uma única vez.
+                  </p>
                 </div>
               )}
 
-              {/* Se não gerou link, indica e-mail */}
-              {!link && (
-                <div style={{ background: '#f59e0b15', border: '1px solid #f59e0b40', borderRadius: 10, padding: '12px 16px', marginBottom: 16 }}>
-                  <p style={{ fontSize: 13, color: '#f59e0b', lineHeight: 1.6 }}>
-                    📧 Verifique o e-mail de <strong>{email}</strong><br />
-                    Também confira a pasta de <strong>Spam</strong>. O link expira em 1 hora.
-                  </p>
+              {/* Fallback: link na tela (se WhatsApp não enviou) */}
+              {link && (
+                <div style={{ marginBottom: 16 }}>
+                  {!enviadoWpp && (
+                    <div style={{ background: '#02A15310', border: '1px solid #02A15340', borderRadius: 10, padding: '14px 16px', marginBottom: 10 }}>
+                      <p style={{ fontSize: 12, color: 'var(--avp-green)', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
+                        ✅ Copie e abra no navegador
+                      </p>
+                      <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', lineHeight: 1.6, marginBottom: 10 }}>
+                        Copie o link abaixo e cole <strong>no mesmo navegador</strong> onde vai redefinir a senha.
+                      </p>
+                      <button onClick={copiarLink}
+                        style={{ width: '100%', background: copiado ? 'var(--avp-green)' : 'var(--avp-card)', border: `1px solid ${copiado ? 'var(--avp-green)' : 'var(--avp-border)'}`, borderRadius: 8, padding: '10px 14px', color: copiado ? '#fff' : 'var(--avp-text)', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'all 0.2s' }}>
+                        {copiado ? '✅ Link copiado!' : '📋 Copiar link de redefinição'}
+                      </button>
+                    </div>
+                  )}
+                  <button onClick={() => window.open(link!, '_self')}
+                    style={{ width: '100%', background: 'var(--avp-border)', color: 'var(--avp-text)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', textAlign: 'center', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                    🔗 {enviadoWpp ? 'Ou clique aqui para abrir direto' : 'Clique aqui para abrir'}
+                  </button>
                 </div>
               )}
 
