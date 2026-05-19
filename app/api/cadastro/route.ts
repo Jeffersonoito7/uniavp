@@ -6,6 +6,12 @@ import { z } from 'zod'
 
 export const dynamic = 'force-dynamic'
 
+async function buscarInstanciaAdmin(adminClient: ReturnType<typeof createServiceRoleClient>) {
+  const { data } = await (adminClient.from('admins') as any)
+    .select('whatsapp_instancia').eq('ativo', true).not('whatsapp_instancia', 'is', null).limit(1).maybeSingle()
+  return data?.whatsapp_instancia ?? null
+}
+
 const schema = z.object({
   nome: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   whatsapp: z.string().min(10, 'WhatsApp inválido'),
@@ -148,13 +154,35 @@ export async function POST(req: NextRequest) {
     .select('id, link_externo').eq('whatsapp', gestorWppLimpo).eq('ativo', true).maybeSingle()
   const linkExterno: string | null = gestorData?.link_externo ?? null
 
-  // Notifica o gestor usando a instância WhatsApp dele (se tiver) ou a global
+  // Link wa.me clicável para o novo aluno
+  const ddi = whatsappLimpo.startsWith('55') ? whatsappLimpo : `55${whatsappLimpo}`
+  const wppLink = `https://wa.me/${ddi}`
+
+  // Notifica o gestor (PRO) com link clicável
   const instanciaGestor = await getInstanciaGestorPorNome(gestor_nome, adminClient)
-  await enviarWhatsApp(
-    gestor_whatsapp,
-    `🆓 *Novo FREE cadastrado!*\n\nOlá ${gestor_nome}! *${nome}* acabou de se cadastrar em *${nomePlataforma}* pelo seu link. 🚀\n\n📱 WhatsApp: ${whatsappLimpo}\n\nVocê receberá atualizações do progresso dele por aqui.`,
-    instanciaGestor
-  )
+  if (gestor_whatsapp.replace(/\D/g, '')) {
+    await enviarWhatsApp(
+      gestor_whatsapp,
+      `🆓 *Novo FREE cadastrado!*\n\nOlá *${gestor_nome}*! *${nome}* acabou de se cadastrar em *${nomePlataforma}* pelo seu link. 🚀\n\n💬 Clique para chamar no WhatsApp:\n👉 ${wppLink}\n\nVocê receberá atualizações do progresso dele por aqui.`,
+      instanciaGestor
+    )
+  }
+
+  // Notifica o indicador FREE (quem compartilhou o link /c/) se for diferente do gestor
+  if (indicador_whatsapp) {
+    const indicadorWpp = indicador_whatsapp.replace(/\D/g, '')
+    const gestorWpp = gestor_whatsapp.replace(/\D/g, '')
+    if (indicadorWpp && indicadorWpp !== gestorWpp) {
+      const instanciaIndicador = await buscarInstanciaAdmin(adminClient)
+      if (instanciaIndicador) {
+        await enviarWhatsApp(
+          indicadorWpp,
+          `🎉 *Sua indicação deu certo!*\n\n*${nome}* se cadastrou em *${nomePlataforma}* pelo seu link! 🚀\n\n💬 Clique para chamar no WhatsApp:\n👉 ${wppLink}\n\n_Aproveite para dar as boas-vindas e acompanhar o progresso dele!_`,
+          instanciaIndicador
+        )
+      }
+    }
+  }
 
   // Boas-vindas para o candidato + link da plataforma parceira (se configurado)
   let msgCandidato = `🎓 *Bem-vindo ao ${nomePlataforma}, ${nome}!* 🚀\n\n` +
