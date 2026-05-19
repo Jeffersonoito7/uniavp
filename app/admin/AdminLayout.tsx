@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   LayoutDashboard, BookOpen, Users, ShieldCheck,
   Trophy, Settings, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper, Star,
@@ -86,28 +86,38 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     </button>
   )
 
+  const audioCtxRef = useRef<AudioContext | null>(null)
+  function getAudioCtx() {
+    if (!audioCtxRef.current) audioCtxRef.current = new AudioContext()
+    if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume()
+    return audioCtxRef.current
+  }
   function playHover() {
     try {
-      const ctx = new AudioContext()
+      const ctx = getAudioCtx()
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.connect(gain)
       gain.connect(ctx.destination)
       osc.type = 'sine'
-      osc.frequency.setValueAtTime(900, ctx.currentTime)
-      osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.06)
-      gain.gain.setValueAtTime(0.04, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07)
+      osc.frequency.setValueAtTime(880, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(550, ctx.currentTime + 0.06)
+      gain.gain.setValueAtTime(0.05, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08)
       osc.start(ctx.currentTime)
-      osc.stop(ctx.currentTime + 0.07)
-      osc.onended = () => ctx.close()
+      osc.stop(ctx.currentTime + 0.08)
     } catch { /* AudioContext indisponível */ }
   }
 
   const sidebarW = colapsada ? 56 : 240
+  const hoverCSS = `
+    .adm-nav-item:hover { background: rgba(99,102,241,0.14) !important; color: #fff !important; }
+    .adm-nav-item { transition: background 0.18s, color 0.18s !important; }
+  `
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
+      <style>{hoverCSS}</style>
 
       {/* ── Barra superior mobile ── */}
       {isMobile && (
@@ -187,28 +197,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || (href !== '/admin' && pathname.startsWith(href))
             return (
-              <Link key={href} href={href} onClick={() => isMobile && setMenuAberto(false)}
+              <Link key={href} href={href}
+                className={active ? undefined : 'adm-nav-item'}
+                onClick={() => isMobile && setMenuAberto(false)}
+                onMouseEnter={() => playHover()}
                 title={colapsada ? label : undefined}
-                onMouseEnter={e => {
-                  if (!active) e.currentTarget.style.background = 'rgba(99,102,241,0.12)'
-                  if (!active) e.currentTarget.style.color = 'var(--avp-text)'
-                  playHover()
-                }}
-                onMouseLeave={e => {
-                  if (!active) e.currentTarget.style.background = 'transparent'
-                  if (!active) e.currentTarget.style.color = 'var(--avp-text-dim)'
-                }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 10,
                   justifyContent: colapsada ? 'center' : 'flex-start',
                   padding: colapsada ? '10px 0' : '11px 12px',
                   borderRadius: 8, fontSize: 14, fontWeight: 500,
-                  color: active ? 'var(--avp-text)' : 'var(--avp-text-dim)',
+                  color: active ? '#fff' : 'var(--avp-text-dim)',
                   background: active ? 'var(--avp-border)' : 'transparent',
                   textDecoration: 'none',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  transition: 'background 0.15s, color 0.15s',
+                  whiteSpace: 'nowrap', overflow: 'hidden',
                 }}>
                 <Icon size={17} style={{ flexShrink: 0 }} />
                 {!colapsada && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>}

@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen, Palette, UserCircle } from 'lucide-react'
 import SupportChat from '@/app/components/SupportChat'
@@ -80,28 +80,35 @@ export default function GestorLayout({
     </button>
   )
 
+  const audioCtxRef = useRef<AudioContext | null>(null)
   function playHover() {
     try {
-      const ctx = new AudioContext()
+      if (!audioCtxRef.current) audioCtxRef.current = new AudioContext()
+      const ctx = audioCtxRef.current
+      if (ctx.state === 'suspended') ctx.resume()
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.connect(gain)
       gain.connect(ctx.destination)
       osc.type = 'sine'
-      osc.frequency.setValueAtTime(900, ctx.currentTime)
-      osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.06)
-      gain.gain.setValueAtTime(0.04, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07)
+      osc.frequency.setValueAtTime(880, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(550, ctx.currentTime + 0.06)
+      gain.gain.setValueAtTime(0.05, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08)
       osc.start(ctx.currentTime)
-      osc.stop(ctx.currentTime + 0.07)
-      osc.onended = () => ctx.close()
+      osc.stop(ctx.currentTime + 0.08)
     } catch { /* AudioContext indisponível */ }
   }
 
   const sidebarW = colapsada ? 56 : 220
+  const hoverCSS = `
+    .pro-nav-item:hover { background: rgba(2,161,83,0.16) !important; color: #fff !important; }
+    .pro-nav-item { transition: background 0.18s, color 0.18s !important; }
+  `
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
+      <style>{hoverCSS}</style>
       <SupportChat painel="PRO" bottomOffset={isMobile ? 84 : 24} />
 
       {/* ── Barra superior mobile ── */}
@@ -174,6 +181,8 @@ export default function GestorLayout({
             const ativo = aba === item.id
             return (
               <button key={item.id} onClick={() => handleNav(item.id)}
+                onMouseEnter={() => playHover()}
+                className={ativo ? undefined : 'pro-nav-item'}
                 title={colapsada && !isMobile ? item.label : undefined}
                 style={{
                   display: 'flex', alignItems: 'center', gap: colapsada && !isMobile ? 0 : 10,
@@ -183,14 +192,7 @@ export default function GestorLayout({
                   background: ativo ? 'var(--grad-brand)' : 'none',
                   color: ativo ? '#fff' : 'var(--avp-text-dim)',
                   fontWeight: ativo ? 600 : 400, fontSize: 14,
-                  transition: 'all 0.15s', width: '100%',
-                }}
-                onMouseEnter={e => {
-                  if (!ativo) { e.currentTarget.style.background = 'rgba(2,161,83,0.12)'; e.currentTarget.style.color = 'var(--avp-text)' }
-                  playHover()
-                }}
-                onMouseLeave={e => {
-                  if (!ativo) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--avp-text-dim)' }
+                  width: '100%',
                 }}
               >
                 <Icon size={18} />
