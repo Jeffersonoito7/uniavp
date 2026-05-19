@@ -97,8 +97,13 @@ export default function OtpForm() {
             para <strong style={{ color: '#60a5fa' }}>{info.destino}</strong>
           </p>
           {info.codigoDev && (
-            <div style={{ background: '#f59e0b20', border: '1px solid #f59e0b50', borderRadius: 8, padding: '8px 16px', marginTop: 10, fontSize: 13, color: '#f59e0b' }}>
-              🧪 Modo dev — código: <strong style={{ fontSize: 18, letterSpacing: 4 }}>{info.codigoDev}</strong>
+            <div style={{ background: '#f59e0b18', border: '2px solid #f59e0b', borderRadius: 12, padding: '14px 20px', marginTop: 12, textAlign: 'center' }}>
+              <p style={{ color: '#f59e0b', fontSize: 13, fontWeight: 700, margin: '0 0 8px' }}>
+                ⚠️ WhatsApp não configurado — use este código:
+              </p>
+              <p style={{ color: '#fff', fontSize: 32, fontWeight: 900, letterSpacing: 10, margin: 0 }}>
+                {info.codigoDev}
+              </p>
             </div>
           )}
         </div>

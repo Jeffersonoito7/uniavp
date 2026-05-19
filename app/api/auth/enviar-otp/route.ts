@@ -41,16 +41,30 @@ export async function POST() {
 
   const adminClient = createServiceRoleClient()
 
-  // Busca whatsapp do usuário (aluno ou gestor)
+  // Busca whatsapp do usuário (aluno, gestor ou admin)
   let whatsapp: string | null = null
+  let instanciaEspecifica: string | null = null
+
   const { data: aluno } = await (adminClient.from('alunos') as any)
     .select('whatsapp').eq('user_id', user.id).maybeSingle()
   if (aluno?.whatsapp) whatsapp = aluno.whatsapp
 
   if (!whatsapp) {
     const { data: gestor } = await (adminClient.from('gestores') as any)
-      .select('whatsapp').eq('user_id', user.id).maybeSingle()
-    if (gestor?.whatsapp) whatsapp = gestor.whatsapp
+      .select('whatsapp, whatsapp_instancia').eq('user_id', user.id).maybeSingle()
+    if (gestor?.whatsapp) {
+      whatsapp = gestor.whatsapp
+      instanciaEspecifica = gestor.whatsapp_instancia ?? null
+    }
+  }
+
+  if (!whatsapp) {
+    const { data: adminRec } = await (adminClient.from('admins') as any)
+      .select('whatsapp, whatsapp_instancia').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+    if (adminRec?.whatsapp) {
+      whatsapp = adminRec.whatsapp
+      instanciaEspecifica = adminRec.whatsapp_instancia ?? null
+    }
   }
 
   // Invalida OTPs anteriores
@@ -64,9 +78,9 @@ export async function POST() {
 
   let enviado = false
 
-  // Envia exclusivamente via WhatsApp
+  // Envia via WhatsApp — usa instância específica do usuário ou a do admin como fallback
   if (whatsapp) {
-    const instancia = await buscarInstanciaAdmin(adminClient)
+    const instancia = instanciaEspecifica ?? await buscarInstanciaAdmin(adminClient)
     if (instancia) {
       enviado = await enviarWhatsApp(whatsapp, codigo, instancia)
     }

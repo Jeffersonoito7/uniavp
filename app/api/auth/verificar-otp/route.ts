@@ -27,16 +27,23 @@ export async function POST(req: NextRequest) {
 
   await (adminClient.from('verificacao_otp') as any).update({ usado: true }).eq('id', otp.id)
 
-  // Determina redirect pelo perfil do usuário (sem fetch externo)
+  // Determina redirect pelo perfil
   let redirect = '/'
-  const { data: aluno } = await (adminClient.from('alunos') as any)
-    .select('whatsapp').eq('user_id', user.id).maybeSingle()
-  if (aluno?.whatsapp) {
-    redirect = `/aluno/${aluno.whatsapp}`
+
+  const { data: adminRec } = await (adminClient.from('admins') as any)
+    .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  if (adminRec) {
+    redirect = '/admin'
   } else {
     const { data: gestor } = await (adminClient.from('gestores') as any)
       .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-    if (gestor) redirect = '/pro'
+    if (gestor) {
+      redirect = '/pro'
+    } else {
+      const { data: aluno } = await (adminClient.from('alunos') as any)
+        .select('whatsapp').eq('user_id', user.id).maybeSingle()
+      if (aluno?.whatsapp) redirect = `/aluno/${aluno.whatsapp}`
+    }
   }
 
   const response = NextResponse.json({ ok: true, redirect })
