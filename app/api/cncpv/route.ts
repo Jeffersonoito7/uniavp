@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
+import { enviarWhatsApp } from '@/lib/whatsapp'
+import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic'
 
@@ -53,6 +55,21 @@ export async function POST(req: NextRequest) {
     || req.headers.get('x-real-ip')
     || 'desconhecido'
 
+  const assinado_em = new Date().toISOString()
+
+  // Hash SHA-256 do contrato (prova de integridade)
+  const conteudoHash = JSON.stringify({
+    nome: nome.trim(),
+    cpf: cpf?.replace(/\D/g, '') || null,
+    whatsapp: wppLimpo,
+    email: email.trim().toLowerCase(),
+    numero_registro,
+    assinado_em,
+    ip,
+    termos: TERMOS,
+  })
+  const hash_contrato = crypto.createHash('sha256').update(conteudoHash, 'utf8').digest('hex')
+
   const { error } = await (adminClient.from('cncpv_assinaturas') as any).insert({
     aluno_id: aluno_id ?? null,
     nome: nome.trim(),
@@ -62,11 +79,34 @@ export async function POST(req: NextRequest) {
     ip,
     numero_registro,
     termos_aceitos,
+    hash_contrato,
   })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  return NextResponse.json({ ok: true, numero_registro })
+  // Envia comprovante via WhatsApp
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://uni.avpoficial.com.br'
+  const msgWpp = [
+    `🪪 *CNCPV — Carteira Nacional do Consultor de Proteção Veicular*`,
+    ``,
+    `Olá, *${nome.trim().split(' ')[0]}*! Sua carteira foi emitida com sucesso.`,
+    ``,
+    `📋 *Registro:* ${numero_registro}`,
+    `📅 *Emissão:* ${new Date(assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`,
+    ``,
+    `🔐 *Código de autenticidade (SHA-256):*`,
+    `\`${hash_contrato.slice(0, 32)}\``,
+    `\`${hash_contrato.slice(32)}\``,
+    ``,
+    `✅ Verifique a autenticidade em:`,
+    `${appUrl}/cncpv/verificar/${numero_registro}`,
+    ``,
+    `_Este documento tem validade como declaração eletrônica conforme o Código Civil Brasileiro, Art. 107._`,
+  ].join('\n')
+
+  await enviarWhatsApp(wppLimpo, msgWpp)
+
+  return NextResponse.json({ ok: true, numero_registro, hash_contrato })
 }
 
 export async function GET(req: NextRequest) {
@@ -78,7 +118,7 @@ export async function GET(req: NextRequest) {
 
   if (registro) {
     const { data } = await (adminClient.from('cncpv_assinaturas') as any)
-      .select('nome, numero_registro, assinado_em, cpf')
+      .select('nome, numero_registro, assinado_em, cpf, hash_contrato')
       .eq('numero_registro', registro)
       .maybeSingle()
     return NextResponse.json(data ?? null)

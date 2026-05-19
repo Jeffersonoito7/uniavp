@@ -16,6 +16,7 @@ const schema = z.object({
   nome: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   whatsapp: z.string().min(10, 'WhatsApp inválido'),
   email: z.string().email('E-mail inválido'),
+  cpf: z.string().nullable().optional(),
   senha: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
   gestor_nome: z.string().optional().default(''),
   gestor_whatsapp: z.string().optional().default(''),
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.errors[0]?.message ?? 'Dados inválidos' }, { status: 400 })
   }
 
-  const { nome, whatsapp, email, senha, indicador_whatsapp } = parsed.data
+  const { nome, whatsapp, email, cpf, senha, indicador_whatsapp } = parsed.data
   let { gestor_nome, gestor_whatsapp } = parsed.data
 
   const whatsappLimpo = whatsapp.replace(/\D/g, '')
@@ -119,6 +120,7 @@ export async function POST(req: NextRequest) {
       nome: nome.trim(),
       whatsapp: whatsappLimpo,
       email: emailLimpo,
+      cpf: cpf?.replace(/\D/g, '') || null,
       indicador_id: indicadorId,
       gestor_nome: gestor_nome.trim(),
       gestor_whatsapp: gestor_whatsapp.replace(/\D/g, ''),

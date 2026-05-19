@@ -4,12 +4,34 @@ import { useRouter } from 'next/navigation'
 import SiteLogoHeader from '@/app/components/SiteLogoHeader'
 import PhoneInput from '@/app/components/PhoneInput'
 
+function validarCPF(cpf: string): boolean {
+  const d = cpf.replace(/\D/g, '')
+  if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false
+  let sum = 0
+  for (let i = 0; i < 9; i++) sum += parseInt(d[i]) * (10 - i)
+  let r = (sum * 10) % 11; if (r === 10 || r === 11) r = 0
+  if (r !== parseInt(d[9])) return false
+  sum = 0
+  for (let i = 0; i < 10; i++) sum += parseInt(d[i]) * (11 - i)
+  r = (sum * 10) % 11; if (r === 10 || r === 11) r = 0
+  return r === parseInt(d[10])
+}
+
+function formatarCPF(valor: string): string {
+  const d = valor.replace(/\D/g, '').slice(0, 11)
+  if (d.length <= 3) return d
+  if (d.length <= 6) return `${d.slice(0,3)}.${d.slice(3)}`
+  if (d.length <= 9) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`
+  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`
+}
+
 export default function CadastroPage() {
   const router = useRouter()
   const [form, setForm] = useState({
     nome: '',
     whatsapp: '',
     email: '',
+    cpf: '',
     senha: '',
     gestor_nome: '',
     gestor_whatsapp: '',
@@ -23,6 +45,11 @@ export default function CadastroPage() {
     e.preventDefault()
     setErro('')
     setSucesso('')
+    // Valida CPF se preenchido
+    if (form.cpf.replace(/\D/g, '').length > 0 && !validarCPF(form.cpf)) {
+      setErro('CPF inválido. Verifique os números e tente novamente.')
+      return
+    }
     setLoading(true)
     const res = await fetch('/api/cadastro', {
       method: 'POST',
@@ -31,6 +58,7 @@ export default function CadastroPage() {
         nome: form.nome,
         whatsapp: form.whatsapp.replace(/\D/g, ''),
         email: form.email,
+        cpf: form.cpf.replace(/\D/g, '') || null,
         senha: form.senha,
         gestor_nome: form.gestor_nome,
         gestor_whatsapp: form.gestor_whatsapp.replace(/\D/g, ''),
@@ -41,7 +69,7 @@ export default function CadastroPage() {
       setSucesso('Conta criada com sucesso!')
       setTimeout(() => router.push('/login'), 1500)
     } else {
-      setErro(data.error ?? 'Erro ao criar conta.')
+      setErro(data.erro ?? data.error ?? 'Erro ao criar conta.')
     }
     setLoading(false)
   }
@@ -98,6 +126,31 @@ export default function CadastroPage() {
             <div>
               <label style={labelStyle}>WhatsApp *</label>
               <PhoneInput value={form.whatsapp} onChange={v => setForm(p => ({ ...p, whatsapp: v }))} required />
+            </div>
+            <div>
+              <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 8 }}>
+                CPF
+                {form.cpf.replace(/\D/g, '').length === 11 && (
+                  <span style={{ fontSize: 12, color: validarCPF(form.cpf) ? '#22c55e' : '#f87171', fontWeight: 700 }}>
+                    {validarCPF(form.cpf) ? '✓ válido' : '✗ inválido'}
+                  </span>
+                )}
+                <span style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 400 }}>(opcional)</span>
+              </label>
+              <input
+                type="text"
+                placeholder="000.000.000-00"
+                value={form.cpf}
+                onChange={e => setForm(p => ({ ...p, cpf: formatarCPF(e.target.value) }))}
+                style={{
+                  ...inputStyle,
+                  borderColor: form.cpf.replace(/\D/g, '').length === 11 && !validarCPF(form.cpf)
+                    ? 'rgba(248,113,113,0.6)' : 'var(--avp-border)',
+                }}
+              />
+              {form.cpf.replace(/\D/g, '').length === 11 && !validarCPF(form.cpf) && (
+                <p style={{ fontSize: 12, color: '#f87171', marginTop: 4 }}>CPF inválido — verifique os números</p>
+              )}
             </div>
             <div>
               <label style={labelStyle}>E-mail *</label>

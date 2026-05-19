@@ -3,7 +3,7 @@ import { createServiceRoleClient } from '@/lib/supabase-server'
 export default async function VerificarCNCPVPage({ params }: { params: { registro: string } }) {
   const adminClient = createServiceRoleClient()
   const { data } = await (adminClient.from('cncpv_assinaturas') as any)
-    .select('nome, numero_registro, assinado_em, cpf, whatsapp')
+    .select('nome, numero_registro, assinado_em, cpf, whatsapp, hash_contrato')
     .eq('numero_registro', params.registro)
     .maybeSingle()
 
@@ -31,11 +31,25 @@ export default async function VerificarCNCPVPage({ params }: { params: { registr
                   {new Date(data.assinado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                 </p>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', marginBottom: data.hash_contrato ? 20 : 0 }}>
                 {['✓ ÉTICO', '✓ HABILITADO', '✓ CERTIFICADO'].map(s => (
                   <span key={s} style={{ background: 'rgba(2,161,83,0.15)', border: '1px solid rgba(2,161,83,0.3)', color: '#02A153', borderRadius: 20, padding: '4px 14px', fontSize: 12, fontWeight: 700 }}>{s}</span>
                 ))}
               </div>
+
+              {data.hash_contrato && (
+                <div style={{ background: 'rgba(200,165,53,0.06)', border: '1px solid rgba(200,165,53,0.2)', borderRadius: 10, padding: '12px 16px', textAlign: 'left' }}>
+                  <p style={{ color: 'rgba(200,165,53,0.8)', fontSize: 10, fontWeight: 700, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: 1 }}>
+                    🔐 Código de autenticidade SHA-256
+                  </p>
+                  <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 10, fontFamily: 'monospace', margin: '0 0 6px', wordBreak: 'break-all', lineHeight: 1.6 }}>
+                    {data.hash_contrato}
+                  </p>
+                  <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 10, margin: 0, lineHeight: 1.5 }}>
+                    Assinado eletronicamente conforme o Código Civil Brasileiro, Art. 107 e MP 2.200-2/2001.
+                  </p>
+                </div>
+              )}
             </>
           ) : (
             <>

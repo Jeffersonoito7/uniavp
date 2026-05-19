@@ -44,6 +44,8 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const [registro, setRegistro] = useState('')
+  const [hashContrato, setHashContrato] = useState('')
+  const [wppEnviado, setWppEnviado] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const todosAceitos = aceitos.every(Boolean)
@@ -51,7 +53,7 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
 
   useEffect(() => {
     if (etapa === 'carteira' && registro) gerarCard()
-  }, [etapa, registro])
+  }, [etapa, registro, hashContrato])
 
   async function assinar() {
     setLoading(true); setErro('')
@@ -67,6 +69,8 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
     const data = await res.json()
     if (data.ok) {
       setRegistro(data.numero_registro)
+      setHashContrato(data.hash_contrato ?? '')
+      setWppEnviado(!data.jaExistia)
       setEtapa('carteira')
     } else {
       setErro(data.error ?? 'Erro ao assinar.')
@@ -342,7 +346,14 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
 
     ctx.fillStyle = 'rgba(255,255,255,0.4)'
     ctx.font = '10px Arial, sans-serif'
-    ctx.fillText(`Verificar autenticidade: cncpv.com.br/${registro}  |  Emitido em ${new Date().toLocaleDateString('pt-BR')}`, W / 2, H - 18)
+    ctx.fillText(`Verificar autenticidade: cncpv.com.br/${registro}  |  Emitido em ${new Date().toLocaleDateString('pt-BR')}`, W / 2, H - 20)
+
+    // Hash SHA-256 (prova de integridade)
+    if (hashContrato) {
+      ctx.fillStyle = 'rgba(200,165,53,0.45)'
+      ctx.font = '7.5px monospace'
+      ctx.fillText(`SHA-256: ${hashContrato}`, W / 2, H - 7)
+    }
 
     // ── QR CODE placeholder (canto inferior direito) ────────────────
     const qx = W - 100; const qy = H - 140
@@ -528,9 +539,26 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
         <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 15, marginBottom: 8 }}>
           Registro: <strong style={{ color: '#fff' }}>{registro}</strong>
         </p>
-        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, marginBottom: 28 }}>
+        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, marginBottom: 4 }}>
           Contrato assinado digitalmente em {new Date().toLocaleString('pt-BR')}
         </p>
+
+        {wppEnviado && (
+          <p style={{ color: '#22c55e', fontSize: 13, marginBottom: 8, fontWeight: 600 }}>
+            📱 Comprovante enviado via WhatsApp
+          </p>
+        )}
+
+        {hashContrato && (
+          <div style={{ background: 'rgba(200,165,53,0.08)', border: '1px solid rgba(200,165,53,0.2)', borderRadius: 10, padding: '10px 16px', marginBottom: 20, textAlign: 'left' }}>
+            <p style={{ color: 'rgba(200,165,53,0.8)', fontSize: 10, fontWeight: 700, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: 1 }}>
+              🔐 Código de autenticidade SHA-256
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontFamily: 'monospace', margin: 0, wordBreak: 'break-all', lineHeight: 1.6 }}>
+              {hashContrato}
+            </p>
+          </div>
+        )}
 
         <canvas ref={canvasRef} style={{ width: '100%', maxWidth: 680, borderRadius: 16, boxShadow: '0 24px 80px rgba(0,0,0,0.6)', display: 'block', margin: '0 auto 24px' }} />
 
