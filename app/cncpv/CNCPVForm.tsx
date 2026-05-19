@@ -14,6 +14,19 @@ const TERMOS = [
   'Não captarei associados de outras associações nem levarei minha base de clientes para concorrentes — multa de 40 salários mínimos.',
 ]
 
+function validarCPF(cpf: string): boolean {
+  const d = cpf.replace(/\D/g, '')
+  if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false
+  let sum = 0
+  for (let i = 0; i < 9; i++) sum += parseInt(d[i]) * (10 - i)
+  let r = (sum * 10) % 11; if (r === 10 || r === 11) r = 0
+  if (r !== parseInt(d[9])) return false
+  sum = 0
+  for (let i = 0; i < 10; i++) sum += parseInt(d[i]) * (11 - i)
+  r = (sum * 10) % 11; if (r === 10 || r === 11) r = 0
+  return r === parseInt(d[10])
+}
+
 type Props = {
   nomeInicial?: string
   whatsappInicial?: string
@@ -65,131 +78,318 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')!
-    const W = 900; const H = 540
+    const W = 1012; const H = 638  // proporção cartão físico (85.6mm x 53.98mm @ 300dpi)
     canvas.width = W; canvas.height = H
 
-    // Fundo
-    const grad = ctx.createLinearGradient(0, 0, W, H)
-    grad.addColorStop(0, '#0a1628')
-    grad.addColorStop(0.5, '#0d2040')
-    grad.addColorStop(1, '#051a0e')
-    ctx.fillStyle = grad
+    // ── FUNDO BASE ─────────────────────────────────────────────────
+    const bgGrad = ctx.createLinearGradient(0, 0, W, H)
+    bgGrad.addColorStop(0, '#06101f')
+    bgGrad.addColorStop(0.45, '#091828')
+    bgGrad.addColorStop(1, '#04130d')
+    ctx.fillStyle = bgGrad
     ctx.fillRect(0, 0, W, H)
 
-    // Faixa lateral esquerda verde
-    const faixa = ctx.createLinearGradient(0, 0, 0, H)
-    faixa.addColorStop(0, '#02A153')
-    faixa.addColorStop(1, '#017a3e')
-    ctx.fillStyle = faixa
-    ctx.fillRect(0, 0, 12, H)
+    // ── GUILHOCHÉ — padrão de segurança (linhas senoidais sobrepostas) ──
+    ctx.save()
+    for (let i = 0; i < 28; i++) {
+      ctx.beginPath()
+      for (let x = 0; x <= W; x += 1) {
+        const y = (H * 0.35) + Math.sin(x * 0.018 + i * 0.38) * (14 + i * 1.1)
+          + Math.cos(x * 0.011 + i * 0.22) * 8
+        if (x === 0) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y)
+      }
+      ctx.strokeStyle = i % 2 === 0 ? `rgba(200,165,53,0.05)` : `rgba(2,161,83,0.04)`
+      ctx.lineWidth = 0.7
+      ctx.stroke()
+    }
+    // Guilhoché vertical
+    for (let i = 0; i < 14; i++) {
+      ctx.beginPath()
+      for (let y = 0; y <= H; y += 1) {
+        const x = (W * 0.5) + Math.sin(y * 0.022 + i * 0.5) * (12 + i * 1.8)
+        if (y === 0) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y)
+      }
+      ctx.strokeStyle = `rgba(255,255,255,0.02)`
+      ctx.lineWidth = 0.5
+      ctx.stroke()
+    }
+    ctx.restore()
 
-    // Faixa lateral direita dourada
-    const faixaD = ctx.createLinearGradient(0, 0, 0, H)
-    faixaD.addColorStop(0, '#b8860b')
-    faixaD.addColorStop(1, '#8b6914')
-    ctx.fillStyle = faixaD
-    ctx.fillRect(W - 12, 0, 12, H)
-
-    // Linha divisória decorativa
-    ctx.strokeStyle = 'rgba(2,161,83,0.3)'
-    ctx.lineWidth = 1
-    ctx.beginPath(); ctx.moveTo(30, 80); ctx.lineTo(W - 30, 80); ctx.stroke()
-    ctx.beginPath(); ctx.moveTo(30, H - 80); ctx.lineTo(W - 30, H - 80); ctx.stroke()
-
-    // CNCPV título
-    ctx.fillStyle = '#02A153'
-    ctx.font = 'bold 52px Inter, Arial, sans-serif'
+    // ── MARCA D'ÁGUA diagonal ───────────────────────────────────────
+    ctx.save()
+    ctx.translate(W / 2, H / 2)
+    ctx.rotate(-Math.PI / 5)
+    ctx.font = 'bold 110px Arial, sans-serif'
+    ctx.fillStyle = 'rgba(2,161,83,0.055)'
     ctx.textAlign = 'center'
-    ctx.fillText('CNCPV', W / 2, 60)
+    ctx.textBaseline = 'middle'
+    ctx.fillText('CNCPV', 0, -60)
+    ctx.font = '18px Arial, sans-serif'
+    ctx.fillStyle = 'rgba(255,255,255,0.03)'
+    ctx.fillText('CARTEIRA NACIONAL DO CONSULTOR DE PROTEÇÃO VEICULAR', 0, 20)
+    ctx.restore()
 
-    // Subtítulo
-    ctx.fillStyle = 'rgba(255,255,255,0.55)'
-    ctx.font = '14px Inter, Arial, sans-serif'
-    ctx.fillText('CARTEIRA NACIONAL DO CONSULTOR DE PROTEÇÃO VEICULAR', W / 2, 76)
-
-    // Avatar circular
+    // ── BORDA EXTERNA (cartão físico) ───────────────────────────────
+    ctx.save()
+    const r = 24
     ctx.beginPath()
-    ctx.arc(140, 280, 80, 0, Math.PI * 2)
-    ctx.fillStyle = 'rgba(2,161,83,0.15)'
-    ctx.fill()
-    ctx.strokeStyle = '#02A153'
-    ctx.lineWidth = 3
-    ctx.stroke()
-    ctx.fillStyle = 'rgba(255,255,255,0.15)'
-    ctx.font = '56px Arial'
-    ctx.textAlign = 'center'
-    ctx.fillText('👤', 140, 300)
+    ctx.moveTo(r, 0); ctx.lineTo(W - r, 0)
+    ctx.quadraticCurveTo(W, 0, W, r)
+    ctx.lineTo(W, H - r); ctx.quadraticCurveTo(W, H, W - r, H)
+    ctx.lineTo(r, H); ctx.quadraticCurveTo(0, H, 0, H - r)
+    ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0)
+    ctx.closePath()
+    ctx.clip()
 
-    // Nome
-    ctx.fillStyle = '#ffffff'
-    ctx.font = 'bold 32px Inter, Arial, sans-serif'
+    // Repinta o fundo após clip
+    ctx.fillStyle = bgGrad
+    ctx.fillRect(0, 0, W, H)
+
+    // ── FAIXA SUPERIOR DOURADA ──────────────────────────────────────
+    const topGrad = ctx.createLinearGradient(0, 0, W, 0)
+    topGrad.addColorStop(0, '#8b6914')
+    topGrad.addColorStop(0.3, '#c8a535')
+    topGrad.addColorStop(0.7, '#e8c04a')
+    topGrad.addColorStop(1, '#8b6914')
+    ctx.fillStyle = topGrad
+    ctx.fillRect(0, 0, W, 58)
+
+    // Linha verde abaixo da faixa dourada
+    ctx.fillStyle = '#02A153'
+    ctx.fillRect(0, 58, W, 5)
+
+    // ── TÍTULO NO HEADER ───────────────────────────────────────────
+    ctx.fillStyle = '#000'
+    ctx.font = 'bold 11px Arial, sans-serif'
     ctx.textAlign = 'left'
-    const nome = form.nome.toUpperCase()
-    ctx.fillText(nome.length > 28 ? nome.substring(0, 28) + '...' : nome, 250, 240)
+    ctx.letterSpacing = '2px'
+    ctx.fillText('REPÚBLICA FEDERATIVA DO BRASIL', 22, 20)
+    ctx.font = 'bold 13px Arial, sans-serif'
+    ctx.fillText('CARTEIRA NACIONAL DO CONSULTOR DE PROTEÇÃO VEICULAR', 22, 38)
 
-    // CPF mascarado
-    if (form.cpf) {
-      const cpfLimpo = form.cpf.replace(/\D/g, '')
-      const cpfMask = cpfLimpo.length === 11
-        ? `${cpfLimpo.slice(0,3)}.${cpfLimpo.slice(3,6)}.${cpfLimpo.slice(6,9)}-${cpfLimpo.slice(9)}`
-        : form.cpf
-      ctx.fillStyle = 'rgba(255,255,255,0.55)'
-      ctx.font = '16px Inter, Arial, sans-serif'
-      ctx.fillText(`CPF: ${cpfMask}`, 250, 272)
+    ctx.textAlign = 'right'
+    ctx.font = 'bold 22px Arial, sans-serif'
+    ctx.fillStyle = '#0a1628'
+    ctx.fillText('CNCPV', W - 22, 40)
+
+    // ── ÁREA DA FOTO ────────────────────────────────────────────────
+    const photoX = 28; const photoY = 80; const photoW = 155; const photoH = 195
+    // Moldura foto com borda dupla (estilo documento)
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(photoX - 3, photoY - 3, photoW + 6, photoH + 6)
+    ctx.fillStyle = '#c8a535'
+    ctx.fillRect(photoX - 6, photoY - 6, photoW + 12, photoH + 12)
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(photoX - 3, photoY - 3, photoW + 6, photoH + 6)
+
+    // Silhueta da foto
+    const photoGrad = ctx.createLinearGradient(photoX, photoY, photoX, photoY + photoH)
+    photoGrad.addColorStop(0, '#1a2a3a')
+    photoGrad.addColorStop(1, '#0d1e2e')
+    ctx.fillStyle = photoGrad
+    ctx.fillRect(photoX, photoY, photoW, photoH)
+
+    // Ícone pessoa na foto
+    ctx.fillStyle = 'rgba(255,255,255,0.12)'
+    ctx.beginPath()
+    ctx.arc(photoX + photoW / 2, photoY + 75, 38, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = 'rgba(255,255,255,0.08)'
+    ctx.beginPath()
+    ctx.ellipse(photoX + photoW / 2, photoY + photoH + 10, 55, 40, 0, Math.PI, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = 'rgba(200,165,53,0.3)'
+    ctx.font = '42px Arial'
+    ctx.textAlign = 'center'
+    ctx.fillText('👤', photoX + photoW / 2, photoY + 85)
+
+    ctx.fillStyle = 'rgba(200,165,53,0.6)'
+    ctx.font = 'bold 9px Arial'
+    ctx.textAlign = 'center'
+    ctx.fillText('FOTO DO CONSULTOR', photoX + photoW / 2, photoY + photoH - 10)
+
+    // ── ÁREA DE DADOS ───────────────────────────────────────────────
+    const dx = 205
+    const labelStyle = () => {
+      ctx.fillStyle = '#c8a535'
+      ctx.font = 'bold 9px Arial, sans-serif'
+    }
+    const valueStyle = (big = false) => {
+      ctx.fillStyle = '#ffffff'
+      ctx.font = `${big ? 'bold 19px' : '13px'} Arial, sans-serif`
     }
 
-    // Número de registro
+    // NOME
+    labelStyle(); ctx.textAlign = 'left'
+    ctx.fillText('NOME COMPLETO', dx, 100)
+    valueStyle(true)
+    const nomeUp = form.nome.toUpperCase()
+    ctx.fillText(nomeUp.length > 30 ? nomeUp.slice(0, 30) + '...' : nomeUp, dx, 122)
+
+    // Linha separadora fina
+    ctx.strokeStyle = 'rgba(200,165,53,0.25)'; ctx.lineWidth = 0.8
+    ctx.beginPath(); ctx.moveTo(dx, 132); ctx.lineTo(W - 22, 132); ctx.stroke()
+
+    // CPF
+    labelStyle()
+    ctx.fillText('CPF', dx, 150)
+    valueStyle()
+    if (form.cpf) {
+      const d = form.cpf.replace(/\D/g, '')
+      const mask = d.length === 11 ? `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}` : form.cpf
+      ctx.fillText(mask, dx, 166)
+    } else {
+      ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillText('Não informado', dx, 166)
+    }
+
+    // DATA EMISSÃO
+    labelStyle()
+    ctx.fillText('DATA DE EMISSÃO', dx + 260, 150)
+    valueStyle()
+    ctx.fillText(new Date().toLocaleDateString('pt-BR'), dx + 260, 166)
+
+    ctx.strokeStyle = 'rgba(200,165,53,0.25)'; ctx.lineWidth = 0.8
+    ctx.beginPath(); ctx.moveTo(dx, 176); ctx.lineTo(W - 22, 176); ctx.stroke()
+
+    // REGISTRO
+    labelStyle()
+    ctx.fillText('Nº REGISTRO', dx, 194)
     ctx.fillStyle = '#02A153'
-    ctx.font = 'bold 22px Inter, Arial, sans-serif'
-    ctx.fillText(registro, 250, 308)
+    ctx.font = 'bold 20px Arial, sans-serif'
+    ctx.fillText(registro, dx, 216)
 
-    // Data de emissão
+    // VALIDADE
+    const validadeAno = new Date().getFullYear() + 2
+    labelStyle()
+    ctx.fillText('VALIDADE', dx + 260, 194)
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 20px Arial, sans-serif'
+    ctx.fillText(`12/${validadeAno}`, dx + 260, 216)
+
+    ctx.strokeStyle = 'rgba(200,165,53,0.25)'; ctx.lineWidth = 0.8
+    ctx.beginPath(); ctx.moveTo(dx, 228); ctx.lineTo(W - 22, 228); ctx.stroke()
+
+    // ENTIDADE EMISSORA
+    labelStyle()
+    ctx.fillText('ENTIDADE CREDENCIADORA', dx, 246)
+    ctx.fillStyle = 'rgba(255,255,255,0.75)'
+    ctx.font = '12px Arial, sans-serif'
+    ctx.fillText(siteNome ? siteNome.toUpperCase() : 'SISTEMA UNIAVP', dx, 262)
     ctx.fillStyle = 'rgba(255,255,255,0.4)'
-    ctx.font = '14px Inter, Arial, sans-serif'
-    ctx.fillText(`Emitido em ${new Date().toLocaleDateString('pt-BR')}`, 250, 336)
+    ctx.font = '11px Arial, sans-serif'
+    ctx.fillText('Credenciado sob o padrão CNCPV — Proteção Veicular', dx, 277)
 
-    // Linha divisória
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)'
-    ctx.lineWidth = 1
-    ctx.beginPath(); ctx.moveTo(250, 355); ctx.lineTo(720, 355); ctx.stroke()
+    ctx.strokeStyle = 'rgba(200,165,53,0.25)'; ctx.lineWidth = 0.8
+    ctx.beginPath(); ctx.moveTo(dx, 288); ctx.lineTo(W - 22, 288); ctx.stroke()
 
-    // Declaração
-    ctx.fillStyle = 'rgba(255,255,255,0.5)'
-    ctx.font = '12px Inter, Arial, sans-serif'
-    ctx.fillText('Consultor habilitado — Contrato CNCPV assinado digitalmente', 250, 376)
-    ctx.fillText(`Verificar em: uniavp.autovaleprevencoes.org.br/cncpv/verificar/${registro}`, 250, 396)
-
-    // Selos
-    const selos = ['ÉTICO', 'HABILITADO', 'CERTIFICADO']
-    selos.forEach((s, i) => {
-      const x = 250 + i * 160
-      ctx.fillStyle = 'rgba(2,161,83,0.15)'
-      ctx.beginPath()
-      ctx.roundRect(x, 420, 130, 36, 6)
-      ctx.fill()
-      ctx.strokeStyle = 'rgba(2,161,83,0.4)'
-      ctx.lineWidth = 1
-      ctx.stroke()
-      ctx.fillStyle = '#02A153'
-      ctx.font = 'bold 12px Inter, Arial, sans-serif'
+    // HABILITAÇÕES / CATEGORIAS
+    labelStyle()
+    ctx.fillText('HABILITAÇÕES', dx, 306)
+    const habs = [
+      { cod: 'C', desc: 'Captação' },
+      { cod: 'T', desc: 'Treinamento' },
+      { cod: 'G', desc: 'Gestão de Equipe' },
+    ]
+    habs.forEach((h, i) => {
+      const hx = dx + i * 165
+      ctx.fillStyle = '#c8a535'
+      ctx.beginPath(); ctx.arc(hx + 14, 323, 13, 0, Math.PI * 2); ctx.fill()
+      ctx.fillStyle = '#000'
+      ctx.font = 'bold 14px Arial, sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText(`✓ ${s}`, x + 65, 443)
+      ctx.fillText(h.cod, hx + 14, 328)
+      ctx.fillStyle = 'rgba(255,255,255,0.65)'
+      ctx.font = '10px Arial, sans-serif'
+      ctx.textAlign = 'left'
+      ctx.fillText(h.desc, hx + 32, 327)
     })
 
-    // Logo site (canto superior direito)
-    ctx.fillStyle = 'rgba(255,255,255,0.35)'
-    ctx.font = 'bold 18px Inter, Arial, sans-serif'
-    ctx.textAlign = 'right'
-    ctx.fillText(siteNome || 'UNIAVP', W - 30, 50)
+    // ── ASSINATURA DIGITAL ──────────────────────────────────────────
+    ctx.strokeStyle = 'rgba(200,165,53,0.3)'; ctx.lineWidth = 0.8
+    ctx.beginPath(); ctx.moveTo(dx, 350); ctx.lineTo(dx + 320, 350); ctx.stroke()
+    ctx.fillStyle = 'rgba(255,255,255,0.3)'
+    ctx.font = '9px Arial, sans-serif'
+    ctx.textAlign = 'left'
+    ctx.fillText('ASSINATURA DIGITAL — CONTRATO CNCPV ACEITO', dx, 362)
+    // Simula assinatura cursiva
+    ctx.strokeStyle = 'rgba(200,165,53,0.5)'; ctx.lineWidth = 1.5
+    ctx.beginPath()
+    const asx = dx; const asy = 346
+    ctx.moveTo(asx, asy); ctx.bezierCurveTo(asx+30, asy-14, asx+60, asy+10, asx+90, asy-8)
+    ctx.bezierCurveTo(asx+120, asy-22, asx+150, asy+6, asx+185, asy-4)
+    ctx.bezierCurveTo(asx+210, asy-14, asx+240, asy+8, asx+270, asy-2)
+    ctx.stroke()
 
-    // QR placeholder
-    ctx.fillStyle = '#fff'
-    ctx.fillRect(W - 130, H - 140, 100, 100)
-    ctx.fillStyle = '#000'
-    ctx.font = '10px monospace'
+    // ── FAIXA INFERIOR VERDE ────────────────────────────────────────
+    ctx.fillStyle = '#02A153'
+    ctx.fillRect(0, H - 68, W, 5)
+
+    const botGrad = ctx.createLinearGradient(0, H - 63, W, 0)
+    botGrad.addColorStop(0, '#06101f')
+    botGrad.addColorStop(1, '#04130d')
+    ctx.fillStyle = botGrad
+    ctx.fillRect(0, H - 63, W, 63)
+
+    // Microtexto de segurança no rodapé
+    ctx.fillStyle = 'rgba(200,165,53,0.35)'
+    ctx.font = '7px Arial, sans-serif'
     ctx.textAlign = 'center'
-    ctx.fillText('QR CODE', W - 80, H - 85)
-    ctx.fillText('VERIFICAR', W - 80, H - 72)
+    const micro = 'CNCPV · PROTEÇÃO VEICULAR · HABILITADO · '
+    ctx.fillText(micro.repeat(8), W / 2, H - 46)
+    ctx.fillText(micro.repeat(8), W / 2, H - 36)
+
+    ctx.fillStyle = 'rgba(255,255,255,0.4)'
+    ctx.font = '10px Arial, sans-serif'
+    ctx.fillText(`Verificar autenticidade: cncpv.com.br/${registro}  |  Emitido em ${new Date().toLocaleDateString('pt-BR')}`, W / 2, H - 18)
+
+    // ── QR CODE placeholder (canto inferior direito) ────────────────
+    const qx = W - 100; const qy = H - 140
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(qx, qy, 78, 78)
+    // Padrão QR simulado
+    const qcells = 7
+    const cs = 78 / qcells
+    for (let r = 0; r < qcells; r++) {
+      for (let c = 0; c < qcells; c++) {
+        const isCorner = (r < 2 && c < 2) || (r < 2 && c > qcells - 3) || (r > qcells - 3 && c < 2)
+        const rand = ((r * 7 + c * 13) % 3) === 0
+        if (isCorner || rand) {
+          ctx.fillStyle = isCorner ? '#000' : `rgba(0,0,0,${0.5 + Math.random() * 0.5})`
+          ctx.fillRect(qx + c * cs + 1, qy + r * cs + 1, cs - 1, cs - 1)
+        }
+      }
+    }
+    ctx.strokeStyle = '#c8a535'; ctx.lineWidth = 2
+    ctx.strokeRect(qx, qy, 78, 78)
+
+    // ── HOLOGRAMA (canto superior direito) ─────────────────────────
+    const holX = W - 58; const holY = 120
+    for (let i = 0; i < 16; i++) {
+      const hue = (i * 22) % 360
+      ctx.beginPath()
+      ctx.arc(holX, holY, 44 - i * 2.5, 0, Math.PI * 2)
+      ctx.strokeStyle = `hsla(${hue}, 100%, 65%, 0.18)`
+      ctx.lineWidth = 2
+      ctx.stroke()
+    }
+    ctx.beginPath(); ctx.arc(holX, holY, 46, 0, Math.PI * 2)
+    ctx.strokeStyle = 'rgba(200,165,53,0.6)'; ctx.lineWidth = 2; ctx.stroke()
+    ctx.fillStyle = 'rgba(255,255,255,0.08)'
+    ctx.beginPath(); ctx.arc(holX, holY, 44, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = 'rgba(200,165,53,0.7)'
+    ctx.font = 'bold 10px Arial'; ctx.textAlign = 'center'
+    ctx.fillText('✦', holX, holY - 4)
+    ctx.fillText('HOLO', holX, holY + 8)
+
+    // ── FAIXA MAGNÉTICA (topo da área de foto) ──────────────────────
+    const stripGrad = ctx.createLinearGradient(0, 0, W, 0)
+    stripGrad.addColorStop(0, '#1a1a1a'); stripGrad.addColorStop(0.5, '#333'); stripGrad.addColorStop(1, '#1a1a1a')
+    ctx.fillStyle = stripGrad
+    ctx.fillRect(0, 290, 28, 120)
+
+    ctx.restore() // remove clip
   }
 
   function baixarCard() {
@@ -229,8 +429,16 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
                 <input style={inp} value={form.nome} onChange={e => setForm(p => ({ ...p, nome: e.target.value }))} placeholder="Seu nome completo" />
               </div>
               <div>
-                <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>CPF</label>
-                <input style={inp} value={form.cpf} onChange={e => setForm(p => ({ ...p, cpf: e.target.value }))} placeholder="000.000.000-00" />
+                <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
+                  CPF *
+                  {form.cpf.replace(/\D/g,'').length === 11 && (
+                    <span style={{ marginLeft: 8, color: validarCPF(form.cpf) ? '#22c55e' : '#f87171', fontWeight: 700 }}>
+                      {validarCPF(form.cpf) ? '✓ válido' : '✗ inválido'}
+                    </span>
+                  )}
+                </label>
+                <input style={{ ...inp, borderColor: form.cpf.replace(/\D/g,'').length === 11 && !validarCPF(form.cpf) ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.15)' }}
+                  value={form.cpf} onChange={e => setForm(p => ({ ...p, cpf: e.target.value }))} placeholder="000.000.000-00" />
               </div>
               <div>
                 <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>WhatsApp *</label>
@@ -242,8 +450,8 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
               </div>
               <button
                 onClick={() => setEtapa('termos')}
-                disabled={!form.nome || !form.whatsapp || !form.email}
-                style={{ background: !form.nome || !form.whatsapp || !form.email ? 'rgba(2,161,83,0.3)' : 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', border: 'none', borderRadius: 12, padding: '15px', fontWeight: 800, fontSize: 16, cursor: !form.nome || !form.whatsapp || !form.email ? 'not-allowed' : 'pointer', marginTop: 8, boxShadow: '0 8px 32px rgba(2,161,83,0.3)' }}>
+                disabled={!form.nome || !form.whatsapp || !form.email || !form.cpf || !validarCPF(form.cpf)}
+                style={{ background: (!form.nome || !form.whatsapp || !form.email || !form.cpf || !validarCPF(form.cpf)) ? 'rgba(2,161,83,0.3)' : 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', border: 'none', borderRadius: 12, padding: '15px', fontWeight: 800, fontSize: 16, cursor: !form.nome || !form.whatsapp || !form.email ? 'not-allowed' : 'pointer', marginTop: 8, boxShadow: '0 8px 32px rgba(2,161,83,0.3)' }}>
                 Avançar para os Termos →
               </button>
             </div>
