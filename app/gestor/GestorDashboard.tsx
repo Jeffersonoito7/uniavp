@@ -153,6 +153,21 @@ function PerfilGestor({ gestor, onNomeAtualizado }: { gestor: Gestor; onNomeAtua
             </a>
           </div>
         </div>
+
+        {/* CNCPV */}
+        <a href={`/cncpv?nome=${encodeURIComponent(gestor.nome)}&whatsapp=${gestor.whatsapp}&email=${encodeURIComponent(gestor.email ?? '')}`}
+          style={{ display: 'block', textDecoration: 'none', marginTop: 20 }}>
+          <div style={{ background: 'linear-gradient(135deg, rgba(2,161,83,0.12), rgba(1,122,62,0.06))', border: '1px solid rgba(2,161,83,0.35)', borderRadius: 16, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}>
+            <div style={{ fontSize: 40, flexShrink: 0 }}>🪪</div>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontWeight: 800, fontSize: 16, color: '#fff', margin: '0 0 2px' }}>Carteira Nacional do Consultor — CNCPV</p>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, margin: 0 }}>Assine o contrato de conduta e emita sua credencial profissional oficial</p>
+            </div>
+            <div style={{ background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap', flexShrink: 0 }}>
+              Emitir →
+            </div>
+          </div>
+        </a>
       </div>
     </>
   )
