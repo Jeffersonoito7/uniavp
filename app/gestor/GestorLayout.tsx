@@ -80,6 +80,24 @@ export default function GestorLayout({
     </button>
   )
 
+  function playHover() {
+    try {
+      const ctx = new AudioContext()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(900, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.06)
+      gain.gain.setValueAtTime(0.04, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07)
+      osc.start(ctx.currentTime)
+      osc.stop(ctx.currentTime + 0.07)
+      osc.onended = () => ctx.close()
+    } catch { /* AudioContext indisponível */ }
+  }
+
   const sidebarW = colapsada ? 56 : 220
 
   return (
@@ -167,8 +185,13 @@ export default function GestorLayout({
                   fontWeight: ativo ? 600 : 400, fontSize: 14,
                   transition: 'all 0.15s', width: '100%',
                 }}
-                onMouseEnter={e => { if (!ativo) e.currentTarget.style.background = 'var(--avp-black)' }}
-                onMouseLeave={e => { if (!ativo) e.currentTarget.style.background = 'none' }}
+                onMouseEnter={e => {
+                  if (!ativo) { e.currentTarget.style.background = 'rgba(2,161,83,0.12)'; e.currentTarget.style.color = 'var(--avp-text)' }
+                  playHover()
+                }}
+                onMouseLeave={e => {
+                  if (!ativo) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--avp-text-dim)' }
+                }}
               >
                 <Icon size={18} />
                 {(!colapsada || isMobile) && <span>{item.label}</span>}

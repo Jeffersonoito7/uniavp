@@ -86,6 +86,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     </button>
   )
 
+  function playHover() {
+    try {
+      const ctx = new AudioContext()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(900, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.06)
+      gain.gain.setValueAtTime(0.04, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07)
+      osc.start(ctx.currentTime)
+      osc.stop(ctx.currentTime + 0.07)
+      osc.onended = () => ctx.close()
+    } catch { /* AudioContext indisponível */ }
+  }
+
   const sidebarW = colapsada ? 56 : 240
 
   return (
@@ -171,6 +189,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             return (
               <Link key={href} href={href} onClick={() => isMobile && setMenuAberto(false)}
                 title={colapsada ? label : undefined}
+                onMouseEnter={e => {
+                  if (!active) e.currentTarget.style.background = 'rgba(99,102,241,0.12)'
+                  if (!active) e.currentTarget.style.color = 'var(--avp-text)'
+                  playHover()
+                }}
+                onMouseLeave={e => {
+                  if (!active) e.currentTarget.style.background = 'transparent'
+                  if (!active) e.currentTarget.style.color = 'var(--avp-text-dim)'
+                }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 10,
                   justifyContent: colapsada ? 'center' : 'flex-start',
@@ -181,7 +208,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   textDecoration: 'none',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
-                  transition: 'background 0.15s',
+                  transition: 'background 0.15s, color 0.15s',
                 }}>
                 <Icon size={17} style={{ flexShrink: 0 }} />
                 {!colapsada && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>}
