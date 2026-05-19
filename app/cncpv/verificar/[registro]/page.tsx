@@ -3,7 +3,7 @@ import { createServiceRoleClient } from '@/lib/supabase-server'
 export default async function VerificarCNCPVPage({ params }: { params: { registro: string } }) {
   const adminClient = createServiceRoleClient()
   const { data } = await (adminClient.from('cncpv_assinaturas') as any)
-    .select('nome, numero_registro, assinado_em, cpf, whatsapp, hash_contrato')
+    .select('nome, numero_registro, assinado_em, cpf, whatsapp, hash_contrato, pdf_url')
     .eq('numero_registro', params.registro)
     .maybeSingle()
 
@@ -36,6 +36,13 @@ export default async function VerificarCNCPVPage({ params }: { params: { registr
                   <span key={s} style={{ background: 'rgba(2,161,83,0.15)', border: '1px solid rgba(2,161,83,0.3)', color: '#02A153', borderRadius: 20, padding: '4px 14px', fontSize: 12, fontWeight: 700 }}>{s}</span>
                 ))}
               </div>
+
+              {data.pdf_url && (
+                <a href={data.pdf_url} target="_blank" rel="noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(230,57,70,0.1)', border: '1px solid rgba(230,57,70,0.3)', color: '#f87171', borderRadius: 10, padding: '10px 20px', fontWeight: 700, fontSize: 14, textDecoration: 'none', marginBottom: 16, width: '100%', justifyContent: 'center' }}>
+                  📄 Baixar Contrato Assinado (PDF)
+                </a>
+              )}
 
               {data.hash_contrato && (
                 <div style={{ background: 'rgba(200,165,53,0.06)', border: '1px solid rgba(200,165,53,0.2)', borderRadius: 10, padding: '12px 16px', textAlign: 'left' }}>

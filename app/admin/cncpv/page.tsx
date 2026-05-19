@@ -12,7 +12,7 @@ export default async function AdminCNCPVPage() {
   if (!adminRecord) redirect('/entrar?p=adm')
 
   const { data: assinaturas, count } = await (adminClient.from('cncpv_assinaturas') as any)
-    .select('id, nome, cpf, whatsapp, email, numero_registro, assinado_em, hash_contrato', { count: 'exact' })
+    .select('id, nome, cpf, whatsapp, email, numero_registro, assinado_em, hash_contrato, pdf_url', { count: 'exact' })
     .order('assinado_em', { ascending: false })
 
   function mascaraCPF(cpf: string | null) {
@@ -69,7 +69,7 @@ export default async function AdminCNCPVPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--avp-border)', background: 'rgba(255,255,255,0.02)' }}>
-                {['Registro', 'Nome', 'CPF', 'WhatsApp', 'E-mail', 'Emissão', 'Hash', 'Verificar'].map(h => (
+                {['Registro', 'Nome', 'CPF', 'WhatsApp', 'E-mail', 'Emissão', 'Hash', 'PDF', 'Verificar'].map(h => (
                   <th key={h} style={{ padding: '12px 16px', textAlign: 'left', color: 'var(--avp-text-dim)', fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.8, whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
@@ -77,7 +77,7 @@ export default async function AdminCNCPVPage() {
             <tbody>
               {(assinaturas ?? []).length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ padding: '48px 16px', textAlign: 'center', color: 'var(--avp-text-dim)' }}>
+                  <td colSpan={9} style={{ padding: '48px 16px', textAlign: 'center', color: 'var(--avp-text-dim)' }}>
                     Nenhuma carteira emitida ainda
                   </td>
                 </tr>
@@ -110,6 +110,14 @@ export default async function AdminCNCPVPage() {
                         style={{ fontFamily: 'monospace', fontSize: 10, color: '#c8a535', background: 'rgba(200,165,53,0.08)', border: '1px solid rgba(200,165,53,0.2)', borderRadius: 4, padding: '2px 6px' }}>
                         {a.hash_contrato.slice(0, 12)}…
                       </span>
+                    ) : <span style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>—</span>}
+                  </td>
+                  <td style={{ padding: '14px 16px' }}>
+                    {a.pdf_url ? (
+                      <a href={a.pdf_url} target="_blank" rel="noreferrer"
+                        style={{ background: '#e6394615', border: '1px solid #e6394640', color: '#f87171', borderRadius: 6, padding: '4px 10px', fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
+                        📄 PDF
+                      </a>
                     ) : <span style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>—</span>}
                   </td>
                   <td style={{ padding: '14px 16px' }}>

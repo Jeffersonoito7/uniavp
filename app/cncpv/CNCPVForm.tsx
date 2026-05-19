@@ -45,6 +45,7 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
   const [erro, setErro] = useState('')
   const [registro, setRegistro] = useState('')
   const [hashContrato, setHashContrato] = useState('')
+  const [pdfUrl, setPdfUrl] = useState('')
   const [wppEnviado, setWppEnviado] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -52,7 +53,7 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
   const bg = 'linear-gradient(135deg, #020d1a 0%, #03183a 60%, #021a0e 100%)'
 
   useEffect(() => {
-    if (etapa === 'carteira' && registro) gerarCard()
+    if (etapa === 'carteira' && registro) { gerarCard() }
   }, [etapa, registro, hashContrato])
 
   async function assinar() {
@@ -70,6 +71,7 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
     if (data.ok) {
       setRegistro(data.numero_registro)
       setHashContrato(data.hash_contrato ?? '')
+      setPdfUrl(data.pdf_url ?? '')
       setWppEnviado(!data.jaExistia)
       setEtapa('carteira')
     } else {
@@ -78,7 +80,7 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
     setLoading(false)
   }
 
-  function gerarCard() {
+  async function gerarCard() {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')!
@@ -355,25 +357,29 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
       ctx.fillText(`SHA-256: ${hashContrato}`, W / 2, H - 7)
     }
 
-    // ── QR CODE placeholder (canto inferior direito) ────────────────
-    const qx = W - 100; const qy = H - 140
-    ctx.fillStyle = '#fff'
-    ctx.fillRect(qx, qy, 78, 78)
-    // Padrão QR simulado
-    const qcells = 7
-    const cs = 78 / qcells
-    for (let r = 0; r < qcells; r++) {
-      for (let c = 0; c < qcells; c++) {
-        const isCorner = (r < 2 && c < 2) || (r < 2 && c > qcells - 3) || (r > qcells - 3 && c < 2)
-        const rand = ((r * 7 + c * 13) % 3) === 0
-        if (isCorner || rand) {
-          ctx.fillStyle = isCorner ? '#000' : `rgba(0,0,0,${0.5 + Math.random() * 0.5})`
-          ctx.fillRect(qx + c * cs + 1, qy + r * cs + 1, cs - 1, cs - 1)
-        }
+    // ── QR CODE real (canto inferior direito) ────────────────────────
+    const qx = W - 108; const qy = H - 148; const qSize = 90
+    const verUrl = `${window.location.origin}/cncpv/verificar/${registro}`
+    await new Promise<void>(resolve => {
+      const qrImg = new Image()
+      // Gera QR via API pública (não requer lib client)
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(verUrl)}&color=141414&bgcolor=ffffff&margin=1`
+      qrImg.crossOrigin = 'anonymous'
+      qrImg.onload = () => {
+        ctx.fillStyle = '#fff'
+        ctx.fillRect(qx - 4, qy - 4, qSize + 8, qSize + 8)
+        ctx.drawImage(qrImg, qx, qy, qSize, qSize)
+        ctx.strokeStyle = '#c8a535'; ctx.lineWidth = 2
+        ctx.strokeRect(qx - 4, qy - 4, qSize + 8, qSize + 8)
+        ctx.fillStyle = 'rgba(200,165,53,0.7)'
+        ctx.font = 'bold 7px Arial'
+        ctx.textAlign = 'center'
+        ctx.fillText('VERIFICAR', qx + qSize / 2, qy + qSize + 6)
+        resolve()
       }
-    }
-    ctx.strokeStyle = '#c8a535'; ctx.lineWidth = 2
-    ctx.strokeRect(qx, qy, 78, 78)
+      qrImg.onerror = () => resolve()
+      qrImg.src = qrApiUrl
+    })
 
     // ── HOLOGRAMA (canto superior direito) ─────────────────────────
     const holX = W - 58; const holY = 120
@@ -564,9 +570,15 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
 
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <button onClick={baixarCard}
-            style={{ background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', border: 'none', borderRadius: 12, padding: '14px 32px', fontWeight: 800, fontSize: 15, cursor: 'pointer', boxShadow: '0 8px 32px rgba(2,161,83,0.4)' }}>
-            ⬇️ Baixar Carteira CNCPV
+            style={{ background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', border: 'none', borderRadius: 12, padding: '14px 28px', fontWeight: 800, fontSize: 15, cursor: 'pointer', boxShadow: '0 8px 32px rgba(2,161,83,0.4)' }}>
+            🖼️ Baixar Carteira (PNG)
           </button>
+          {pdfUrl && (
+            <a href={pdfUrl} target="_blank" rel="noreferrer"
+              style={{ background: 'linear-gradient(135deg, #e63946, #c1121f)', color: '#fff', border: 'none', borderRadius: 12, padding: '14px 28px', fontWeight: 800, fontSize: 15, cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              📄 Baixar Contrato (PDF)
+            </a>
+          )}
           <button onClick={() => {
             navigator.clipboard.writeText(`${window.location.origin}/cncpv/verificar/${registro}`)
             alert('Link de verificação copiado!')
