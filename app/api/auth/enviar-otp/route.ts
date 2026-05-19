@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { enviarWhatsApp } from '@/lib/whatsapp'
 
 export const dynamic = 'force-dynamic'
-
-const EVO_URL = process.env.EVOLUTION_API_URL
-const EVO_KEY = process.env.EVOLUTION_API_KEY
 
 function gerarCodigo(): string {
   return String(Math.floor(100000 + Math.random() * 900000))
@@ -14,23 +12,6 @@ async function buscarInstanciaAdmin(adminClient: ReturnType<typeof createService
   const { data } = await (adminClient.from('admins') as any)
     .select('whatsapp_instancia').eq('ativo', true).not('whatsapp_instancia', 'is', null).limit(1).maybeSingle()
   return data?.whatsapp_instancia ?? null
-}
-
-async function enviarWhatsApp(numero: string, codigo: string, instancia: string): Promise<boolean> {
-  if (!EVO_URL || !EVO_KEY) return false
-  try {
-    const res = await fetch(`${EVO_URL}/message/sendText/${instancia}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', apikey: EVO_KEY },
-      body: JSON.stringify({
-        number: numero.replace(/\D/g, ''),
-        textMessage: {
-          text: `🔐 *Código de verificação*\n\nSeu código é: *${codigo}*\n\nVálido por 10 minutos. Não compartilhe com ninguém.`
-        }
-      })
-    })
-    return res.ok
-  } catch { return false }
 }
 
 
@@ -81,9 +62,8 @@ export async function POST() {
   // Envia via WhatsApp — usa instância específica do usuário ou a do admin como fallback
   if (whatsapp) {
     const instancia = instanciaEspecifica ?? await buscarInstanciaAdmin(adminClient)
-    if (instancia) {
-      enviado = await enviarWhatsApp(whatsapp, codigo, instancia)
-    }
+    const msg = `🔐 *Código de verificação*\n\nSeu código é: *${codigo}*\n\nVálido por 10 minutos. Não compartilhe com ninguém.`
+    enviado = await enviarWhatsApp(whatsapp, msg, instancia)
   }
 
   // Salva OTP no banco
