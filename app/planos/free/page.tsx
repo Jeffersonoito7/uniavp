@@ -145,7 +145,7 @@ export default async function PlanoFreePage() {
             Criar conta grátis
           </a>
           <p style={{ fontSize: 12, color: 'rgba(241,245,249,0.35)', marginTop: 14 }}>
-            Já tem conta? <a href="/entrar" style={{ color: '#4ade80', textDecoration: 'none' }}>Entrar →</a>
+            Já tem conta? <a href="/entrar?p=free" style={{ color: '#4ade80', textDecoration: 'none' }}>Entrar →</a>
           </p>
         </div>
 

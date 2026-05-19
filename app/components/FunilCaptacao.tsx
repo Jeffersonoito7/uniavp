@@ -285,7 +285,7 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
             </form>
 
             <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: 13, marginTop: 20 }}>
-              Já tem conta? <a href="/entrar" style={{ color: '#60a5fa', textDecoration: 'none', fontWeight: 600 }}>Entrar aqui</a>
+              Já tem conta? <a href="/entrar?p=free" style={{ color: '#60a5fa', textDecoration: 'none', fontWeight: 600 }}>Entrar aqui</a>
             </p>
           </div>
         </div>

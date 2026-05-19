@@ -23,7 +23,7 @@ const paineis = [
   {
     label: 'UNIAVP FREE',
     desc: 'Como o FREE vê a plataforma',
-    href: '/free/85999990002',
+    href: '/aluno/85999990002',
     icon: '🎓',
     cor: '#6366f1',
     email: 'ana.consultora@uniavp.demo',

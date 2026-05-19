@@ -7,7 +7,7 @@ const DOMINIO_MASTER = 'universidade.oito7digital.com.br'
 export default async function SuperLoginPage() {
   const host = headers().get('host')?.replace(/:\d+$/, '') ?? ''
   if (host !== DOMINIO_MASTER && host !== 'localhost') {
-    redirect('/login')
+    redirect('/entrar?p=adm')
   }
   return <SuperLoginForm />
 }

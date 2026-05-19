@@ -56,7 +56,7 @@ export default function GestorLayout({
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
     await supabase.auth.signOut()
-    window.location.href = '/entrar'
+    window.location.href = '/entrar?p=pro'
   }
 
   function handleNav(id: string) {

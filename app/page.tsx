@@ -35,7 +35,7 @@ export default async function HomePage() {
 
   const { data: aluno } = await (adminClient.from('alunos') as any)
     .select('whatsapp').eq('user_id', user.id).maybeSingle()
-  if (aluno?.whatsapp) redirect(`/free/${aluno.whatsapp}`)
+  if (aluno?.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
-  redirect('/entrar')
+  redirect('/entrar?p=free')
 }

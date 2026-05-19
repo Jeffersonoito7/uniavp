@@ -214,7 +214,7 @@ export default async function PlanoProPage() {
             Pagamento via PIX • Acesso em minutos • Sem fidelidade
           </p>
           <p style={{ fontSize: 13, color: 'rgba(241,245,249,0.3)', marginTop: 10 }}>
-            Já tem conta? <a href="/entrar" style={{ color: '#818cf8', textDecoration: 'none' }}>Entrar →</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+            Já tem conta? <a href="/entrar?p=pro" style={{ color: '#818cf8', textDecoration: 'none' }}>Entrar →</a>&nbsp;&nbsp;|&nbsp;&nbsp;
             Prefere o FREE? <a href="/planos/free" style={{ color: '#4ade80', textDecoration: 'none' }}>Ver plano gratuito →</a>
           </p>
         </div>
