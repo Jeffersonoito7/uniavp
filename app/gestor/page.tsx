@@ -96,6 +96,13 @@ export default async function GestorPage() {
     .select('valor').eq('chave', 'modulo_capa_padrao').maybeSingle()
   const capaDefault = capaCfg?.valor ? String(capaCfg.valor).replace(/"/g, '') : null
 
+  // Documentos para download disponíveis no painel PRO
+  const { data: documentosPro } = await (adminClient.from('documentos_painel') as any)
+    .select('id, titulo, descricao, pdf_url')
+    .eq('ativo', true)
+    .in('painel', ['pro', 'ambos'])
+    .order('ordem', { ascending: true })
+
   // PROs ativos indicados por este gestor (para o benefício de PRO gratuito)
   const { count: prosIndicados } = await (adminClient.from('gestores') as any)
     .select('id', { count: 'exact', head: true })
@@ -114,6 +121,7 @@ export default async function GestorPage() {
       capaDefault={capaDefault}
       prosIndicados={prosIndicados ?? 0}
       cncpvHabilitado={siteConfig.cncpvHabilitado}
+      documentos={documentosPro ?? []}
     />
   )
 }

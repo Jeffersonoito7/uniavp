@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import {
   LayoutDashboard, BookOpen, Users, ShieldCheck,
   Trophy, Settings, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper, Star,
-  Menu, X, ChevronLeft, ChevronRight, Link2, IdCard
+  Menu, X, ChevronLeft, ChevronRight, Link2, IdCard, FileText
 } from 'lucide-react'
 import LogoutButton from '@/app/components/LogoutButton'
 import SupportChat from '@/app/components/SupportChat'
@@ -21,6 +21,7 @@ const navItems = [
   { href: '/admin/noticias', label: 'Notícias', icon: Newspaper },
   { href: '/admin/captacao', label: 'Links de Captação', icon: Link2 },
   { href: '/admin/cncpv', label: 'CNCPV', icon: IdCard },
+  { href: '/admin/documentos', label: 'Documentos', icon: FileText },
   { href: '/admin/ranking', label: 'Ranking', icon: Trophy },
   { href: '/admin/premios', label: 'Prêmios', icon: Gift },
   { href: '/admin/artes', label: 'Artes', icon: Palette },

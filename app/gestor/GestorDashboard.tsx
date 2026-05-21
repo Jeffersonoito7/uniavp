@@ -275,9 +275,9 @@ function CardProGratuito({ prosIndicados }: { prosIndicados: number }) {
 }
 
 export default function GestorDashboard({
-  gestor, consultores, progressoMap, indicacoesMap, artesTemplatesIniciais, baseUrl, capaDefault, prosIndicados, cncpvHabilitado,
+  gestor, consultores, progressoMap, indicacoesMap, artesTemplatesIniciais, baseUrl, capaDefault, prosIndicados, cncpvHabilitado, documentos,
 }: {
-  gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; indicacoesMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string; capaDefault?: string | null; prosIndicados?: number; cncpvHabilitado?: boolean
+  gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; indicacoesMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string; capaDefault?: string | null; prosIndicados?: number; cncpvHabilitado?: boolean; documentos?: { id: string; titulo: string; descricao: string | null; pdf_url: string }[]
 }) {
   const [aba, setAba] = useState('dashboard')
   const [listaConsultores, setListaConsultores] = useState(consultores)
@@ -613,6 +613,28 @@ export default function GestorDashboard({
               </div>
             ))}
           </div>
+
+          {/* Documentos para download */}
+          {documentos && documentos.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ fontWeight: 700, fontSize: 15, color: 'var(--avp-text)', marginBottom: 12 }}>📄 Documentos</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {documentos.map(doc => (
+                  <a key={doc.id} href={doc.pdf_url} target="_blank" rel="noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '14px 18px', textDecoration: 'none' }}>
+                    <span style={{ fontSize: 28, flexShrink: 0 }}>📄</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--avp-text)', margin: 0 }}>{doc.titulo}</p>
+                      {doc.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.descricao}</p>}
+                    </div>
+                    <span style={{ background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
+                      ⬇️ Baixar
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Card PRO Gratuito por Rede */}
           {CardProGratuito({ prosIndicados: prosIndicados ?? 0 })}

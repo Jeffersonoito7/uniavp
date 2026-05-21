@@ -163,6 +163,13 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
   const nivel = calcularNivel(totalPontos)
   const progressoPct = nivel.prox ? Math.round(((nivel.atual - nivel.min) / (nivel.max - nivel.min)) * 100) : 100
 
+  // Documentos para download disponíveis no painel FREE
+  const { data: documentosFree } = await (adminClient.from('documentos_painel') as any)
+    .select('id, titulo, descricao, pdf_url')
+    .eq('ativo', true)
+    .in('painel', ['free', 'ambos'])
+    .order('ordem', { ascending: true })
+
 
   const totalAulas = trilha.length
   const aulasConcluidas = trilha.filter(a => a.status === 'concluida').length
@@ -385,6 +392,28 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                 </div>
               </div>
             </Link>
+          )}
+
+          {/* ── DOCUMENTOS PARA DOWNLOAD ── */}
+          {!moduloAtivo && documentosFree && documentosFree.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ fontWeight: 700, fontSize: 15, color: 'var(--avp-text)', marginBottom: 12 }}>📄 Documentos</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {documentosFree.map((doc: any) => (
+                  <a key={doc.id} href={doc.pdf_url} target="_blank" rel="noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '14px 18px', textDecoration: 'none', transition: 'border-color 0.2s' }}>
+                    <span style={{ fontSize: 28, flexShrink: 0 }}>📄</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--avp-text)', margin: 0 }}>{doc.titulo}</p>
+                      {doc.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.descricao}</p>}
+                    </div>
+                    <span style={{ background: 'var(--grad-brand)', color: '#fff', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
+                      ⬇️ Baixar
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* ── INDICAÇÃO ── */}
