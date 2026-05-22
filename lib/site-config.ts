@@ -22,15 +22,50 @@ export type SiteConfig = {
   cncpvHabilitado: boolean
 }
 
+const DOMINIO_MASTER = 'universidade.oito7digital.com.br'
+
+// Config padrão da Oito7Digital (domínio master — sem tenant)
+const CONFIG_MASTER: SiteConfig = {
+  nome: 'Oito7 Digital',
+  slogan: 'Plataforma White-Label de Formação',
+  logoUrl: '',
+  logoMenuUrl: '',
+  logoPaginaUrl: '',
+  logoFaviconUrl: '',
+  corPrimaria: '#333687',
+  corSecundaria: '#02A153',
+  corFundo: '#08090d',
+  corCard: '#181b24',
+  corBorda: '#252836',
+  corTexto: '#f0f1f5',
+  corSidebar: '#181b24',
+  whatsappSuporte: '',
+  dominioCustomizado: '',
+  planosAtivo: false,
+  isDominioMaster: true,
+  cncpvHabilitado: false,
+}
+
 export async function getSiteConfig(host?: string): Promise<SiteConfig> {
   const { unstable_noStore: noStore } = await import('next/cache')
   noStore()
+
+  const domain = (host ?? '').replace(/:\d+$/, '')
+
+  // Domínio master retorna config própria sem buscar no banco
+  if (domain === DOMINIO_MASTER || domain === 'localhost') {
+    return CONFIG_MASTER
+  }
+
+  const tenantId = domain ? await getTenantId(domain) : null
+
+  // Sem tenant mapeado — retorna config master como fallback seguro
+  if (!tenantId) return CONFIG_MASTER
+
   const client = createServiceRoleClient()
-
-  const tenantId = host ? await getTenantId(host) : null
-
-  let query = (client.from('configuracoes') as any)
+  const { data } = await (client.from('configuracoes') as any)
     .select('chave, valor')
+    .eq('tenant_id', tenantId)
     .in('chave', [
       'site_nome', 'site_slogan', 'site_logo_url',
       'logo_menu_url', 'logo_pagina_url', 'logo_favicon_url',
@@ -38,10 +73,6 @@ export async function getSiteConfig(host?: string): Promise<SiteConfig> {
       'cor_fundo', 'cor_card', 'cor_borda', 'cor_texto', 'cor_sidebar',
       'whatsapp_suporte', 'dominio_customizado', 'planos_ativo', 'cncpv_habilitado',
     ])
-
-  if (tenantId) query = query.eq('tenant_id', tenantId)
-
-  const { data } = await query
 
   const map: Record<string, string> = {}
   for (const row of data ?? []) {
