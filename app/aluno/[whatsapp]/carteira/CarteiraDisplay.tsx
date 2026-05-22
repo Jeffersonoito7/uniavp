@@ -38,7 +38,7 @@ function Field({ label, value, flex }: { label: string; value: string; flex?: bo
   )
 }
 
-export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicial, dataFormacao, validade, cargaHoraria, turma, whatsapp, status, empresaNome = 'UNIVERSIDADE', empresaLogoUrl, logoEsquerdaUrl, logoDireitaUrl, assinaturaNome = 'Jose Tiburcio dos Santos', assinaturaCargo = 'PRESIDENTE', assinaturaEmpresa, assinaturaUrl, urlVerificacao = '', tagline = '', corPrimaria, corSecundaria }: Props) {
+export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicial, dataFormacao, validade, cargaHoraria, turma, whatsapp, status, empresaNome = 'UNIVERSIDADE', empresaLogoUrl, logoEsquerdaUrl, logoDireitaUrl, assinaturaNome = 'Presidente', assinaturaCargo = 'PRESIDENTE', assinaturaEmpresa, assinaturaUrl, urlVerificacao = '', tagline = '', corPrimaria, corSecundaria }: Props) {
   const NAVY = corPrimaria || NAVY_DEFAULT
   const GREEN = corSecundaria || GREEN_DEFAULT
   const GREEN_LABEL = corSecundaria || '#1A7A50'
@@ -167,7 +167,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
 
         {/* Texto AVP diagonal tênue */}
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', opacity: 0.025 }}>
-          <div style={{ fontSize: 160, fontWeight: 900, color: NAVY, transform: 'rotate(-18deg)', letterSpacing: -8, whiteSpace: 'nowrap' as const }}>AVP AVP</div>
+          <div style={{ fontSize: 160, fontWeight: 900, color: NAVY, transform: 'rotate(-18deg)', letterSpacing: -8, whiteSpace: 'nowrap' as const }}>{empresaNome} {empresaNome}</div>
         </div>
 
         {/* Foto 3x4 */}
@@ -218,7 +218,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
             <Field label="Data de Formação" value={dataFormacao} flex />
             <Field label="Validade" value={validade} flex />
           </div>
-          <Field label="Curso de Formação" value="Formação de Consultor AVP" />
+          <Field label="Curso de Formação" value={`Formação de Consultor ${empresaNome}`} />
           <div style={{ display: 'flex', gap: 10 }}>
             <Field label="Carga Horária" value={cargaHoraria} flex />
             <Field label="Turma" value={turma} flex />
@@ -259,7 +259,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
       {/* Cabeçalho */}
       <div style={{ background: NAVY, height: 78, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <p style={{ color: '#fff', fontWeight: 900, fontSize: 20, margin: 0, letterSpacing: 2.5 }}>CONSULTOR CERTIFICADO</p>
-        <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11, margin: '4px 0 0', letterSpacing: 2 }}>AUTOVALE PREVENÇÕES</p>
+        <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11, margin: '4px 0 0', letterSpacing: 2 }}>{empresaNome.toUpperCase()}</p>
       </div>
 
       {/* Corpo */}
@@ -285,7 +285,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
             <p style={{ fontSize: 10.5, fontWeight: 700, color: '#111', margin: '0 0 10px', textAlign: 'center' as const, lineHeight: 1.7, letterSpacing: 0.3 }}>
               ESTA CARTEIRA CERTIFICA QUE O PORTADOR<br/>
               CONCLUIU COM APROVEITAMENTO O CURSO<br/>
-              DE FORMAÇÃO DA AUTOVALE PREVENÇÕES.
+              DE FORMAÇÃO DA {empresaNome.toUpperCase()}.
             </p>
             <div style={{ width: '50%', height: 0.8, background: '#ccc', margin: '0 auto 10px' }} />
             <p style={{ fontSize: 9.5, color: '#333', margin: 0, textAlign: 'center' as const, lineHeight: 1.8, letterSpacing: 0.2 }}>

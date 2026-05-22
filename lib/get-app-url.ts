@@ -22,7 +22,7 @@ export async function getAppUrl(): Promise<string> {
     }
   } catch { /* usa env */ }
 
-  cached = process.env.NEXT_PUBLIC_APP_URL || 'https://uniavp.autovaleprevencoes.org.br'
+  cached = process.env.NEXT_PUBLIC_APP_URL || ''
   cacheAt = Date.now()
   return cached
 }

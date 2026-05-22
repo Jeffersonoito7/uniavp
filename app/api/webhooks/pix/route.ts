@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp } from '@/lib/whatsapp'
+import { getAppUrl } from '@/lib/get-app-url'
 
 export const dynamic = 'force-dynamic'
 
@@ -65,7 +66,7 @@ export async function POST(req: NextRequest) {
             .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
             .eq('id', gestor.id)
 
-          const appUrl = 'https://uniavp.autovaleprevencoes.org.br'
+          const appUrl = await getAppUrl()
           const valor = Number(pagGestor.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
           if (gestor.whatsapp) {

@@ -20,9 +20,9 @@ export default async function TesteCarteira() {
       turma="2025"
       whatsapp="5500000000000"
       status="concluido"
-      empresaNome={cfg['site_nome'] || 'AUTOVALE PREVENÇÕES'}
+      empresaNome={cfg['site_nome'] || 'UNIVERSIDADE'}
       empresaLogoUrl={cfg['site_logo_url'] || null}
-      assinaturaNome={cfg['carteira_assinatura_nome'] || 'Jose Tiburcio dos Santos'}
+      assinaturaNome={cfg['carteira_assinatura_nome'] || 'Presidente'}
       assinaturaCargo={cfg['carteira_assinatura_cargo'] || 'PRESIDENTE'}
       assinaturaEmpresa={cfg['carteira_assinatura_empresa'] || ''}
       assinaturaUrl={cfg['carteira_assinatura_url'] || null}

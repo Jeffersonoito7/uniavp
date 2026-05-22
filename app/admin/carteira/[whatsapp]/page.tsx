@@ -54,7 +54,7 @@ export default async function AdminCarteiraPage({ params }: { params: { whatsapp
       status={aluno.status}
       empresaNome={cfg['site_nome'] || 'UNIVERSIDADE'}
       empresaLogoUrl={cfg['site_logo_url'] || null}
-      assinaturaNome={cfg['carteira_assinatura_nome'] || 'Jose Tiburcio dos Santos'}
+      assinaturaNome={cfg['carteira_assinatura_nome'] || 'Presidente'}
       assinaturaCargo={cfg['carteira_assinatura_cargo'] || 'PRESIDENTE'}
       assinaturaEmpresa={cfg['carteira_assinatura_empresa'] || cfg['site_nome'] || ''}
       assinaturaUrl={cfg['carteira_assinatura_url'] || null}

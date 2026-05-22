@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
 import { getLimitePROGratuito } from '@/lib/pros-indicados'
+import { getAppUrl } from '@/lib/get-app-url'
 import GestorDashboard from './GestorDashboard'
 
 export default async function GestorPage() {
@@ -88,10 +89,10 @@ export default async function GestorPage() {
     .select('*').order('created_at')
   const artesTemplates = (templatesRaw ?? []).filter((t: any) => !t.gestor_id || t.gestor_id === gestor.id)
 
-  const siteConfig = await getSiteConfig()
+  const [siteConfig, appUrl] = [await getSiteConfig(), await getAppUrl()]
   const baseUrl = siteConfig.dominioCustomizado
     ? `https://${siteConfig.dominioCustomizado}`
-    : 'https://uniavp.autovaleprevencoes.org.br'
+    : appUrl
 
   const { data: capaCfg } = await (adminClient.from('configuracoes') as any)
     .select('valor').eq('chave', 'modulo_capa_padrao').maybeSingle()
