@@ -16,8 +16,10 @@ export default async function AdminDashboard() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/entrar?p=adm')
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
+  const tid = adminRecord.tenant_id as string | null
+  const tq = (q: any) => tid ? q.eq('tenant_id', tid) : q
 
   const [
     { count: totalAlunos },
@@ -29,22 +31,19 @@ export default async function AdminDashboard() {
     { count: totalGestores },
     { count: gestoresAtivos },
   ] = await Promise.all([
-    (adminClient.from('alunos') as any).select('id', { count: 'exact', head: true }),
-    (adminClient.from('alunos') as any).select('id', { count: 'exact', head: true }).eq('status', 'ativo'),
-    (adminClient.from('alunos') as any).select('id', { count: 'exact', head: true }).eq('status', 'concluido'),
-    (adminClient.from('modulos') as any).select('id', { count: 'exact', head: true }),
-    (adminClient.from('aulas') as any).select('id', { count: 'exact', head: true }),
-    (adminClient.from('aulas') as any).select('id', { count: 'exact', head: true }).eq('publicado', true),
-    (adminClient.from('gestores') as any).select('id', { count: 'exact', head: true }),
-    (adminClient.from('gestores') as any).select('id', { count: 'exact', head: true }).eq('ativo', true),
+    tq((adminClient.from('alunos') as any).select('id', { count: 'exact', head: true })),
+    tq((adminClient.from('alunos') as any).select('id', { count: 'exact', head: true })).eq('status', 'ativo'),
+    tq((adminClient.from('alunos') as any).select('id', { count: 'exact', head: true })).eq('status', 'concluido'),
+    tq((adminClient.from('modulos') as any).select('id', { count: 'exact', head: true })),
+    tq((adminClient.from('aulas') as any).select('id', { count: 'exact', head: true })),
+    tq((adminClient.from('aulas') as any).select('id', { count: 'exact', head: true })).eq('publicado', true),
+    tq((adminClient.from('gestores') as any).select('id', { count: 'exact', head: true })),
+    tq((adminClient.from('gestores') as any).select('id', { count: 'exact', head: true })).eq('ativo', true),
   ])
 
-  // Taxa de conclusão
   const taxaConclusao = totalAlunos ? Math.round(((alunosConcluidos ?? 0) / (totalAlunos ?? 1)) * 100) : 0
 
-  // Progresso médio (alunos ativos)
-  const { data: progressoRows } = await (adminClient.from('progresso') as any)
-    .select('aluno_id').eq('aprovado', true)
+  const { data: progressoRows } = await tq((adminClient.from('progresso') as any).select('aluno_id').eq('aprovado', true))
   const totalAulasPublicadasN = aulasPublicadas ?? 1
   const progressoPorAluno: Record<string, number> = {}
   for (const p of progressoRows ?? []) {
@@ -55,11 +54,8 @@ export default async function AdminDashboard() {
     ? Math.round(vals.reduce((s, v) => s + Math.min(100, Math.round((v / totalAulasPublicadasN) * 100)), 0) / vals.length)
     : 0
 
-  // Novos cadastros nos últimos 7 dias
   const seteAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  const { count: novosAlunos } = await (adminClient.from('alunos') as any)
-    .select('id', { count: 'exact', head: true })
-    .gte('created_at', seteAtras)
+  const { count: novosAlunos } = await tq((adminClient.from('alunos') as any).select('id', { count: 'exact', head: true })).gte('created_at', seteAtras)
 
   const stats = [
     { label: 'Total de Alunos', value: totalAlunos ?? 0, sub: `${alunosAtivos ?? 0} ativos`, cor: '#3b82f6', icon: '👥' },

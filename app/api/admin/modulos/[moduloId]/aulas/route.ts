@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { getAdminContext } from '@/lib/admin-context'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,14 +10,16 @@ export async function POST(req: NextRequest, { params }: { params: { moduloId: s
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (!adminRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+  const ctx = await getAdminContext(user.id, adminClient)
+  if (!ctx) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const body = await req.json()
 
-  const { data: ultima } = await (adminClient.from('aulas') as any)
+  let ultimaQuery = (adminClient.from('aulas') as any)
     .select('ordem')
     .eq('modulo_id', params.moduloId)
+  if (ctx.tenantId) ultimaQuery = ultimaQuery.eq('tenant_id', ctx.tenantId)
+  const { data: ultima } = await ultimaQuery
     .order('ordem', { ascending: false })
     .limit(1)
     .maybeSingle()
@@ -45,6 +48,7 @@ export async function POST(req: NextRequest, { params }: { params: { moduloId: s
       link_externo_titulo: body.link_externo_titulo ?? null,
       mostrar_links_app: body.mostrar_links_app ?? false,
       liberacao_modo: body.liberacao_modo ?? 'automatico',
+      ...(ctx.tenantId ? { tenant_id: ctx.tenantId } : {}),
     })
     .select('*')
     .single()
@@ -60,8 +64,8 @@ export async function PUT(req: NextRequest, { params }: { params: { moduloId: st
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (!adminRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+  const ctx = await getAdminContext(user.id, adminClient)
+  if (!ctx) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const body = await req.json()
   const { id, ...updates } = body
@@ -78,12 +82,12 @@ export async function PUT(req: NextRequest, { params }: { params: { moduloId: st
     if (campo in updates) atualizacoes[campo] = updates[campo]
   }
 
-  const { data: aula, error } = await (adminClient.from('aulas') as any)
+  let putQuery = (adminClient.from('aulas') as any)
     .update(atualizacoes)
     .eq('id', id)
     .eq('modulo_id', params.moduloId)
-    .select('*')
-    .single()
+  if (ctx.tenantId) putQuery = putQuery.eq('tenant_id', ctx.tenantId)
+  const { data: aula, error } = await putQuery.select('*').single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 

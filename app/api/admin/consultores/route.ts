@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { getAdminContext } from '@/lib/admin-context'
 
 export const dynamic = 'force-dynamic'
-
-async function verificarAdmin(adminClient: ReturnType<typeof createServiceRoleClient>, userId: string) {
-  const { data } = await (adminClient.from('admins') as any)
-    .select('id').eq('user_id', userId).eq('ativo', true).maybeSingle()
-  return !!data
-}
 
 export async function PUT(req: NextRequest) {
   const supabase = await createClient()
@@ -15,7 +10,8 @@ export async function PUT(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  if (!await verificarAdmin(adminClient, user.id)) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+  const ctx = await getAdminContext(user.id, adminClient)
+  if (!ctx) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const { id, nome, email, whatsapp, status, gestor_nome, gestor_whatsapp, nova_senha, user_id } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
@@ -28,8 +24,9 @@ export async function PUT(req: NextRequest) {
   if (gestor_nome !== undefined) updates.gestor_nome = gestor_nome
   if (gestor_whatsapp !== undefined) updates.gestor_whatsapp = gestor_whatsapp
 
-  const { data: aluno, error } = await (adminClient.from('alunos') as any)
-    .update(updates).eq('id', id).select('*').single()
+  let putQuery = (adminClient.from('alunos') as any).update(updates).eq('id', id)
+  if (ctx.tenantId) putQuery = putQuery.eq('tenant_id', ctx.tenantId)
+  const { data: aluno, error } = await putQuery.select('*').single()
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
   const authUserId = aluno.user_id ?? user_id
@@ -51,17 +48,21 @@ export async function DELETE(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  if (!await verificarAdmin(adminClient, user.id)) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+  const ctx = await getAdminContext(user.id, adminClient)
+  if (!ctx) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const { id } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
   // Busca o user_id do aluno
-  const { data: aluno } = await (adminClient.from('alunos') as any)
-    .select('user_id').eq('id', id).maybeSingle()
+  let deleteSelectQuery = (adminClient.from('alunos') as any).select('user_id').eq('id', id)
+  if (ctx.tenantId) deleteSelectQuery = deleteSelectQuery.eq('tenant_id', ctx.tenantId)
+  const { data: aluno } = await deleteSelectQuery.maybeSingle()
 
   // Remove do banco
-  const { error } = await (adminClient.from('alunos') as any).delete().eq('id', id)
+  let deleteQuery = (adminClient.from('alunos') as any).delete().eq('id', id)
+  if (ctx.tenantId) deleteQuery = deleteQuery.eq('tenant_id', ctx.tenantId)
+  const { error } = await deleteQuery
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   // Remove da autenticação

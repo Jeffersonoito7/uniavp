@@ -18,10 +18,13 @@ export default async function ConfiguracoesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/entrar?p=adm')
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
+  const tid = adminRecord.tenant_id as string | null
 
-  const { data: configs } = await (adminClient.from('configuracoes') as any).select('chave, valor, descricao').order('chave')
+  let q = (adminClient.from('configuracoes') as any).select('chave, valor, descricao').order('chave')
+  if (tid) q = q.eq('tenant_id', tid)
+  const { data: configs } = await q
 
   return (
     <AdminLayout>

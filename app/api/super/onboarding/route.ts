@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { registrarDominiosTenant } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,11 +33,23 @@ export async function POST(req: NextRequest) {
   if (authErr) return NextResponse.json({ error: 'Erro ao criar auth: ' + authErr.message }, { status: 400 })
   resultados.push(`✅ Auth criado: ${admin_email}`)
 
-  // ── 2. Inserir admin na tabela admins ─────────────────────────
+  // ── 2. Inserir admin na tabela admins (vinculado ao tenant) ──────
   const { error: adminErr } = await (adminClient.from('admins') as any)
-    .insert({ user_id: authUser.user!.id, nome: admin_nome, email: admin_email, ativo: true, role: 'admin' })
+    .insert({ user_id: authUser.user!.id, nome: admin_nome, email: admin_email, ativo: true, role: 'admin', tenant_id: cliente_id })
   if (adminErr) { resultados.push(`⚠️ Admin DB: ${adminErr.message}`) }
   else resultados.push('✅ Admin registrado no banco')
+
+  // ── 2b. Registrar domínios do tenant ─────────────────────────
+  if (dominio) {
+    const dominios = [
+      dominio,
+      `adm.${dominio}`,
+      `free.${dominio}`,
+      `pro.${dominio}`,
+    ]
+    await registrarDominiosTenant(cliente_id, dominios)
+    resultados.push(`✅ Domínios registrados: ${dominios.join(', ')}`)
+  }
 
   // ── 3. Configurar domínio na Vercel ───────────────────────────
   if (dominio && process.env.VERCEL_TOKEN && process.env.VERCEL_PROJECT_ID) {

@@ -1,4 +1,5 @@
 import { createServiceRoleClient } from '@/lib/supabase-server'
+import { getTenantId } from '@/lib/tenant'
 
 export type SiteConfig = {
   nome: string
@@ -21,11 +22,14 @@ export type SiteConfig = {
   cncpvHabilitado: boolean
 }
 
-export async function getSiteConfig(): Promise<SiteConfig> {
+export async function getSiteConfig(host?: string): Promise<SiteConfig> {
   const { unstable_noStore: noStore } = await import('next/cache')
   noStore()
   const client = createServiceRoleClient()
-  const { data } = await (client.from('configuracoes') as any)
+
+  const tenantId = host ? await getTenantId(host) : null
+
+  let query = (client.from('configuracoes') as any)
     .select('chave, valor')
     .in('chave', [
       'site_nome', 'site_slogan', 'site_logo_url',
@@ -34,6 +38,10 @@ export async function getSiteConfig(): Promise<SiteConfig> {
       'cor_fundo', 'cor_card', 'cor_borda', 'cor_texto', 'cor_sidebar',
       'whatsapp_suporte', 'dominio_customizado', 'planos_ativo', 'cncpv_habilitado',
     ])
+
+  if (tenantId) query = query.eq('tenant_id', tenantId)
+
+  const { data } = await query
 
   const map: Record<string, string> = {}
   for (const row of data ?? []) {

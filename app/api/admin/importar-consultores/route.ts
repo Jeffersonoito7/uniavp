@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as XLSX from 'xlsx'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { getAdminContext } from '@/lib/admin-context'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,8 +11,8 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (!adminRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+  const ctx = await getAdminContext(user.id, adminClient)
+  if (!ctx) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const formData = await req.formData()
   const file = formData.get('arquivo') as File | null
@@ -60,6 +61,7 @@ export async function POST(req: NextRequest) {
       email,
       ...(gestorNome && { gestor_nome: gestorNome }),
       ...(gestorWpp && { gestor_whatsapp: gestorWpp }),
+      ...(ctx.tenantId ? { tenant_id: ctx.tenantId } : {}),
     })
 
     if (alunoErr) {

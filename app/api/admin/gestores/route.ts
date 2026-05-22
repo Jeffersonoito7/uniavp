@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { getAdminContext } from '@/lib/admin-context'
 
 export const dynamic = 'force-dynamic'
-
-async function verificarAdmin(adminClient: ReturnType<typeof createServiceRoleClient>, userId: string) {
-  const { data } = await (adminClient.from('admins') as any)
-    .select('id')
-    .eq('user_id', userId)
-    .eq('ativo', true)
-    .maybeSingle()
-  return !!data
-}
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -18,8 +10,8 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const isAdmin = await verificarAdmin(adminClient, user.id)
-  if (!isAdmin) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+  const ctx = await getAdminContext(user.id, adminClient)
+  if (!ctx) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
   const { nome, email, whatsapp, senha } = await request.json()
   if (!nome || !email || !whatsapp || !senha) {
@@ -42,6 +34,7 @@ export async function POST(request: NextRequest) {
       whatsapp: whatsapp.replace(/\D/g, ''), ativo: true,
       status_assinatura: 'trial',
       trial_expira_em: trialExpira,
+      ...(ctx.tenantId ? { tenant_id: ctx.tenantId } : {}),
     })
     .select()
     .single()
@@ -60,8 +53,8 @@ export async function PUT(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const isAdmin = await verificarAdmin(adminClient, user.id)
-  if (!isAdmin) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+  const ctx = await getAdminContext(user.id, adminClient)
+  if (!ctx) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
   const body = await request.json()
   const { id, ativo, nome, email, whatsapp, nova_senha } = body
@@ -73,8 +66,9 @@ export async function PUT(request: NextRequest) {
   if (email !== undefined) updates.email = email
   if (whatsapp !== undefined) updates.whatsapp = whatsapp.replace?.(/\D/g, '') ?? whatsapp
 
-  const { data: gestor, error } = await (adminClient.from('gestores') as any)
-    .update(updates).eq('id', id).select('*').single()
+  let updateQuery = (adminClient.from('gestores') as any).update(updates).eq('id', id)
+  if (ctx.tenantId) updateQuery = updateQuery.eq('tenant_id', ctx.tenantId)
+  const { data: gestor, error } = await updateQuery.select('*').single()
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
   if (gestor.user_id) {
@@ -96,15 +90,16 @@ export async function PATCH(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const isAdmin = await verificarAdmin(adminClient, user.id)
-  if (!isAdmin) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+  const ctx = await getAdminContext(user.id, adminClient)
+  if (!ctx) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
   const { id, senha } = await request.json()
   if (!id || !senha) return NextResponse.json({ error: 'id e senha obrigatórios' }, { status: 400 })
   if (senha.length < 6) return NextResponse.json({ error: 'Senha mínimo 6 caracteres' }, { status: 400 })
 
-  const { data: gestor } = await (adminClient.from('gestores') as any)
-    .select('user_id').eq('id', id).maybeSingle()
+  let patchSelectQuery = (adminClient.from('gestores') as any).select('user_id').eq('id', id)
+  if (ctx.tenantId) patchSelectQuery = patchSelectQuery.eq('tenant_id', ctx.tenantId)
+  const { data: gestor } = await patchSelectQuery.maybeSingle()
   if (!gestor?.user_id) return NextResponse.json({ error: 'Gestor não encontrado' }, { status: 404 })
 
   const { error } = await adminClient.auth.admin.updateUserById(gestor.user_id, { password: senha })
@@ -119,16 +114,19 @@ export async function DELETE(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const isAdmin = await verificarAdmin(adminClient, user.id)
-  if (!isAdmin) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+  const ctx = await getAdminContext(user.id, adminClient)
+  if (!ctx) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
   const { id } = await request.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  const { data: gestor } = await (adminClient.from('gestores') as any)
-    .select('user_id').eq('id', id).maybeSingle()
+  let deleteSelectQuery = (adminClient.from('gestores') as any).select('user_id').eq('id', id)
+  if (ctx.tenantId) deleteSelectQuery = deleteSelectQuery.eq('tenant_id', ctx.tenantId)
+  const { data: gestor } = await deleteSelectQuery.maybeSingle()
 
-  const { error } = await (adminClient.from('gestores') as any).delete().eq('id', id)
+  let deleteQuery = (adminClient.from('gestores') as any).delete().eq('id', id)
+  if (ctx.tenantId) deleteQuery = deleteQuery.eq('tenant_id', ctx.tenantId)
+  const { error } = await deleteQuery
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   if (gestor?.user_id) {

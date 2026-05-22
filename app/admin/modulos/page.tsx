@@ -8,13 +8,14 @@ export default async function ModulosPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/entrar?p=adm')
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
+  const tid = adminRecord.tenant_id as string | null
+  const tq = (q: any) => tid ? q.eq('tenant_id', tid) : q
 
-  const { data: modulos } = await (adminClient.from('modulos') as any).select('id, titulo, descricao, ordem, publicado, perfis_permitidos').order('ordem')
+  const { data: modulos } = await tq((adminClient.from('modulos') as any).select('id, titulo, descricao, ordem, publicado, perfis_permitidos')).order('ordem')
 
-  const { data: capaCfg } = await (adminClient.from('configuracoes') as any)
-    .select('valor').eq('chave', 'modulo_capa_padrao').maybeSingle()
+  const { data: capaCfg } = await tq((adminClient.from('configuracoes') as any).select('valor').eq('chave', 'modulo_capa_padrao')).maybeSingle()
   const capaDefault = capaCfg?.valor ? String(capaCfg.valor).replace(/"/g, '') : null
 
   return (

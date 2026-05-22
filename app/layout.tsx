@@ -3,11 +3,13 @@ import './globals.css'
 import { getSiteConfig } from '@/lib/site-config'
 import RegisterSW from './components/RegisterSW'
 import InstalarApp from './components/InstalarApp'
+import { headers } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
-  const config = await getSiteConfig()
+  const host = (await headers()).get('host') ?? ''
+  const config = await getSiteConfig(host)
   return {
     title: config.nome,
     description: config.slogan,
@@ -15,7 +17,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const config = await getSiteConfig()
+  const host = (await headers()).get('host') ?? ''
+  const config = await getSiteConfig(host)
   return (
     <html
       lang="pt-BR"

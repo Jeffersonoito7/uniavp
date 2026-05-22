@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { getAdminContext } from '@/lib/admin-context'
 
 export const dynamic = 'force-dynamic'
-
-async function verificarAdmin(adminClient: ReturnType<typeof createServiceRoleClient>, userId: string) {
-  const { data } = await (adminClient.from('admins') as any)
-    .select('id')
-    .eq('user_id', userId)
-    .eq('ativo', true)
-    .maybeSingle()
-  return !!data
-}
 
 export async function PUT(req: NextRequest) {
   const supabase = await createClient()
@@ -18,8 +10,8 @@ export async function PUT(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const isAdmin = await verificarAdmin(adminClient, user.id)
-  if (!isAdmin) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+  const ctx = await getAdminContext(user.id, adminClient)
+  if (!ctx) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const body = await req.json()
   const { id, ...updates } = body
@@ -35,11 +27,11 @@ export async function PUT(req: NextRequest) {
     if (campo in updates) atualizacoes[campo] = updates[campo]
   }
 
-  const { data: aula, error } = await (adminClient.from('aulas') as any)
+  let updateQuery = (adminClient.from('aulas') as any)
     .update(atualizacoes)
     .eq('id', id)
-    .select('*')
-    .single()
+  if (ctx.tenantId) updateQuery = updateQuery.eq('tenant_id', ctx.tenantId)
+  const { data: aula, error } = await updateQuery.select('*').single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
@@ -52,13 +44,13 @@ export async function PATCH(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const isAdmin = await verificarAdmin(adminClient, user.id)
-  if (!isAdmin) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+  const ctx = await getAdminContext(user.id, adminClient)
+  if (!ctx) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const { id, quiz_tipo, quiz_sim_nao_pergunta, quiz_sim_nao_nao_mensagem, quiz_sim_nao_perguntas } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  const { data: aula, error } = await (adminClient.from('aulas') as any)
+  let patchQuery = (adminClient.from('aulas') as any)
     .update({
       quiz_tipo,
       quiz_sim_nao_pergunta: quiz_sim_nao_pergunta ?? null,
@@ -66,6 +58,8 @@ export async function PATCH(req: NextRequest) {
       quiz_sim_nao_perguntas: quiz_sim_nao_perguntas ?? [],
     })
     .eq('id', id)
+  if (ctx.tenantId) patchQuery = patchQuery.eq('tenant_id', ctx.tenantId)
+  const { data: aula, error } = await patchQuery
     .select('quiz_tipo, quiz_sim_nao_pergunta, quiz_sim_nao_nao_mensagem, quiz_sim_nao_perguntas')
     .single()
 
@@ -79,13 +73,15 @@ export async function DELETE(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const isAdmin = await verificarAdmin(adminClient, user.id)
-  if (!isAdmin) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+  const ctx = await getAdminContext(user.id, adminClient)
+  if (!ctx) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const { id } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  const { error } = await (adminClient.from('aulas') as any).delete().eq('id', id)
+  let deleteQuery = (adminClient.from('aulas') as any).delete().eq('id', id)
+  if (ctx.tenantId) deleteQuery = deleteQuery.eq('tenant_id', ctx.tenantId)
+  const { error } = await deleteQuery
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
   return NextResponse.json({ ok: true })

@@ -46,16 +46,22 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/entrar?p=free')
 
-  const [adminClient, siteConfig, hdrs] = [createServiceRoleClient(), await getSiteConfig(), await headers()]
+  const adminClient = createServiceRoleClient()
+  const hdrs = await headers()
   const host = hdrs.get('host') || ''
+  const siteConfig = await getSiteConfig(host)
   const baseUrl = siteConfig.dominioCustomizado ? `https://${siteConfig.dominioCustomizado}` : `https://${host}`
+
   const { data: aluno } = await (adminClient.from('alunos') as any)
-    .select('id, nome, whatsapp, email, cpf, status, numero_registro, streak_atual, maior_streak')
+    .select('id, nome, whatsapp, email, cpf, status, numero_registro, streak_atual, maior_streak, tenant_id')
     .eq('user_id', user.id)
     .maybeSingle()
 
-  const { data: certConfigs } = await (adminClient.from('configuracoes') as any)
-    .select('chave, valor')
+  const tid = aluno?.tenant_id as string | null
+  const tq = (q: any) => tid ? q.eq('tenant_id', tid) : q
+
+  const { data: certConfigs } = await tq((adminClient.from('configuracoes') as any)
+    .select('chave, valor'))
     .in('chave', [
       'certificado_template_url', 'certificado_nome_y', 'certificado_nome_tamanho', 'certificado_nome_cor',
       'modulo_capa_padrao',
