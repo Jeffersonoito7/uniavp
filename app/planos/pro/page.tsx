@@ -105,7 +105,7 @@ export default async function PlanoProPage() {
                 </div>
               ) : null}
               <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: 36, fontWeight: 900, color: '#fbbf24', lineHeight: 1 }}>R${valorPro}</p>
+                <p style={{ fontSize: 36, fontWeight: 900, color: '#fbbf24', lineHeight: 1 }}>R${Number(valorPro).toFixed(2).replace('.', ',')}</p>
                 <p style={{ fontSize: 12, color: 'rgba(241,245,249,0.4)', marginTop: 4 }}>por mês</p>
               </div>
             </div>
@@ -113,7 +113,7 @@ export default async function PlanoProPage() {
 
           <a href="/captacao?direto=1&plano=pro"
             style={{ display: 'inline-block', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 14, padding: '18px 52px', fontWeight: 900, fontSize: 18, textDecoration: 'none', boxShadow: '0 8px 32px rgba(99,102,241,0.4)', marginBottom: 12 }}>
-            🚀 Começar agora — R${valorPro}/mês
+            🚀 Começar agora — R${Number(valorPro).toFixed(2).replace('.', ',')}/mês
           </a>
           <p style={{ fontSize: 12, color: 'rgba(241,245,249,0.4)', marginTop: 12 }}>
             Pagamento via PIX • Acesso imediato • Cancele quando quiser
@@ -211,7 +211,7 @@ export default async function PlanoProPage() {
           </p>
           <a href="/captacao?direto=1&plano=pro"
             style={{ display: 'inline-block', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 14, padding: '20px 60px', fontWeight: 900, fontSize: 20, textDecoration: 'none', boxShadow: '0 8px 40px rgba(99,102,241,0.45)', marginBottom: 16 }}>
-            🚀 Quero ser PRO — R${valorPro}/mês
+            🚀 Quero ser PRO — R${Number(valorPro).toFixed(2).replace('.', ',')}/mês
           </a>
           <p style={{ fontSize: 13, color: 'rgba(241,245,249,0.35)', marginTop: 14 }}>
             Pagamento via PIX • Acesso em minutos • Sem fidelidade
