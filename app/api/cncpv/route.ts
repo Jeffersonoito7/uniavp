@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
 
   // Retorna sucesso imediatamente para o usuário
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://uni.avpoficial.com.br'
-  const siteConfig = await getSiteConfig()
+  const siteConfig = await getSiteConfig(req.headers.get('host') ?? '')
 
   // Busca config de testemunha e logo do admin
   const { data: cfgs } = await (adminClient.from('configuracoes') as any)

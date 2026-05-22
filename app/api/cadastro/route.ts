@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ erro }, { status: 400 })
   }
 
-  const siteConfig = await getSiteConfig()
+  const siteConfig = await getSiteConfig(req.headers.get('host') ?? '')
   const nomePlataforma = siteConfig.nome || 'Universidade'
 
   const host = req.headers.get('host') || ''

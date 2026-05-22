@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
 
   // Busca configs da contratante
   const [siteConfig, { data: cfgs }] = await Promise.all([
-    getSiteConfig(),
+    getSiteConfig(req.headers.get('host') ?? ''),
     (adminClient.from('configuracoes') as any).select('chave, valor')
       .in('chave', ['contrato_contratante_nome','contrato_contratante_cnpj','contrato_contratante_endereco','contrato_representante_nome','contrato_representante_cargo','contrato_foro','site_logo_url']),
   ])

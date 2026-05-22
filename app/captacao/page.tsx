@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
+import { headers } from 'next/headers'
 import FunilCaptacao from '@/app/components/FunilCaptacao'
 
 function extrairIdYoutube(valor?: string | null): string | null {
@@ -16,8 +17,9 @@ function extrairIdYoutube(valor?: string | null): string | null {
 }
 
 export default async function CaptacaoPage({ searchParams }: { searchParams?: { direto?: string; ref?: string; plano?: string } }) {
+  const host = (await headers()).get('host') ?? ''
   const adminClient = createServiceRoleClient()
-  const config = await getSiteConfig()
+  const config = await getSiteConfig(host)
 
   const { data: videoConfig } = await (adminClient.from('configuracoes') as any)
     .select('valor').eq('chave', 'captacao_video_id').maybeSingle()

@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { notFound } from 'next/navigation'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
+import { headers } from 'next/headers'
 import FunilCaptacao from '@/app/components/FunilCaptacao'
 
 function extrairIdYoutube(valor?: string | null): string | null {
@@ -20,8 +21,9 @@ function extrairIdYoutube(valor?: string | null): string | null {
 }
 
 export default async function GestorCaptacaoPage({ params, searchParams }: { params: { gestorWhatsapp: string }; searchParams?: { direto?: string; ref?: string; plano?: string } }) {
+  const host = (await headers()).get('host') ?? ''
   const adminClient = createServiceRoleClient()
-  const config = await getSiteConfig()
+  const config = await getSiteConfig(host)
 
   const { data: gestor } = await (adminClient.from('gestores') as any)
     .select('nome, whatsapp, link_externo')

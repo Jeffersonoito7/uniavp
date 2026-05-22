@@ -20,8 +20,9 @@ export default async function CaptacaoPage() {
   const { data: gestores } = await (adminClient.from('gestores') as any)
     .select('id, nome, whatsapp').eq('ativo', true).order('nome')
 
-  const [siteConfig, hdrs] = [await getSiteConfig(), await headers()]
+  const hdrs = await headers()
   const host = hdrs.get('host') || ''
+  const siteConfig = await getSiteConfig(host)
   const baseUrl = siteConfig.dominioCustomizado
     ? `https://${siteConfig.dominioCustomizado}`
     : `https://${host.replace(/^adm\./, 'uniavp.')}`

@@ -1,8 +1,10 @@
 import { getSiteConfig } from '@/lib/site-config'
+import { headers } from 'next/headers'
 import RecuperarSenhaForm from './RecuperarSenhaForm'
 
 export default async function RecuperarSenhaPage() {
-  const config = await getSiteConfig()
+  const host = (await headers()).get('host') ?? ''
+  const config = await getSiteConfig(host)
   return (
     <RecuperarSenhaForm
       logoUrl={config.logoPaginaUrl || config.logoUrl }

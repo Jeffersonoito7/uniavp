@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
+import { headers } from 'next/headers'
 import { getLimitePROGratuito } from '@/lib/pros-indicados'
 import { getAppUrl } from '@/lib/get-app-url'
 import GestorDashboard from './GestorDashboard'
@@ -89,7 +90,8 @@ export default async function GestorPage() {
     .select('*').order('created_at')
   const artesTemplates = (templatesRaw ?? []).filter((t: any) => !t.gestor_id || t.gestor_id === gestor.id)
 
-  const [siteConfig, appUrl] = [await getSiteConfig(), await getAppUrl()]
+  const host = (await headers()).get('host') ?? ''
+  const [siteConfig, appUrl] = [await getSiteConfig(host), await getAppUrl()]
   const baseUrl = siteConfig.dominioCustomizado
     ? `https://${siteConfig.dominioCustomizado}`
     : appUrl

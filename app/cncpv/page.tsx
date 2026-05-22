@@ -1,8 +1,10 @@
 import { getSiteConfig } from '@/lib/site-config'
+import { headers } from 'next/headers'
 import CNCPVForm from './CNCPVForm'
 
 export default async function CNCPVPage({ searchParams }: { searchParams?: { nome?: string; whatsapp?: string; email?: string; cpf?: string } }) {
-  const config = await getSiteConfig()
+  const host = (await headers()).get('host') ?? ''
+  const config = await getSiteConfig(host)
   return (
     <CNCPVForm
       siteNome={config.nome}

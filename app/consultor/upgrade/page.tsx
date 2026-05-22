@@ -1,6 +1,7 @@
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import { getSiteConfig } from '@/lib/site-config'
+import { headers } from 'next/headers'
 
 export default async function UpgradePage() {
   const supabase = await createClient()
@@ -17,7 +18,8 @@ export default async function UpgradePage() {
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (gestorAtivo) redirect('/pro')
 
-  const config = await getSiteConfig()
+  const host = (await headers()).get('host') ?? ''
+  const config = await getSiteConfig(host)
   const nomeSite = config.nome || 'Universidade'
   const nomeFree = `${nomeSite} FREE`
   const nomePro = `${nomeSite} PRO`

@@ -37,8 +37,9 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
   const numRegistro = String(aluno.numero_registro ?? 1001).padStart(6, '0')
 
   // Configurações da carteira
-  const [siteConfig, hdrs] = [await getSiteConfig(), await headers()]
+  const hdrs = await headers()
   const host = hdrs.get('host') || ''
+  const siteConfig = await getSiteConfig(host)
   const baseUrl = siteConfig.dominioCustomizado ? `https://${siteConfig.dominioCustomizado}` : `https://${host}`
 
   const { data: cfgRows } = await (adminClient.from('configuracoes') as any)

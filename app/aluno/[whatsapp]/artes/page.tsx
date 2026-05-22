@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
+import { headers } from 'next/headers'
 import Link from 'next/link'
 import ArtesCliente from './ArtesCliente'
 import EventosWidget from '@/app/components/EventosWidget'
@@ -10,7 +11,8 @@ export default async function ArtesPage({ params }: { params: { whatsapp: string
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/entrar?p=free')
 
-  const [adminClient, siteConfig] = [createServiceRoleClient(), await getSiteConfig()]
+  const host = (await headers()).get('host') ?? ''
+  const [adminClient, siteConfig] = [createServiceRoleClient(), await getSiteConfig(host)]
   const { data: aluno } = await (adminClient.from('alunos') as any)
     .select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
   if (!aluno) redirect('/entrar?p=free')

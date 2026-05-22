@@ -1,12 +1,14 @@
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
+import { headers } from 'next/headers'
 import ContratoForm from './ContratoForm'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ContratoPage({ searchParams }: { searchParams?: { nome?: string; whatsapp?: string; email?: string; cpf?: string; aluno_id?: string } }) {
+  const host = (await headers()).get('host') ?? ''
   const adminClient = createServiceRoleClient()
-  const siteConfig = await getSiteConfig()
+  const siteConfig = await getSiteConfig(host)
 
   const { data: cfgs } = await (adminClient.from('configuracoes') as any)
     .select('chave, valor')

@@ -1,9 +1,11 @@
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
+import { headers } from 'next/headers'
 
 export default async function VerificarPage({ params }: { params: { registro: string } }) {
+  const host = (await headers()).get('host') ?? ''
   const adminClient = createServiceRoleClient()
-  const config = await getSiteConfig()
+  const config = await getSiteConfig(host)
 
   const numBusca = parseInt(params.registro.replace(/^0+/, '') || '0')
 

@@ -1,9 +1,11 @@
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
+import { headers } from 'next/headers'
 
 export default async function ReciboPage({ params }: { params: { cobrancaId: string } }) {
+  const host = (await headers()).get('host') ?? ''
   const adminClient = createServiceRoleClient()
-  const config = await getSiteConfig()
+  const config = await getSiteConfig(host)
 
   const { data: cobranca } = await (adminClient.from('cobrancas') as any)
     .select('*, cliente:clientes(nome, contato_nome, cpf_cnpj)')

@@ -1,11 +1,13 @@
 import { getSiteConfig } from '@/lib/site-config'
 import { createServiceRoleClient } from '@/lib/supabase-server'
+import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
-  const config = await getSiteConfig()
+  const host = (await headers()).get('host') ?? ''
+  const config = await getSiteConfig(host)
   return {
     title: `Plano FREE — ${config.nome}`,
     description: `Entre gratuitamente na ${config.nome} e comece a aprender. Sem cartão de crédito, sem burocracia.`,
@@ -18,7 +20,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PlanoFreePage() {
-  const config = await getSiteConfig()
+  const host = (await headers()).get('host') ?? ''
+  const config = await getSiteConfig(host)
   const admin = createServiceRoleClient()
   const { data: valorCfg } = await (admin.from('configuracoes') as any)
     .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()

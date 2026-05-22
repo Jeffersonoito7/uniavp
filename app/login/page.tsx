@@ -12,7 +12,7 @@ export default async function LoginPage() {
     redirect('/super/login')
   }
 
-  const config = await getSiteConfig()
+  const config = await getSiteConfig(host)
   return (
     <LoginForm
       logoUrl={config.logoPaginaUrl || config.logoUrl }
