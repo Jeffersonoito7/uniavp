@@ -21,13 +21,19 @@ export default async function CaptacaoPage({ searchParams }: { searchParams?: { 
   const adminClient = createServiceRoleClient()
   const config = await getSiteConfig(host)
 
-  const { data: videoConfig } = await (adminClient.from('configuracoes') as any)
-    .select('valor').eq('chave', 'captacao_video_id').maybeSingle()
+  const { data: tenantRow } = await (adminClient.from('tenant_domains') as any)
+    .select('tenant_id').eq('domain', host.replace(/:\d+$/, '')).maybeSingle()
+  const tenantId = tenantRow?.tenant_id as string | null
+
+  const tq = (q: any) => tenantId ? q.eq('tenant_id', tenantId) : q
+
+  const { data: videoConfig } = await tq((adminClient.from('configuracoes') as any)
+    .select('valor').eq('chave', 'captacao_video_id')).maybeSingle()
   const valorRaw = videoConfig?.valor
   const valorStr = typeof valorRaw === 'string' ? valorRaw : JSON.stringify(valorRaw ?? '')
   const videoId = extrairIdYoutube(valorStr)
 
-  const { data: cfgsExtra } = await (adminClient.from('configuracoes') as any)
+  const { data: cfgsExtra } = await tq((adminClient.from('configuracoes') as any)
     .select('chave, valor')
     .in('chave', [
       'free_bloquear_video',
@@ -35,7 +41,7 @@ export default async function CaptacaoPage({ searchParams }: { searchParams?: { 
       'captacao_mostrar_app', 'captacao_bloquear_app',
       'captacao_link_externo',
       'app_ios_url', 'app_android_url',
-    ])
+    ]))
   const cfgMap: Record<string, string> = {}
   for (const c of cfgsExtra ?? []) cfgMap[c.chave] = typeof c.valor === 'string' ? c.valor : JSON.stringify(c.valor ?? '').replace(/"/g, '')
 

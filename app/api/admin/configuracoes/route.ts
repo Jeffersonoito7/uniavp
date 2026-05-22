@@ -26,8 +26,16 @@ export async function PUT(req: NextRequest) {
   for (const { chave, valor } of body) {
     if (!chave) continue
     if (tenantId) {
-      await (adminClient.from('configuracoes') as any)
-        .upsert({ chave, valor, tenant_id: tenantId }, { onConflict: 'chave,tenant_id' })
+      // Tenta atualizar primeiro; se não existir, insere
+      const { data: updated } = await (adminClient.from('configuracoes') as any)
+        .update({ valor })
+        .eq('chave', chave)
+        .eq('tenant_id', tenantId)
+        .select('id')
+      if (!updated || updated.length === 0) {
+        await (adminClient.from('configuracoes') as any)
+          .insert({ chave, valor, tenant_id: tenantId })
+      }
     } else {
       await (adminClient.from('configuracoes') as any)
         .upsert({ chave, valor }, { onConflict: 'chave' })
