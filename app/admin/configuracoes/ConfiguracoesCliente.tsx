@@ -112,6 +112,8 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [carteiraLogoEsquerda, setCarteiraLogoEsquerda] = useState(get('carteira_logo_esquerda'))
   const [carteiraLogoDireita, setCarteiraLogoDireita] = useState(get('carteira_logo_direita'))
   const [carteiraAssinaturaUrl, setCarteiraAssinaturaUrl] = useState(get('carteira_assinatura_url'))
+  const [carteiraQuando, setCarteiraQuando] = useState(get('carteira_quando') || 'concluido')
+  const [carteiraPercentualMinimo, setCarteiraPercentualMinimo] = useState(get('carteira_percentual_minimo') || '50')
   const [boletoMensagem, setBoletoMensagem] = useState(get('boleto_mensagem'))
   const [boletoInstrucoes, setBoletoInstrucoes] = useState(get('boleto_instrucoes'))
   const [boletoMulta, setBoletoMulta] = useState(get('boleto_multa') || '2')
@@ -325,6 +327,8 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         { chave: 'carteira_assinatura_empresa', valor: carteiraAssinaturaEmpresa },
         { chave: 'carteira_url_verificacao', valor: carteiraUrlVerificacao },
         { chave: 'carteira_tagline', valor: carteiraTagline },
+        { chave: 'carteira_quando', valor: carteiraQuando },
+        { chave: 'carteira_percentual_minimo', valor: carteiraPercentualMinimo },
         ...(urlSafe(carteiraLogoEsquerda) ? [{ chave: 'carteira_logo_esquerda', valor: carteiraLogoEsquerda }] : []),
         ...(urlSafe(carteiraLogoDireita) ? [{ chave: 'carteira_logo_direita', valor: carteiraLogoDireita }] : []),
         ...(urlSafe(carteiraAssinaturaUrl) ? [{ chave: 'carteira_assinatura_url', valor: carteiraAssinaturaUrl }] : []),
@@ -676,6 +680,41 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
             </p>
           </div>
         </div>
+        {/* Quando exibir a carteira */}
+        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+          <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>🕐 Quando mostrar a carteira no painel do aluno</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.5 }}>
+            Controla em que momento o botão da Carteira de Formação aparece para o aluno.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[
+              { valor: 'sempre', label: '✅ Sempre — aparece logo ao entrar no painel', desc: 'O aluno vê a carteira desde o primeiro acesso' },
+              { valor: 'percentual', label: '📊 A partir de X% do curso', desc: 'Aparece quando o aluno atinge o percentual mínimo' },
+              { valor: 'concluido', label: '🎓 Somente ao concluir 100%', desc: 'Comportamento atual — só aparece após terminar tudo' },
+            ].map(op => (
+              <label key={op.valor} onClick={() => setCarteiraQuando(op.valor)}
+                style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 14px', background: carteiraQuando === op.valor ? 'rgba(99,102,241,0.08)' : 'rgba(255,255,255,0.02)', border: `1px solid ${carteiraQuando === op.valor ? 'rgba(99,102,241,0.4)' : 'var(--avp-border)'}`, borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s' }}>
+                <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${carteiraQuando === op.valor ? '#818cf8' : 'var(--avp-border)'}`, background: carteiraQuando === op.valor ? '#818cf8' : 'transparent', flexShrink: 0, marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {carteiraQuando === op.valor && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#fff' }} />}
+                </div>
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: 13, margin: 0, color: carteiraQuando === op.valor ? '#c4b5fd' : 'var(--avp-text)' }}>{op.label}</p>
+                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>{op.desc}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+          {carteiraQuando === 'percentual' && (
+            <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <label style={{ fontSize: 13, color: 'var(--avp-text-dim)', whiteSpace: 'nowrap' }}>Percentual mínimo:</label>
+              <input type="number" min={1} max={99} value={carteiraPercentualMinimo}
+                onChange={e => setCarteiraPercentualMinimo(e.target.value)}
+                style={{ width: 80, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '8px 12px', color: 'var(--avp-text)', fontSize: 16, fontWeight: 700, textAlign: 'center', outline: 'none' }} />
+              <span style={{ fontSize: 13, color: 'var(--avp-text-dim)' }}>% do curso</span>
+            </div>
+          )}
+        </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           <LogoCard label="Logo esquerda (ex: UNIAVP)" campo="carteiraLogoEsquerda" value={carteiraLogoEsquerda} desc="Logo da universidade/escola" rec="PNG transparente · 200×200px" fileRef={carteiraLogoEsquerdaRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
           <LogoCard label="Logo direita (ex: AUTOVALE)" campo="carteiraLogoDireita" value={carteiraLogoDireita} desc="Logo da empresa parceira" rec="PNG transparente · 300×150px" fileRef={carteiraLogoDireitaRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />

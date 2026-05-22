@@ -70,7 +70,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
       'cert_assinatura_y', 'cert_assinatura_ativa', 'cert_assinatura_url', 'cert_assinatura_nome', 'cert_assinatura_cargo',
       'carteira_logo_esquerda', 'carteira_logo_direita',
       'carteira_assinatura_url', 'carteira_assinatura_nome', 'carteira_assinatura_cargo',
-      'contrato_habilitado',
+      'contrato_habilitado', 'carteira_quando', 'carteira_percentual_minimo',
       'passos_painel_habilitado',
       'captacao_mostrar_parceiro', 'captacao_bloquear_parceiro', 'captacao_parceiro_titulo',
       'captacao_mostrar_app', 'captacao_bloquear_app',
@@ -79,6 +79,8 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
   const certMap: Record<string, string> = {}
   for (const r of certConfigs ?? []) { try { certMap[r.chave] = JSON.parse(r.valor) } catch { certMap[r.chave] = r.valor } }
   const contratoHabilitado = certMap['contrato_habilitado'] === 'true'
+  const carteiraQuando = certMap['carteira_quando'] || 'concluido'
+  const carteiraPercentualMinimo = parseInt(certMap['carteira_percentual_minimo'] || '50') || 50
   const passosPainelHabilitado = certMap['passos_painel_habilitado'] === 'true'
   const setupMostrarParceiro = certMap['captacao_mostrar_parceiro'] === 'true'
   const setupBloquearParceiro = certMap['captacao_bloquear_parceiro'] === 'true'
@@ -230,6 +232,12 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
   }
 
   // Mostra setup inicial se habilitado e aluno ainda não concluiu
+  // Visibilidade da carteira baseada na config do admin
+  const mostrarCarteira =
+    carteiraQuando === 'sempre' ||
+    (carteiraQuando === 'percentual' && progressoGeral >= carteiraPercentualMinimo) ||
+    (carteiraQuando === 'concluido' && aluno.status === 'concluido')
+
   const precisaSetup = passosPainelHabilitado && !aluno.setup_concluido &&
     (setupMostrarParceiro || (setupMostrarApp && (setupAppIos || setupAppAndroid)))
 
@@ -393,7 +401,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                   { href: `/aluno/${params.whatsapp}/forum`, label: '💬 Fórum' },
                   { href: `/aluno/${params.whatsapp}/loja`, label: '🛍️ Loja' },
                   { href: `/aluno/${params.whatsapp}/perfil`, label: '👤 Perfil' },
-                  ...(aluno.status === 'concluido' ? [{ href: `/aluno/${params.whatsapp}/carteira`, label: '🎓 Carteira' }] : []),
+                  ...(mostrarCarteira ? [{ href: `/aluno/${params.whatsapp}/carteira`, label: '🎓 Carteira' }] : []),
                 ].map(l => (
                   <a key={l.href} href={l.href} style={{ color: 'var(--avp-text)', fontSize: 13, textDecoration: 'none', fontWeight: 500 }}>{l.label}</a>
                 ))}
@@ -401,8 +409,8 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
             </div>
           </div>
 
-          {/* ── BANNER DE FORMAÇÃO ── */}
-          {aluno.status === 'concluido' && (
+          {/* ── BANNER DE FORMAÇÃO / CARTEIRA ── */}
+          {mostrarCarteira && (
             <div style={{ background: 'linear-gradient(135deg, #1a1a3e, #2d1b69)', border: '1px solid #6366f140', borderRadius: 16, padding: '24px 28px', marginBottom: 28, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
               <div style={{ fontSize: 52, flexShrink: 0 }}>🎓</div>
               <div style={{ flex: 1 }}>
