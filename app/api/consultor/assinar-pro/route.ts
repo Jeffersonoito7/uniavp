@@ -82,6 +82,11 @@ export async function POST() {
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (gestorAtivo) return NextResponse.json({ error: 'Já possui conta PRO' }, { status: 400 })
 
+  // Busca tenant_id e gestor de origem do aluno (necessário para multi-tenancy)
+  const { data: alunoCompleto } = await (adminClient.from('alunos') as any)
+    .select('gestor_whatsapp, tenant_id').eq('user_id', user.id).maybeSingle()
+  const tenantId: string | null = alunoCompleto?.tenant_id ?? null
+
   // Cria ou reutiliza gestor pendente
   let gestorId: string
   const { data: gestorPendente } = await (adminClient.from('gestores') as any)
@@ -95,9 +100,6 @@ export async function POST() {
       .eq('gestor_id', gestorId)
       .eq('status', 'pendente')
   } else {
-    // Descobre quem era o gestor (PRO) deste aluno para registrar a indicação
-    const { data: alunoCompleto } = await (adminClient.from('alunos') as any)
-      .select('gestor_whatsapp').eq('user_id', user.id).maybeSingle()
     let indicadoPorGestorId: string | null = null
     if (alunoCompleto?.gestor_whatsapp) {
       const { data: gestorOrigem } = await (adminClient.from('gestores') as any)
@@ -114,6 +116,7 @@ export async function POST() {
         ativo: false,
         status_assinatura: 'pendente_upgrade',
         indicado_por_gestor_id: indicadoPorGestorId,
+        ...(tenantId ? { tenant_id: tenantId } : {}),
       })
       .select('id')
       .single()
@@ -131,7 +134,7 @@ export async function POST() {
       valor: valorPlano,
       vencimento,
       nomeDevedor: aluno.nome,
-      descricao: 'Assinatura UNIAVP PRO',
+      descricao: 'Assinatura Plataforma PRO',
     })
 
     const { data: pagamento } = await (adminClient.from('gestor_pagamentos') as any)
@@ -143,6 +146,7 @@ export async function POST() {
         pix_copia_cola: pixCopiaECola,
         qrcode_base64: qrcodeBase64,
         vencimento,
+        ...(tenantId ? { tenant_id: tenantId } : {}),
       })
       .select()
       .single()

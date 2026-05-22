@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
       const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
 
       const { data: gestor } = await (admin.from('gestores') as any)
-        .select('id, nome, whatsapp, ativo, status_assinatura')
+        .select('id, nome, whatsapp, ativo, status_assinatura, tenant_id')
         .eq('id', pag.gestor_id)
         .maybeSingle()
 
@@ -47,17 +47,25 @@ export async function GET(req: NextRequest) {
           .eq('id', gestor.id)
 
         if (gestor.whatsapp) {
+          // Busca nome da plataforma do tenant para personalizar a mensagem
+          let nomePlataforma = 'Plataforma PRO'
+          if (gestor.tenant_id) {
+            const { data: cfg } = await (admin.from('configuracoes') as any)
+              .select('valor').eq('chave', 'site_nome').eq('tenant_id', gestor.tenant_id).maybeSingle()
+            try { nomePlataforma = JSON.parse(cfg?.valor ?? '') || nomePlataforma } catch { /**/ }
+          }
+
           const valor = Number(pag.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
           const msg = eraUpgrade
-            ? `🚀 *Bem-vindo ao UNIAVP PRO!*\n\nOlá, ${gestor.nome}!\n\n✅ Pagamento de *${valor}* confirmado!\n\nSua conta PRO está ativa por 30 dias. Acesse agora:\n👉 ${appUrl}/pro\n\n_Use o mesmo e-mail e senha do plano FREE._`
-            : `✅ *Pagamento confirmado!*\n\nOlá, ${gestor.nome}!\nValor: *${valor}*\n\nSeu acesso UNIAVP PRO está ativo por mais 30 dias. 🎉\n👉 ${appUrl}/pro`
+            ? `🚀 *Bem-vindo ao ${nomePlataforma} PRO!*\n\nOlá, ${gestor.nome}!\n\n✅ Pagamento de *${valor}* confirmado!\n\nSua conta PRO está ativa por 30 dias. Acesse agora:\n👉 ${appUrl}/pro\n\n_Use o mesmo e-mail e senha do plano FREE._`
+            : `✅ *Pagamento confirmado!*\n\nOlá, ${gestor.nome}!\nValor: *${valor}*\n\nSeu acesso ${nomePlataforma} PRO está ativo por mais 30 dias. 🎉\n👉 ${appUrl}/pro`
           await enviarWhatsApp(gestor.whatsapp, msg)
         }
       }
 
       ativados++
-    } catch {
-      // ignora erros individuais — TXID pode estar expirado
+    } catch (e: any) {
+      console.error(`[cron/pagamentos] Erro ao processar gestor_pagamento ${pag.id}:`, e.message)
     }
   }
 
@@ -89,8 +97,8 @@ export async function GET(req: NextRequest) {
       }
 
       ativados++
-    } catch {
-      // ignora erros individuais
+    } catch (e: any) {
+      console.error(`[cron/pagamentos] Erro ao processar cobranca ${cob.id}:`, e.message)
     }
   }
 

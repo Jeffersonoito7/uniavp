@@ -13,7 +13,7 @@ export async function POST() {
 
   const adminClient = createServiceRoleClient()
   const { data: gestor } = await (adminClient.from('gestores') as any)
-    .select('id, nome, whatsapp, status_assinatura, plano_vencimento')
+    .select('id, nome, whatsapp, status_assinatura, plano_vencimento, tenant_id')
     .eq('user_id', user.id).eq('ativo', true).maybeSingle()
 
   if (!gestor) return NextResponse.json({ error: 'Gestor não encontrado' }, { status: 404 })
@@ -71,6 +71,7 @@ export async function POST() {
         pix_copia_cola: pixCopiaECola,
         qrcode_base64: qrcodeBase64,
         vencimento,
+        ...(gestor.tenant_id ? { tenant_id: gestor.tenant_id } : {}),
       })
       .select().single()
 
@@ -80,7 +81,14 @@ export async function POST() {
 
     return NextResponse.json({ ok: true, pagamento })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    const raw: string = e.message ?? ''
+    console.error('[gestor/assinar] Erro Efi Bank:', raw)
+    const msgUsuario = raw.includes('invalid_client') || raw.includes('credentials')
+      ? 'Erro na integração de pagamento. Entre em contato com o suporte.'
+      : raw.includes('Auth') || raw.includes('token')
+      ? 'Serviço de pagamento temporariamente indisponível. Tente novamente em alguns minutos.'
+      : 'Erro ao gerar cobrança. Tente novamente.'
+    return NextResponse.json({ error: msgUsuario }, { status: 500 })
   }
 }
 
