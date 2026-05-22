@@ -59,10 +59,15 @@ export async function POST(req: NextRequest) {
     expira_em: expira.toISOString(),
   })
 
-  await enviarWhatsApp(
-    wpp,
-    `🔐 *Verificação de WhatsApp*\n\nSeu código de confirmação é:\n\n*${novoCodigo}*\n\n_Válido por 10 minutos. Não compartilhe com ninguém._`
-  )
-
-  return NextResponse.json({ ok: true })
+  try {
+    await enviarWhatsApp(
+      wpp,
+      `🔐 *Verificação de WhatsApp*\n\nSeu código de confirmação é:\n\n*${novoCodigo}*\n\n_Válido por 10 minutos. Não compartilhe com ninguém._`
+    )
+    return NextResponse.json({ ok: true })
+  } catch {
+    // WhatsApp indisponível — libera o pagamento sem verificação
+    await (admin.from('otp_whatsapp') as any).update({ usado: true }).eq('whatsapp', wpp).eq('usado', false)
+    return NextResponse.json({ ok: true, wppIndisponivel: true })
+  }
 }

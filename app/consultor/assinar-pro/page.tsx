@@ -35,8 +35,13 @@ export default function AssinarProPage() {
       body: JSON.stringify({ whatsapp: info.whatsapp }),
     })
     const data = await res.json()
-    if (data.ok) setWppCodigoEnviado(true)
-    else setWppErro(data.error ?? 'Erro ao enviar código.')
+    if (data.wppIndisponivel) {
+      setWppVerificado(true) // WhatsApp fora — libera direto
+    } else if (data.ok) {
+      setWppCodigoEnviado(true)
+    } else {
+      setWppErro(data.error ?? 'Erro ao enviar código.')
+    }
     setWppCarregando(false)
   }
 
