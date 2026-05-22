@@ -5,6 +5,7 @@ import { enviarWhatsApp } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60 // segundos — máximo permitido no plano Pro
 
 // Roda a cada minuto — verifica TXIDs pendentes e ativa planos pagos
 export async function GET(req: NextRequest) {
