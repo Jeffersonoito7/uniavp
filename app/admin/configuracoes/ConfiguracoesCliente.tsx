@@ -129,6 +129,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [captacaoLinkExterno, setCaptacaoLinkExterno] = useState(get('captacao_link_externo') || '')
   const [captacaoMostrarApp, setCaptacaoMostrarApp] = useState(get('captacao_mostrar_app') === 'true')
   const [captacaoBloquearApp, setCaptacaoBloquearApp] = useState(get('captacao_bloquear_app') === 'true')
+  const [passosPainelHabilitado, setPassosPainelHabilitado] = useState(get('passos_painel_habilitado') === 'true')
   const [certUrl, setCertUrl] = useState(get('certificado_template_url'))
   const [certNomeX, setCertNomeX] = useState(get('certificado_nome_x') || '50')
   const [certNomeY, setCertNomeY] = useState(get('certificado_nome_y') || '62')
@@ -345,6 +346,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         { chave: 'captacao_link_externo', valor: captacaoLinkExterno },
         { chave: 'captacao_mostrar_app', valor: String(captacaoMostrarApp) },
         { chave: 'captacao_bloquear_app', valor: String(captacaoBloquearApp) },
+        { chave: 'passos_painel_habilitado', valor: String(passosPainelHabilitado) },
         { chave: 'cncpv_habilitado', valor: String(cncpvHabilitado) },
         { chave: 'cncpv_nome_associacao', valor: cncpvNomeAssociacao },
         { chave: 'cncpv_testemunha_nome', valor: cncpvTestemunhaNome },
@@ -863,6 +865,26 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
               </button>
             </label>
           )}
+        </div>
+      </div>
+
+      {/* PASSOS INICIAIS NO PAINEL */}
+      <div style={{ ...card, border: `2px solid ${passosPainelHabilitado ? 'rgba(2,161,83,0.35)' : 'var(--avp-border)'}`, background: passosPainelHabilitado ? 'rgba(2,161,83,0.03)' : undefined }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+          <div>
+            <p style={{ fontWeight: 800, fontSize: 16 }}>🚀 Passos iniciais no painel do aluno</p>
+            <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: 4, lineHeight: 1.6 }}>
+              Quando ativado, o aluno vê os passos configurados acima (parceiro + app) assim que entra no painel — <strong style={{ color: 'var(--avp-text)' }}>antes de acessar as aulas</strong>. Ideal para garantir que ele já tem o app e o cadastro no sistema parceiro antes de começar.
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 6 }}>
+              Os passos exibidos são os mesmos configurados em <strong style={{ color: 'var(--avp-text)' }}>Fluxo pós-cadastro</strong> acima.
+              Se desativar "mostrar" nos passos, eles não aparecem aqui também.
+            </p>
+          </div>
+          <button type="button" onClick={() => setPassosPainelHabilitado(v => !v)}
+            style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: passosPainelHabilitado ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+            <span style={{ position: 'absolute', top: 3, left: passosPainelHabilitado ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+          </button>
         </div>
       </div>
 

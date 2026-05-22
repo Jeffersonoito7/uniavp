@@ -15,6 +15,7 @@ import RankingWidget from '@/app/components/RankingWidget'
 import RetomarPopup from '@/app/components/RetomarPopup'
 import IndicacaoCard from '@/app/components/IndicacaoCard'
 import ProTeaser from '@/app/components/ProTeaser'
+import SetupInicial from '@/app/components/SetupInicial'
 
 type TrilhaItem = {
   modulo_id: string
@@ -53,7 +54,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
   const baseUrl = siteConfig.dominioCustomizado ? `https://${siteConfig.dominioCustomizado}` : `https://${host}`
 
   const { data: aluno } = await (adminClient.from('alunos') as any)
-    .select('id, nome, whatsapp, email, cpf, status, numero_registro, streak_atual, maior_streak, tenant_id')
+    .select('id, nome, whatsapp, email, cpf, status, numero_registro, streak_atual, maior_streak, tenant_id, setup_concluido, gestor_whatsapp')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -70,12 +71,34 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
       'carteira_logo_esquerda', 'carteira_logo_direita',
       'carteira_assinatura_url', 'carteira_assinatura_nome', 'carteira_assinatura_cargo',
       'contrato_habilitado',
+      'passos_painel_habilitado',
+      'captacao_mostrar_parceiro', 'captacao_bloquear_parceiro', 'captacao_parceiro_titulo',
+      'captacao_mostrar_app', 'captacao_bloquear_app',
+      'app_ios_url', 'app_android_url',
     ])
   const certMap: Record<string, string> = {}
   for (const r of certConfigs ?? []) { try { certMap[r.chave] = JSON.parse(r.valor) } catch { certMap[r.chave] = r.valor } }
   const contratoHabilitado = certMap['contrato_habilitado'] === 'true'
+  const passosPainelHabilitado = certMap['passos_painel_habilitado'] === 'true'
+  const setupMostrarParceiro = certMap['captacao_mostrar_parceiro'] === 'true'
+  const setupBloquearParceiro = certMap['captacao_bloquear_parceiro'] === 'true'
+  const setupParceiroTitulo = certMap['captacao_parceiro_titulo'] || undefined
+  const setupMostrarApp = certMap['captacao_mostrar_app'] === 'true'
+  const setupBloquearApp = certMap['captacao_bloquear_app'] === 'true'
+  const setupAppIos = certMap['app_ios_url'] || undefined
+  const setupAppAndroid = certMap['app_android_url'] || undefined
+
   if (!aluno) redirect('/entrar?p=free')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
+
+  // Busca link do gestor para o passo parceiro
+  const { data: gestorLink } = aluno.gestor_whatsapp
+    ? await (adminClient.from('gestores') as any)
+        .select('link_externo')
+        .eq('whatsapp', aluno.gestor_whatsapp)
+        .maybeSingle()
+    : { data: null }
+  const setupLinkParceiro = gestorLink?.link_externo || undefined
 
   // Se o FREE fez upgrade e já tem conta PRO ativa → redireciona para o painel PRO
   const { data: gestorAtivo } = await (adminClient.from('gestores') as any)
@@ -206,8 +229,25 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
     bloqueada: '#6b7280',
   }
 
+  // Mostra setup inicial se habilitado e aluno ainda não concluiu
+  const precisaSetup = passosPainelHabilitado && !aluno.setup_concluido &&
+    (setupMostrarParceiro || (setupMostrarApp && (setupAppIos || setupAppAndroid)))
+
   return (
     <>
+      {precisaSetup && (
+        <SetupInicial
+          whatsapp={aluno.whatsapp}
+          mostrarParceiro={setupMostrarParceiro}
+          bloquearParceiro={setupBloquearParceiro}
+          parceiroTitulo={setupParceiroTitulo}
+          linkParceiro={setupLinkParceiro}
+          mostrarApp={setupMostrarApp}
+          bloquearApp={setupBloquearApp}
+          appIosUrl={setupAppIos}
+          appAndroidUrl={setupAppAndroid}
+        />
+      )}
       <SupportChat painel="Consultor" />
       {/* Popup Retomar — aparece uma vez por sessão quando há aula em andamento */}
       {aulaAtual && !moduloSelecionadoId && (
