@@ -12,14 +12,13 @@ export async function enviarEmailCNCPV(opts: {
   numero_registro: string
   hash_contrato: string
   assinado_em: string
-  appUrl: string
   pdfBytes?: Uint8Array
 }): Promise<boolean> {
   const resend = getResend()
   if (!resend) return false
 
-  const { para, nome, numero_registro, hash_contrato, assinado_em, appUrl, pdfBytes } = opts
-  const verUrl = `${appUrl}/cncpv/verificar/${numero_registro}`
+  const { para, nome, numero_registro, hash_contrato, assinado_em, pdfBytes } = opts
+  const verUrl = `https://cncpv.com.br/verificar/${numero_registro}`
   const dataHora = new Date(assinado_em).toLocaleString('pt-BR', {
     timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit',
     year: 'numeric', hour: '2-digit', minute: '2-digit',

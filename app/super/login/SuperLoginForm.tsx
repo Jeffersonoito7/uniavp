@@ -1,7 +1,26 @@
 'use client'
 import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import Image from 'next/image'
+
+function LogoOito7() {
+  const [err, setErr] = useState(false)
+  if (err) {
+    return (
+      <span style={{ fontWeight: 900, fontSize: 28, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 4 }}>
+        Oito7 Digital
+      </span>
+    )
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/oito7-logo.png"
+      alt="Oito7 Digital"
+      onError={() => setErr(true)}
+      style={{ width: 200, height: 'auto', maxHeight: 72, objectFit: 'contain', marginBottom: 4, filter: 'brightness(0) invert(1)' }}
+    />
+  )
+}
 
 export default function SuperLoginPage() {
   const [form, setForm] = useState({ email: '', password: '' })
@@ -60,7 +79,7 @@ export default function SuperLoginPage() {
     <div style={{ minHeight: '100vh', background: '#08090d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ width: 400, maxWidth: '95vw' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
-          <Image src="/oito7-logo.png" alt="Oito7 Digital" width={240} height={80} style={{ objectFit: 'contain', marginBottom: 4, filter: 'brightness(0) invert(1)' }} />
+          <LogoOito7 />
           <p style={{ color: '#8a8fa3', fontSize: 14 }}>Painel Master — Gestão de Clientes</p>
         </div>
 

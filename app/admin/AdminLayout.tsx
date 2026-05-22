@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import {
   LayoutDashboard, BookOpen, Users, ShieldCheck,
   Trophy, Settings, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper, Star,
-  Menu, X, ChevronLeft, ChevronRight, Link2, IdCard, FileText
+  Menu, X, ChevronLeft, ChevronRight, Link2, IdCard, FileText, ScrollText
 } from 'lucide-react'
 import LogoutButton from '@/app/components/LogoutButton'
 import SupportChat from '@/app/components/SupportChat'
@@ -21,6 +21,7 @@ const navItems = [
   { href: '/admin/noticias', label: 'Notícias', icon: Newspaper },
   { href: '/admin/captacao', label: 'Links de Captação', icon: Link2 },
   { href: '/admin/cncpv', label: 'CNCPV', icon: IdCard },
+  { href: '/admin/contratos', label: 'Contratos', icon: ScrollText },
   { href: '/admin/documentos', label: 'Documentos', icon: FileText },
   { href: '/admin/ranking', label: 'Ranking', icon: Trophy },
   { href: '/admin/premios', label: 'Prêmios', icon: Gift },
@@ -97,17 +98,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   function playHover() {
     try {
       const ctx = getAudioCtx()
+      const t = ctx.currentTime
+
+      // ── Clique (transiente agudo, 8ms) ────────────────────────────
+      const clickBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.008), ctx.sampleRate)
+      const clickData = clickBuf.getChannelData(0)
+      for (let i = 0; i < clickData.length; i++) {
+        const decay = 1 - i / clickData.length
+        clickData[i] = (Math.random() * 2 - 1) * decay
+      }
+      const clickSrc = ctx.createBufferSource()
+      clickSrc.buffer = clickBuf
+      const clickGain = ctx.createGain()
+      clickGain.gain.setValueAtTime(0.18, t)
+      clickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.008)
+      clickSrc.connect(clickGain)
+      clickGain.connect(ctx.destination)
+      clickSrc.start(t)
+
+      // ── Batida grave (corpo da tecla, 30ms) ───────────────────────
       const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.connect(gain)
-      gain.connect(ctx.destination)
+      const oscGain = ctx.createGain()
       osc.type = 'sine'
-      osc.frequency.setValueAtTime(880, ctx.currentTime)
-      osc.frequency.exponentialRampToValueAtTime(550, ctx.currentTime + 0.06)
-      gain.gain.setValueAtTime(0.05, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08)
-      osc.start(ctx.currentTime)
-      osc.stop(ctx.currentTime + 0.08)
+      osc.frequency.setValueAtTime(120, t)
+      osc.frequency.exponentialRampToValueAtTime(60, t + 0.03)
+      oscGain.gain.setValueAtTime(0.09, t)
+      oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.03)
+      osc.connect(oscGain)
+      oscGain.connect(ctx.destination)
+      osc.start(t)
+      osc.stop(t + 0.03)
     } catch { /* AudioContext indisponível */ }
   }
 

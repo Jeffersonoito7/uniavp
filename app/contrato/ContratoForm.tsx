@@ -1,0 +1,369 @@
+'use client'
+import { useState } from 'react'
+
+type Props = {
+  nomeInicial?: string; whatsappInicial?: string; emailInicial?: string; cpfInicial?: string; alunoId?: string
+  contratanteNome: string; contratanteCnpj: string; contratanteEndereco: string; foro?: string
+}
+
+type Etapa = 'dados' | 'clausulas' | 'confirmar' | 'sucesso'
+
+const CLAUSULAS = [
+  {
+    num: 1, titulo: 'DO OBJETO',
+    resumo: 'Entendo que minha atividade é a divulgação e indicação de associados, atuando como intermediário na distribuição, promoção e filiação aos planos da CONTRATANTE no Programa de Auxílio Mútuo – PAM. As garantias são de responsabilidade da CONTRATANTE.',
+    texto: 'O respectivo instrumento tem por objeto a prestação de serviços pelo CONTRATADO, na divulgação e indicação de associados, atuando como intermediário na distribuição, promoção e filiação aos planos da CONTRATANTE no PAM. As garantias serão de responsabilidade da CONTRATANTE.',
+  },
+  {
+    num: 2, titulo: 'DAS OBRIGAÇÕES DO CONTRATADO',
+    resumo: 'Declaro ciência das minhas obrigações: garantir qualidade, zelar pelo atendimento, receber treinamentos, conhecer o estatuto e cumprir integralmente os objetivos do contrato com fidelidade, sigilo e boa-fé.',
+    texto: 'O CONTRATADO se obriga a: I - Garantir a qualidade dos serviços; II - Zelar pelo atendimento aos associados; III - Receber treinamento e cumprir o estatuto da CONTRATANTE. O CONTRATADO poderá usar prestadores autorizados, sendo responsável por eles. É vedado abrir sucursais sem anuência da CONTRATANTE.',
+  },
+  {
+    num: 3, titulo: 'DA CONDUTA E IDENTIFICAÇÃO VISUAL',
+    resumo: 'Estou ciente que é vedado usar o nome, logotipo ou marca da CONTRATANTE sem autorização (multa de R$ 2.000,00 por publicação). Ao usar veículo plotado, represento a Associação e assumo total responsabilidade pela minha conduta no trânsito.',
+    texto: 'É vedado ao CONTRATADO utilizar nome, logotipo ou referência da CONTRATANTE em divulgações sem autorização, sob pena de multa de R$ 2.000,00 por impresso/publicação indevida. Ao conduzir veículo plotado, o CONTRATADO representa a Associação e assume responsabilidade por infrações, multas e danos.',
+  },
+  {
+    num: 4, titulo: 'DO PREÇO E CONDIÇÕES DE PAGAMENTO',
+    resumo: 'Estou ciente que minha remuneração é variável, baseada em bonificação por filiações (tabela no contrato). Se o filiado não pagar o 1º boleto, será descontada 1 placa da minha meta. Com 300 veículos ativos tenho direito a recorrência de 5%-10%. Com 50/100 filiações e carro plotado, recebo bônus adicional (com obrigação de 6 meses de plotagem).',
+    texto: 'Remuneração variável por filiações: tabela de bonificação de R$500 (10 filiações) a R$10.400 (200 filiações). Bônus plotagem: R$1.000 (50 filiações) e R$2.000 (100 filiações) — mínimo 6 meses ou devolução integral. Recorrência de 5%-10% com 300+ veículos ativos. Bônus PBP equipe de R$1.200 a R$10.000.',
+  },
+  {
+    num: 5, titulo: 'DO PRAZO E DA VALIDADE',
+    resumo: 'Declaro ciência que este contrato tem prazo de 24 (vinte e quatro) meses a partir da assinatura. Pode ser rescindido sem ônus com comunicação prévia de 5 (cinco) dias.',
+    texto: 'O contrato vigorará por 24 meses da data de assinatura. Pode ser denunciado sem ônus com antecedência de 5 dias pela parte interessada.',
+  },
+  {
+    num: 6, titulo: 'DO SIGILO E NÃO CONCORRÊNCIA',
+    resumo: 'Aceito a EXCLUSIVIDADE com a CONTRATANTE em âmbito nacional e o sigilo de 5 ANOS após o término do contrato. Estou ciente que o descumprimento implica multa de 40 SALÁRIOS MÍNIMOS (corrigidos pelo INPC) + perdas e danos. Tentativas de retirada de associados resultam em rescisão imediata com a mesma multa.',
+    texto: 'EXCLUSIVIDADE nacional durante a vigência. Sigilo de 5 anos após o término — informações operacionais, estratégias, valores. Multa de 40 salários mínimos (INPC) por descumprimento de confidencialidade ou exclusividade. Tentativa de retirada de associados = rescisão imediata + multa de 40 salários mínimos.',
+  },
+  {
+    num: 7, titulo: 'DA LGPD — PROTEÇÃO DE DADOS',
+    resumo: 'Compreendo e aceito que dados pessoais serão coletados e tratados exclusivamente para cumprir este contrato, nos termos da Lei 14.909/2021 e LGPD. Os dados não serão compartilhados para outros fins. Comprometo-me a observar as obrigações da LGPD durante toda a vigência.',
+    texto: 'Dados pessoais serão tratados exclusivamente para prestação dos serviços, conforme Art. 7º incisos II e V da LGPD. Nenhum dado será compartilhado com terceiros sem instrução da CONTRATANTE. Ambas as partes observam os direitos e obrigações da LGPD.',
+  },
+  {
+    num: 8, titulo: 'DA RESCISÃO',
+    resumo: 'Estou ciente dos motivos de rescisão: desídia (incluindo inatividade superior a 10 dias), descrédito da CONTRATANTE, uso indevido da marca, promessas irregulares ao associado, concorrência desleal, ou uso de cadastro de terceiros para filiações (fraude — multa de 40 salários mínimos). Ao término, devo devolver todos os materiais e retirar a plotagem em 24h.',
+    texto: 'Motivos de rescisão: desídia, inatividade +10 dias, falsa afirmação, desvio de associados, uso fraudulento de cadastros de terceiros (multa 40 salários mínimos). Ao término: devolver documentos, cessar uso da marca, retirar plotagem em 24h.',
+  },
+  {
+    num: 9, titulo: 'DISPOSIÇÕES GERAIS E ASSINATURA ELETRÔNICA',
+    resumo: 'Declaro que: (1) Não tenho vínculo empregatício com a CONTRATANTE; (2) Aceito o foro de Petrolina/PE para dirimir controvérsias; (3) Reconheço que esta assinatura eletrônica tem o mesmo valor legal que a assinatura manual, nos termos da MP 2.200-2/2001, Art. 107 CC e Lei 14.063/2020.',
+    texto: 'Sem vínculo empregatício ou de subordinação. Aceitação eletrônica com valor legal equivalente à assinatura manual (MP 2.200-2/2001, Art. 107 CC, Lei 14.063/2020). Foro: Petrolina/PE.',
+  },
+]
+
+function validarCNPJ(cnpj: string): boolean {
+  const d = cnpj.replace(/\D/g,'')
+  if (d.length !== 14 || /^(\d)\1+$/.test(d)) return false
+  let sum = 0; let len = d.length - 2; let pos = len - 7
+  for (let i = len; i >= 1; i--) { sum += parseInt(d[len-i]) * pos--; if (pos < 2) pos = 9 }
+  let r = sum % 11 < 2 ? 0 : 11 - (sum % 11)
+  if (r !== parseInt(d[len])) return false
+  len++; sum = 0; pos = len - 7
+  for (let i = len; i >= 1; i--) { sum += parseInt(d[len-i]) * pos--; if (pos < 2) pos = 9 }
+  r = sum % 11 < 2 ? 0 : 11 - (sum % 11)
+  return r === parseInt(d[len])
+}
+
+function formatarCNPJ(v: string): string {
+  const d = v.replace(/\D/g,'').slice(0,14)
+  if (d.length <= 2) return d
+  if (d.length <= 5) return `${d.slice(0,2)}.${d.slice(2)}`
+  if (d.length <= 8) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5)}`
+  if (d.length <= 12) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8)}`
+  return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8,12)}-${d.slice(12)}`
+}
+
+export default function ContratoForm({ nomeInicial='', whatsappInicial='', emailInicial='', cpfInicial='', alunoId, contratanteNome, contratanteCnpj, contratanteEndereco, foro }: Props) {
+  const [etapa, setEtapa] = useState<Etapa>('dados')
+  const [clausulaAtual, setClausulaAtual] = useState(0)
+  const [aceitas, setAceitas] = useState<boolean[]>(new Array(CLAUSULAS.length).fill(false))
+  const [form, setForm] = useState({ nome: nomeInicial, whatsapp: whatsappInicial, email: emailInicial, cpf: cpfInicial, cnpj_mei: '', sede_mei: '', rua: '', numero: '', bairro: '', cidade: '', estado: '', cep: '' })
+  const [loading, setLoading] = useState(false)
+  const [erro, setErro] = useState('')
+  const [resultado, setResultado] = useState<{ numero_registro: string; hash_contrato: string } | null>(null)
+
+  const bg = 'linear-gradient(135deg, #06101f 0%, #0a1828 60%, #040d18 100%)'
+  const inp: React.CSSProperties = { width: '100%', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, padding: '12px 14px', color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: 'Inter, sans-serif' }
+  const lbl: React.CSSProperties = { display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }
+
+  const sedeMei = `${form.rua}, ${form.numero} — ${form.bairro}, ${form.cidade}/${form.estado}, CEP ${form.cep}`.replace(/^,\s*|,\s*—\s*,|,\s*\/|CEP\s*$/g,'')
+
+  async function assinar() {
+    setLoading(true); setErro('')
+    const res = await fetch('/api/contrato', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome: form.nome, cpf: form.cpf, cnpj_mei: form.cnpj_mei,
+        sede_mei: sedeMei, whatsapp: form.whatsapp, email: form.email,
+        aluno_id: alunoId ?? null,
+        clausulas_aceitas: CLAUSULAS.map(c => c.titulo),
+      }),
+    })
+    const data = await res.json()
+    if (data.ok) { setResultado(data); setEtapa('sucesso') }
+    else setErro(data.error ?? 'Erro ao registrar contrato.')
+    setLoading(false)
+  }
+
+  // ── ETAPA 1: DADOS ────────────────────────────────────────────────────────
+  if (etapa === 'dados') {
+    const cnpjValido = validarCNPJ(form.cnpj_mei)
+    const cnpjLen = form.cnpj_mei.replace(/\D/g,'').length
+    const podeAvancar = form.nome && form.whatsapp && form.cnpj_mei && cnpjValido && form.rua && form.numero && form.bairro && form.cidade && form.estado && form.cep
+    return (
+      <div style={{ minHeight:'100vh', background:bg, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Inter,sans-serif', padding:'32px 20px' }}>
+        <div style={{ width:'100%', maxWidth:580 }}>
+          <div style={{ textAlign:'center', marginBottom:32 }}>
+            <div style={{ display:'inline-block', background:'rgba(99,102,241,0.12)', border:'2px solid #6366f1', borderRadius:16, padding:'12px 32px', marginBottom:16 }}>
+              <p style={{ fontWeight:900, fontSize:14, color:'#818cf8', margin:0, letterSpacing:2, textTransform:'uppercase' }}>Contrato de Representação</p>
+              <p style={{ fontWeight:800, fontSize:22, color:'#fff', margin:'6px 0 0' }}>{contratanteNome}</p>
+            </div>
+            <p style={{ color:'rgba(255,255,255,0.45)', fontSize:14, lineHeight:1.6 }}>Preencha seus dados como MEI para gerar o contrato</p>
+          </div>
+
+          <div style={{ background:'rgba(10,22,40,0.85)', border:'1px solid rgba(99,102,241,0.25)', borderRadius:20, padding:32, backdropFilter:'blur(12px)' }}>
+            <p style={{ fontWeight:700, fontSize:14, color:'#818cf8', marginBottom:20 }}>📋 Seus dados pessoais</p>
+            <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+              <div>
+                <label style={lbl}>Nome completo *</label>
+                <input style={inp} value={form.nome} onChange={e => setForm(p=>({...p,nome:e.target.value}))} placeholder="Seu nome completo" />
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                <div>
+                  <label style={lbl}>WhatsApp *</label>
+                  <input style={inp} value={form.whatsapp} onChange={e => setForm(p=>({...p,whatsapp:e.target.value}))} placeholder="(11) 99999-9999" />
+                </div>
+                <div>
+                  <label style={lbl}>CPF</label>
+                  <input style={inp} value={form.cpf} onChange={e => setForm(p=>({...p,cpf:e.target.value}))} placeholder="000.000.000-00" />
+                </div>
+              </div>
+              <div>
+                <label style={lbl}>E-mail</label>
+                <input style={{...inp}} type="email" value={form.email} onChange={e => setForm(p=>({...p,email:e.target.value}))} placeholder="seu@email.com" />
+              </div>
+            </div>
+
+            <div style={{ marginTop:24, paddingTop:20, borderTop:'1px solid rgba(255,255,255,0.1)' }}>
+              <p style={{ fontWeight:700, fontSize:14, color:'#818cf8', marginBottom:16 }}>🏢 Dados do MEI</p>
+              <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                <div>
+                  <label style={lbl}>
+                    CNPJ MEI *
+                    {cnpjLen === 14 && (
+                      <span style={{ marginLeft:8, color: cnpjValido ? '#22c55e' : '#f87171', fontWeight:700 }}>
+                        {cnpjValido ? '✓ válido' : '✗ inválido'}
+                      </span>
+                    )}
+                  </label>
+                  <input style={{...inp, borderColor: cnpjLen===14 && !cnpjValido ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.15)'}}
+                    value={form.cnpj_mei} onChange={e => setForm(p=>({...p,cnpj_mei:formatarCNPJ(e.target.value)}))} placeholder="00.000.000/0000-00" />
+                </div>
+                <p style={{ fontSize:12, color:'rgba(255,255,255,0.35)', marginTop:-8 }}>Endereço da sede do MEI:</p>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 100px', gap:12 }}>
+                  <div>
+                    <label style={lbl}>Rua / Avenida *</label>
+                    <input style={inp} value={form.rua} onChange={e => setForm(p=>({...p,rua:e.target.value}))} placeholder="Rua das Flores" />
+                  </div>
+                  <div>
+                    <label style={lbl}>Número *</label>
+                    <input style={inp} value={form.numero} onChange={e => setForm(p=>({...p,numero:e.target.value}))} placeholder="123" />
+                  </div>
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                  <div>
+                    <label style={lbl}>Bairro *</label>
+                    <input style={inp} value={form.bairro} onChange={e => setForm(p=>({...p,bairro:e.target.value}))} placeholder="Centro" />
+                  </div>
+                  <div>
+                    <label style={lbl}>CEP *</label>
+                    <input style={inp} value={form.cep} onChange={e => setForm(p=>({...p,cep:e.target.value}))} placeholder="00000-000" maxLength={9} />
+                  </div>
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 80px', gap:12 }}>
+                  <div>
+                    <label style={lbl}>Cidade *</label>
+                    <input style={inp} value={form.cidade} onChange={e => setForm(p=>({...p,cidade:e.target.value}))} placeholder="Petrolina" />
+                  </div>
+                  <div>
+                    <label style={lbl}>UF *</label>
+                    <input style={inp} value={form.estado} onChange={e => setForm(p=>({...p,estado:e.target.value.toUpperCase().slice(0,2)}))} placeholder="PE" maxLength={2} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button onClick={() => setEtapa('clausulas')} disabled={!podeAvancar}
+              style={{ width:'100%', background:podeAvancar ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'rgba(99,102,241,0.3)', color:'#fff', border:'none', borderRadius:12, padding:'15px', fontWeight:800, fontSize:16, cursor:podeAvancar ? 'pointer' : 'not-allowed', marginTop:24, boxShadow:podeAvancar ? '0 8px 32px rgba(99,102,241,0.35)' : 'none' }}>
+              Avançar para o Contrato →
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── ETAPA 2: CLÁUSULAS ────────────────────────────────────────────────────
+  if (etapa === 'clausulas') {
+    const cl = CLAUSULAS[clausulaAtual]
+    const total = CLAUSULAS.length
+    const pct = Math.round((clausulaAtual / total) * 100)
+    return (
+      <div style={{ minHeight:'100vh', background:bg, fontFamily:'Inter,sans-serif', padding:'32px 20px' }}>
+        <div style={{ maxWidth:640, margin:'0 auto' }}>
+          {/* Progress */}
+          <div style={{ textAlign:'center', marginBottom:24 }}>
+            <p style={{ fontWeight:900, fontSize:14, color:'#6366f1', letterSpacing:2, textTransform:'uppercase', margin:'0 0 4px' }}>Contrato de Representação</p>
+            <p style={{ color:'rgba(255,255,255,0.5)', fontSize:14, margin:0 }}>Cláusula {clausulaAtual+1} de {total} — {total - clausulaAtual - 1 > 0 ? `${total - clausulaAtual - 1} restantes` : 'última cláusula'}</p>
+          </div>
+
+          {/* Barra de progresso */}
+          <div style={{ background:'rgba(255,255,255,0.08)', borderRadius:100, height:8, marginBottom:28, overflow:'hidden' }}>
+            <div style={{ width:`${pct + (100/total)}%`, height:'100%', background:'linear-gradient(90deg,#6366f1,#8b5cf6)', borderRadius:100, transition:'width 0.4s' }} />
+          </div>
+
+          {/* Card da cláusula */}
+          <div style={{ background:'rgba(10,22,40,0.85)', border:`1px solid ${aceitas[clausulaAtual] ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.12)'}`, borderRadius:20, padding:'28px 28px', backdropFilter:'blur(12px)', transition:'border-color 0.3s' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:18 }}>
+              <div style={{ width:40, height:40, borderRadius:'50%', background:'rgba(99,102,241,0.15)', border:'2px solid #6366f1', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:900, fontSize:16, color:'#818cf8', flexShrink:0 }}>
+                {cl.num}
+              </div>
+              <div>
+                <p style={{ fontSize:11, fontWeight:700, color:'#6366f1', letterSpacing:1, textTransform:'uppercase', margin:0 }}>Seção {cl.num}</p>
+                <p style={{ fontWeight:800, fontSize:17, color:'#fff', margin:'2px 0 0' }}>{cl.titulo}</p>
+              </div>
+            </div>
+
+            {/* Texto completo */}
+            <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:12, padding:'16px 18px', marginBottom:20, maxHeight:200, overflowY:'auto', border:'1px solid rgba(255,255,255,0.08)' }}>
+              <p style={{ color:'rgba(255,255,255,0.7)', fontSize:13, lineHeight:1.8, margin:0 }}>{cl.texto}</p>
+            </div>
+
+            {/* Checkbox de aceitação */}
+            <label style={{ display:'flex', gap:14, alignItems:'flex-start', background: aceitas[clausulaAtual] ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.04)', border:`1px solid ${aceitas[clausulaAtual] ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.12)'}`, borderRadius:12, padding:'16px 18px', cursor:'pointer', transition:'all 0.2s' }}>
+              <div style={{ width:24, height:24, borderRadius:6, border:`2px solid ${aceitas[clausulaAtual] ? '#6366f1' : 'rgba(255,255,255,0.25)'}`, background: aceitas[clausulaAtual] ? '#6366f1' : 'transparent', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginTop:1, transition:'all 0.2s' }}>
+                {aceitas[clausulaAtual] && <span style={{ color:'#fff', fontSize:14, fontWeight:900 }}>✓</span>}
+              </div>
+              <input type="checkbox" checked={aceitas[clausulaAtual]} onChange={e => { const n=[...aceitas]; n[clausulaAtual]=e.target.checked; setAceitas(n) }} style={{ display:'none' }} />
+              <div>
+                <p style={{ fontSize:11, color:'#818cf8', fontWeight:700, margin:'0 0 4px', textTransform:'uppercase', letterSpacing:0.8 }}>Estou ciente e de acordo</p>
+                <p style={{ fontSize:13, color: aceitas[clausulaAtual] ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.65)', lineHeight:1.6, margin:0 }}>{cl.resumo}</p>
+              </div>
+            </label>
+          </div>
+
+          {/* Botões */}
+          <div style={{ display:'flex', gap:12, marginTop:20 }}>
+            <button onClick={() => clausulaAtual === 0 ? setEtapa('dados') : setClausulaAtual(c => c-1)}
+              style={{ flex:1, background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.15)', color:'rgba(255,255,255,0.6)', borderRadius:12, padding:'14px', fontWeight:600, fontSize:15, cursor:'pointer' }}>
+              ← Voltar
+            </button>
+            {clausulaAtual < CLAUSULAS.length - 1 ? (
+              <button onClick={() => setClausulaAtual(c => c+1)} disabled={!aceitas[clausulaAtual]}
+                style={{ flex:2, background: aceitas[clausulaAtual] ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'rgba(99,102,241,0.3)', color:'#fff', border:'none', borderRadius:12, padding:'14px', fontWeight:800, fontSize:16, cursor: aceitas[clausulaAtual] ? 'pointer' : 'not-allowed', boxShadow: aceitas[clausulaAtual] ? '0 8px 32px rgba(99,102,241,0.4)' : 'none' }}>
+                Próxima cláusula →
+              </button>
+            ) : (
+              <button onClick={() => setEtapa('confirmar')} disabled={!aceitas[clausulaAtual]}
+                style={{ flex:2, background: aceitas[clausulaAtual] ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'rgba(99,102,241,0.3)', color:'#fff', border:'none', borderRadius:12, padding:'14px', fontWeight:800, fontSize:16, cursor: aceitas[clausulaAtual] ? 'pointer' : 'not-allowed' }}>
+                Revisar e Assinar ✍️
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── ETAPA 3: CONFIRMAR ────────────────────────────────────────────────────
+  if (etapa === 'confirmar') {
+    return (
+      <div style={{ minHeight:'100vh', background:bg, fontFamily:'Inter,sans-serif', padding:'32px 20px', display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div style={{ maxWidth:600, width:'100%' }}>
+          <div style={{ textAlign:'center', marginBottom:28 }}>
+            <div style={{ fontSize:52, marginBottom:12 }}>✍️</div>
+            <p style={{ fontWeight:900, fontSize:22, color:'#fff', margin:'0 0 8px' }}>Revisão final</p>
+            <p style={{ color:'rgba(255,255,255,0.5)', fontSize:14 }}>Confirme seus dados antes de assinar</p>
+          </div>
+
+          <div style={{ background:'rgba(10,22,40,0.85)', border:'1px solid rgba(99,102,241,0.3)', borderRadius:20, padding:28, marginBottom:20 }}>
+            <p style={{ fontWeight:700, fontSize:13, color:'#818cf8', marginBottom:16 }}>📋 Dados do contrato</p>
+            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+              {[
+                ['CONTRATANTE',`${contratanteNome} · CNPJ ${contratanteCnpj}`],
+                ['CONTRATADO',form.nome.toUpperCase()],
+                ['CNPJ MEI',form.cnpj_mei],
+                ['SEDE MEI',sedeMei],
+                ['WhatsApp',form.whatsapp],
+                ['E-mail',form.email || '—'],
+                ['Prazo','24 meses a partir da assinatura'],
+                ['Foro',foro || 'Petrolina/PE'],
+              ].map(([l,v]) => (
+                <div key={l} style={{ display:'flex', gap:12, padding:'10px 14px', background:'rgba(255,255,255,0.03)', borderRadius:10 }}>
+                  <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:0.8, flexShrink:0, width:100 }}>{l}</span>
+                  <span style={{ fontSize:13, color:'#fff', flex:1 }}>{v}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ marginTop:16, padding:'12px 16px', background:'rgba(99,102,241,0.08)', borderRadius:10, border:'1px solid rgba(99,102,241,0.2)' }}>
+              <p style={{ fontSize:12, color:'rgba(255,255,255,0.5)', margin:'0 0 4px', fontWeight:700 }}>✅ Todas as {CLAUSULAS.length} cláusulas aceitas</p>
+              <p style={{ fontSize:11, color:'rgba(255,255,255,0.35)', margin:0 }}>Assinatura eletrônica com hash SHA-256 — validade jurídica conforme MP 2.200-2/2001</p>
+            </div>
+          </div>
+
+          {erro && (
+            <div style={{ background:'rgba(248,113,113,0.1)', border:'1px solid rgba(248,113,113,0.3)', borderRadius:10, padding:'12px 16px', color:'#f87171', fontSize:14, marginBottom:16 }}>
+              {erro}
+            </div>
+          )}
+
+          <div style={{ display:'flex', gap:12 }}>
+            <button onClick={() => { setClausulaAtual(CLAUSULAS.length-1); setEtapa('clausulas') }}
+              style={{ flex:1, background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.15)', color:'rgba(255,255,255,0.6)', borderRadius:12, padding:'14px', fontWeight:600, fontSize:15, cursor:'pointer' }}>
+              ← Rever
+            </button>
+            <button onClick={assinar} disabled={loading}
+              style={{ flex:2, background:'linear-gradient(135deg,#6366f1,#8b5cf6)', color:'#fff', border:'none', borderRadius:12, padding:'14px', fontWeight:900, fontSize:16, cursor: loading ? 'not-allowed' : 'pointer', boxShadow:'0 8px 32px rgba(99,102,241,0.4)', opacity: loading ? 0.7 : 1 }}>
+              {loading ? '⏳ Registrando...' : '✍️ Assinar Contrato Digitalmente'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── ETAPA SUCESSO ─────────────────────────────────────────────────────────
+  return (
+    <div style={{ minHeight:'100vh', background:bg, fontFamily:'Inter,sans-serif', display:'flex', alignItems:'center', justifyContent:'center', padding:'32px 20px' }}>
+      <div style={{ textAlign:'center', color:'#fff', maxWidth:520, width:'100%' }}>
+        <div style={{ fontSize:72, marginBottom:20 }}>🎉</div>
+        <h1 style={{ fontSize:28, fontWeight:900, marginBottom:12 }}>Contrato assinado!</h1>
+        <p style={{ color:'rgba(255,255,255,0.6)', fontSize:15, marginBottom:24, lineHeight:1.7 }}>
+          Seu contrato foi registrado digitalmente e o PDF será enviado via WhatsApp em instantes.
+        </p>
+        {resultado && (
+          <>
+            <div style={{ background:'rgba(99,102,241,0.08)', border:'1px solid rgba(99,102,241,0.25)', borderRadius:14, padding:'16px 20px', marginBottom:20, textAlign:'left' }}>
+              <p style={{ fontSize:11, color:'#818cf8', fontWeight:700, marginBottom:8, textTransform:'uppercase', letterSpacing:1 }}>📄 Registro do contrato</p>
+              <p style={{ fontSize:16, fontWeight:800, color:'#fff', margin:'0 0 4px' }}>{resultado.numero_registro}</p>
+              <p style={{ fontSize:11, color:'rgba(255,255,255,0.4)', margin:0, fontFamily:'monospace', wordBreak:'break-all' }}>
+                SHA-256: {resultado.hash_contrato}
+              </p>
+            </div>
+            <button onClick={() => navigator.clipboard.writeText(resultado.numero_registro).then(() => alert('Registro copiado!'))}
+              style={{ background:'rgba(99,102,241,0.15)', border:'1px solid rgba(99,102,241,0.3)', color:'#818cf8', borderRadius:10, padding:'12px 24px', fontWeight:700, fontSize:14, cursor:'pointer' }}>
+              📋 Copiar número do registro
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}

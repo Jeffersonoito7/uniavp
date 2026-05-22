@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
-import { contarPROsAtivosIndicados, LIMITE_PRO_GRATUITO } from '@/lib/pros-indicados'
+import { contarPROsAtivosIndicados, getLimitePROGratuito } from '@/lib/pros-indicados'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
   const admin = createServiceRoleClient()
   const agora = new Date()
   const appUrl = await getAppUrl()
+  const LIMITE = await getLimitePROGratuito(admin)
   let avisos = 0
   let suspensos = 0
   let alertasRede = 0
@@ -70,12 +71,12 @@ export async function GET(req: NextRequest) {
 
         if (gestorOrigem?.whatsapp) {
           const totalAgora = await contarPROsAtivosIndicados(gestorOrigem.id, admin)
-          const faltam = LIMITE_PRO_GRATUITO - totalAgora
-          const perdeuBeneficio = totalAgora === LIMITE_PRO_GRATUITO - 1 // era 20, caiu para 19
+          const faltam = LIMITE - totalAgora
+          const perdeuBeneficio = totalAgora === LIMITE - 1 // era 20, caiu para 19
 
           const msg = perdeuBeneficio
-            ? `⚠️ *Você perdeu o PRO gratuito!*\n\n${g.nome} cancelou o plano PRO e sua rede caiu para *${totalAgora}/${LIMITE_PRO_GRATUITO}*.\n\nIndique mais *1 PRO* para recuperar o benefício!\n\n🔗 Link PRO direto:\n${appUrl}/captacao?direto=1&plano=pro`
-            : `📉 *${g.nome}* cancelou o plano PRO.\n\nSua rede agora tem *${totalAgora}/${LIMITE_PRO_GRATUITO}* PROs ativos. Faltam ${faltam} para ter o PRO gratuito.\n\n🔗 Indique mais PROs:\n${appUrl}/captacao?direto=1&plano=pro`
+            ? `⚠️ *Você perdeu o PRO gratuito!*\n\n${g.nome} cancelou o plano PRO e sua rede caiu para *${totalAgora}/${LIMITE}*.\n\nIndique mais *1 PRO* para recuperar o benefício!\n\n🔗 Link PRO direto:\n${appUrl}/captacao?direto=1&plano=pro`
+            : `📉 *${g.nome}* cancelou o plano PRO.\n\nSua rede agora tem *${totalAgora}/${LIMITE}* PROs ativos. Faltam ${faltam} para ter o PRO gratuito.\n\n🔗 Indique mais PROs:\n${appUrl}/captacao?direto=1&plano=pro`
 
           await enviarWhatsApp(gestorOrigem.whatsapp, msg)
           alertasRede++
@@ -93,7 +94,7 @@ export async function GET(req: NextRequest) {
 
   for (const g of gestoresSuspensos ?? []) {
     const total = await contarPROsAtivosIndicados(g.id, admin)
-    if (total >= LIMITE_PRO_GRATUITO) {
+    if (total >= LIMITE) {
       // Reativa gratuitamente
       const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       await (admin.from('gestores') as any)

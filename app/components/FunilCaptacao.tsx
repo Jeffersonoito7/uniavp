@@ -4,7 +4,7 @@ import VideoPlayer from './VideoPlayer'
 import PhoneInput from './PhoneInput'
 import { useRouter } from 'next/navigation'
 
-type Etapa = 'pergunta1' | 'video' | 'pergunta2' | 'cadastro' | 'reprovado' | 'sucesso' | 'aguardando_link'
+type Etapa = 'pergunta1' | 'video' | 'pergunta2' | 'cadastro' | 'reprovado' | 'sucesso' | 'aguardando_link' | 'passo_parceiro' | 'passo_app'
 
 type Props = {
   gestorNome?: string
@@ -17,9 +17,24 @@ type Props = {
   plano?: 'pro'
   linkExterno?: string
   bloquearVideo?: boolean
+  // Passo 1 — sistema parceiro
+  captacaoMostrarParceiro?: boolean
+  captacaoBloquearParceiro?: boolean
+  captacaoParceiroTitulo?: string
+  // Passo 2 — download do app
+  captacaoMostrarApp?: boolean
+  captacaoBloquearApp?: boolean
+  appIosUrl?: string
+  appAndroidUrl?: string
 }
 
-export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, logoUrl, videoId, direto, indicadorWhatsapp, plano, linkExterno, bloquearVideo = true }: Props) {
+export default function FunilCaptacao({
+  gestorNome, gestorWhatsapp, siteNome, logoUrl, videoId, direto, indicadorWhatsapp, plano,
+  linkExterno, bloquearVideo = true,
+  captacaoMostrarParceiro = false, captacaoBloquearParceiro = false, captacaoParceiroTitulo,
+  captacaoMostrarApp = false, captacaoBloquearApp = false,
+  appIosUrl, appAndroidUrl,
+}: Props) {
   const router = useRouter()
   const [etapa, setEtapa] = useState<Etapa>(direto ? 'cadastro' : 'pergunta1')
   const [videoAssistido, setVideoAssistido] = useState(false)
@@ -56,11 +71,15 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
     })
     const data = await res.json()
     if (data.ok || data.aluno) {
-      setEtapa('sucesso')
-      if (linkExterno) {
-        setTimeout(() => window.open(linkExterno, '_blank'), 1500)
+      // Sequência pós-cadastro: parceiro → app → login
+      if (captacaoMostrarParceiro) {
+        setEtapa('passo_parceiro')
+      } else if (captacaoMostrarApp && (appIosUrl || appAndroidUrl)) {
+        setEtapa('passo_app')
+      } else {
+        setEtapa('sucesso')
+        setTimeout(() => router.push(plano === 'pro' ? '/assinar-pro' : '/entrar'), 2500)
       }
-      setTimeout(() => router.push(plano === 'pro' ? '/assinar-pro' : '/entrar'), linkExterno ? 4000 : 2500)
     } else {
       setErro(data.erro ?? data.error ?? 'Erro ao criar conta.')
     }
@@ -356,35 +375,161 @@ export default function FunilCaptacao({ gestorNome, gestorWhatsapp, siteNome, lo
     )
   }
 
-  // ── SUCESSO ───────────────────────────────────────────────────────
-  return (
-    <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: 40 }}>
-      <div style={{ textAlign: 'center', color: '#fff', maxWidth: 520, width: '100%' }}>
-        <div style={{ fontSize: 64, marginBottom: 20 }}>🎉</div>
-        <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 12 }}>Cadastro realizado!</h2>
-        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, marginBottom: 28 }}>
-          Bem-vindo! Sua conta foi criada com sucesso.
-        </p>
+  const btnParceiroTitulo = captacaoParceiroTitulo || 'Cadastrar no sistema parceiro'
+  const temApp = !!(appIosUrl || appAndroidUrl)
+  const destino = plano === 'pro' ? '/assinar-pro' : '/entrar'
 
-        {linkExterno && (
-          <div style={{ background: 'rgba(2,161,83,0.1)', border: '1px solid rgba(2,161,83,0.4)', borderRadius: 16, padding: '24px', marginBottom: 24 }}>
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginBottom: 8 }}>📲 Próximo passo obrigatório</p>
-            <p style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 16, lineHeight: 1.5 }}>
-              Cadastre-se também na plataforma parceira para ativar seu acesso completo ao treinamento:
-            </p>
-            <a href={linkExterno} target="_blank" rel="noopener noreferrer"
-              style={{ display: 'inline-block', background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', borderRadius: 12, padding: '14px 32px', fontWeight: 800, fontSize: 16, textDecoration: 'none', boxShadow: '0 8px 24px rgba(2,161,83,0.4)' }}>
-              Acessar plataforma parceira →
-            </a>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 12 }}>
-              Abrindo automaticamente em instantes...
+  function avancarParaApp() {
+    if (captacaoMostrarApp && temApp) {
+      setEtapa('passo_app')
+    } else {
+      setEtapa('sucesso')
+      setTimeout(() => router.push(destino), 2500)
+    }
+  }
+
+  function avancarParaLogin() {
+    setEtapa('sucesso')
+    setTimeout(() => router.push(destino), 2000)
+  }
+
+  // ── PASSO 1: CADASTRO NO SISTEMA PARCEIRO ────────────────────────
+  if (etapa === 'passo_parceiro') {
+    const total = (captacaoMostrarParceiro ? 1 : 0) + (captacaoMostrarApp && temApp ? 1 : 0)
+    const atual = 1
+    return (
+      <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
+        <div style={{ textAlign: 'center', color: '#fff', maxWidth: 540, width: '100%' }}>
+          {total > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 32 }}>
+              {Array.from({ length: total }, (_, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: i === atual - 1 ? '#02A153' : i < atual - 1 ? '#02A153' : 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14 }}>
+                    {i < atual - 1 ? '✓' : i + 1}
+                  </div>
+                  {i < total - 1 && <div style={{ width: 40, height: 2, background: i < atual - 1 ? '#02A153' : 'rgba(255,255,255,0.15)' }} />}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
+          <p style={{ fontSize: 12, fontWeight: 700, color: '#02A153', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
+            {total > 1 ? `Passo ${atual} de ${total}` : 'Próximo passo'}
+          </p>
+          <h2 style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Cadastre-se no Sistema Parceiro</h2>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 15, lineHeight: 1.7, marginBottom: 28 }}>
+            Sua conta na plataforma foi criada. Agora você precisa se cadastrar também no sistema do seu gestor para ativar seu acesso completo.
+          </p>
+
+          <div style={{ background: 'rgba(2,161,83,0.08)', border: '2px solid rgba(2,161,83,0.4)', borderRadius: 20, padding: '28px 24px', marginBottom: 20 }}>
+            {linkExterno ? (
+              <a href={linkExterno} target="_blank" rel="noopener noreferrer"
+                onClick={() => { if (!captacaoBloquearParceiro) setTimeout(avancarParaApp, 1000) }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', borderRadius: 14, padding: '18px 32px', fontWeight: 900, fontSize: 18, textDecoration: 'none', boxShadow: '0 8px 32px rgba(2,161,83,0.4)', marginBottom: 14 }}>
+                🔗 {btnParceiroTitulo} →
+              </a>
+            ) : (
+              <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', marginBottom: 14, lineHeight: 1.6 }}>
+                📲 Solicite o link de cadastro ao seu gestor e acesse o sistema parceiro antes de continuar.
+              </p>
+            )}
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: 0 }}>
+              {captacaoBloquearParceiro && linkExterno ? 'Clique para acessar. Depois volte aqui para continuar.' : linkExterno ? 'Abre em nova aba automaticamente' : ''}
             </p>
           </div>
-        )}
 
-        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>
-          {plano === 'pro' ? 'Redirecionando para o pagamento PRO...' : 'Redirecionando para o login da plataforma...'}
+          {(!captacaoBloquearParceiro || !linkExterno) && (
+            <button onClick={avancarParaApp}
+              style={{ background: 'linear-gradient(135deg, #02A153, #059669)', border: 'none', color: '#fff', borderRadius: 12, padding: '14px 28px', fontWeight: 700, fontSize: 15, cursor: 'pointer', width: '100%', boxShadow: '0 4px 16px rgba(2,161,83,0.3)' }}>
+              {linkExterno ? 'Já me cadastrei → Continuar' : 'Continuar →'}
+            </button>
+          )}
+          {captacaoBloquearParceiro && linkExterno && (
+            <button onClick={avancarParaApp}
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: '14px 28px', fontWeight: 700, fontSize: 15, cursor: 'pointer', width: '100%' }}>
+              Já me cadastrei → Continuar
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ── PASSO 2: BAIXAR O APLICATIVO ─────────────────────────────────
+  if (etapa === 'passo_app' && temApp) {
+    const total = (captacaoMostrarParceiro ? 1 : 0) + (captacaoMostrarApp && temApp ? 1 : 0)
+    const atual = captacaoMostrarParceiro ? 2 : 1
+    return (
+      <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
+        <div style={{ textAlign: 'center', color: '#fff', maxWidth: 540, width: '100%' }}>
+          {/* Indicador de passos */}
+          {total > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 32 }}>
+              {Array.from({ length: total }, (_, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: i < atual - 1 ? '#02A153' : i === atual - 1 ? 'rgba(99,102,241,0.9)' : 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14 }}>
+                    {i < atual - 1 ? '✓' : i + 1}
+                  </div>
+                  {i < total - 1 && <div style={{ width: 40, height: 2, background: i < atual - 1 ? '#02A153' : 'rgba(255,255,255,0.15)' }} />}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{ fontSize: 56, marginBottom: 16 }}>📱</div>
+          <p style={{ fontSize: 12, fontWeight: 700, color: '#6366f1', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
+            {total > 1 ? `Passo ${atual} de ${total}` : 'Próximo passo'}
+          </p>
+          <h2 style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Baixe o App do Consultor</h2>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 15, lineHeight: 1.7, marginBottom: 28 }}>
+            Instale o aplicativo para acompanhar indicações, comissões e métricas em tempo real.
+          </p>
+
+          <div style={{ background: 'rgba(99,102,241,0.08)', border: '2px solid rgba(99,102,241,0.35)', borderRadius: 20, padding: '28px 24px', marginBottom: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {appIosUrl && (
+              <a href={appIosUrl} target="_blank" rel="noopener noreferrer"
+                onClick={() => { if (!captacaoBloquearApp) setTimeout(avancarParaLogin, 800) }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, background: '#000', color: '#fff', borderRadius: 14, padding: '16px 24px', fontWeight: 800, fontSize: 17, textDecoration: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}>
+                🍎 <span>Baixar na App Store<br /><span style={{ fontSize: 11, fontWeight: 400, opacity: 0.7 }}>iOS / iPhone</span></span>
+              </a>
+            )}
+            {appAndroidUrl && (
+              <a href={appAndroidUrl} target="_blank" rel="noopener noreferrer"
+                onClick={() => { if (!captacaoBloquearApp) setTimeout(avancarParaLogin, 800) }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, background: '#01875f', color: '#fff', borderRadius: 14, padding: '16px 24px', fontWeight: 800, fontSize: 17, textDecoration: 'none', boxShadow: '0 4px 16px rgba(1,135,95,0.4)' }}>
+                🤖 <span>Baixar no Google Play<br /><span style={{ fontSize: 11, fontWeight: 400, opacity: 0.7 }}>Android</span></span>
+              </a>
+            )}
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: '4px 0 0' }}>
+              {captacaoBloquearApp ? 'Baixe o app e depois clique em continuar abaixo.' : 'Após baixar, você será redirecionado automaticamente.'}
+            </p>
+          </div>
+
+          {captacaoBloquearApp && (
+            <button onClick={avancarParaLogin}
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: '14px 28px', fontWeight: 700, fontSize: 15, cursor: 'pointer', width: '100%' }}>
+              Já baixei o app → Ir para o login
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ── SUCESSO FINAL ─────────────────────────────────────────────────
+  return (
+    <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: 40 }}>
+      <div style={{ textAlign: 'center', color: '#fff', maxWidth: 480, width: '100%' }}>
+        <div style={{ fontSize: 72, marginBottom: 20 }}>✅</div>
+        <h2 style={{ fontSize: 28, fontWeight: 900, marginBottom: 12 }}>Tudo pronto!</h2>
+        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, marginBottom: 28, lineHeight: 1.7 }}>
+          Cadastro e configurações concluídos. Redirecionando para o login...
         </p>
+        <div style={{ width: 48, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2, margin: '0 auto', overflow: 'hidden' }}>
+          <div style={{ height: '100%', background: '#02A153', borderRadius: 2, animation: 'progress 2s linear forwards' }} />
+        </div>
+        <style>{`@keyframes progress { from { width: 0% } to { width: 100% } }`}</style>
       </div>
     </div>
   )

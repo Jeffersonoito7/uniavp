@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { criarCobrancaPix } from '@/lib/efi'
 import { randomUUID } from 'crypto'
-import { verificarPROGratuito, contarPROsAtivosIndicados, LIMITE_PRO_GRATUITO } from '@/lib/pros-indicados'
+import { verificarPROGratuito, contarPROsAtivosIndicados, getLimitePROGratuito } from '@/lib/pros-indicados'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,8 +39,11 @@ export async function GET() {
     .eq('ativo', true)
     .maybeSingle()
   if (gestorAtivo) {
-    const prosIndicados = await contarPROsAtivosIndicados(gestorAtivo.id, adminClient)
-    return NextResponse.json({ jaEhPro: true, valorPlano, prosIndicados, limiteGratuito: LIMITE_PRO_GRATUITO })
+    const [prosIndicados, limiteGratuito] = await Promise.all([
+      contarPROsAtivosIndicados(gestorAtivo.id, adminClient),
+      getLimitePROGratuito(adminClient),
+    ])
+    return NextResponse.json({ jaEhPro: true, valorPlano, prosIndicados, limiteGratuito })
   }
 
   // Verifica pagamento pendente

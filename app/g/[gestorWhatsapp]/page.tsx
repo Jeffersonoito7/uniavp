@@ -34,9 +34,24 @@ export default async function GestorCaptacaoPage({ params, searchParams }: { par
   const { data: videoConfig } = await (adminClient.from('configuracoes') as any)
     .select('valor').eq('chave', 'captacao_video_id').maybeSingle()
 
-  const { data: bloquearConfig } = await (adminClient.from('configuracoes') as any)
-    .select('valor').eq('chave', 'free_bloquear_video').maybeSingle()
-  const bloquearVideo = bloquearConfig?.valor !== 'false'
+  const { data: cfgsExtra } = await (adminClient.from('configuracoes') as any)
+    .select('chave, valor')
+    .in('chave', [
+      'free_bloquear_video',
+      'captacao_mostrar_parceiro', 'captacao_bloquear_parceiro', 'captacao_parceiro_titulo',
+      'captacao_mostrar_app', 'captacao_bloquear_app',
+      'app_ios_url', 'app_android_url',
+    ])
+  const cfgMap: Record<string, string> = {}
+  for (const c of cfgsExtra ?? []) cfgMap[c.chave] = typeof c.valor === 'string' ? c.valor : JSON.stringify(c.valor ?? '').replace(/"/g, '')
+  const bloquearVideo = cfgMap['free_bloquear_video'] !== 'false'
+  const captacaoMostrarParceiro = cfgMap['captacao_mostrar_parceiro'] === 'true'
+  const captacaoBloquearParceiro = cfgMap['captacao_bloquear_parceiro'] === 'true'
+  const captacaoParceiroTitulo = cfgMap['captacao_parceiro_titulo'] || undefined
+  const captacaoMostrarApp = cfgMap['captacao_mostrar_app'] === 'true'
+  const captacaoBloquearApp = cfgMap['captacao_bloquear_app'] === 'true'
+  const appIosUrl = cfgMap['app_ios_url'] || undefined
+  const appAndroidUrl = cfgMap['app_android_url'] || undefined
   // JSONB pode vir como objeto parsed ou string raw — tenta os dois
   const valorRaw = videoConfig?.valor
   const valorStr = typeof valorRaw === 'string' ? valorRaw : JSON.stringify(valorRaw ?? '')
@@ -57,6 +72,13 @@ export default async function GestorCaptacaoPage({ params, searchParams }: { par
       plano={plano}
       linkExterno={gestor.link_externo ?? undefined}
       bloquearVideo={bloquearVideo}
+      captacaoMostrarParceiro={captacaoMostrarParceiro}
+      captacaoBloquearParceiro={captacaoBloquearParceiro}
+      captacaoParceiroTitulo={captacaoParceiroTitulo}
+      captacaoMostrarApp={captacaoMostrarApp}
+      captacaoBloquearApp={captacaoBloquearApp}
+      appIosUrl={appIosUrl}
+      appAndroidUrl={appAndroidUrl}
     />
   )
 }

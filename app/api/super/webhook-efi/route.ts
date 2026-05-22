@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import { registrarWebhook } from '@/lib/efi'
+import { registrarWebhook, consultarWebhook } from '@/lib/efi'
 import { getAppUrl } from '@/lib/get-app-url'
 
 export const dynamic = 'force-dynamic'
@@ -8,6 +8,15 @@ export const dynamic = 'force-dynamic'
 async function isSuperAdmin(userId: string, adminClient: ReturnType<typeof createServiceRoleClient>) {
   const { data } = await (adminClient.from('super_admins') as any).select('id').eq('user_id', userId).eq('ativo', true).maybeSingle()
   return !!data
+}
+
+export async function GET() {
+  try {
+    const status = await consultarWebhook()
+    return NextResponse.json(status)
+  } catch (e: any) {
+    return NextResponse.json({ registrado: false, erro: e.message })
+  }
 }
 
 export async function POST(req: NextRequest) {

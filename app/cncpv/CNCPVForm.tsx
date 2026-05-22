@@ -227,72 +227,67 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
       ctx.font = `${big ? 'bold 19px' : '13px'} Arial, sans-serif`
     }
 
-    // NOME
+    const sep = (y: number) => {
+      ctx.strokeStyle = 'rgba(200,165,53,0.25)'; ctx.lineWidth = 0.8
+      ctx.beginPath(); ctx.moveTo(dx, y); ctx.lineTo(W - 22, y); ctx.stroke()
+    }
+
+    // ── NOME COMPLETO ──
     labelStyle(); ctx.textAlign = 'left'
-    ctx.fillText('NOME COMPLETO', dx, 100)
+    ctx.fillText('NOME COMPLETO', dx, 96)
     valueStyle(true)
     const nomeUp = form.nome.toUpperCase()
-    ctx.fillText(nomeUp.length > 30 ? nomeUp.slice(0, 30) + '...' : nomeUp, dx, 122)
+    ctx.fillText(nomeUp.length > 28 ? nomeUp.slice(0, 28) + '…' : nomeUp, dx, 116)
+    sep(126)
 
-    // Linha separadora fina
-    ctx.strokeStyle = 'rgba(200,165,53,0.25)'; ctx.lineWidth = 0.8
-    ctx.beginPath(); ctx.moveTo(dx, 132); ctx.lineTo(W - 22, 132); ctx.stroke()
-
-    // CPF
+    // ── CPF ──
     labelStyle()
-    ctx.fillText('CPF', dx, 150)
+    ctx.fillText('CPF', dx, 142)
     valueStyle()
     if (form.cpf) {
       const d = form.cpf.replace(/\D/g, '')
       const mask = d.length === 11 ? `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}` : form.cpf
-      ctx.fillText(mask, dx, 166)
+      ctx.fillText(mask, dx, 157)
     } else {
-      ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillText('Não informado', dx, 166)
+      ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillText('Não informado', dx, 157)
     }
 
-    // DATA EMISSÃO
+    // DATA DE EMISSÃO (lado direito)
     labelStyle()
-    ctx.fillText('DATA DE EMISSÃO', dx + 260, 150)
+    ctx.fillText('EMISSÃO', dx + 320, 142)
     valueStyle()
-    ctx.fillText(new Date().toLocaleDateString('pt-BR'), dx + 260, 166)
+    ctx.fillText(new Date().toLocaleDateString('pt-BR'), dx + 320, 157)
+    sep(168)
 
-    ctx.strokeStyle = 'rgba(200,165,53,0.25)'; ctx.lineWidth = 0.8
-    ctx.beginPath(); ctx.moveTo(dx, 176); ctx.lineTo(W - 22, 176); ctx.stroke()
-
-    // REGISTRO
+    // ── NOME DA ASSOCIAÇÃO ──
     labelStyle()
-    ctx.fillText('Nº REGISTRO', dx, 194)
+    ctx.fillText('ASSOCIAÇÃO CREDENCIADORA', dx, 184)
+    ctx.fillStyle = '#c8a535'
+    ctx.font = 'bold 13px Arial, sans-serif'
+    ctx.textAlign = 'left'
+    const assocNome = siteNome ? siteNome.toUpperCase() : 'PROTEÇÃO VEICULAR'
+    ctx.fillText(assocNome.length > 38 ? assocNome.slice(0, 38) + '…' : assocNome, dx, 199)
+    sep(210)
+
+    // ── Nº REGISTRO (ID auto) ──
+    labelStyle()
+    ctx.fillText('Nº REGISTRO / ID', dx, 226)
     ctx.fillStyle = '#02A153'
     ctx.font = 'bold 20px Arial, sans-serif'
-    ctx.fillText(registro, dx, 216)
+    ctx.fillText(registro, dx, 248)
 
     // VALIDADE
     const validadeAno = new Date().getFullYear() + 2
     labelStyle()
-    ctx.fillText('VALIDADE', dx + 260, 194)
+    ctx.fillText('VALIDADE', dx + 320, 226)
     ctx.fillStyle = '#ffffff'
     ctx.font = 'bold 20px Arial, sans-serif'
-    ctx.fillText(`12/${validadeAno}`, dx + 260, 216)
-
-    ctx.strokeStyle = 'rgba(200,165,53,0.25)'; ctx.lineWidth = 0.8
-    ctx.beginPath(); ctx.moveTo(dx, 228); ctx.lineTo(W - 22, 228); ctx.stroke()
-
-    // ENTIDADE EMISSORA
-    labelStyle()
-    ctx.fillText('ENTIDADE CREDENCIADORA', dx, 246)
-    ctx.fillStyle = 'rgba(255,255,255,0.75)'
-    ctx.font = '12px Arial, sans-serif'
-    ctx.fillText(siteNome ? siteNome.toUpperCase() : 'SISTEMA UNIAVP', dx, 262)
-    ctx.fillStyle = 'rgba(255,255,255,0.4)'
-    ctx.font = '11px Arial, sans-serif'
-    ctx.fillText('Credenciado sob o padrão CNCPV — Proteção Veicular', dx, 277)
-
-    ctx.strokeStyle = 'rgba(200,165,53,0.25)'; ctx.lineWidth = 0.8
-    ctx.beginPath(); ctx.moveTo(dx, 288); ctx.lineTo(W - 22, 288); ctx.stroke()
+    ctx.fillText(`12/${validadeAno}`, dx + 320, 248)
+    sep(260)
 
     // HABILITAÇÕES / CATEGORIAS
     labelStyle()
-    ctx.fillText('HABILITAÇÕES', dx, 306)
+    ctx.fillText('HABILITAÇÕES', dx, 276)
     const habs = [
       { cod: 'C', desc: 'Captação' },
       { cod: 'T', desc: 'Treinamento' },
@@ -301,28 +296,27 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
     habs.forEach((h, i) => {
       const hx = dx + i * 165
       ctx.fillStyle = '#c8a535'
-      ctx.beginPath(); ctx.arc(hx + 14, 323, 13, 0, Math.PI * 2); ctx.fill()
+      ctx.beginPath(); ctx.arc(hx + 14, 293, 13, 0, Math.PI * 2); ctx.fill()
       ctx.fillStyle = '#000'
       ctx.font = 'bold 14px Arial, sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText(h.cod, hx + 14, 328)
+      ctx.fillText(h.cod, hx + 14, 298)
       ctx.fillStyle = 'rgba(255,255,255,0.65)'
       ctx.font = '10px Arial, sans-serif'
       ctx.textAlign = 'left'
-      ctx.fillText(h.desc, hx + 32, 327)
+      ctx.fillText(h.desc, hx + 32, 297)
     })
 
     // ── ASSINATURA DIGITAL ──────────────────────────────────────────
     ctx.strokeStyle = 'rgba(200,165,53,0.3)'; ctx.lineWidth = 0.8
-    ctx.beginPath(); ctx.moveTo(dx, 350); ctx.lineTo(dx + 320, 350); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(dx, 320); ctx.lineTo(dx + 320, 320); ctx.stroke()
     ctx.fillStyle = 'rgba(255,255,255,0.3)'
     ctx.font = '9px Arial, sans-serif'
     ctx.textAlign = 'left'
-    ctx.fillText('ASSINATURA DIGITAL — CONTRATO CNCPV ACEITO', dx, 362)
-    // Simula assinatura cursiva
+    ctx.fillText('ASSINATURA DIGITAL — CONTRATO CNCPV ACEITO', dx, 332)
     ctx.strokeStyle = 'rgba(200,165,53,0.5)'; ctx.lineWidth = 1.5
     ctx.beginPath()
-    const asx = dx; const asy = 346
+    const asx = dx; const asy = 316
     ctx.moveTo(asx, asy); ctx.bezierCurveTo(asx+30, asy-14, asx+60, asy+10, asx+90, asy-8)
     ctx.bezierCurveTo(asx+120, asy-22, asx+150, asy+6, asx+185, asy-4)
     ctx.bezierCurveTo(asx+210, asy-14, asx+240, asy+8, asx+270, asy-2)

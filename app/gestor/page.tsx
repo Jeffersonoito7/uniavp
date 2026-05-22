@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
+import { getLimitePROGratuito } from '@/lib/pros-indicados'
 import GestorDashboard from './GestorDashboard'
 
 export default async function GestorPage() {
@@ -104,11 +105,14 @@ export default async function GestorPage() {
     .order('ordem', { ascending: true })
 
   // PROs ativos indicados por este gestor (para o benefício de PRO gratuito)
-  const { count: prosIndicados } = await (adminClient.from('gestores') as any)
-    .select('id', { count: 'exact', head: true })
-    .eq('indicado_por_gestor_id', gestor.id)
-    .eq('ativo', true)
-    .eq('status_assinatura', 'ativo')
+  const [{ count: prosIndicados }, limiteProGratuito] = await Promise.all([
+    (adminClient.from('gestores') as any)
+      .select('id', { count: 'exact', head: true })
+      .eq('indicado_por_gestor_id', gestor.id)
+      .eq('ativo', true)
+      .eq('status_assinatura', 'ativo'),
+    getLimitePROGratuito(adminClient),
+  ])
 
   return (
     <GestorDashboard
@@ -120,6 +124,7 @@ export default async function GestorPage() {
       baseUrl={baseUrl}
       capaDefault={capaDefault}
       prosIndicados={prosIndicados ?? 0}
+      limiteProGratuito={limiteProGratuito}
       cncpvHabilitado={siteConfig.cncpvHabilitado}
       documentos={documentosPro ?? []}
     />

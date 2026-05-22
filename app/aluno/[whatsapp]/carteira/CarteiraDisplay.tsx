@@ -2,9 +2,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import ImageCropModal from '@/app/components/ImageCropModal'
 
-const NAVY = '#0D2B6E'
-const GREEN = '#0A7A42'
-const GREEN_LABEL = '#1A7A50'
+const NAVY_DEFAULT = '#0D2B6E'
+const GREEN_DEFAULT = '#0A7A42'
 
 type Props = {
   nome: string
@@ -26,6 +25,8 @@ type Props = {
   assinaturaUrl?: string | null
   urlVerificacao?: string
   tagline?: string
+  corPrimaria?: string
+  corSecundaria?: string
 }
 
 function Field({ label, value, flex }: { label: string; value: string; flex?: boolean }) {
@@ -37,7 +38,10 @@ function Field({ label, value, flex }: { label: string; value: string; flex?: bo
   )
 }
 
-export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicial, dataFormacao, validade, cargaHoraria, turma, whatsapp, status, empresaNome = 'UNIVERSIDADE', empresaLogoUrl, logoEsquerdaUrl, logoDireitaUrl, assinaturaNome = 'Jose Tiburcio dos Santos', assinaturaCargo = 'PRESIDENTE', assinaturaEmpresa, assinaturaUrl, urlVerificacao = '', tagline = '' }: Props) {
+export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicial, dataFormacao, validade, cargaHoraria, turma, whatsapp, status, empresaNome = 'UNIVERSIDADE', empresaLogoUrl, logoEsquerdaUrl, logoDireitaUrl, assinaturaNome = 'Jose Tiburcio dos Santos', assinaturaCargo = 'PRESIDENTE', assinaturaEmpresa, assinaturaUrl, urlVerificacao = '', tagline = '', corPrimaria, corSecundaria }: Props) {
+  const NAVY = corPrimaria || NAVY_DEFAULT
+  const GREEN = corSecundaria || GREEN_DEFAULT
+  const GREEN_LABEL = corSecundaria || '#1A7A50'
   const [fotoUrl, setFotoUrl] = useState<string | null>(fotoInicial)
   const [uploadando, setUploadando] = useState(false)
   const [msgFoto, setMsgFoto] = useState('')

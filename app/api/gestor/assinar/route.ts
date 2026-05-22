@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { criarCobrancaPix } from '@/lib/efi'
 import { randomUUID } from 'crypto'
-import { verificarPROGratuito, contarPROsAtivosIndicados, LIMITE_PRO_GRATUITO } from '@/lib/pros-indicados'
+import { verificarPROGratuito, contarPROsAtivosIndicados, getLimitePROGratuito } from '@/lib/pros-indicados'
 
 export const dynamic = 'force-dynamic'
 
@@ -112,8 +112,11 @@ export async function GET() {
   const valorParsedGet = parseFloat(String(valorCfgGet?.valor ?? '').replace(/"/g, ''))
   const valorPlanoGet = isNaN(valorParsedGet) ? 97 : Math.max(1, valorParsedGet)
 
-  const prosIndicados = await contarPROsAtivosIndicados(gestor.id, adminClient)
-  const ehGratuito = prosIndicados >= LIMITE_PRO_GRATUITO
+  const [prosIndicados, limiteGratuito] = await Promise.all([
+    contarPROsAtivosIndicados(gestor.id, adminClient),
+    getLimitePROGratuito(adminClient),
+  ])
+  const ehGratuito = prosIndicados >= limiteGratuito
 
   return NextResponse.json({
     status: gestor.status_assinatura,
@@ -123,7 +126,7 @@ export async function GET() {
     ultimoPagamento: ultimoPag,
     valorPlano: valorPlanoGet,
     prosIndicados,
-    limiteGratuito: LIMITE_PRO_GRATUITO,
+    limiteGratuito,
     ehGratuito,
   })
 }

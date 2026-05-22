@@ -50,7 +50,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
   const host = hdrs.get('host') || ''
   const baseUrl = siteConfig.dominioCustomizado ? `https://${siteConfig.dominioCustomizado}` : `https://${host}`
   const { data: aluno } = await (adminClient.from('alunos') as any)
-    .select('id, nome, whatsapp, status, numero_registro, streak_atual, maior_streak')
+    .select('id, nome, whatsapp, email, cpf, status, numero_registro, streak_atual, maior_streak')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -63,9 +63,11 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
       'cert_assinatura_y', 'cert_assinatura_ativa', 'cert_assinatura_url', 'cert_assinatura_nome', 'cert_assinatura_cargo',
       'carteira_logo_esquerda', 'carteira_logo_direita',
       'carteira_assinatura_url', 'carteira_assinatura_nome', 'carteira_assinatura_cargo',
+      'contrato_habilitado',
     ])
   const certMap: Record<string, string> = {}
   for (const r of certConfigs ?? []) { try { certMap[r.chave] = JSON.parse(r.valor) } catch { certMap[r.chave] = r.valor } }
+  const contratoHabilitado = certMap['contrato_habilitado'] === 'true'
   if (!aluno) redirect('/entrar?p=free')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
@@ -367,19 +369,43 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                   🪪 Carteira
                 </Link>
                 {siteConfig.cncpvHabilitado && (
-                  <Link href={`/cncpv?nome=${encodeURIComponent(aluno.nome)}&whatsapp=${aluno.whatsapp}&email=${encodeURIComponent(aluno.email ?? '')}`}
+                  <Link href={`/cncpv?nome=${encodeURIComponent(aluno.nome)}&whatsapp=${aluno.whatsapp}&email=${encodeURIComponent(aluno.email ?? '')}&cpf=${encodeURIComponent(aluno.cpf ?? '')}`}
                     style={{ background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                     🪪 Carteira CNCPV
+                  </Link>
+                )}
+                {contratoHabilitado && (
+                  <Link href={`/contrato?nome=${encodeURIComponent(aluno.nome)}&whatsapp=${aluno.whatsapp}&email=${encodeURIComponent(aluno.email ?? '')}&cpf=${encodeURIComponent(aluno.cpf ?? '')}&aluno_id=${aluno.id}`}
+                    style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    📄 Assinar Contrato
                   </Link>
                 )}
               </div>
             </div>
           )}
 
+          {/* ── CONTRATO DE REPRESENTAÇÃO ── */}
+          {!moduloAtivo && contratoHabilitado && (
+            <Link
+              href={`/contrato?nome=${encodeURIComponent(aluno.nome)}&whatsapp=${aluno.whatsapp}&email=${encodeURIComponent(aluno.email ?? '')}&cpf=${encodeURIComponent(aluno.cpf ?? '')}&aluno_id=${aluno.id}`}
+              style={{ display: 'block', textDecoration: 'none', marginBottom: 20 }}>
+              <div style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.06))', border: '1px solid rgba(99,102,241,0.35)', borderRadius: 16, padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}>
+                <div style={{ fontSize: 40, flexShrink: 0 }}>📄</div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: 800, fontSize: 16, color: '#fff', margin: '0 0 2px' }}>Contrato de Representação</p>
+                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, margin: 0 }}>Assine o contrato digital de licenciamento com validade jurídica</p>
+                </div>
+                <div style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  Assinar →
+                </div>
+              </div>
+            </Link>
+          )}
+
           {/* ── CNCPV — disponível para todos os consultores FREE ── */}
           {!moduloAtivo && siteConfig.cncpvHabilitado && (
             <Link
-              href={`/cncpv?nome=${encodeURIComponent(aluno.nome)}&whatsapp=${aluno.whatsapp}&email=${encodeURIComponent(aluno.email ?? '')}`}
+              href={`/cncpv?nome=${encodeURIComponent(aluno.nome)}&whatsapp=${aluno.whatsapp}&email=${encodeURIComponent(aluno.email ?? '')}&cpf=${encodeURIComponent(aluno.cpf ?? '')}`}
               style={{ display: 'block', textDecoration: 'none', marginBottom: 20 }}>
               <div style={{ background: 'linear-gradient(135deg, rgba(2,161,83,0.12), rgba(1,122,62,0.06))', border: '1px solid rgba(2,161,83,0.35)', borderRadius: 16, padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer', transition: 'border-color 0.2s' }}>
                 <div style={{ fontSize: 40, flexShrink: 0 }}>🪪</div>

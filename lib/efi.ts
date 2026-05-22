@@ -218,6 +218,22 @@ export async function criarBoleto(params: {
   }
 }
 
+export async function consultarWebhook(): Promise<{ webhookUrl?: string; registrado: boolean; erro?: string }> {
+  try {
+    const token = await getToken()
+    const chave = process.env.EFI_PIX_KEY!
+    const { status, data } = await httpsRequest(`${BASE}/v2/webhook/${chave}`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    })
+    const d = data as any
+    if (status === 200 && d.webhookUrl) return { webhookUrl: d.webhookUrl, registrado: true }
+    return { registrado: false }
+  } catch (e: any) {
+    return { registrado: false, erro: e.message }
+  }
+}
+
 export async function registrarWebhook(webhookUrl: string): Promise<void> {
   const token = await getToken()
   const chave = process.env.EFI_PIX_KEY!

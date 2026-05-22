@@ -70,6 +70,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   }
 
   const [planoPROValor, setPlanoPROValor] = useState(get('plano_pro_valor') || '97')
+  const [prosGratuitoLimite, setProsGratuitoLimite] = useState(get('pros_gratuito_limite') || '20')
   const [freePodeConfigurarLink, setFreePodeConfigurarLink] = useState(get('free_pode_configurar_link') === 'true')
   const [freeMaxModulos, setFreeMaxModulos] = useState(get('free_max_modulos') || '0')
   const [appIosUrl, setAppIosUrl] = useState(get('app_ios_url') || '')
@@ -122,6 +123,12 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [proBloquearVideo, setProBloquearVideo] = useState(get('pro_bloquear_video') !== 'false')
   const moduloCapaRef = useRef<HTMLInputElement>(null)
   const [captacaoVideoId, setCaptacaoVideoId] = useState(get('captacao_video_id') || '')
+  const [captacaoMostrarParceiro, setCaptacaoMostrarParceiro] = useState(get('captacao_mostrar_parceiro') === 'true')
+  const [captacaoBloquearParceiro, setCaptacaoBloquearParceiro] = useState(get('captacao_bloquear_parceiro') === 'true')
+  const [captacaoParceiroTitulo, setCaptacaoParceiroTitulo] = useState(get('captacao_parceiro_titulo') || '')
+  const [captacaoLinkExterno, setCaptacaoLinkExterno] = useState(get('captacao_link_externo') || '')
+  const [captacaoMostrarApp, setCaptacaoMostrarApp] = useState(get('captacao_mostrar_app') === 'true')
+  const [captacaoBloquearApp, setCaptacaoBloquearApp] = useState(get('captacao_bloquear_app') === 'true')
   const [certUrl, setCertUrl] = useState(get('certificado_template_url'))
   const [certNomeX, setCertNomeX] = useState(get('certificado_nome_x') || '50')
   const [certNomeY, setCertNomeY] = useState(get('certificado_nome_y') || '62')
@@ -143,10 +150,18 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [certAssinaturaNome, setCertAssinaturaNome] = useState(get('cert_assinatura_nome'))
   const [certAssinaturaCargo, setCertAssinaturaCargo] = useState(get('cert_assinatura_cargo'))
   const [cncpvHabilitado, setCncpvHabilitado] = useState(get('cncpv_habilitado') !== 'false')
+  const [cncpvNomeAssociacao, setCncpvNomeAssociacao] = useState(get('cncpv_nome_associacao'))
   const [cncpvTestemunhaNome, setCncpvTestemunhaNome] = useState(get('cncpv_testemunha_nome'))
   const [cncpvTestemunhaCargo, setCncpvTestemunhaCargo] = useState(get('cncpv_testemunha_cargo'))
   const [cncpvTestemunhaEmpresa, setCncpvTestemunhaEmpresa] = useState(get('cncpv_testemunha_empresa'))
-  const [cncpvLogoPdfUrl, setCncpvLogoPdfUrl] = useState(get('cncpv_logo_pdf_url'))
+  // Contrato de Representação
+  const [contratoHabilitado, setContratoHabilitado] = useState(get('contrato_habilitado') === 'true')
+  const [contratoContratanteNome, setContratoContratanteNome] = useState(get('contrato_contratante_nome'))
+  const [contratoContratanteCnpj, setContratoContratanteCnpj] = useState(get('contrato_contratante_cnpj'))
+  const [contratoContratanteEndereco, setContratoContratanteEndereco] = useState(get('contrato_contratante_endereco'))
+  const [contratoRepresentanteNome, setContratoRepresentanteNome] = useState(get('contrato_representante_nome'))
+  const [contratoRepresentanteCargo, setContratoRepresentanteCargo] = useState(get('contrato_representante_cargo'))
+  const [contratoForo, setContratoForo] = useState(get('contrato_foro') || 'Petrolina/PE')
   const [linkCopiadoCNCPV, setLinkCopiadoCNCPV] = useState(false)
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
@@ -313,6 +328,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         ...(urlSafe(carteiraLogoDireita) ? [{ chave: 'carteira_logo_direita', valor: carteiraLogoDireita }] : []),
         ...(urlSafe(carteiraAssinaturaUrl) ? [{ chave: 'carteira_assinatura_url', valor: carteiraAssinaturaUrl }] : []),
         { chave: 'plano_pro_valor', valor: planoPROValor },
+        { chave: 'pros_gratuito_limite', valor: prosGratuitoLimite },
         { chave: 'free_pode_configurar_link', valor: String(freePodeConfigurarLink) },
         { chave: 'free_max_modulos', valor: String(parseInt(freeMaxModulos) || 0) },
         { chave: 'app_ios_url', valor: appIosUrl },
@@ -323,11 +339,24 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         { chave: 'boleto_juros', valor: boletoJuros },
         ...(urlSafe(moduloCapaPadrao) ? [{ chave: 'modulo_capa_padrao', valor: moduloCapaPadrao }] : []),
         { chave: 'captacao_video_id', valor: captacaoVideoId },
+        { chave: 'captacao_mostrar_parceiro', valor: String(captacaoMostrarParceiro) },
+        { chave: 'captacao_bloquear_parceiro', valor: String(captacaoBloquearParceiro) },
+        { chave: 'captacao_parceiro_titulo', valor: captacaoParceiroTitulo },
+        { chave: 'captacao_link_externo', valor: captacaoLinkExterno },
+        { chave: 'captacao_mostrar_app', valor: String(captacaoMostrarApp) },
+        { chave: 'captacao_bloquear_app', valor: String(captacaoBloquearApp) },
         { chave: 'cncpv_habilitado', valor: String(cncpvHabilitado) },
+        { chave: 'cncpv_nome_associacao', valor: cncpvNomeAssociacao },
         { chave: 'cncpv_testemunha_nome', valor: cncpvTestemunhaNome },
         { chave: 'cncpv_testemunha_cargo', valor: cncpvTestemunhaCargo },
         { chave: 'cncpv_testemunha_empresa', valor: cncpvTestemunhaEmpresa },
-        ...(urlSafe(cncpvLogoPdfUrl) ? [{ chave: 'cncpv_logo_pdf_url', valor: cncpvLogoPdfUrl }] : []),
+        { chave: 'contrato_habilitado', valor: String(contratoHabilitado) },
+        { chave: 'contrato_contratante_nome', valor: contratoContratanteNome },
+        { chave: 'contrato_contratante_cnpj', valor: contratoContratanteCnpj },
+        { chave: 'contrato_contratante_endereco', valor: contratoContratanteEndereco },
+        { chave: 'contrato_representante_nome', valor: contratoRepresentanteNome },
+        { chave: 'contrato_representante_cargo', valor: contratoRepresentanteCargo },
+        { chave: 'contrato_foro', valor: contratoForo },
         { chave: 'free_quiz_obrigatorio', valor: String(freeQuizObrigatorio) },
         { chave: 'free_bloquear_video', valor: String(freeBloquearVideo) },
         { chave: 'pro_quiz_obrigatorio', valor: String(proQuizObrigatorio) },
@@ -507,6 +536,18 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         <p style={{ fontSize: 12, color: '#818cf8', marginTop: 4 }}>
           Valor atual: <strong>R$ {parseFloat(planoPROValor || '0').toFixed(2).replace('.', ',')}</strong>/mês
         </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: 320, marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--avp-border)' }}>
+          <div style={{ flex: 1 }}>
+            <label style={{ ...lbl, marginBottom: 4 }}>🎁 PROs necessários para plano gratuito</label>
+            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '0 0 8px' }}>
+              Número de PROs ativos na rede do gestor para ter o plano grátis
+            </p>
+          </div>
+          <input style={{ ...inp, width: 80, textAlign: 'center' as const }} type="number" min="1" step="1"
+            value={prosGratuitoLimite}
+            onChange={e => setProsGratuitoLimite(e.target.value)}
+            placeholder="20" />
+        </div>
       </div>}
 
       {/* PERMISSÕES FREE — só no super admin */}
@@ -603,8 +644,36 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
           </a>
         </div>
         <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
-          Suba as logos que aparecem no cabeçalho da carteirinha. Use PNG com fundo transparente.
+          Personalize a carteirinha digital e física. Cores, logos e assinatura são exclusivos de cada associação.
         </p>
+
+        {/* Cores da carteira — usa as cores do site */}
+        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+          <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>🎨 Cores da carteirinha</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.5 }}>
+            A carteira usa as cores primária e secundária configuradas em <strong style={{ color: 'var(--avp-text)' }}>Tema de Cores</strong> acima.
+            Cor primária = cabeçalho/fundo azul; secundária = destaques verdes/coloridos.
+          </p>
+          <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div style={{ width: 32, height: 32, borderRadius: 6, background: corPrimaria, border: '2px solid var(--avp-border)', flexShrink: 0 }} />
+              <div>
+                <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: 'var(--avp-text)' }}>Cor primária</p>
+                <p style={{ margin: 0, fontSize: 11, color: 'var(--avp-text-dim)', fontFamily: 'monospace' }}>{corPrimaria}</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div style={{ width: 32, height: 32, borderRadius: 6, background: corSecundaria, border: '2px solid var(--avp-border)', flexShrink: 0 }} />
+              <div>
+                <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: 'var(--avp-text)' }}>Cor secundária</p>
+                <p style={{ margin: 0, fontSize: 11, color: 'var(--avp-text-dim)', fontFamily: 'monospace' }}>{corSecundaria}</p>
+              </div>
+            </div>
+            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0, flex: 1 }}>
+              Altere em <strong style={{ color: 'var(--avp-text)' }}>Tema de Cores</strong> para refletir aqui.
+            </p>
+          </div>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           <LogoCard label="Logo esquerda (ex: UNIAVP)" campo="carteiraLogoEsquerda" value={carteiraLogoEsquerda} desc="Logo da universidade/escola" rec="PNG transparente · 200×200px" fileRef={carteiraLogoEsquerdaRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
           <LogoCard label="Logo direita (ex: AUTOVALE)" campo="carteiraLogoDireita" value={carteiraLogoDireita} desc="Logo da empresa parceira" rec="PNG transparente · 300×150px" fileRef={carteiraLogoDireitaRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
@@ -709,6 +778,92 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
             </div>
           )
         })()}
+      </div>
+
+      {/* FLUXO PÓS-CADASTRO — passos obrigatórios */}
+      <div style={{ ...card }}>
+        <p style={{ fontWeight: 800, fontSize: 16 }}>🚦 Fluxo pós-cadastro (passos obrigatórios)</p>
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8, lineHeight: 1.6 }}>
+          Após o consultor se cadastrar na captação, você pode exigir que ele complete etapas antes de acessar as aulas.
+          A sequência é sempre: <strong style={{ color: 'var(--avp-text)' }}>1. Sistema parceiro → 2. Baixar app → Login</strong>
+        </p>
+
+        {/* ── Passo 1: Sistema parceiro ── */}
+        <div style={{ background: 'var(--avp-black)', border: `1px solid ${captacaoMostrarParceiro ? 'rgba(2,161,83,0.4)' : 'var(--avp-border)'}`, borderRadius: 12, padding: '16px 18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: captacaoMostrarParceiro ? 16 : 0 }}>
+            <div>
+              <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>🔗 Passo 1 — Cadastro no sistema parceiro</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
+                Exibe tela pedindo que o consultor acesse o link configurado no perfil do gestor
+              </p>
+            </div>
+            <button type="button" onClick={() => setCaptacaoMostrarParceiro(v => !v)}
+              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: captacaoMostrarParceiro ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+              <span style={{ position: 'absolute', top: 3, left: captacaoMostrarParceiro ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+            </button>
+          </div>
+
+          {captacaoMostrarParceiro && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 14px', background: captacaoBloquearParceiro ? 'rgba(230,57,70,0.06)' : 'rgba(255,255,255,0.03)', border: `1px solid ${captacaoBloquearParceiro ? 'rgba(230,57,70,0.3)' : 'var(--avp-border)'}`, borderRadius: 8, cursor: 'pointer' }}>
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: 13, margin: 0 }}>Obrigatório — bloquear avanço até clicar</p>
+                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Consultor só continua após clicar no botão do sistema parceiro</p>
+                </div>
+                <button type="button" onClick={() => setCaptacaoBloquearParceiro(v => !v)}
+                  style={{ flexShrink: 0, width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', background: captacaoBloquearParceiro ? 'var(--avp-danger)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+                  <span style={{ position: 'absolute', top: 2, left: captacaoBloquearParceiro ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+                </button>
+              </label>
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.8 }}>Texto do botão (opcional)</label>
+                <input value={captacaoParceiroTitulo} onChange={e => setCaptacaoParceiroTitulo(e.target.value)}
+                  placeholder="Cadastrar no sistema parceiro"
+                  style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 13px', color: 'var(--avp-text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' as const }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                  🔗 Link global do sistema parceiro
+                </label>
+                <input value={captacaoLinkExterno} onChange={e => setCaptacaoLinkExterno(e.target.value)}
+                  placeholder="https://... — usado nos links genéricos (/captacao). Links /g/gestor usam o link do gestor automaticamente."
+                  style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 13px', color: 'var(--avp-text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' as const }} />
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>
+                  Para links com gestor (<code style={{ background: 'var(--avp-card)', padding: '1px 4px', borderRadius: 3 }}>/g/whatsapp</code>), usa o link externo do perfil do gestor.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Passo 2: Baixar app ── */}
+        <div style={{ background: 'var(--avp-black)', border: `1px solid ${captacaoMostrarApp ? 'rgba(99,102,241,0.4)' : 'var(--avp-border)'}`, borderRadius: 12, padding: '16px 18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: captacaoMostrarApp ? 16 : 0 }}>
+            <div>
+              <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>📱 Passo 2 — Baixar o app do consultor</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
+                Exibe tela com os botões da App Store e Google Play (links configurados abaixo)
+              </p>
+            </div>
+            <button type="button" onClick={() => setCaptacaoMostrarApp(v => !v)}
+              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: captacaoMostrarApp ? '#6366f1' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+              <span style={{ position: 'absolute', top: 3, left: captacaoMostrarApp ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+            </button>
+          </div>
+
+          {captacaoMostrarApp && (
+            <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 14px', background: captacaoBloquearApp ? 'rgba(230,57,70,0.06)' : 'rgba(255,255,255,0.03)', border: `1px solid ${captacaoBloquearApp ? 'rgba(230,57,70,0.3)' : 'var(--avp-border)'}`, borderRadius: 8, cursor: 'pointer' }}>
+              <div>
+                <p style={{ fontWeight: 600, fontSize: 13, margin: 0 }}>Obrigatório — bloquear avanço até clicar</p>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Consultor só vai para o login após clicar em um dos botões do app</p>
+              </div>
+              <button type="button" onClick={() => setCaptacaoBloquearApp(v => !v)}
+                style={{ flexShrink: 0, width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', background: captacaoBloquearApp ? 'var(--avp-danger)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+                <span style={{ position: 'absolute', top: 2, left: captacaoBloquearApp ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+              </button>
+            </label>
+          )}
+        </div>
       </div>
 
       {/* REGRAS DE APRENDIZADO */}
@@ -1012,18 +1167,13 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
           </div>
         </div>
 
-        {/* Logo no PDF */}
+        {/* Nome da associação no contrato */}
         <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
-          <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>🖼️ Logo no cabeçalho do PDF</p>
-          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.5 }}>
-            Aparece no canto superior direito do contrato PDF. Se não configurada, usa o logo principal do site.
+          <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>🏢 Nome da Associação no contrato</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 10px', lineHeight: 1.5 }}>
+            Nome que aparece no cabeçalho e rodapé do PDF. Se vazio, usa o nome configurado em Identidade.
           </p>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <input style={{ ...inp, flex: 1 }} value={cncpvLogoPdfUrl} onChange={e => setCncpvLogoPdfUrl(e.target.value)} placeholder="URL da imagem (PNG recomendado)" />
-            {cncpvLogoPdfUrl && cncpvLogoPdfUrl.startsWith('http') && (
-              <img src={cncpvLogoPdfUrl} alt="preview" style={{ height: 40, maxWidth: 80, objectFit: 'contain', borderRadius: 6, border: '1px solid var(--avp-border)' }} />
-            )}
-          </div>
+          <input style={inp} value={cncpvNomeAssociacao} onChange={e => setCncpvNomeAssociacao(e.target.value)} placeholder="Ex: AUTO VALE PREVENÇÕES LTDA" />
         </div>
 
         {/* Link direto */}
@@ -1046,6 +1196,84 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
               {linkCopiadoCNCPV ? '✅ Copiado!' : '📋 Copiar'}
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* CONTRATO DE REPRESENTAÇÃO */}
+      <div style={{ ...card, border: '2px solid rgba(99,102,241,0.25)', background: 'rgba(99,102,241,0.03)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+          <div>
+            <p style={{ fontWeight: 800, fontSize: 16 }}>📄 Contrato de Representação</p>
+            <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: 4 }}>
+              Contrato digital de licenciamento com quiz por cláusula, PDF com hash SHA-256 e envio via WhatsApp.
+            </p>
+          </div>
+          <a href="/contrato" target="_blank" rel="noreferrer"
+            style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', borderRadius: 8, padding: '7px 16px', fontWeight: 700, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+            Ver contrato →
+          </a>
+        </div>
+
+        {/* Toggle habilitar */}
+        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div>
+              <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>Exibir botão de contrato no painel do aluno</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0' }}>
+                Quando ativado, consultores que concluíram 100% do curso verão o botão para assinar o contrato.
+              </p>
+            </div>
+            <button onClick={() => setContratoHabilitado(v => !v)}
+              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: contratoHabilitado ? '#6366f1' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+              <span style={{ position: 'absolute', top: 3, left: contratoHabilitado ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+            </button>
+          </div>
+        </div>
+
+        {/* Dados da Contratante */}
+        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+          <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 12px' }}>🏢 Dados da CONTRATANTE (pré-configurados no contrato)</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={lbl}>Razão Social *</label>
+                <input style={inp} value={contratoContratanteNome} onChange={e => setContratoContratanteNome(e.target.value)} placeholder="Ex: AUTO VALE CLUBE DE BENEFÍCIOS" />
+              </div>
+              <div>
+                <label style={lbl}>CNPJ *</label>
+                <input style={inp} value={contratoContratanteCnpj} onChange={e => setContratoContratanteCnpj(e.target.value)} placeholder="Ex: 45.036.442/0001-26" />
+              </div>
+            </div>
+            <div>
+              <label style={lbl}>Endereço completo da sede *</label>
+              <input style={inp} value={contratoContratanteEndereco} onChange={e => setContratoContratanteEndereco(e.target.value)} placeholder="Ex: Av. Coronel Antônio Honorato Viana, 532, Gercino Coelho, Petrolina/PE, CEP 56.308-000" />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={lbl}>Representante legal</label>
+                <input style={inp} value={contratoRepresentanteNome} onChange={e => setContratoRepresentanteNome(e.target.value)} placeholder="Ex: João da Silva" />
+              </div>
+              <div>
+                <label style={lbl}>Cargo</label>
+                <input style={inp} value={contratoRepresentanteCargo} onChange={e => setContratoRepresentanteCargo(e.target.value)} placeholder="Ex: Presidente" />
+              </div>
+              <div>
+                <label style={lbl}>Foro (comarca)</label>
+                <input style={inp} value={contratoForo} onChange={e => setContratoForo(e.target.value)} placeholder="Ex: Petrolina/PE" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Link direto */}
+        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+          <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 8px' }}>🔗 Link direto do contrato</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 10px' }}>
+            Qualquer consultor pode acessar este link para assinar o contrato digitalmente.
+          </p>
+          <code style={{ display: 'block', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: 'var(--avp-text)', wordBreak: 'break-all' }}>
+            {typeof window !== 'undefined' ? window.location.origin : ''}/contrato
+          </code>
         </div>
       </div>
 

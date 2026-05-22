@@ -43,7 +43,7 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
 
   const { data: cfgRows } = await (adminClient.from('configuracoes') as any)
     .select('chave, valor')
-    .in('chave', ['site_nome', 'site_logo_url', 'carteira_assinatura_nome', 'carteira_assinatura_cargo', 'carteira_assinatura_empresa', 'carteira_url_verificacao', 'carteira_tagline', 'carteira_logo_esquerda', 'carteira_logo_direita', 'carteira_assinatura_url'])
+    .in('chave', ['site_nome', 'site_logo_url', 'site_cor_primaria', 'site_cor_secundaria', 'carteira_assinatura_nome', 'carteira_assinatura_cargo', 'carteira_assinatura_empresa', 'carteira_url_verificacao', 'carteira_tagline', 'carteira_logo_esquerda', 'carteira_logo_direita', 'carteira_assinatura_url'])
   const cfg: Record<string, string> = {}
   for (const r of cfgRows ?? []) { try { cfg[r.chave] = JSON.parse(r.valor) } catch { cfg[r.chave] = r.valor } }
 
@@ -68,6 +68,8 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
       tagline={cfg['carteira_tagline'] || ''}
       logoEsquerdaUrl={cfg['carteira_logo_esquerda'] || null}
       logoDireitaUrl={cfg['carteira_logo_direita'] || null}
+      corPrimaria={cfg['site_cor_primaria'] || undefined}
+      corSecundaria={cfg['site_cor_secundaria'] || undefined}
     />
   )
 }

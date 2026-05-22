@@ -25,12 +25,38 @@ export type DadosContrato = {
   assinado_em: string
   appUrl: string
   siteNome: string
-  // Testemunha (configurada no admin)
+  nomeAssociacao?: string   // nome exibido no contrato (fallback: siteNome)
+  // Testemunha
   testemunhaNome?: string
   testemunhaCargo?: string
   testemunhaEmpresa?: string
-  // Logo da empresa (URL pública)
-  logoUrl?: string
+  // Logos (URLs públicas)
+  logoUrl?: string          // header
+  logoEsquerda?: string     // rodapé esquerda
+  logoDireita?: string      // rodapé direita
+  assinaturaUrl?: string    // imagem da assinatura
+  // Cores (hex)
+  corPrimaria?: string      // verde padrão: #02A153
+  corSecundaria?: string    // dourado padrão: #c8a535
+}
+
+function hexToRgb(hex: string): ReturnType<typeof rgb> {
+  const h = hex.replace('#', '')
+  const r = parseInt(h.slice(0, 2), 16) / 255
+  const g = parseInt(h.slice(2, 4), 16) / 255
+  const b = parseInt(h.slice(4, 6), 16) / 255
+  return rgb(isNaN(r) ? 0 : r, isNaN(g) ? 0 : g, isNaN(b) ? 0 : b)
+}
+
+async function carregarImagem(pdfDoc: PDFDocument, url: string) {
+  try {
+    const resp = await fetch(url)
+    const bytes = await resp.arrayBuffer()
+    const ct = resp.headers.get('content-type') || ''
+    return ct.includes('png')
+      ? await pdfDoc.embedPng(new Uint8Array(bytes))
+      : await pdfDoc.embedJpg(new Uint8Array(bytes))
+  } catch { return null }
 }
 
 function wrapText(text: string, maxWidth: number, font: PDFFont, size: number): string[] {
@@ -110,20 +136,21 @@ export async function gerarPDFContratoCNCPV(dados: DadosContrato): Promise<Uint8
   const regular = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const oblique = await pdfDoc.embedFont(StandardFonts.HelveticaOblique)
 
-  const verde = rgb(0.008, 0.631, 0.325)
-  const dourado = rgb(0.78, 0.647, 0.204)
+  const verde = dados.corPrimaria ? hexToRgb(dados.corPrimaria) : rgb(0.008, 0.631, 0.325)
+  const dourado = dados.corSecundaria ? hexToRgb(dados.corSecundaria) : rgb(0.78, 0.647, 0.204)
   const preto = rgb(0.08, 0.08, 0.08)
   const cinzaE = rgb(0.35, 0.35, 0.35)
   const cinzaL = rgb(0.93, 0.93, 0.93)
   const branco = rgb(1, 1, 1)
-  const verdeEscuro = rgb(0.004, 0.435, 0.22)
+  const verdeEscuro = dados.corPrimaria ? hexToRgb(dados.corPrimaria) : rgb(0.004, 0.435, 0.22)
+  const nomeExibido = dados.nomeAssociacao || dados.siteNome
 
   const verUrl = `https://cncpv.com.br/verificar/${dados.numero_registro}`
   const width = 595.28
   const height = 841.89
   const M = 48
 
-  // QR Code server-side (lib local, sem dependência externa)
+  // QR Code server-side
   const qrDataUrl = await QRCode.toDataURL(verUrl, {
     errorCorrectionLevel: 'H', margin: 1, width: 220,
     color: { dark: '#141414', light: '#ffffff' },
@@ -131,22 +158,17 @@ export async function gerarPDFContratoCNCPV(dados: DadosContrato): Promise<Uint8
   const qrBytes = Buffer.from(qrDataUrl.replace('data:image/png;base64,', ''), 'base64')
   const qrImage = await pdfDoc.embedPng(qrBytes)
 
-  // Logo do cliente (se configurada)
-  let logoImage = null
-  if (dados.logoUrl) {
-    try {
-      const logoResp = await fetch(dados.logoUrl)
-      const logoBytes = await logoResp.arrayBuffer()
-      const ct = logoResp.headers.get('content-type') || ''
-      logoImage = ct.includes('png')
-        ? await pdfDoc.embedPng(new Uint8Array(logoBytes))
-        : await pdfDoc.embedJpg(new Uint8Array(logoBytes))
-    } catch { logoImage = null }
-  }
+  // Logos em paralelo
+  const [logoImage, logoEsqImg, logoDirImg, assinaturaImg] = await Promise.all([
+    dados.logoUrl ? carregarImagem(pdfDoc, dados.logoUrl) : Promise.resolve(null),
+    dados.logoEsquerda ? carregarImagem(pdfDoc, dados.logoEsquerda) : Promise.resolve(null),
+    dados.logoDireita ? carregarImagem(pdfDoc, dados.logoDireita) : Promise.resolve(null),
+    dados.assinaturaUrl ? carregarImagem(pdfDoc, dados.assinaturaUrl) : Promise.resolve(null),
+  ])
 
   // ── PÁGINA 1: IDENTIFICAÇÃO + CLÁUSULAS ─────────────────────────────
   let page = pdfDoc.addPage([width, height])
-  cabecalhoPagina(page, bold, regular, width, height, verde, dourado, branco, dados.numero_registro, dados.siteNome, true)
+  cabecalhoPagina(page, bold, regular, width, height, verde, dourado, branco, dados.numero_registro, nomeExibido, true)
 
   // Logo do cliente no header
   if (logoImage) {
@@ -211,9 +233,9 @@ export async function gerarPDFContratoCNCPV(dados: DadosContrato): Promise<Uint8
   // Cláusulas
   for (let i = 0; i < TERMOS.length; i++) {
     if (y < 90) {
-      rodape(page, regular, bold, width, verde, dourado, dados.numero_registro, dados.siteNome, dados.assinado_em)
+      rodape(page, regular, bold, width, verde, dourado, dados.numero_registro, nomeExibido, dados.assinado_em)
       page = pdfDoc.addPage([width, height])
-      cabecalhoPagina(page, bold, regular, width, height, verde, dourado, branco, dados.numero_registro, dados.siteNome)
+      cabecalhoPagina(page, bold, regular, width, height, verde, dourado, branco, dados.numero_registro, nomeExibido)
       y = height - 72
     }
 
@@ -234,11 +256,11 @@ export async function gerarPDFContratoCNCPV(dados: DadosContrato): Promise<Uint8
     y -= bH + 6
   }
 
-  rodape(page, regular, bold, width, verde, dourado, dados.numero_registro, dados.siteNome, dados.assinado_em)
+  rodape(page, regular, bold, width, verde, dourado, dados.numero_registro, nomeExibido, dados.assinado_em)
 
   // ── PÁGINA FINAL: ASSINATURA ─────────────────────────────────────────
   page = pdfDoc.addPage([width, height])
-  cabecalhoPagina(page, bold, regular, width, height, verde, dourado, branco, dados.numero_registro, dados.siteNome)
+  cabecalhoPagina(page, bold, regular, width, height, verde, dourado, branco, dados.numero_registro, nomeExibido)
   y = height - 82
 
   page.drawText('REGISTRO DE ASSINATURA ELETRÔNICA', { x: M, y, size: 13, font: bold, color: preto })
@@ -248,6 +270,26 @@ export async function gerarPDFContratoCNCPV(dados: DadosContrato): Promise<Uint8
   page.drawText('Este documento foi assinado eletronicamente e seu conteúdo está protegido por hash criptográfico SHA-256.', { x: M, y, size: 8.5, font: oblique, color: cinzaE })
   page.drawText('Qualquer alteração invalida automaticamente a assinatura.', { x: M, y: y - 12, size: 8.5, font: oblique, color: cinzaE })
   y -= 32
+
+  // Logos laterais na página de assinatura
+  if (logoEsqImg || logoDirImg) {
+    const logoH = 36
+    const logoY = y + 30
+    if (logoEsqImg) {
+      const d = logoEsqImg.scaleToFit(110, logoH)
+      page.drawImage(logoEsqImg, { x: M, y: logoY - d.height / 2, ...d, opacity: 0.88 })
+    }
+    if (logoDirImg) {
+      const d = logoDirImg.scaleToFit(110, logoH)
+      page.drawImage(logoDirImg, { x: width - M - d.width, y: logoY - d.height / 2, ...d, opacity: 0.88 })
+    }
+  }
+
+  // Imagem de assinatura eletrônica do responsável
+  if (assinaturaImg) {
+    const d = assinaturaImg.scaleToFit(160, 50)
+    page.drawImage(assinaturaImg, { x: M + 12, y: y - 8 - d.height, ...d, opacity: 0.9 })
+  }
 
   // Bloco signatário
   const bSigH = 130
@@ -336,7 +378,7 @@ export async function gerarPDFContratoCNCPV(dados: DadosContrato): Promise<Uint8
   page.drawText('Assinado eletronicamente conforme a Medida Provisória 2.200-2/2001, o Art. 107 do Código Civil Brasileiro', { x: M + 12, y: y - 25, size: 7.5, font: regular, color: cinzaE })
   page.drawText('e a Lei 14.063/2020. Este documento possui presunção de autoria e integridade nos termos da legislação vigente.', { x: M + 12, y: y - 36, size: 7.5, font: regular, color: cinzaE })
 
-  rodape(page, regular, bold, width, verde, dourado, dados.numero_registro, dados.siteNome, dados.assinado_em)
+  rodape(page, regular, bold, width, verde, dourado, dados.numero_registro, nomeExibido, dados.assinado_em)
 
   // Metadados do PDF
   pdfDoc.setTitle(`Contrato CNCPV — ${dados.numero_registro} — ${dados.nome}`)

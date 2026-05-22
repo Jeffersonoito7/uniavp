@@ -78,7 +78,6 @@ async function gerarEEnviar(dados: {
         numero_registro: dados.numero_registro,
         hash_contrato: dados.hash_contrato,
         assinado_em: dados.assinado_em,
-        appUrl: dados.appUrl,
         pdfBytes,
       }) : Promise.resolve(false),
     ])
@@ -150,7 +149,12 @@ export async function POST(req: NextRequest) {
   // Busca config de testemunha e logo do admin
   const { data: cfgs } = await (adminClient.from('configuracoes') as any)
     .select('chave, valor')
-    .in('chave', ['cncpv_testemunha_nome', 'cncpv_testemunha_cargo', 'cncpv_testemunha_empresa', 'cncpv_logo_pdf_url'])
+    .in('chave', [
+      'cncpv_testemunha_nome', 'cncpv_testemunha_cargo', 'cncpv_testemunha_empresa',
+      'cncpv_logo_pdf_url', 'cncpv_logo_esquerda', 'cncpv_logo_direita',
+      'cncpv_cor_primaria', 'cncpv_cor_secundaria',
+      'cncpv_nome_associacao', 'cncpv_assinatura_url',
+    ])
 
   const cfgMap: Record<string, string> = {}
   for (const c of cfgs ?? []) cfgMap[c.chave] = c.valor
@@ -162,10 +166,16 @@ export async function POST(req: NextRequest) {
     email: email.trim().toLowerCase(),
     numero_registro, hash_contrato, ip, assinado_em, appUrl,
     siteNome: siteConfig.nome,
+    nomeAssociacao: cfgMap['cncpv_nome_associacao'] || undefined,
     testemunhaNome: cfgMap['cncpv_testemunha_nome'] || undefined,
     testemunhaCargo: cfgMap['cncpv_testemunha_cargo'] || undefined,
     testemunhaEmpresa: cfgMap['cncpv_testemunha_empresa'] || undefined,
     logoUrl: cfgMap['cncpv_logo_pdf_url'] || siteConfig.logoUrl || undefined,
+    logoEsquerda: cfgMap['cncpv_logo_esquerda'] || undefined,
+    logoDireita: cfgMap['cncpv_logo_direita'] || undefined,
+    assinaturaUrl: cfgMap['cncpv_assinatura_url'] || undefined,
+    corPrimaria: cfgMap['cncpv_cor_primaria'] || undefined,
+    corSecundaria: cfgMap['cncpv_cor_secundaria'] || undefined,
   }
 
   // Envia mensagem de texto imediatamente

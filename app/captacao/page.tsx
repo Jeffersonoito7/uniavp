@@ -25,9 +25,28 @@ export default async function CaptacaoPage({ searchParams }: { searchParams?: { 
   const valorStr = typeof valorRaw === 'string' ? valorRaw : JSON.stringify(valorRaw ?? '')
   const videoId = extrairIdYoutube(valorStr)
 
-  const { data: bloquearConfig } = await (adminClient.from('configuracoes') as any)
-    .select('valor').eq('chave', 'free_bloquear_video').maybeSingle()
-  const bloquearVideo = bloquearConfig?.valor !== 'false'
+  const { data: cfgsExtra } = await (adminClient.from('configuracoes') as any)
+    .select('chave, valor')
+    .in('chave', [
+      'free_bloquear_video',
+      'captacao_mostrar_parceiro', 'captacao_bloquear_parceiro', 'captacao_parceiro_titulo',
+      'captacao_mostrar_app', 'captacao_bloquear_app',
+      'captacao_link_externo',
+      'app_ios_url', 'app_android_url',
+    ])
+  const cfgMap: Record<string, string> = {}
+  for (const c of cfgsExtra ?? []) cfgMap[c.chave] = typeof c.valor === 'string' ? c.valor : JSON.stringify(c.valor ?? '').replace(/"/g, '')
+
+  const bloquearVideo = cfgMap['free_bloquear_video'] !== 'false'
+  const captacaoMostrarParceiro = cfgMap['captacao_mostrar_parceiro'] === 'true'
+  const captacaoBloquearParceiro = cfgMap['captacao_bloquear_parceiro'] === 'true'
+  const captacaoParceiroTitulo = cfgMap['captacao_parceiro_titulo'] || undefined
+  const captacaoMostrarApp = cfgMap['captacao_mostrar_app'] === 'true'
+  const captacaoBloquearApp = cfgMap['captacao_bloquear_app'] === 'true'
+  const linkExterno = cfgMap['captacao_link_externo'] || undefined
+  const appIosUrl = cfgMap['app_ios_url'] || undefined
+  const appAndroidUrl = cfgMap['app_android_url'] || undefined
+
   const direto = searchParams?.direto === '1'
   const ref = searchParams?.ref ?? undefined
   const plano = searchParams?.plano === 'pro' ? 'pro' : undefined
@@ -41,6 +60,14 @@ export default async function CaptacaoPage({ searchParams }: { searchParams?: { 
       indicadorWhatsapp={ref}
       plano={plano}
       bloquearVideo={bloquearVideo}
+      linkExterno={linkExterno}
+      captacaoMostrarParceiro={captacaoMostrarParceiro}
+      captacaoBloquearParceiro={captacaoBloquearParceiro}
+      captacaoParceiroTitulo={captacaoParceiroTitulo}
+      captacaoMostrarApp={captacaoMostrarApp}
+      captacaoBloquearApp={captacaoBloquearApp}
+      appIosUrl={appIosUrl}
+      appAndroidUrl={appAndroidUrl}
     />
   )
 }

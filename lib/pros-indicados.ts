@@ -1,6 +1,14 @@
-export const LIMITE_PRO_GRATUITO = 20
+export const LIMITE_PRO_GRATUITO = 20 // fallback padrão
 
-// Conta PROs ativos indicados por este gestor que estejam pagando em dia
+export async function getLimitePROGratuito(admin: any): Promise<number> {
+  try {
+    const { data } = await (admin.from('configuracoes') as any)
+      .select('valor').eq('chave', 'pros_gratuito_limite').maybeSingle()
+    const v = parseInt(data?.valor ?? '')
+    return isNaN(v) || v < 1 ? LIMITE_PRO_GRATUITO : v
+  } catch { return LIMITE_PRO_GRATUITO }
+}
+
 export async function contarPROsAtivosIndicados(gestorId: string, admin: any): Promise<number> {
   const agora = new Date().toISOString()
   const { count } = await (admin.from('gestores') as any)
@@ -12,8 +20,10 @@ export async function contarPROsAtivosIndicados(gestorId: string, admin: any): P
   return count ?? 0
 }
 
-// O gestor É o PRO — isenção se tiver >= 20 PROs indicados ativos e pagando em dia
 export async function verificarPROGratuito(gestorId: string, admin: any): Promise<boolean> {
-  const total = await contarPROsAtivosIndicados(gestorId, admin)
-  return total >= LIMITE_PRO_GRATUITO
+  const [total, limite] = await Promise.all([
+    contarPROsAtivosIndicados(gestorId, admin),
+    getLimitePROGratuito(admin),
+  ])
+  return total >= limite
 }

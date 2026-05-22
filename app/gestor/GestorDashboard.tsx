@@ -1,7 +1,6 @@
 'use client'
 import { useState, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import { LIMITE_PRO_GRATUITO } from '@/lib/pros-indicados'
 import GestorLayout from './GestorLayout'
 import LiberacoesPendentes from './LiberacoesPendentes'
 import WhatsAppConectar from '@/app/components/WhatsAppConectar'
@@ -243,21 +242,21 @@ function AvisoAulasNaoPublicadas({ modulosAulas }: { modulosAulas: any[] }) {
   )
 }
 
-function CardProGratuito({ prosIndicados }: { prosIndicados: number }) {
-  const pct = Math.min(100, Math.round((prosIndicados / LIMITE_PRO_GRATUITO) * 100))
-  const ehGratuito = prosIndicados >= LIMITE_PRO_GRATUITO
+function CardProGratuito({ prosIndicados, limite }: { prosIndicados: number; limite: number }) {
+  const pct = Math.min(100, Math.round((prosIndicados / limite) * 100))
+  const ehGratuito = prosIndicados >= limite
   return (
     <div style={{ background: ehGratuito ? 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))' : 'var(--avp-card)', border: `1px solid ${ehGratuito ? 'rgba(99,102,241,0.5)' : 'var(--avp-border)'}`, borderRadius: 16, padding: '20px 24px', marginBottom: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
         <div>
           <p style={{ fontWeight: 800, fontSize: 15, margin: 0 }}>{ehGratuito ? '🎉 Seu PRO está gratuito!' : '✨ PRO gratuito por rede'}</p>
           <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '3px 0 0' }}>
-            {ehGratuito ? `Você tem ${prosIndicados} PROs ativos na sua rede — continue assim!` : `Indique ${LIMITE_PRO_GRATUITO - prosIndicados} PROs ativos para ter o plano gratuito`}
+            {ehGratuito ? `Você tem ${prosIndicados} PROs ativos na sua rede — continue assim!` : `Indique ${limite - prosIndicados} PROs ativos para ter o plano gratuito`}
           </p>
         </div>
         <div style={{ textAlign: 'right' }}>
           <p style={{ fontSize: 28, fontWeight: 900, color: ehGratuito ? '#818cf8' : 'var(--avp-text)', margin: 0, lineHeight: 1 }}>
-            {prosIndicados}<span style={{ fontSize: 14, fontWeight: 600, color: 'var(--avp-text-dim)' }}>/{LIMITE_PRO_GRATUITO}</span>
+            {prosIndicados}<span style={{ fontSize: 14, fontWeight: 600, color: 'var(--avp-text-dim)' }}>/{limite}</span>
           </p>
           <p style={{ fontSize: 10, color: 'var(--avp-text-dim)', margin: '2px 0 0', textTransform: 'uppercase' as const, letterSpacing: 1 }}>PROs ativos</p>
         </div>
@@ -267,7 +266,7 @@ function CardProGratuito({ prosIndicados }: { prosIndicados: number }) {
       </div>
       {!ehGratuito && (
         <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 6 }}>
-          Faltam <strong style={{ color: 'var(--avp-text)' }}>{LIMITE_PRO_GRATUITO - prosIndicados} PROs</strong> para o plano gratuito — compartilhe o link PRO com sua rede!
+          Faltam <strong style={{ color: 'var(--avp-text)' }}>{limite - prosIndicados} PROs</strong> para o plano gratuito — compartilhe o link PRO com sua rede!
         </p>
       )}
     </div>
@@ -275,9 +274,9 @@ function CardProGratuito({ prosIndicados }: { prosIndicados: number }) {
 }
 
 export default function GestorDashboard({
-  gestor, consultores, progressoMap, indicacoesMap, artesTemplatesIniciais, baseUrl, capaDefault, prosIndicados, cncpvHabilitado, documentos,
+  gestor, consultores, progressoMap, indicacoesMap, artesTemplatesIniciais, baseUrl, capaDefault, prosIndicados, limiteProGratuito, cncpvHabilitado, documentos,
 }: {
-  gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; indicacoesMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string; capaDefault?: string | null; prosIndicados?: number; cncpvHabilitado?: boolean; documentos?: { id: string; titulo: string; descricao: string | null; pdf_url: string }[]
+  gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; indicacoesMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string; capaDefault?: string | null; prosIndicados?: number; limiteProGratuito?: number; cncpvHabilitado?: boolean; documentos?: { id: string; titulo: string; descricao: string | null; pdf_url: string }[]
 }) {
   const [aba, setAba] = useState('dashboard')
   const [listaConsultores, setListaConsultores] = useState(consultores)
@@ -637,7 +636,7 @@ export default function GestorDashboard({
           )}
 
           {/* Card PRO Gratuito por Rede */}
-          {CardProGratuito({ prosIndicados: prosIndicados ?? 0 })}
+          {CardProGratuito({ prosIndicados: prosIndicados ?? 0, limite: limiteProGratuito ?? 20 })}
 
           {/* Alerta de inativos */}
           {inativos7d.length > 0 && (
