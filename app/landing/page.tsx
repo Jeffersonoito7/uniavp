@@ -18,7 +18,7 @@ const PLANOS_DEFAULT: PlanoSaaS[] = [
   {
     id: 'enterprise', nome: 'Enterprise', descricao: 'Solução completa para grandes associações',
     preco: 0, gestor_ativo: true, limite_consultores: 9999, destaque: false, ativo: true,
-    recursos: ['Tudo do Profissional', 'Painel PRO para gestores', 'Consultores ilimitados', 'Domínio próprio incluso', 'Suporte prioritário', 'Treinamento da equipe'],
+    recursos: ['Tudo do Profissional', 'Painel exclusivo para usuários PRO', 'Consultores ilimitados', 'Domínio próprio incluso', 'Suporte prioritário', 'Treinamento da equipe'],
   },
 ]
 
@@ -26,7 +26,7 @@ const FEATURES = [
   { icon: '🎓', titulo: 'Treinamentos e Módulos', desc: 'Monte cursos completos com vídeos, PDFs e quizzes. Acompanhe o progresso de cada consultor.' },
   { icon: '📄', titulo: 'Contratos Digitais', desc: 'Consultores assinam contratos online com hash SHA-256, validade jurídica e PDF gerado automaticamente.' },
   { icon: '🏆', titulo: 'Ranking e Certificados', desc: 'Gamificação, certificados automáticos e ranking motivam seus consultores a avançar.' },
-  { icon: '🧑‍💼', titulo: 'Gestores PRO', desc: 'Cada gestor gerencia sua própria equipe de consultores FREE com painel exclusivo.' },
+  { icon: '🧑‍💼', titulo: 'Usuários PRO', desc: 'Cada PRO gerencia sua própria equipe de consultores FREE com painel exclusivo.' },
   { icon: '🌐', titulo: 'Marca Própria (White-Label)', desc: 'Plataforma com sua logo, suas cores e seu domínio. Seus consultores nem sabem que é terceirizado.' },
   { icon: '📲', titulo: 'WhatsApp Integrado', desc: 'Notificações automáticas, envio de contratos, cobranças e avisos direto no WhatsApp.' },
 ]

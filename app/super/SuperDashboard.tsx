@@ -42,7 +42,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
   const PLANOS_DEFAULT: PlanoSaaS[] = [
     { id: 'starter', nome: 'Starter', descricao: 'Ideal para associações em crescimento', preco: 0, gestor_ativo: false, limite_consultores: 100, destaque: false, ativo: true, recursos: ['Módulos e aulas ilimitadas', 'Área do consultor', 'Painel admin completo', 'Quiz e certificados', 'Contratos digitais', 'Suporte por WhatsApp'] },
     { id: 'profissional', nome: 'Profissional', descricao: 'Para associações consolidadas', preco: 0, gestor_ativo: false, limite_consultores: 500, destaque: true, ativo: true, recursos: ['Tudo do Starter', 'Até 500 consultores', 'Ranking e gamificação', 'Artes para redes sociais', 'Relatórios avançados', 'Onboarding guiado'] },
-    { id: 'enterprise', nome: 'Enterprise', descricao: 'Solução completa para grandes associações', preco: 0, gestor_ativo: true, limite_consultores: 9999, destaque: false, ativo: true, recursos: ['Tudo do Profissional', 'Painel PRO para gestores', 'Consultores ilimitados', 'Domínio próprio incluso', 'Suporte prioritário', 'Treinamento da equipe'] },
+    { id: 'enterprise', nome: 'Enterprise', descricao: 'Solução completa para grandes associações', preco: 0, gestor_ativo: true, limite_consultores: 9999, destaque: false, ativo: true, recursos: ['Tudo do Profissional', 'Painel exclusivo para usuários PRO', 'Consultores ilimitados', 'Domínio próprio incluso', 'Suporte prioritário', 'Treinamento da equipe'] },
   ]
   const [planos, setPlanos] = useState<PlanoSaaS[]>(PLANOS_DEFAULT)
   const [planosCarregados, setPlanosCarregados] = useState(false)
