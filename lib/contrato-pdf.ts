@@ -21,6 +21,8 @@ export type DadosContratoAVP = {
   assinado_em: string
   numero_registro: string
   logoUrl?: string
+  // Cláusulas personalizadas (opcional — se ausente, usa texto padrão)
+  clausulasPersonalizadas?: string
 }
 
 function hexToRgb(hex: string) {
@@ -175,6 +177,37 @@ class PageWriter {
   }
 }
 
+// Renderiza cláusulas a partir de texto livre armazenado no banco
+// Formato esperado:
+//   ## 1. TÍTULO DA SEÇÃO
+//   1.1. Texto da cláusula...
+//   1.1.1. Sub-cláusula...
+//   Parágrafo simples (sem número)
+function renderizarClausulasCustom(pw: PageWriter, texto: string) {
+  const linhas = texto.split('\n')
+  let secNum = 0
+  for (const linha of linhas) {
+    const trimmed = linha.trim()
+    if (!trimmed) { pw.gap(6); continue }
+    // Título de seção: ## 1. TÍTULO ou ## TÍTULO
+    const matchSec = trimmed.match(/^##\s*(\d+\.)?\s*(.+)$/)
+    if (matchSec) {
+      secNum++
+      pw.sectionTitle(secNum, matchSec[2].trim())
+      continue
+    }
+    // Sub-cláusula numerada: 1.1. ou 1.1.1. ou (a)
+    const matchSub = trimmed.match(/^(\d+\.\d+[\d.]*\.?|\([a-z]\))\s+(.+)$/)
+    if (matchSub) {
+      pw.subClause(matchSub[1], matchSub[2].trim())
+      continue
+    }
+    // Parágrafo simples
+    pw.text(trimmed, 8.5, pw.regular, pw.preto)
+    pw.gap(4)
+  }
+}
+
 export async function gerarPDFContrato(dados: DadosContratoAVP): Promise<Uint8Array> {
   const doc = await PDFDocument.create()
   const bold = await doc.embedFont(StandardFonts.HelveticaBold)
@@ -230,6 +263,10 @@ export async function gerarPDFContrato(dados: DadosContratoAVP): Promise<Uint8Ar
   pw.text('Considerando a livre capacidade civil das partes (acima qualificadas), além das disposições legais e demais termos constantes neste instrumento particular, firmam o presente Contrato de Licenciamento de Representação e Prestação de Serviços, conforme adiante discriminado.', 8.5, oblique, cinzaE)
   pw.hrLine()
 
+  // ── CLÁUSULAS: personalizadas ou padrão ──────────────────────────────────
+  if (dados.clausulasPersonalizadas?.trim()) {
+    renderizarClausulasCustom(pw, dados.clausulasPersonalizadas)
+  } else {
   // ── SEÇÃO 1 ──────────────────────────────────────────────────────────────
   pw.sectionTitle(1, 'DO OBJETO')
   pw.subClause('1.1.', 'O respectivo instrumento particular tem por objeto a prestação de serviços pelo CONTRATADO, na divulgação e indicação de associados, atuando como intermediário na distribuição, promoção e filiação aos planos da CONTRATANTE no Programa de Auxílio Mútuo – PAM, cujas garantias serão de responsabilidade da CONTRATANTE.')
@@ -301,6 +338,7 @@ export async function gerarPDFContrato(dados: DadosContratoAVP): Promise<Uint8Ar
   pw.subClause('9.10.', 'A aceitação eletrônica entra em vigor na data em que o CONTRATADO clicar no botão de aceitação, indicando sua compreensão e acordo com os termos do Contrato.')
   pw.gap(6)
   pw.text(`Para dirimir qualquer controvérsia oriunda do presente instrumento, as partes elegem o foro da comarca de ${dados.foro || 'Petrolina/PE'}, com exclusão de qualquer outro por mais privilegiado que seja.`, 8.5, oblique, cinzaE)
+  } // fim do else (cláusulas padrão)
 
   // ── PÁGINA DE ASSINATURA ──────────────────────────────────────────────────
   pw.newPage()

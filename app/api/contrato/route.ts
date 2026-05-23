@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
   const [siteConfig, { data: cfgs }] = await Promise.all([
     getSiteConfig(req.headers.get('host') ?? ''),
     (adminClient.from('configuracoes') as any).select('chave, valor')
-      .in('chave', ['contrato_contratante_nome','contrato_contratante_cnpj','contrato_contratante_endereco','contrato_representante_nome','contrato_representante_cargo','contrato_foro','site_logo_url']),
+      .in('chave', ['contrato_contratante_nome','contrato_contratante_cnpj','contrato_contratante_endereco','contrato_representante_nome','contrato_representante_cargo','contrato_foro','site_logo_url','contrato_corpo']),
   ])
   const cfgMap: Record<string,string> = {}
   for (const c of cfgs ?? []) cfgMap[c.chave] = typeof c.valor === 'string' ? c.valor : JSON.stringify(c.valor ?? '').replace(/"/g,'')
@@ -111,6 +111,7 @@ export async function POST(req: NextRequest) {
     representanteCargo: cfgMap['contrato_representante_cargo'] || undefined,
     foro: cfgMap['contrato_foro'] || undefined,
     logoUrl: cfgMap['site_logo_url'] || siteConfig.logoUrl || undefined,
+    clausulasPersonalizadas: cfgMap['contrato_corpo'] || undefined,
     hash_contrato, ip, assinado_em, numero_registro,
   }
 

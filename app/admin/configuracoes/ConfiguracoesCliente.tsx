@@ -165,6 +165,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [contratoRepresentanteNome, setContratoRepresentanteNome] = useState(get('contrato_representante_nome'))
   const [contratoRepresentanteCargo, setContratoRepresentanteCargo] = useState(get('contrato_representante_cargo'))
   const [contratoForo, setContratoForo] = useState(get('contrato_foro') || 'Petrolina/PE')
+  const [contratoCorpo, setContratoCorpo] = useState(get('contrato_corpo'))
   const [linkCopiadoCNCPV, setLinkCopiadoCNCPV] = useState(false)
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
@@ -363,6 +364,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         { chave: 'contrato_representante_nome', valor: contratoRepresentanteNome },
         { chave: 'contrato_representante_cargo', valor: contratoRepresentanteCargo },
         { chave: 'contrato_foro', valor: contratoForo },
+        { chave: 'contrato_corpo', valor: contratoCorpo },
         { chave: 'free_quiz_obrigatorio', valor: String(freeQuizObrigatorio) },
         { chave: 'free_bloquear_video', valor: String(freeBloquearVideo) },
         { chave: 'pro_quiz_obrigatorio', valor: String(proQuizObrigatorio) },
@@ -1324,6 +1326,35 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Texto do contrato */}
+        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+          <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>📝 Texto das cláusulas (personalizável)</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.6 }}>
+            Cole aqui o texto completo do seu contrato. Se deixar em branco, o sistema usa o texto padrão.<br />
+            <strong style={{ color: 'var(--avp-text)' }}>Formato:</strong> use <code style={{ background: 'var(--avp-card)', padding: '1px 5px', borderRadius: 4, fontSize: 11 }}>## 1. TÍTULO DA SEÇÃO</code> para seções
+            e <code style={{ background: 'var(--avp-card)', padding: '1px 5px', borderRadius: 4, fontSize: 11 }}>1.1. Texto da cláusula</code> para subcláusulas.
+          </p>
+          <textarea
+            value={contratoCorpo}
+            onChange={e => setContratoCorpo(e.target.value)}
+            rows={18}
+            placeholder={`## 1. DO OBJETO\n1.1. O presente instrumento tem por objeto...\n\n## 2. DAS OBRIGAÇÕES\n2.1. A CONTRATANTE deverá...\n2.2. O CONTRATADO se compromete a...`}
+            style={{ ...inp, fontFamily: 'monospace', fontSize: 13, lineHeight: 1.6, resize: 'vertical', minHeight: 260 }}
+          />
+          {contratoCorpo?.trim() ? (
+            <div style={{ marginTop: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
+              <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 700 }}>✅ Contrato personalizado ativo</span>
+              <button
+                onClick={() => { if (confirm('Apagar o texto personalizado e voltar ao padrão do sistema?')) setContratoCorpo('') }}
+                style={{ background: 'none', border: '1px solid var(--avp-danger)', color: 'var(--avp-danger)', borderRadius: 6, padding: '3px 10px', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
+                Remover e usar padrão
+              </button>
+            </div>
+          ) : (
+            <p style={{ marginTop: 8, fontSize: 12, color: 'var(--avp-text-dim)' }}>ℹ️ Usando texto padrão do sistema.</p>
+          )}
         </div>
 
         {/* Link direto */}
