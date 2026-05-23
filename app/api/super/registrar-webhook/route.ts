@@ -1,11 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { registrarWebhook } from '@/lib/efi'
-import { getAppUrl } from '@/lib/get-app-url'
 
 export const dynamic = 'force-dynamic'
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
@@ -15,8 +14,8 @@ export async function POST() {
     .select('tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
-  const appUrl = await getAppUrl()
-  const webhookUrl = `${appUrl}/api/webhooks/pix`
+  const host = req.headers.get('host') ?? ''
+  const webhookUrl = `https://${host}/api/webhooks/pix`
 
   try {
     await registrarWebhook(webhookUrl)
