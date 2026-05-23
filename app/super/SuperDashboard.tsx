@@ -27,7 +27,16 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
     check(); window.addEventListener('resize', check); return () => window.removeEventListener('resize', check)
   }, [])
   useEffect(() => { if (isMobile) setMenuAberto(false) }, [aba, isMobile])
-  const [tipoNovo, setTipoNovo] = useState<'' | 'empresa' | 'gestor' | 'consultor'>('')
+  const [tipoNovo, setTipoNovo] = useState<'' | 'empresa' | 'lideranca' | 'gestor' | 'consultor'>('')
+
+  function getTipoCliente(c: Cliente): 'lideranca' | 'associacao' {
+    try { const o = JSON.parse(c.observacoes || '{}'); if (o._tipo === 'lideranca') return 'lideranca' } catch { /* */ }
+    return 'associacao'
+  }
+
+  function getObsLimpa(c: Cliente): string {
+    try { const o = JSON.parse(c.observacoes || '{}'); return o.obs || '' } catch { return c.observacoes || '' }
+  }
   const [cobrancaClienteId, setCobrancaClienteId] = useState<string | null>(null)
   const [gerandoPix, setGerandoPix] = useState<string | null>(null)
   const [cobrancaMsg, setCobrancaMsg] = useState('')
@@ -419,13 +428,14 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                 <div key={c.id} style={{ ...cardStyle, opacity: c.ativo ? 1 : 0.5 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
                         <p style={{ fontWeight: 700, fontSize: 16 }}>{c.nome}</p>
-                        <span style={{ background: '#6366f125', color: '#6366f1', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>
-                          Completo
-                        </span>
-                        {c.gestor_ativo && <span style={{ background: '#f59e0b25', color: '#f59e0b', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>+ Painel PRO</span>}
-                        <span style={{ background: '#02A15325', color: '#02A153', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>Admin ilimitado</span>
+                        {getTipoCliente(c) === 'lideranca' ? (
+                          <span style={{ background: '#f59e0b25', color: '#f59e0b', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>🏅 Painel Liderança</span>
+                        ) : (
+                          <span style={{ background: '#6366f125', color: '#6366f1', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>🏢 Associação</span>
+                        )}
+                        {c.gestor_ativo && <span style={{ background: '#02A15325', color: '#02A153', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>+ PRO ativo</span>}
                       </div>
                       <div style={{ display: 'flex', gap: 20, fontSize: 13, color: '#8a8fa3', flexWrap: 'wrap' }}>
                         {c.dominio && <span>🌐 {c.dominio}</span>}
@@ -433,7 +443,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                         {c.contato_whatsapp && <span>📱 {c.contato_whatsapp}</span>}
                         {c.contato_email && <span>✉️ {c.contato_email}</span>}
                       </div>
-                      {c.observacoes && <p style={{ fontSize: 12, color: '#8a8fa3', marginTop: 6 }}>{c.observacoes}</p>}
+                      {getObsLimpa(c) && <p style={{ fontSize: 12, color: '#8a8fa3', marginTop: 6 }}>{getObsLimpa(c)}</p>}
                       <p style={{ fontSize: 11, color: '#8a8fa3', marginTop: 6 }}>Cliente desde {new Date(c.created_at).toLocaleDateString('pt-BR')}</p>
                     </div>
                     <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
@@ -461,11 +471,12 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
 
             {/* Seleção de tipo — só aparece quando não está editando */}
             {!editando && !tipoNovo && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 32 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, marginBottom: 32 }}>
                 {[
-                  { tipo: 'empresa' as const, icon: '🏢', label: 'Empresa', desc: 'Nova empresa cliente da plataforma' },
-                  { tipo: 'gestor' as const, icon: '🧑‍💼', label: 'PRO', desc: 'Usuário PRO vinculado a uma empresa' },
-                  { tipo: 'consultor' as const, icon: '👤', label: 'FREE', desc: 'Usuário FREE de uma empresa cliente' },
+                  { tipo: 'empresa' as const, icon: '🏢', label: 'Associação', desc: 'Empresa ou associação cliente da plataforma — tem admin próprio, cria conteúdo para todos os membros' },
+                  { tipo: 'lideranca' as const, icon: '🏅', label: 'Painel Liderança', desc: 'Líder independente que cria treinamentos para sua própria equipe, sem precisar de uma associação' },
+                  { tipo: 'gestor' as const, icon: '🧑‍💼', label: 'PRO', desc: 'Usuário PRO vinculado a uma associação já cadastrada' },
+                  { tipo: 'consultor' as const, icon: '👤', label: 'FREE', desc: 'Usuário FREE vinculado a uma associação já cadastrada' },
                 ].map(({ tipo, icon, label, desc }) => (
                   <button key={tipo} onClick={() => setTipoNovo(tipo)}
                     style={{ background: '#181b24', border: '1px solid #252836', borderRadius: 14, padding: '28px 16px', cursor: 'pointer', textAlign: 'center', transition: 'border-color 0.2s' }}
@@ -517,9 +528,67 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button onClick={salvarCliente} disabled={salvando}
                     style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 24px', fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: salvando ? 0.7 : 1 }}>
-                    {salvando ? 'Salvando...' : editando ? 'Atualizar' : 'Cadastrar Empresa'}
+                    {salvando ? 'Salvando...' : editando ? 'Atualizar' : 'Cadastrar Associação'}
                   </button>
                   <button onClick={() => { setAba('clientes'); setEditando(null); setTipoNovo('') }}
+                    style={{ background: 'none', border: '1px solid #252836', color: '#8a8fa3', borderRadius: 8, padding: '12px 20px', cursor: 'pointer', fontSize: 14 }}>
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Painel Liderança */}
+            {tipoNovo === 'lideranca' && !editando && (
+              <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <button onClick={() => setTipoNovo('')} style={{ alignSelf: 'flex-start', background: 'none', border: 'none', color: '#8a8fa3', cursor: 'pointer', fontSize: 13, padding: 0, marginBottom: 4 }}>
+                  ← Voltar
+                </button>
+                <div style={{ background: '#f59e0b10', border: '1px solid #f59e0b30', borderRadius: 10, padding: '14px 16px' }}>
+                  <p style={{ fontSize: 13, color: '#f59e0b', fontWeight: 700, marginBottom: 4 }}>🏅 Painel Liderança</p>
+                  <p style={{ fontSize: 12, color: '#8a8fa3', lineHeight: 1.5 }}>
+                    Para líderes independentes que querem criar seus próprios treinamentos e gerenciar sua equipe — sem precisar que a associação deles assine a plataforma.
+                  </p>
+                </div>
+                <div><label style={labelStyle}>Nome do líder *</label><input style={inputStyle} value={form.nome} onChange={e => setForm(p => ({ ...p, nome: e.target.value }))} placeholder="Ex: João Silva" /></div>
+                <div><label style={labelStyle}>Domínio personalizado <span style={{ fontWeight: 400, color: '#8a8fa3' }}>(opcional)</span></label><input style={inputStyle} value={form.dominio} onChange={e => setForm(p => ({ ...p, dominio: e.target.value }))} placeholder="Ex: equipe.joaosilva.com.br" /></div>
+                <div style={{ background: '#08090d', borderRadius: 10, padding: 16 }}>
+                  <p style={{ fontSize: 11, color: '#8a8fa3', fontWeight: 700, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>O que está incluído</p>
+                  {[
+                    { icon: '🎓', txt: 'Painel admin próprio para criar módulos e aulas' },
+                    { icon: '👥', txt: 'Área FREE para os membros da equipe acessarem' },
+                    { icon: '📄', txt: 'Contratos digitais para a equipe' },
+                    { icon: '🏆', txt: 'Ranking, quiz e certificados' },
+                  ].map(r => (
+                    <div key={r.txt} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: '#181b24', borderRadius: 8, marginBottom: 8 }}>
+                      <span style={{ fontSize: 16 }}>{r.icon}</span>
+                      <p style={{ fontSize: 12, color: '#c9cce0' }}>{r.txt}</p>
+                    </div>
+                  ))}
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '10px 12px', background: '#181b24', borderRadius: 8, marginTop: 4 }}>
+                    <input type="checkbox" checked={form.gestor_ativo} onChange={e => setForm(p => ({ ...p, gestor_ativo: e.target.checked }))} style={{ width: 18, height: 18, accentColor: '#f59e0b', flexShrink: 0 }} />
+                    <div>
+                      <p style={{ color: '#f0f1f5', fontSize: 13, fontWeight: 700 }}>Habilitar Painel PRO <span style={{ color: '#f59e0b', fontSize: 11 }}>(add-on)</span></p>
+                      <p style={{ fontSize: 11, color: '#8a8fa3', marginTop: 1 }}>Permite que o líder crie sub-líderes PRO com equipes próprias</p>
+                    </div>
+                  </label>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div><label style={labelStyle}>WhatsApp do líder *</label><input style={inputStyle} value={form.contato_whatsapp} onChange={e => setForm(p => ({ ...p, contato_whatsapp: e.target.value }))} placeholder="(xx) xxxxx-xxxx" /></div>
+                  <div><label style={labelStyle}>E-mail do líder *</label><input style={inputStyle} value={form.contato_email} onChange={e => setForm(p => ({ ...p, contato_email: e.target.value }))} placeholder="lider@email.com" /></div>
+                </div>
+                <div><label style={labelStyle}>Observações internas</label><textarea style={{ ...inputStyle, minHeight: 60, resize: 'vertical' } as React.CSSProperties} value={form.observacoes} onChange={e => setForm(p => ({ ...p, observacoes: e.target.value }))} placeholder="Notas internas sobre este líder..." /></div>
+                {msg && <p style={{ fontSize: 13, color: msg.includes('Erro') ? '#e63946' : '#02A153' }}>{msg}</p>}
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={() => {
+                    // Empacota o tipo no campo observacoes antes de salvar
+                    setForm(p => ({ ...p, contato_nome: p.nome, observacoes: JSON.stringify({ _tipo: 'lideranca', obs: p.observacoes }) }))
+                    setTimeout(salvarCliente, 0)
+                  }} disabled={salvando}
+                    style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 24px', fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: salvando ? 0.7 : 1 }}>
+                    {salvando ? 'Salvando...' : '🏅 Cadastrar Painel Liderança'}
+                  </button>
+                  <button onClick={() => { setAba('clientes'); setTipoNovo('') }}
                     style={{ background: 'none', border: '1px solid #252836', color: '#8a8fa3', borderRadius: 8, padding: '12px 20px', cursor: 'pointer', fontSize: 14 }}>
                     Cancelar
                   </button>

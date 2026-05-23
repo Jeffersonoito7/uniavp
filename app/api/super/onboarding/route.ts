@@ -93,25 +93,39 @@ export async function POST(req: NextRequest) {
 
   // ── 5. Enviar credenciais por WhatsApp ───────────────────────
   const { data: cliente } = await (adminClient.from('clientes') as any)
-    .select('contato_whatsapp, contato_nome, nome').eq('id', cliente_id).maybeSingle()
+    .select('contato_whatsapp, contato_nome, nome, observacoes').eq('id', cliente_id).maybeSingle()
 
   if (cliente?.contato_whatsapp) {
     const { enviarWhatsApp } = await import('@/lib/whatsapp')
     const appUrl = dominio ? `https://${dominio}` : process.env.NEXT_PUBLIC_APP_URL
     const linkFree = dominio ? `https://free.${dominio}/captacao` : `${appUrl}/captacao`
-    const linkPro = dominio ? `https://pro.${dominio}/assinar-pro` : `${appUrl}/assinar-pro`
     const linkAdmin = dominio ? `https://adm.${dominio}/admin` : `${appUrl}/admin`
-    await enviarWhatsApp(cliente.contato_whatsapp,
-      `🎉 *Bem-vindo à plataforma, ${cliente.contato_nome || cliente.nome}!*\n\n` +
-      `Sua plataforma está pronta para uso. Aqui estão seus acessos:\n\n` +
-      `🛡 *Painel Admin (você):*\n${linkAdmin}\n` +
-      `📧 Login: ${admin_email}\n` +
-      `🔑 Senha: ${admin_senha}\n\n` +
-      `🔗 *Links para compartilhar com seus usuários:*\n\n` +
-      `🆓 *UNIAVP FREE* (cadastro gratuito):\n${linkFree}\n\n` +
-      `✨ *UNIAVP PRO* (assinatura mensal):\n${linkPro}\n\n` +
-      `_Acesse o painel Admin para configurar logo, cores e conteúdo da sua plataforma._\n` +
-      `_Recomendamos trocar a senha no primeiro acesso._`)
+
+    // Detecta se é Painel Liderança
+    let isLideranca = false
+    try { isLideranca = JSON.parse(cliente.observacoes || '{}')._tipo === 'lideranca' } catch { /* */ }
+
+    const nomeCliente = cliente.contato_nome || cliente.nome
+
+    const msg = isLideranca
+      ? `🏅 *Seu Painel Liderança está pronto, ${nomeCliente}!*\n\n` +
+        `Agora você tem sua própria plataforma de treinamentos para gerenciar sua equipe.\n\n` +
+        `🛡 *Seu painel admin:*\n${linkAdmin}\n` +
+        `📧 Login: ${admin_email}\n` +
+        `🔑 Senha: ${admin_senha}\n\n` +
+        `🔗 *Link para seus membros se cadastrarem:*\n${linkFree}\n\n` +
+        `_Configure sua logo, cores e crie seus primeiros módulos no painel admin._\n` +
+        `_Recomendamos trocar a senha no primeiro acesso._`
+      : `🎉 *Bem-vindo à plataforma, ${nomeCliente}!*\n\n` +
+        `Sua plataforma está pronta para uso. Aqui estão seus acessos:\n\n` +
+        `🛡 *Painel Admin (você):*\n${linkAdmin}\n` +
+        `📧 Login: ${admin_email}\n` +
+        `🔑 Senha: ${admin_senha}\n\n` +
+        `🔗 *Link de cadastro para seus membros:*\n${linkFree}\n\n` +
+        `_Acesse o painel Admin para configurar logo, cores e conteúdo._\n` +
+        `_Recomendamos trocar a senha no primeiro acesso._`
+
+    await enviarWhatsApp(cliente.contato_whatsapp, msg)
     resultados.push('✅ Credenciais enviadas por WhatsApp')
   }
 
