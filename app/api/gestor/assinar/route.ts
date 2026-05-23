@@ -59,7 +59,7 @@ export async function POST() {
       valor: valorPlano,
       vencimento,
       nomeDevedor: gestor.nome,
-      descricao: 'Mensalidade UNIAVP PRO',
+      descricao: 'Mensalidade Plataforma PRO',
     })
 
     const { data: pagamento } = await (adminClient.from('gestor_pagamentos') as any)

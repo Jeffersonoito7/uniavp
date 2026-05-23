@@ -97,16 +97,9 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
           {logoEsquerdaUrl ? (
             <img src={logoEsquerdaUrl} alt="Logo" style={{ height: 58, maxWidth: 70, objectFit: 'contain' }} />
           ) : (
-            <div style={{ width: 52, height: 52, border: '1.5px solid rgba(255,255,255,0.3)', borderRadius: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.08)' }}>
-              <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.7)', letterSpacing: 0.5, fontWeight: 600 }}>UNIVERSIDADE</span>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, margin: '2px 0' }}>
-                <span style={{ fontSize: 12, fontWeight: 900, color: '#fff', lineHeight: 1 }}>A</span>
-                <span style={{ fontSize: 12, fontWeight: 900, color: '#fff', lineHeight: 1 }}>V</span>
-                <span style={{ fontSize: 12, fontWeight: 900, color: GREEN, lineHeight: 1 }}>P</span>
-                <div style={{ width: 12, height: 12, background: 'rgba(255,255,255,0.1)', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: GREEN }} />
-                </div>
-              </div>
+            <div style={{ width: 52, height: 52, border: '1.5px solid rgba(255,255,255,0.3)', borderRadius: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.08)', padding: 4 }}>
+              <span style={{ fontSize: 6, color: 'rgba(255,255,255,0.7)', letterSpacing: 0.4, fontWeight: 600, textAlign: 'center', lineHeight: 1.2 }}>{(empresaNome || '').substring(0, 10).toUpperCase()}</span>
+              <span style={{ fontSize: 22, fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>{(empresaNome || 'U').substring(0, 1).toUpperCase()}</span>
             </div>
           )}
         </div>
