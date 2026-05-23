@@ -50,7 +50,11 @@ export async function GET(req: Request) {
   }
 
   if (gestorRecord) {
-    if (!gestorRecord.ativo) return NextResponse.json({ tipo: 'gestor_inativo' })
+    if (!gestorRecord.ativo) {
+      // Upgrade pendente mas ainda é aluno — volta para o painel de aluno
+      if (alunoRecord?.whatsapp) return NextResponse.json({ tipo: 'aluno', redirect: `/aluno/${alunoRecord.whatsapp}` })
+      return NextResponse.json({ tipo: 'gestor_inativo' })
+    }
     return NextResponse.json({ tipo: 'gestor', redirect: '/pro' })
   }
 
