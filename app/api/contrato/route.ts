@@ -52,7 +52,7 @@ async function gerarEEnviar(dados: DadosContratoAVP, registro: string, adminClie
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { nome, cpf, cnpj_mei, sede_mei, whatsapp, email, aluno_id, clausulas_aceitas } = body
+  const { nome, cpf, cnpj_mei, sede_mei, whatsapp, email, aluno_id, clausulas_aceitas, nf_dados } = body
 
   if (!nome || !whatsapp || !cnpj_mei || !sede_mei)
     return NextResponse.json({ error: 'Nome, WhatsApp, CNPJ MEI e sede são obrigatórios.' }, { status: 400 })
@@ -81,12 +81,16 @@ export async function POST(req: NextRequest) {
     numero_registro, assinado_em, ip,
   }), 'utf8').digest('hex')
 
+  const clausulasPayload = nf_dados
+    ? { clausulas: Array.isArray(clausulas_aceitas) ? clausulas_aceitas : [], nf: nf_dados }
+    : clausulas_aceitas
+
   const { error } = await (adminClient.from('contratos') as any).insert({
     aluno_id: aluno_id ?? null, nome: nome.trim(),
     cpf: cpf?.replace(/\D/g,'') || null,
     cnpj_mei: cnpj_mei.replace(/\D/g,''), sede_mei,
     whatsapp: wppLimpo, email: email?.trim().toLowerCase() || null,
-    ip, numero_registro, clausulas_aceitas, hash_contrato,
+    ip, numero_registro, clausulas_aceitas: clausulasPayload, hash_contrato,
     pdf_status: 'pendente',
   })
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -112,6 +116,7 @@ export async function POST(req: NextRequest) {
     foro: cfgMap['contrato_foro'] || undefined,
     logoUrl: cfgMap['site_logo_url'] || siteConfig.logoUrl || undefined,
     clausulasPersonalizadas: cfgMap['contrato_corpo'] || undefined,
+    nfDados: nf_dados ?? undefined,
     hash_contrato, ip, assinado_em, numero_registro,
   }
 

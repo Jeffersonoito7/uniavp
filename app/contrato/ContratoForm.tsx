@@ -1,9 +1,12 @@
 'use client'
 import { useState } from 'react'
 
+type ClausulaType = { num: number; titulo: string; resumo: string; texto: string }
+
 type Props = {
   nomeInicial?: string; whatsappInicial?: string; emailInicial?: string; cpfInicial?: string; alunoId?: string
   contratanteNome: string; contratanteCnpj: string; contratanteEndereco: string; foro?: string
+  clausulasCustom?: ClausulaType[]
 }
 
 type Etapa = 'dados' | 'clausulas' | 'confirmar' | 'sucesso'
@@ -78,11 +81,18 @@ function formatarCNPJ(v: string): string {
   return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8,12)}-${d.slice(12)}`
 }
 
-export default function ContratoForm({ nomeInicial='', whatsappInicial='', emailInicial='', cpfInicial='', alunoId, contratanteNome, contratanteCnpj, contratanteEndereco, foro }: Props) {
+export default function ContratoForm({ nomeInicial='', whatsappInicial='', emailInicial='', cpfInicial='', alunoId, contratanteNome, contratanteCnpj, contratanteEndereco, foro, clausulasCustom }: Props) {
+  const CLAUSULAS_ATIVAS: ClausulaType[] = clausulasCustom?.length ? clausulasCustom : CLAUSULAS
   const [etapa, setEtapa] = useState<Etapa>('dados')
   const [clausulaAtual, setClausulaAtual] = useState(0)
-  const [aceitas, setAceitas] = useState<boolean[]>(new Array(CLAUSULAS.length).fill(false))
+  const [aceitas, setAceitas] = useState<boolean[]>(new Array(CLAUSULAS_ATIVAS.length).fill(false))
   const [form, setForm] = useState({ nome: nomeInicial, whatsapp: whatsappInicial, email: emailInicial, cpf: cpfInicial, cnpj_mei: '', sede_mei: '', rua: '', numero: '', bairro: '', cidade: '', estado: '', cep: '' })
+  // Nota Fiscal
+  const [nfEmiteProprio, setNfEmiteProprio] = useState<boolean | null>(null)
+  const [nfEmpresaNome, setNfEmpresaNome] = useState('')
+  const [nfEmpresaCnpj, setNfEmpresaCnpj] = useState('')
+  const [nfResponsavelNome, setNfResponsavelNome] = useState('')
+  const [nfResponsavelCpf, setNfResponsavelCpf] = useState('')
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const [resultado, setResultado] = useState<{ numero_registro: string; hash_contrato: string } | null>(null)
@@ -95,6 +105,14 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
 
   async function assinar() {
     setLoading(true); setErro('')
+    const nfDados = nfEmiteProprio === false ? {
+      emite_proprio: false,
+      empresa_nome: nfEmpresaNome,
+      empresa_cnpj: nfEmpresaCnpj.replace(/\D/g,''),
+      responsavel_nome: nfResponsavelNome,
+      responsavel_cpf: nfResponsavelCpf.replace(/\D/g,''),
+    } : { emite_proprio: true }
+
     const res = await fetch('/api/contrato', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -102,7 +120,8 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
         nome: form.nome, cpf: form.cpf, cnpj_mei: form.cnpj_mei,
         sede_mei: sedeMei, whatsapp: form.whatsapp, email: form.email,
         aluno_id: alunoId ?? null,
-        clausulas_aceitas: CLAUSULAS.map(c => c.titulo),
+        clausulas_aceitas: CLAUSULAS_ATIVAS.map(c => c.titulo),
+        nf_dados: nfDados,
       }),
     })
     const data = await res.json()
@@ -115,7 +134,8 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
   if (etapa === 'dados') {
     const cnpjValido = validarCNPJ(form.cnpj_mei)
     const cnpjLen = form.cnpj_mei.replace(/\D/g,'').length
-    const podeAvancar = form.nome && form.whatsapp && form.cnpj_mei && cnpjValido && form.rua && form.numero && form.bairro && form.cidade && form.estado && form.cep
+    const nfOk = nfEmiteProprio === true || (nfEmiteProprio === false && nfEmpresaNome && nfEmpresaCnpj && nfResponsavelNome)
+    const podeAvancar = form.nome && form.whatsapp && form.cnpj_mei && cnpjValido && form.rua && form.numero && form.bairro && form.cidade && form.estado && form.cep && nfEmiteProprio !== null && nfOk
     return (
       <div style={{ minHeight:'100vh', background:bg, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Inter,sans-serif', padding:'32px 20px' }}>
         <div style={{ width:'100%', maxWidth:580 }}>
@@ -199,6 +219,54 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
               </div>
             </div>
 
+            {/* Nota Fiscal */}
+            <div style={{ marginTop:24, paddingTop:20, borderTop:'1px solid rgba(255,255,255,0.1)' }}>
+              <p style={{ fontWeight:700, fontSize:14, color:'#818cf8', marginBottom:6 }}>🧾 Emissão de Nota Fiscal</p>
+              <p style={{ fontSize:12, color:'rgba(255,255,255,0.4)', marginBottom:14, lineHeight:1.6 }}>Informe como será feita a emissão de notas fiscais pelos seus serviços.</p>
+              <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                {[
+                  { val: true, label:'✅ Sim, eu mesmo emito minha Nota Fiscal (MEI ativo)', sub:'Você emitirá NF pelo seu próprio CNPJ MEI.' },
+                  { val: false, label:'⚠️ Não consigo emitir NF — outra empresa/pessoa emitirá por mim', sub:'Você autoriza outra empresa a emitir e receber em seu nome.' },
+                ].map(op => (
+                  <label key={String(op.val)} style={{ display:'flex', gap:12, alignItems:'flex-start', background: nfEmiteProprio === op.val ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.04)', border:`1px solid ${nfEmiteProprio === op.val ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.12)'}`, borderRadius:10, padding:'14px 16px', cursor:'pointer' }}>
+                    <div style={{ width:20, height:20, borderRadius:'50%', border:`2px solid ${nfEmiteProprio === op.val ? '#6366f1' : 'rgba(255,255,255,0.25)'}`, background: nfEmiteProprio === op.val ? '#6366f1' : 'transparent', flexShrink:0, marginTop:1, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                      {nfEmiteProprio === op.val && <span style={{ width:8, height:8, borderRadius:'50%', background:'#fff', display:'block' }} />}
+                    </div>
+                    <input type="radio" name="nfEmite" style={{ display:'none' }} onChange={() => setNfEmiteProprio(op.val)} />
+                    <div>
+                      <p style={{ fontSize:13, fontWeight:700, color:'#fff', margin:0 }}>{op.label}</p>
+                      <p style={{ fontSize:11, color:'rgba(255,255,255,0.45)', margin:'3px 0 0' }}>{op.sub}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+
+              {nfEmiteProprio === false && (
+                <div style={{ marginTop:14, background:'rgba(251,191,36,0.06)', border:'1px solid rgba(251,191,36,0.2)', borderRadius:10, padding:'14px 16px', display:'flex', flexDirection:'column', gap:12 }}>
+                  <p style={{ fontSize:12, color:'rgba(251,191,36,0.9)', fontWeight:700, margin:0 }}>⚠️ Preencha os dados de quem vai emitir e receber por você:</p>
+                  <div>
+                    <label style={lbl}>Razão social da empresa emissora *</label>
+                    <input style={inp} value={nfEmpresaNome} onChange={e => setNfEmpresaNome(e.target.value)} placeholder="Ex: ABC Serviços Ltda" />
+                  </div>
+                  <div>
+                    <label style={lbl}>CNPJ da empresa emissora *</label>
+                    <input style={inp} value={nfEmpresaCnpj} onChange={e => setNfEmpresaCnpj(formatarCNPJ(e.target.value))} placeholder="00.000.000/0001-00" />
+                  </div>
+                  <div>
+                    <label style={lbl}>Nome do responsável que receberá em seu nome *</label>
+                    <input style={inp} value={nfResponsavelNome} onChange={e => setNfResponsavelNome(e.target.value)} placeholder="Nome completo" />
+                  </div>
+                  <div>
+                    <label style={lbl}>CPF do responsável</label>
+                    <input style={inp} value={nfResponsavelCpf} onChange={e => setNfResponsavelCpf(e.target.value)} placeholder="000.000.000-00" />
+                  </div>
+                  <p style={{ fontSize:11, color:'rgba(255,255,255,0.35)', margin:0, lineHeight:1.6 }}>
+                    Ao assinar este contrato, você autoriza expressamente a empresa e o responsável acima a emitir notas fiscais e receber pagamentos em seu nome, conforme pactuado neste instrumento.
+                  </p>
+                </div>
+              )}
+            </div>
+
             <button onClick={() => setEtapa('clausulas')} disabled={!podeAvancar}
               style={{ width:'100%', background:podeAvancar ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'rgba(99,102,241,0.3)', color:'#fff', border:'none', borderRadius:12, padding:'15px', fontWeight:800, fontSize:16, cursor:podeAvancar ? 'pointer' : 'not-allowed', marginTop:24, boxShadow:podeAvancar ? '0 8px 32px rgba(99,102,241,0.35)' : 'none' }}>
               Avançar para o Contrato →
@@ -211,8 +279,8 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
 
   // ── ETAPA 2: CLÁUSULAS ────────────────────────────────────────────────────
   if (etapa === 'clausulas') {
-    const cl = CLAUSULAS[clausulaAtual]
-    const total = CLAUSULAS.length
+    const cl = CLAUSULAS_ATIVAS[clausulaAtual]
+    const total = CLAUSULAS_ATIVAS.length
     const pct = Math.round((clausulaAtual / total) * 100)
     return (
       <div style={{ minHeight:'100vh', background:bg, fontFamily:'Inter,sans-serif', padding:'32px 20px' }}>
@@ -264,7 +332,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
               style={{ flex:1, background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.15)', color:'rgba(255,255,255,0.6)', borderRadius:12, padding:'14px', fontWeight:600, fontSize:15, cursor:'pointer' }}>
               ← Voltar
             </button>
-            {clausulaAtual < CLAUSULAS.length - 1 ? (
+            {clausulaAtual < CLAUSULAS_ATIVAS.length - 1 ? (
               <button onClick={() => setClausulaAtual(c => c+1)} disabled={!aceitas[clausulaAtual]}
                 style={{ flex:2, background: aceitas[clausulaAtual] ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'rgba(99,102,241,0.3)', color:'#fff', border:'none', borderRadius:12, padding:'14px', fontWeight:800, fontSize:16, cursor: aceitas[clausulaAtual] ? 'pointer' : 'not-allowed', boxShadow: aceitas[clausulaAtual] ? '0 8px 32px rgba(99,102,241,0.4)' : 'none' }}>
                 Próxima cláusula →
@@ -304,6 +372,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
                 ['E-mail',form.email || '—'],
                 ['Prazo','24 meses a partir da assinatura'],
                 ['Foro',foro || 'Petrolina/PE'],
+                ['Nota Fiscal', nfEmiteProprio ? 'Emitida pelo próprio MEI' : `Emitida por: ${nfEmpresaNome} — Recebe: ${nfResponsavelNome}`],
               ].map(([l,v]) => (
                 <div key={l} style={{ display:'flex', gap:12, padding:'10px 14px', background:'rgba(255,255,255,0.03)', borderRadius:10 }}>
                   <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:0.8, flexShrink:0, width:100 }}>{l}</span>
@@ -313,7 +382,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
             </div>
 
             <div style={{ marginTop:16, padding:'12px 16px', background:'rgba(99,102,241,0.08)', borderRadius:10, border:'1px solid rgba(99,102,241,0.2)' }}>
-              <p style={{ fontSize:12, color:'rgba(255,255,255,0.5)', margin:'0 0 4px', fontWeight:700 }}>✅ Todas as {CLAUSULAS.length} cláusulas aceitas</p>
+              <p style={{ fontSize:12, color:'rgba(255,255,255,0.5)', margin:'0 0 4px', fontWeight:700 }}>✅ Todas as {CLAUSULAS_ATIVAS.length} cláusulas aceitas</p>
               <p style={{ fontSize:11, color:'rgba(255,255,255,0.35)', margin:0 }}>Assinatura eletrônica com hash SHA-256 — validade jurídica conforme MP 2.200-2/2001</p>
             </div>
           </div>
@@ -325,7 +394,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
           )}
 
           <div style={{ display:'flex', gap:12 }}>
-            <button onClick={() => { setClausulaAtual(CLAUSULAS.length-1); setEtapa('clausulas') }}
+            <button onClick={() => { setClausulaAtual(CLAUSULAS_ATIVAS.length-1); setEtapa('clausulas') }}
               style={{ flex:1, background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.15)', color:'rgba(255,255,255,0.6)', borderRadius:12, padding:'14px', fontWeight:600, fontSize:15, cursor:'pointer' }}>
               ← Rever
             </button>

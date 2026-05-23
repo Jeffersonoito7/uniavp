@@ -12,9 +12,17 @@ export default async function ContratoPage({ searchParams }: { searchParams?: { 
 
   const { data: cfgs } = await (adminClient.from('configuracoes') as any)
     .select('chave, valor')
-    .in('chave', ['contrato_contratante_nome','contrato_contratante_cnpj','contrato_contratante_endereco','contrato_representante_nome','contrato_representante_cargo','contrato_foro'])
+    .in('chave', ['contrato_contratante_nome','contrato_contratante_cnpj','contrato_contratante_endereco','contrato_representante_nome','contrato_representante_cargo','contrato_foro','contrato_clausulas'])
   const cfgMap: Record<string,string> = {}
   for (const c of cfgs ?? []) cfgMap[c.chave] = typeof c.valor === 'string' ? c.valor : JSON.stringify(c.valor ?? '').replace(/"/g,'')
+
+  // Tenta carregar cláusulas personalizadas (extraídas pela IA)
+  let clausulasCustom: { num: number; titulo: string; resumo: string; texto: string }[] | undefined
+  try {
+    if (cfgMap['contrato_clausulas']?.trim()) {
+      clausulasCustom = JSON.parse(cfgMap['contrato_clausulas'])
+    }
+  } catch { /* usa padrão */ }
 
   return (
     <ContratoForm
@@ -27,6 +35,7 @@ export default async function ContratoPage({ searchParams }: { searchParams?: { 
       contratanteCnpj={cfgMap['contrato_contratante_cnpj'] || ''}
       contratanteEndereco={cfgMap['contrato_contratante_endereco'] || ''}
       foro={cfgMap['contrato_foro'] || 'Petrolina/PE'}
+      clausulasCustom={clausulasCustom}
     />
   )
 }

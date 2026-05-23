@@ -23,6 +23,14 @@ export type DadosContratoAVP = {
   logoUrl?: string
   // Cláusulas personalizadas (opcional — se ausente, usa texto padrão)
   clausulasPersonalizadas?: string
+  // Delegação de Nota Fiscal
+  nfDados?: {
+    emite_proprio: boolean
+    empresa_nome?: string
+    empresa_cnpj?: string
+    responsavel_nome?: string
+    responsavel_cpf?: string
+  }
 }
 
 function hexToRgb(hex: string) {
@@ -257,6 +265,10 @@ export async function gerarPDFContrato(dados: DadosContratoAVP): Promise<Uint8Ar
   pw.page.drawText('CONTRATADO / PRESTADOR DE SERVIÇOS', { x: pw.M + 10, y: pw.y - 14, size: 8.5, font: bold, color: branco })
   pw.y -= 28
   pw.text(`${dados.nome.toUpperCase()}, na condição de Microempreendedor Individual – MEI, inscrito sob o CNPJ nº ${formatCNPJ(dados.cnpjMei)}, com sede em ${dados.sedeMei}. CPF: ${formatCPF(dados.cpf)}.`, 8.5, regular, preto, 8)
+  if (dados.nfDados && !dados.nfDados.emite_proprio && dados.nfDados.empresa_nome) {
+    pw.y += 4
+    pw.text(`EMISSÃO DE NOTA FISCAL: Autorizado expressamente por ${dados.nome.toUpperCase()} para que a empresa ${dados.nfDados.empresa_nome.toUpperCase()}${dados.nfDados.empresa_cnpj ? ` (CNPJ ${formatCNPJ(dados.nfDados.empresa_cnpj)})` : ''} emita notas fiscais e receba pagamentos em seu nome, por meio de ${dados.nfDados.responsavel_nome?.toUpperCase() || ''}${dados.nfDados.responsavel_cpf ? ` (CPF ${formatCPF(dados.nfDados.responsavel_cpf)})` : ''}.`, 8, oblique, cinzaE, 8)
+  }
   pw.y += 4; pw.gap(boxH2 - 64)
 
   pw.gap(10)

@@ -166,6 +166,10 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [contratoRepresentanteCargo, setContratoRepresentanteCargo] = useState(get('contrato_representante_cargo'))
   const [contratoForo, setContratoForo] = useState(get('contrato_foro') || 'Petrolina/PE')
   const [contratoCorpo, setContratoCorpo] = useState(get('contrato_corpo'))
+  const [contratoClausulas, setContratoClausulas] = useState(get('contrato_clausulas'))
+  const [processandoPDF, setProcessandoPDF] = useState(false)
+  const [msgIA, setMsgIA] = useState('')
+  const contratoPDFRef = useRef<HTMLInputElement>(null)
   const [linkCopiadoCNCPV, setLinkCopiadoCNCPV] = useState(false)
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
@@ -365,6 +369,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         { chave: 'contrato_representante_cargo', valor: contratoRepresentanteCargo },
         { chave: 'contrato_foro', valor: contratoForo },
         { chave: 'contrato_corpo', valor: contratoCorpo },
+        { chave: 'contrato_clausulas', valor: contratoClausulas },
         { chave: 'free_quiz_obrigatorio', valor: String(freeQuizObrigatorio) },
         { chave: 'free_bloquear_video', valor: String(freeBloquearVideo) },
         { chave: 'pro_quiz_obrigatorio', valor: String(proQuizObrigatorio) },
@@ -1328,7 +1333,68 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
           </div>
         </div>
 
-        {/* Texto do contrato */}
+        {/* Upload PDF + IA */}
+        <div style={{ background: 'var(--avp-black)', border: '2px solid rgba(99,102,241,0.35)', borderRadius: 10, padding: '16px 18px' }}>
+          <p style={{ fontWeight: 800, fontSize: 14, margin: '0 0 4px' }}>🤖 Processar contrato com Inteligência Artificial</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 14px', lineHeight: 1.6 }}>
+            Faça upload do seu contrato em PDF ou Word. A IA vai ler e extrair automaticamente as cláusulas de <strong style={{ color: 'var(--avp-text)' }}>ética, lealdade, conduta, sigilo, proibições e proteção da associação</strong>. O consultor terá que ler e aceitar cada uma.
+          </p>
+          <input
+            type="file"
+            accept=".pdf,.doc,.docx,application/pdf"
+            style={{ display: 'none' }}
+            ref={contratoPDFRef}
+            onChange={async e => {
+              const file = e.target.files?.[0]
+              e.target.value = ''
+              if (!file) return
+              setProcessandoPDF(true)
+              setMsgIA('')
+              try {
+                const form = new FormData()
+                form.append('arquivo', file)
+                const res = await fetch('/api/admin/contratos/processar-pdf', { method: 'POST', body: form })
+                const data = await res.json()
+                if (!res.ok || !data.clausulas) {
+                  setMsgIA(`❌ ${data.error ?? 'Erro ao processar arquivo.'}`)
+                  return
+                }
+                setContratoClausulas(JSON.stringify(data.clausulas, null, 2))
+                setMsgIA(`✅ ${data.clausulas.length} cláusulas extraídas! Revise abaixo e salve.`)
+              } catch {
+                setMsgIA('❌ Erro de conexão. Tente novamente.')
+              }
+              setProcessandoPDF(false)
+            }}
+          />
+          <button
+            onClick={() => contratoPDFRef.current?.click()}
+            disabled={processandoPDF}
+            style={{ background: processandoPDF ? 'var(--avp-border)' : 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 800, fontSize: 14, cursor: processandoPDF ? 'not-allowed' : 'pointer', opacity: processandoPDF ? 0.7 : 1 }}>
+            {processandoPDF ? '⏳ Processando com IA...' : '📄 Fazer upload e extrair com IA'}
+          </button>
+          {msgIA && (
+            <p style={{ marginTop: 10, fontSize: 13, fontWeight: 700, color: msgIA.startsWith('✅') ? '#22c55e' : '#f87171' }}>{msgIA}</p>
+          )}
+          {contratoClausulas?.trim() && (
+            <div style={{ marginTop: 12 }}>
+              <p style={{ fontSize: 12, color: '#818cf8', fontWeight: 700, margin: '0 0 6px' }}>📋 Cláusulas extraídas (JSON — clique em Salvar para aplicar):</p>
+              <textarea
+                value={contratoClausulas}
+                onChange={e => setContratoClausulas(e.target.value)}
+                rows={10}
+                style={{ ...inp, fontFamily: 'monospace', fontSize: 11, lineHeight: 1.5, resize: 'vertical' }}
+              />
+              <button
+                onClick={() => { if (confirm('Apagar cláusulas extraídas e usar o padrão do sistema?')) setContratoClausulas('') }}
+                style={{ marginTop: 6, background: 'none', border: '1px solid var(--avp-danger)', color: 'var(--avp-danger)', borderRadius: 6, padding: '4px 12px', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
+                Remover e usar cláusulas padrão
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Texto do contrato (PDF body) */}
         <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
           <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>📝 Texto das cláusulas (personalizável)</p>
           <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.6 }}>
