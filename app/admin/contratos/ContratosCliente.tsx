@@ -7,6 +7,80 @@ type Contrato = {
   assinado_em: string; hash_contrato: string | null; pdf_url: string | null; pdf_status: string | null
 }
 
+function PainelEnvioContrato({ formadosSemContrato }: { formadosSemContrato: number }) {
+  const [enviando, setEnviando] = useState(false)
+  const [resultado, setResultado] = useState<{ enviados: number; erros: number } | null>(null)
+  const [expandido, setExpandido] = useState(false)
+
+  async function enviarParaTodos() {
+    if (!confirm(`Enviar o link do contrato via WhatsApp para ${formadosSemContrato} consultor(es) formado(s) que ainda não assinaram?\n\nIsso enviará uma mensagem para cada um deles agora.`)) return
+    setEnviando(true)
+    setResultado(null)
+    try {
+      const res = await fetch('/api/admin/contratos/enviar-convite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+      const data = await res.json()
+      setResultado(data)
+    } catch {
+      setResultado({ enviados: 0, erros: formadosSemContrato })
+    }
+    setEnviando(false)
+  }
+
+  return (
+    <div style={{ background: 'rgba(99,102,241,0.06)', border: '1.5px solid rgba(99,102,241,0.25)', borderRadius: 14, padding: '18px 22px', marginBottom: 28 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div>
+          <p style={{ fontWeight: 800, fontSize: 15, margin: 0 }}>📨 Enviar contrato para formados</p>
+          <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: 4, margin: '4px 0 0' }}>
+            {formadosSemContrato > 0
+              ? <><strong style={{ color: '#818cf8' }}>{formadosSemContrato}</strong> consultor(es) formado(s) ainda não assinaram o contrato.</>
+              : <span style={{ color: '#22c55e' }}>✅ Todos os formados já assinaram o contrato.</span>}
+          </p>
+        </div>
+        {formadosSemContrato > 0 && (
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setExpandido(v => !v)}
+              style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', borderRadius: 8, padding: '8px 16px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+              {expandido ? 'Ocultar prévia ↑' : 'Ver mensagem ↓'}
+            </button>
+            <button
+              onClick={enviarParaTodos}
+              disabled={enviando}
+              style={{ background: enviando ? 'var(--avp-border)' : 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 800, fontSize: 13, cursor: enviando ? 'not-allowed' : 'pointer', opacity: enviando ? 0.7 : 1, whiteSpace: 'nowrap' }}>
+              {enviando ? '⏳ Enviando...' : `📲 Enviar para ${formadosSemContrato}`}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {expandido && (
+        <div style={{ marginTop: 16, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, margin: '0 0 10px' }}>Prévia da mensagem enviada</p>
+          <pre style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--avp-text)', whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'Inter, sans-serif' }}>{`📄 *Contrato de Representação*
+
+Olá, *[Nome]*!
+
+Você concluiu o treinamento e está apto(a) a assinar seu contrato de representação. 🎉
+
+👉 Acesse o link abaixo e assine digitalmente em poucos minutos:
+[link do contrato]
+
+_Após assinar, você receberá o PDF aqui no WhatsApp._`}</pre>
+        </div>
+      )}
+
+      {resultado && (
+        <div style={{ marginTop: 14, background: resultado.erros === 0 ? 'rgba(2,161,83,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${resultado.erros === 0 ? 'rgba(2,161,83,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 10, padding: '12px 16px', fontSize: 14 }}>
+          {resultado.erros === 0
+            ? <span style={{ color: '#22c55e', fontWeight: 700 }}>✅ {resultado.enviados} mensagem(ns) enviada(s) com sucesso!</span>
+            : <span style={{ color: '#f87171', fontWeight: 700 }}>⚠️ {resultado.enviados} enviadas, {resultado.erros} com erro. Verifique se o WhatsApp está conectado.</span>}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function mascaraCPF(cpf: string | null) {
   if (!cpf) return '—'
   const d = cpf.replace(/\D/g,'')
@@ -26,7 +100,7 @@ function mascaraWpp(w: string) {
   return w
 }
 
-export default function ContratosCliente({ contratosIniciais, total }: { contratosIniciais: Contrato[]; total: number }) {
+export default function ContratosCliente({ contratosIniciais, total, formadosSemContrato }: { contratosIniciais: Contrato[]; total: number; formadosSemContrato: number }) {
   const [lista] = useState(contratosIniciais)
   const [busca, setBusca] = useState('')
 
@@ -60,6 +134,8 @@ export default function ContratosCliente({ contratosIniciais, total }: { contrat
           🔗 Abrir página do contrato
         </a>
       </div>
+
+      <PainelEnvioContrato formadosSemContrato={formadosSemContrato} />
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 14, marginBottom: 28 }}>
