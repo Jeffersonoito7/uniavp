@@ -2,20 +2,32 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
+import { consultarPagamento } from '@/lib/efi'
 
 export const dynamic = 'force-dynamic'
 
 // Efí envia POST neste endpoint quando pagamento é confirmado
+// Nota: Efí requer mTLS no receptor — este endpoint é secundário ao cron de polling
 export async function POST(req: NextRequest) {
   try {
+    // Valida que o TXID existe no banco antes de processar (proteção contra POST falso)
     const body = await req.json()
     const pagamentos = body?.pix ?? []
+    if (!Array.isArray(pagamentos) || pagamentos.length === 0) {
+      return NextResponse.json({ ok: true })
+    }
 
     const adminClient = createServiceRoleClient()
 
     for (const pag of pagamentos) {
       const txid = pag.txid
       if (!txid) continue
+
+      // Verifica diretamente na Efí antes de confiar no webhook (proteção contra POST falso)
+      try {
+        const { pago } = await consultarPagamento(txid)
+        if (!pago) continue
+      } catch { continue }
 
       // ── Pagamento de cliente SaaS ──
       const { data: cobranca } = await (adminClient.from('cobrancas') as any)
