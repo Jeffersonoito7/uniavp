@@ -6,6 +6,7 @@ import ConfiguracoesCliente from '@/app/admin/configuracoes/ConfiguracoesCliente
 type Cliente = { id: string; nome: string; dominio: string; ativo: boolean; contato_nome: string; contato_whatsapp: string; contato_email: string; observacoes: string; created_at: string; gestor_ativo: boolean; limite_consultores: number }
 type Stats = { totalAlunos: number; totalGestores: number; totalAdmins: number; totalModulos: number; totalAulas: number }
 type Config = { chave: string; valor: string; descricao?: string }
+type PlanoSaaS = { id: string; nome: string; descricao: string; preco: number; preco_label?: string; gestor_ativo: boolean; limite_consultores: number; destaque: boolean; ativo: boolean; recursos: string[] }
 
 const BASE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://universidade.oito7digital.com.br'
 
@@ -13,7 +14,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
   nome: string; clientes: Cliente[]; stats: Stats; recentesAlunos: { nome: string; created_at: string; status: string }[]; configs: Config[]
 }) {
   const [clientes, setClientes] = useState<Cliente[]>(inicial)
-  const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca' | 'boleto_avulso' | 'configuracoes'>('dashboard')
+  const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca' | 'boleto_avulso' | 'configuracoes' | 'planos'>('dashboard')
   const [onboardingId, setOnboardingId] = useState<string | null>(null)
   const [onboardingForm, setOnboardingForm] = useState({ admin_email: '', admin_nome: '', admin_senha: '', dominio: '' })
   const [onboardingMsg, setOnboardingMsg] = useState<string[]>([])
@@ -36,6 +37,48 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
   const [editando, setEditando] = useState<Cliente | null>(null)
+
+  // Planos SaaS
+  const PLANOS_DEFAULT: PlanoSaaS[] = [
+    { id: 'starter', nome: 'Starter', descricao: 'Ideal para associações em crescimento', preco: 0, gestor_ativo: false, limite_consultores: 100, destaque: false, ativo: true, recursos: ['Módulos e aulas ilimitadas', 'Área do consultor', 'Painel admin completo', 'Quiz e certificados', 'Contratos digitais', 'Suporte por WhatsApp'] },
+    { id: 'profissional', nome: 'Profissional', descricao: 'Para associações consolidadas', preco: 0, gestor_ativo: false, limite_consultores: 500, destaque: true, ativo: true, recursos: ['Tudo do Starter', 'Até 500 consultores', 'Ranking e gamificação', 'Artes para redes sociais', 'Relatórios avançados', 'Onboarding guiado'] },
+    { id: 'enterprise', nome: 'Enterprise', descricao: 'Solução completa para grandes associações', preco: 0, gestor_ativo: true, limite_consultores: 9999, destaque: false, ativo: true, recursos: ['Tudo do Profissional', 'Painel PRO para gestores', 'Consultores ilimitados', 'Domínio próprio incluso', 'Suporte prioritário', 'Treinamento da equipe'] },
+  ]
+  const [planos, setPlanos] = useState<PlanoSaaS[]>(PLANOS_DEFAULT)
+  const [planosCarregados, setPlanosCarregados] = useState(false)
+  const [salvandoPlanos, setSalvandoPlanos] = useState(false)
+  const [msgPlanos, setMsgPlanos] = useState('')
+  const [editandoPlano, setEditandoPlano] = useState<string | null>(null)
+  const [novoRecurso, setNovoRecurso] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    if (aba === 'planos' && !planosCarregados) {
+      fetch('/api/super/planos').then(r => r.json()).then(data => { setPlanos(data); setPlanosCarregados(true) }).catch(() => {})
+    }
+  }, [aba, planosCarregados])
+
+  async function salvarPlanos() {
+    setSalvandoPlanos(true); setMsgPlanos('')
+    const res = await fetch('/api/super/planos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(planos) })
+    setSalvandoPlanos(false)
+    setMsgPlanos(res.ok ? '✅ Planos salvos com sucesso!' : '❌ Erro ao salvar planos.')
+    setTimeout(() => setMsgPlanos(''), 3000)
+  }
+
+  function atualizarPlano(id: string, campo: keyof PlanoSaaS, valor: any) {
+    setPlanos(prev => prev.map(p => p.id === id ? { ...p, [campo]: valor } : p))
+  }
+
+  function adicionarRecurso(planoId: string) {
+    const txt = novoRecurso[planoId]?.trim()
+    if (!txt) return
+    setPlanos(prev => prev.map(p => p.id === planoId ? { ...p, recursos: [...p.recursos, txt] } : p))
+    setNovoRecurso(prev => ({ ...prev, [planoId]: '' }))
+  }
+
+  function removerRecurso(planoId: string, idx: number) {
+    setPlanos(prev => prev.map(p => p.id === planoId ? { ...p, recursos: p.recursos.filter((_, i) => i !== idx) } : p))
+  }
 
   // Boleto avulso
   const hoje = new Date(); hoje.setDate(hoje.getDate() + 7)
@@ -131,6 +174,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'clientes', label: 'Clientes', icon: '🏢' },
     { id: 'novo', label: 'Novo Cliente', icon: '➕' },
+    { id: 'planos', label: 'Planos / Vendas', icon: '🚀' },
     { id: 'testar', label: 'Testar', icon: '🧪' },
     { id: 'boleto_avulso', label: 'Boleto Avulso', icon: '🧾' },
     { id: 'configuracoes', label: 'Configurações', icon: '⚙️' },
@@ -530,6 +574,165 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
             )}
           </div>
         )}
+        {aba === 'planos' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+              <div>
+                <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>🚀 Planos e Vendas</h1>
+                <p style={{ color: '#8a8fa3', fontSize: 14 }}>Configure os planos que aparecem na sua página de vendas</p>
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <a href="/landing" target="_blank" rel="noreferrer"
+                  style={{ background: '#252836', border: '1px solid #374151', color: '#f0f1f5', borderRadius: 8, padding: '9px 16px', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>
+                  👁 Ver página de vendas ↗
+                </a>
+                <a href="/comecar" target="_blank" rel="noreferrer"
+                  style={{ background: '#252836', border: '1px solid #374151', color: '#f0f1f5', borderRadius: 8, padding: '9px 16px', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>
+                  🛒 Ver cadastro ↗
+                </a>
+                <button onClick={salvarPlanos} disabled={salvandoPlanos}
+                  style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', cursor: salvandoPlanos ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, opacity: salvandoPlanos ? 0.7 : 1 }}>
+                  {salvandoPlanos ? '⏳ Salvando...' : '💾 Salvar planos'}
+                </button>
+              </div>
+            </div>
+
+            {msgPlanos && (
+              <div style={{ background: msgPlanos.includes('✅') ? '#02A15320' : '#e6394620', border: `1px solid ${msgPlanos.includes('✅') ? '#02A153' : '#e63946'}`, borderRadius: 8, padding: '12px 16px', color: msgPlanos.includes('✅') ? '#02A153' : '#e63946', fontSize: 13, marginBottom: 20 }}>
+                {msgPlanos}
+              </div>
+            )}
+
+            {/* Configurações da landing page */}
+            <div style={{ ...cardStyle, marginBottom: 24 }}>
+              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 16 }}>🌐 Configurações da página de vendas</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                {[
+                  { chave: 'landing_nome_plataforma', label: 'Nome da plataforma', placeholder: 'Ex: Plataforma EAD White-Label' },
+                  { chave: 'landing_whatsapp_contato', label: 'WhatsApp de contato', placeholder: '5511999999999' },
+                ].map(f => (
+                  <div key={f.chave}>
+                    <label style={labelStyle}>{f.label}</label>
+                    <input style={inputStyle} placeholder={f.placeholder} defaultValue={configs.find(c => c.chave === f.chave)?.valor || ''}
+                      onBlur={async e => {
+                        await fetch('/api/admin/configuracoes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chave: f.chave, valor: e.target.value }) })
+                      }} />
+                  </div>
+                ))}
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={labelStyle}>Descrição do hero (texto abaixo do título)</label>
+                  <textarea style={{ ...inputStyle, minHeight: 70, resize: 'vertical' } as React.CSSProperties}
+                    placeholder="Ex: Sua associação com treinamentos, contratos e gestão em um único lugar..."
+                    defaultValue={configs.find(c => c.chave === 'landing_descricao')?.valor || ''}
+                    onBlur={async e => {
+                      await fetch('/api/admin/configuracoes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chave: 'landing_descricao', valor: e.target.value }) })
+                    }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Cards dos planos */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+              {planos.map(p => (
+                <div key={p.id} style={{ ...cardStyle, opacity: p.ativo ? 1 : 0.5 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                    <span style={{ fontWeight: 800, fontSize: 15 }}>{p.nome}</span>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button onClick={() => setEditandoPlano(editandoPlano === p.id ? null : p.id)}
+                        style={{ background: editandoPlano === p.id ? '#6366f130' : '#252836', border: 'none', color: editandoPlano === p.id ? '#6366f1' : '#8a8fa3', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                        {editandoPlano === p.id ? '✕ Fechar' : '✏️ Editar'}
+                      </button>
+                      <button onClick={() => atualizarPlano(p.id, 'ativo', !p.ativo)}
+                        style={{ background: p.ativo ? '#02A15320' : '#e6394620', border: 'none', color: p.ativo ? '#02A153' : '#e63946', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                        {p.ativo ? 'Ativo' : 'Inativo'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 8 }}>
+                    <span style={{ fontSize: 32, fontWeight: 900, color: p.preco > 0 ? '#6366f1' : '#8a8fa3' }}>
+                      {p.preco > 0 ? `R$ ${p.preco.toLocaleString('pt-BR')}` : (p.preco_label || 'Sob consulta')}
+                    </span>
+                    {p.preco > 0 && <span style={{ fontSize: 12, color: '#8a8fa3' }}>/mês</span>}
+                  </div>
+
+                  {p.destaque && <span style={{ background: '#6366f125', color: '#6366f1', fontSize: 11, fontWeight: 700, borderRadius: 20, padding: '2px 10px', display: 'inline-block', marginBottom: 12 }}>⭐ Destaque</span>}
+
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    {p.recursos.map((r, i) => (
+                      <li key={i} style={{ fontSize: 12, color: '#c9cce0', display: 'flex', gap: 6, alignItems: 'center' }}>
+                        <span style={{ color: '#02A153', flexShrink: 0 }}>✓</span>
+                        <span style={{ flex: 1 }}>{r}</span>
+                        {editandoPlano === p.id && (
+                          <button onClick={() => removerRecurso(p.id, i)} style={{ background: 'none', border: 'none', color: '#e63946', cursor: 'pointer', fontSize: 14, padding: '0 2px', flexShrink: 0 }}>×</button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Formulário de edição */}
+                  {editandoPlano === p.id && (
+                    <div style={{ borderTop: '1px solid #252836', paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                        <div>
+                          <label style={{ ...labelStyle, fontSize: 11 }}>Nome</label>
+                          <input style={{ ...inputStyle, fontSize: 13 }} value={p.nome} onChange={e => atualizarPlano(p.id, 'nome', e.target.value)} />
+                        </div>
+                        <div>
+                          <label style={{ ...labelStyle, fontSize: 11 }}>Preço (R$) — 0 = sob consulta</label>
+                          <input style={{ ...inputStyle, fontSize: 13 }} type="number" min={0} step={1} value={p.preco} onChange={e => atualizarPlano(p.id, 'preco', parseFloat(e.target.value) || 0)} />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ ...labelStyle, fontSize: 11 }}>Label de preço customizado (quando preço = 0)</label>
+                        <input style={{ ...inputStyle, fontSize: 13 }} placeholder="Ex: A partir de R$ 497" value={p.preco_label || ''} onChange={e => atualizarPlano(p.id, 'preco_label', e.target.value)} />
+                      </div>
+                      <div>
+                        <label style={{ ...labelStyle, fontSize: 11 }}>Descrição</label>
+                        <input style={{ ...inputStyle, fontSize: 13 }} value={p.descricao} onChange={e => atualizarPlano(p.id, 'descricao', e.target.value)} />
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                        <div>
+                          <label style={{ ...labelStyle, fontSize: 11 }}>Limite de consultores</label>
+                          <input style={{ ...inputStyle, fontSize: 13 }} type="number" min={1} value={p.limite_consultores} onChange={e => atualizarPlano(p.id, 'limite_consultores', parseInt(e.target.value) || 100)} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingTop: 16 }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, color: '#f0f1f5' }}>
+                            <input type="checkbox" checked={p.destaque} onChange={e => atualizarPlano(p.id, 'destaque', e.target.checked)} style={{ accentColor: '#6366f1' }} />
+                            ⭐ Plano destaque
+                          </label>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, color: '#f0f1f5' }}>
+                            <input type="checkbox" checked={p.gestor_ativo} onChange={e => atualizarPlano(p.id, 'gestor_ativo', e.target.checked)} style={{ accentColor: '#f59e0b' }} />
+                            🧑‍💼 Inclui Painel PRO
+                          </label>
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ ...labelStyle, fontSize: 11 }}>Adicionar recurso</label>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <input style={{ ...inputStyle, fontSize: 13 }} placeholder="Ex: Módulos ilimitados" value={novoRecurso[p.id] || ''}
+                            onChange={e => setNovoRecurso(prev => ({ ...prev, [p.id]: e.target.value }))}
+                            onKeyDown={e => e.key === 'Enter' && adicionarRecurso(p.id)} />
+                          <button onClick={() => adicionarRecurso(p.id)}
+                            style={{ background: '#6366f1', border: 'none', color: '#fff', borderRadius: 6, padding: '0 14px', cursor: 'pointer', fontSize: 18, flexShrink: 0 }}>+</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div style={{ marginTop: 24, background: '#181b24', border: '1px solid #252836', borderRadius: 10, padding: 16, fontSize: 13, color: '#8a8fa3' }}>
+              <p style={{ fontWeight: 700, color: '#f0f1f5', marginBottom: 6 }}>Como funciona o fluxo de vendas:</p>
+              <p>• A associação acessa <strong style={{ color: '#6366f1' }}>/landing</strong> e escolhe um plano → vai para <strong style={{ color: '#6366f1' }}>/comecar</strong></p>
+              <p>• Preenche os dados, paga via PIX e recebe as credenciais automaticamente no WhatsApp</p>
+              <p>• Planos com <strong style={{ color: '#f0f1f5' }}>preço = 0</strong> mostram "Sob consulta" e redirecionam para o WhatsApp de contato</p>
+              <p>• Você também pode cadastrar clientes manualmente na aba <strong style={{ color: '#f0f1f5' }}>Clientes → Onboarding</strong></p>
+            </div>
+          </div>
+        )}
+
         {aba === 'cobranca' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
