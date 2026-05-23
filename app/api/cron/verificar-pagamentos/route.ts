@@ -28,9 +28,13 @@ export async function GET(req: NextRequest) {
       const { pago } = await consultarPagamento(pag.txid)
       if (!pago) continue
 
-      await (admin.from('gestor_pagamentos') as any)
+      // Update atômico — evita race condition com o webhook
+      const { data: atualizado } = await (admin.from('gestor_pagamentos') as any)
         .update({ status: 'pago', pago_em: new Date().toISOString() })
         .eq('id', pag.id)
+        .eq('status', 'pendente')
+        .select('id')
+      if (!atualizado?.length) continue // Já processado pelo webhook
 
       const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
 
@@ -80,9 +84,13 @@ export async function GET(req: NextRequest) {
       const { pago } = await consultarPagamento(cob.txid)
       if (!pago) continue
 
-      await (admin.from('cobrancas') as any)
+      // Update atômico — evita race condition com o webhook
+      const { data: atualizado } = await (admin.from('cobrancas') as any)
         .update({ status: 'pago', pago_em: new Date().toISOString() })
         .eq('id', cob.id)
+        .eq('status', 'pendente')
+        .select('id')
+      if (!atualizado?.length) continue // Já processado pelo webhook
 
       await (admin.from('clientes') as any)
         .update({ ativo: true, status_pagamento: 'em_dia', ultimo_pagamento: new Date().toISOString().split('T')[0], pix_txid: null })

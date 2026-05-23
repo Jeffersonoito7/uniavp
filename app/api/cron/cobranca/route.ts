@@ -13,8 +13,10 @@ export async function GET(req: NextRequest) {
   }
 
   const adminClient = createServiceRoleClient()
-  const hoje = new Date()
-  const hojeStr = hoje.toISOString().split('T')[0]
+  // Usa horário de Brasília (UTC-3) para evitar calcular vencimento no dia errado
+  const agora = new Date()
+  const hoje = new Date(agora.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }))
+  const hojeStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`
 
   const { data: clientes } = await (adminClient.from('clientes') as any)
     .select('id, nome, mensalidade, contato_whatsapp, contato_nome, vencimento_dia, status_pagamento, ultimo_pagamento, ativo')

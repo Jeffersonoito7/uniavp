@@ -36,9 +36,13 @@ export async function POST(req: NextRequest) {
         .maybeSingle()
 
       if (cobranca) {
-        await (adminClient.from('cobrancas') as any)
+        // Update atômico — evita race condition com o cron de polling
+        const { data: atualizado } = await (adminClient.from('cobrancas') as any)
           .update({ status: 'pago', pago_em: new Date().toISOString() })
           .eq('id', cobranca.id)
+          .eq('status', 'pendente')
+          .select('id')
+        if (!atualizado?.length) continue // Já processado pelo cron
 
         const { data: cliente } = await (adminClient.from('clientes') as any)
           .select('id, nome, dominio, contato_whatsapp, contato_nome, contato_email, gestor_ativo, limite_consultores, status_pagamento, observacoes')
@@ -133,9 +137,13 @@ export async function POST(req: NextRequest) {
         .maybeSingle()
 
       if (pagGestor) {
-        await (adminClient.from('gestor_pagamentos') as any)
+        // Update atômico — evita race condition com o cron de polling
+        const { data: atualizadoGestor } = await (adminClient.from('gestor_pagamentos') as any)
           .update({ status: 'pago', pago_em: new Date().toISOString() })
           .eq('id', pagGestor.id)
+          .eq('status', 'pendente')
+          .select('id')
+        if (!atualizadoGestor?.length) continue // Já processado pelo cron
 
         // Ativa plano por 30 dias (e ativa conta se era upgrade de free)
         const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()

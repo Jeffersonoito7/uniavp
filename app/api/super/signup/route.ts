@@ -20,19 +20,19 @@ export async function POST(req: NextRequest) {
 
   const adminClient = createServiceRoleClient()
 
-  // Verifica se já existe um cadastro com esse email ou whatsapp
   const wppLimpo = whatsapp.replace(/\D/g, '')
   const emailLimpo = email.trim().toLowerCase()
 
-  const { data: existe } = await (adminClient.from('clientes') as any)
-    .select('id, status_pagamento, ativo')
-    .or(`contato_email.eq.${emailLimpo},contato_whatsapp.eq.${wppLimpo}`)
-    .maybeSingle()
+  // Verifica duplicata por email e por whatsapp separadamente (evita crash do .maybeSingle() com múltiplos resultados)
+  const [{ data: porEmail }, { data: porWpp }] = await Promise.all([
+    (adminClient.from('clientes') as any).select('id, status_pagamento, ativo').eq('contato_email', emailLimpo).maybeSingle(),
+    (adminClient.from('clientes') as any).select('id, status_pagamento, ativo').eq('contato_whatsapp', wppLimpo).maybeSingle(),
+  ])
+  const existe = porEmail || porWpp
 
   if (existe) {
     if (existe.ativo) return NextResponse.json({ error: 'Já existe uma conta ativa com este e-mail ou WhatsApp. Entre em contato com o suporte.' }, { status: 409 })
     if (existe.status_pagamento === 'aguardando_pagamento') {
-      // Retorna o cliente existente para continuar o pagamento
       const { data: cobranca } = await (adminClient.from('cobrancas') as any)
         .select('pix_copia_cola, qrcode_base64, valor')
         .eq('cliente_id', existe.id)
@@ -42,6 +42,8 @@ export async function POST(req: NextRequest) {
         .maybeSingle()
       if (cobranca) return NextResponse.json({ ok: true, cliente_id: existe.id, ...cobranca, ja_existia: true })
     }
+    // Status suspenso ou outro — bloqueia novo cadastro com mesmo contato
+    return NextResponse.json({ error: 'Já existe um cadastro com este e-mail ou WhatsApp. Entre em contato com o suporte.' }, { status: 409 })
   }
 
   // Busca o plano configurado
