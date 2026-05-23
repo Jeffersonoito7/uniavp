@@ -29,10 +29,10 @@ type Props = {
   corSecundaria?: string
 }
 
-function Field({ label, value, flex }: { label: string; value: string; flex?: boolean }) {
+function Field({ label, value, flex, labelColor = '#1A7A50' }: { label: string; value: string; flex?: boolean; labelColor?: string }) {
   return (
     <div style={{ flex: flex ? 1 : undefined, minWidth: 0 }}>
-      <p style={{ fontSize: 7, fontWeight: 700, color: GREEN_LABEL, margin: '0 0 1px', letterSpacing: 0.8, textTransform: 'uppercase' as const }}>{label}</p>
+      <p style={{ fontSize: 7, fontWeight: 700, color: labelColor, margin: '0 0 1px', letterSpacing: 0.8, textTransform: 'uppercase' as const }}>{label}</p>
       <p style={{ fontSize: 11.5, fontWeight: 600, color: '#1a1a1a', margin: '0 0 4px', borderBottom: '1px solid #bbb', paddingBottom: 1, whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>{value || '—'}</p>
     </div>
   )
@@ -212,16 +212,16 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
 
         {/* Campos */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 0, paddingTop: 4, minWidth: 0 }}>
-          <Field label="Nome do Consultor" value={nome} />
-          <Field label="Nº de Registro" value={numRegistro} />
+          <Field label="Nome do Consultor" value={nome} labelColor={GREEN_LABEL} />
+          <Field label="Nº de Registro" value={numRegistro} labelColor={GREEN_LABEL} />
           <div style={{ display: 'flex', gap: 10 }}>
-            <Field label="Data de Formação" value={dataFormacao} flex />
-            <Field label="Validade" value={validade} flex />
+            <Field label="Data de Formação" value={dataFormacao} flex labelColor={GREEN_LABEL} />
+            <Field label="Validade" value={validade} flex labelColor={GREEN_LABEL} />
           </div>
-          <Field label="Curso de Formação" value={`Formação de Consultor ${empresaNome}`} />
+          <Field label="Curso de Formação" value={`Formação de Consultor ${empresaNome}`} labelColor={GREEN_LABEL} />
           <div style={{ display: 'flex', gap: 10 }}>
-            <Field label="Carga Horária" value={cargaHoraria} flex />
-            <Field label="Turma" value={turma} flex />
+            <Field label="Carga Horária" value={cargaHoraria} flex labelColor={GREEN_LABEL} />
+            <Field label="Turma" value={turma} flex labelColor={GREEN_LABEL} />
           </div>
         </div>
       </div>
