@@ -120,11 +120,18 @@ export async function criarCobrancaPix(params: {
 
 export async function consultarPagamento(txid: string): Promise<{ status: string; pago: boolean }> {
   const token = await getToken()
-  const { data } = await httpsRequest(`${BASE}/v2/cobv/${txid}`, {
+  // Tenta cobv (com vencimento) primeiro; se não achar, tenta cob (simples, sem CPF/CNPJ)
+  const { data: dataCobv } = await httpsRequest(`${BASE}/v2/cobv/${txid}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
-  const d = data as any
-  return { status: d.status, pago: d.status === 'CONCLUIDA' }
+  const cobv = dataCobv as any
+  if (cobv.status) return { status: cobv.status, pago: cobv.status === 'CONCLUIDA' }
+
+  const { data: dataCob } = await httpsRequest(`${BASE}/v2/cob/${txid}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const cob = dataCob as any
+  return { status: cob.status ?? 'DESCONHECIDO', pago: cob.status === 'CONCLUIDA' }
 }
 
 // ── BOLETO ────────────────────────────────────────────────────────────────
