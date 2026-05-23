@@ -73,23 +73,41 @@ export async function criarCobrancaPix(params: {
     else if (digits.length === 14) devedor.cnpj = digits
   }
 
-  const payload: Record<string, unknown> = {
-    calendario: { dataDeVencimento: params.vencimento, validadeAposVencimento: 30 },
-    valor: { original: params.valor.toFixed(2) },
-    chave: process.env.EFI_PIX_KEY,
-    solicitacaoPagador: params.descricao || 'Mensalidade plataforma',
-  }
-  // devedor sem CPF/CNPJ é rejeitado pela API Efi cobv — só inclui se tiver documento
-  if (devedor.cpf || devedor.cnpj) {
-    payload.devedor = devedor
+  // cobv (com vencimento) exige devedor com CPF/CNPJ — se não tiver, usa cob simples
+  const temDevedor = !!(devedor.cpf || devedor.cnpj)
+
+  let c: any
+  if (temDevedor) {
+    // Cobrança com vencimento (cobv)
+    const payload: Record<string, unknown> = {
+      calendario: { dataDeVencimento: params.vencimento, validadeAposVencimento: 30 },
+      devedor,
+      valor: { original: params.valor.toFixed(2) },
+      chave: process.env.EFI_PIX_KEY,
+      solicitacaoPagador: params.descricao || 'Mensalidade plataforma',
+    }
+    const { data } = await httpsRequest(`${BASE}/v2/cobv/${params.txid}`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    c = data
+  } else {
+    // Cobrança simples sem vencimento (cob) — expira em 3 dias
+    const payload: Record<string, unknown> = {
+      calendario: { expiracao: 259200 },
+      valor: { original: params.valor.toFixed(2) },
+      chave: process.env.EFI_PIX_KEY,
+      solicitacaoPagador: params.descricao || 'Mensalidade plataforma',
+    }
+    const { data } = await httpsRequest(`${BASE}/v2/cob/${params.txid}`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    c = data
   }
 
-  const { data: cob } = await httpsRequest(`${BASE}/v2/cobv/${params.txid}`, {
-    method: 'PUT',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
-  const c = cob as any
   if (!c.loc?.id) throw new Error(`Erro Efí cobrança: ${JSON.stringify(c)}`)
 
   const { data: qr } = await httpsRequest(`${BASE}/v2/loc/${c.loc.id}/qrcode`, {

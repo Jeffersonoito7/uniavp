@@ -83,8 +83,8 @@ export async function POST(req: NextRequest) {
 
           if (gestor.whatsapp) {
             const msg = eraUpgrade
-              ? `🚀 *Bem-vindo ao UNIAVP PRO!*\n\nOlá, ${gestor.nome}!\n\n✅ Pagamento de *${valor}* confirmado!\n\nSua conta PRO está ativa por 30 dias. Acesse agora seu painel:\n👉 ${appUrl}/pro\n\n_Use o mesmo e-mail e senha que você usava no plano FREE._`
-              : `✅ *Pagamento confirmado!*\n\nOlá, ${gestor.nome}!\nValor: *${valor}*\n\nSeu acesso UNIAVP PRO está ativo por mais 30 dias. 🎉\n👉 ${appUrl}/pro`
+              ? `🚀 *Bem-vindo ao Plano PRO!*\n\nOlá, ${gestor.nome}!\n\n✅ Pagamento de *${valor}* confirmado!\n\nSua conta PRO está ativa por 30 dias. Acesse agora seu painel:\n👉 ${appUrl}/pro\n\n_Use o mesmo e-mail e senha que você usava no plano FREE._`
+              : `✅ *Pagamento confirmado!*\n\nOlá, ${gestor.nome}!\nValor: *${valor}*\n\nSeu acesso PRO está ativo por mais 30 dias. 🎉\n👉 ${appUrl}/pro`
             await enviarWhatsApp(gestor.whatsapp, msg)
           }
         }
