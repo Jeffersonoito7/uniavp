@@ -23,11 +23,11 @@ const PLANOS_DEFAULT: PlanoSaaS[] = [
 ]
 
 const FEATURES = [
-  { icon: '🎓', titulo: 'Treinamentos e Módulos', desc: 'Monte cursos completos com vídeos, PDFs e quizzes. Acompanhe o progresso de cada consultor.' },
-  { icon: '📄', titulo: 'Contratos Digitais', desc: 'Consultores assinam contratos online com hash SHA-256, validade jurídica e PDF gerado automaticamente.' },
-  { icon: '🏆', titulo: 'Ranking e Certificados', desc: 'Gamificação, certificados automáticos e ranking motivam seus consultores a avançar.' },
-  { icon: '🧑‍💼', titulo: 'Usuários PRO', desc: 'Cada PRO gerencia sua própria equipe de consultores FREE com painel exclusivo.' },
-  { icon: '🌐', titulo: 'Marca Própria (White-Label)', desc: 'Plataforma com sua logo, suas cores e seu domínio. Seus consultores nem sabem que é terceirizado.' },
+  { icon: '🎓', titulo: 'Treinamentos e Módulos', desc: 'Monte cursos completos com vídeos, PDFs e quizzes. Acompanhe o progresso de cada membro da associação.' },
+  { icon: '📄', titulo: 'Contratos Digitais', desc: 'Membros assinam contratos online com validade jurídica, hash SHA-256 e PDF gerado automaticamente.' },
+  { icon: '🏆', titulo: 'Ranking e Certificados', desc: 'Gamificação, certificados automáticos e ranking engajam e motivam os membros a avançar.' },
+  { icon: '🧑‍💼', titulo: 'Dois níveis de acesso', desc: 'Usuários FREE acessam os treinamentos. Usuários PRO têm painel próprio para gerenciar suas equipes.' },
+  { icon: '🌐', titulo: 'Marca Própria (White-Label)', desc: 'Plataforma com sua logo, suas cores e seu domínio. Seus membros nem sabem que é terceirizado.' },
   { icon: '📲', titulo: 'WhatsApp Integrado', desc: 'Notificações automáticas, envio de contratos, cobranças e avisos direto no WhatsApp.' },
 ]
 
@@ -47,7 +47,7 @@ export default async function LandingPage() {
   planos = planos.filter(p => p.ativo)
 
   const nomePlataforma = cfgNome?.valor || 'Plataforma EAD White-Label'
-  const descricaoHero = cfgDescricao?.valor || 'Sua associação com treinamentos, contratos e gestão de consultores em um único lugar — com sua marca, seu domínio, seu jeito.'
+  const descricaoHero = cfgDescricao?.valor || 'Sua associação com treinamentos, contratos digitais e gestão de membros em um único lugar — com sua marca, seu domínio, seu jeito.'
   const wppContato = cfgWpp?.valor?.replace(/\D/g, '') || ''
 
   return (
