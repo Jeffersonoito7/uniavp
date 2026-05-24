@@ -37,8 +37,16 @@ export async function PUT(req: NextRequest) {
           .insert({ chave, valor, tenant_id: tenantId })
       }
     } else {
-      await adminClient.from('configuracoes')
-        .upsert({ chave, valor }, { onConflict: 'chave' })
+      // Config global (sem tenant) — atualiza se existe, insere se não existe
+      const { data: existente } = await adminClient.from('configuracoes')
+        .select('chave').eq('chave', chave).is('tenant_id', null).maybeSingle()
+      if (existente) {
+        await adminClient.from('configuracoes')
+          .update({ valor }).eq('chave', chave).is('tenant_id', null)
+      } else {
+        await adminClient.from('configuracoes')
+          .insert({ chave, valor })
+      }
     }
   }
 

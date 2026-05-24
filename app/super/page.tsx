@@ -36,7 +36,7 @@ export default async function SuperPage() {
     adminClient.from('modulos').select('*', { count: 'exact', head: true }),
     adminClient.from('aulas').select('*', { count: 'exact', head: true }),
     adminClient.from('alunos').select('nome, created_at, status').order('created_at', { ascending: false }).limit(5),
-    adminClient.from('configuracoes').select('chave, valor, descricao').order('chave'),
+    adminClient.from('configuracoes').select('chave, valor, descricao').is('tenant_id', null).order('chave'),
     adminClient.from('configuracoes').select('tenant_id, chave, valor').in('chave', ['pro_cobranca_modo', 'plano_pro_valor']),
   ])
 
