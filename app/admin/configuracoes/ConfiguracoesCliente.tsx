@@ -1399,15 +1399,16 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
                 const form = new FormData()
                 form.append('arquivo', file)
                 const res = await fetch('/api/admin/contratos/processar-pdf', { method: 'POST', body: form })
-                const data = await res.json()
+                let data: any = {}
+                try { data = await res.json() } catch { /* resposta não-JSON */ }
                 if (!res.ok || !data.clausulas) {
-                  setMsgIA(`❌ ${data.error ?? 'Erro ao processar arquivo.'}`)
+                  setMsgIA(`❌ ${data.error ?? `Erro ${res.status} ao processar arquivo.`}`)
                   return
                 }
                 setContratoClausulas(JSON.stringify(data.clausulas, null, 2))
                 setMsgIA(`✅ ${data.clausulas.length} cláusulas extraídas! Revise abaixo e salve.`)
-              } catch {
-                setMsgIA('❌ Erro de conexão. Tente novamente.')
+              } catch (err: any) {
+                setMsgIA(`❌ Erro de conexão: ${err?.message ?? 'Tente novamente.'}`)
               }
               setProcessandoPDF(false)
             }}
