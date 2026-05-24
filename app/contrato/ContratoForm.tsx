@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 type ClausulaType = { num: number; titulo: string; resumo: string; texto: string }
 
@@ -9,7 +9,7 @@ type Props = {
   clausulasCustom?: ClausulaType[]
 }
 
-type Etapa = 'dados' | 'clausulas' | 'confirmar' | 'sucesso'
+type Etapa = 'dados' | 'clausulas' | 'confirmar' | 'assinatura' | 'sucesso'
 
 const CLAUSULAS = [
   {
@@ -97,6 +97,64 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
   const [erro, setErro] = useState('')
   const [resultado, setResultado] = useState<{ numero_registro: string; hash_contrato: string } | null>(null)
 
+  // Canvas de assinatura
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const isDrawing = useRef(false)
+  const [hasSignature, setHasSignature] = useState(false)
+
+  useEffect(() => {
+    if (etapa === 'assinatura') setTimeout(() => setupCanvas(), 50)
+  }, [etapa])
+
+  function setupCanvas() {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const dpr = window.devicePixelRatio || 1
+    const rect = canvas.getBoundingClientRect()
+    canvas.width = rect.width * dpr
+    canvas.height = rect.height * dpr
+    canvas.getContext('2d')!.scale(dpr, dpr)
+  }
+
+  function getPos(e: React.MouseEvent | React.TouchEvent, canvas: HTMLCanvasElement) {
+    const rect = canvas.getBoundingClientRect()
+    if ('touches' in e) return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top }
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+  }
+
+  function startDraw(e: React.MouseEvent | React.TouchEvent) {
+    e.preventDefault()
+    const canvas = canvasRef.current
+    if (!canvas) return
+    if (canvas.width === 0) setupCanvas()
+    isDrawing.current = true
+    const pos = getPos(e, canvas)
+    const ctx = canvas.getContext('2d')!
+    ctx.beginPath(); ctx.moveTo(pos.x, pos.y)
+  }
+
+  function draw(e: React.MouseEvent | React.TouchEvent) {
+    e.preventDefault()
+    if (!isDrawing.current) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')!
+    ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1e3a8a'
+    const pos = getPos(e, canvas)
+    ctx.lineTo(pos.x, pos.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(pos.x, pos.y)
+    setHasSignature(true)
+  }
+
+  function stopDraw() { isDrawing.current = false }
+
+  function clearCanvas() {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const dpr = window.devicePixelRatio || 1
+    canvas.getContext('2d')!.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr)
+    setHasSignature(false)
+  }
+
   const bg = '#0a0a0f'
   const inp: React.CSSProperties = { width: '100%', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, padding: '12px 14px', color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: 'Inter, sans-serif' }
   const lbl: React.CSSProperties = { display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }
@@ -113,6 +171,8 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
       responsavel_cpf: nfResponsavelCpf.replace(/\D/g,''),
     } : { emite_proprio: true }
 
+    const assinatura_base64 = canvasRef.current?.toDataURL('image/png') ?? null
+
     const res = await fetch('/api/contrato', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -122,6 +182,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
         aluno_id: alunoId ?? null,
         clausulas_aceitas: CLAUSULAS_ATIVAS.map(c => c.titulo),
         nf_dados: nfDados,
+        assinatura_base64,
       }),
     })
     const data = await res.json()
@@ -398,10 +459,66 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
               className="btn btn-ghost" style={{ flex: 1, fontSize: 15 }}>
               ← Rever
             </button>
-            <button onClick={assinar} disabled={loading}
+            <button onClick={() => { setHasSignature(false); setEtapa('assinatura') }}
               className="btn btn-primary" style={{ flex: 2, fontSize: 16 }}>
-              {loading ? 'Registrando...' : 'Assinar Contrato Digitalmente'}
+              Prosseguir para Assinatura →
             </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── ETAPA 4: ASSINATURA ───────────────────────────────────────────────────
+  if (etapa === 'assinatura') {
+    return (
+      <div style={{ minHeight:'100vh', background:bg, fontFamily:'Inter,sans-serif', padding:'32px 20px', display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div style={{ maxWidth:560, width:'100%' }}>
+          <div style={{ textAlign:'center', marginBottom:28 }}>
+            <p style={{ fontWeight:900, fontSize:22, color:'#fff', margin:'0 0 8px' }}>Assine o contrato</p>
+            <p style={{ color:'rgba(255,255,255,0.5)', fontSize:14 }}>Desenhe sua assinatura no campo abaixo</p>
+          </div>
+
+          <div style={{ background:'rgba(10,22,40,0.85)', border:'1px solid rgba(79,70,229,0.3)', borderRadius:20, padding:28, marginBottom:20 }}>
+            {/* Canvas */}
+            <div style={{ border:`2px solid ${hasSignature ? '#6366f1' : 'rgba(255,255,255,0.15)'}`, borderRadius:12, overflow:'hidden', background:'#fff', marginBottom:12, transition:'border-color 0.2s' }}>
+              <canvas
+                ref={canvasRef}
+                style={{ width:'100%', height:180, display:'block' }}
+                className="cursor-crosshair touch-none"
+                onMouseDown={startDraw} onMouseMove={draw} onMouseUp={stopDraw} onMouseLeave={stopDraw}
+                onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={stopDraw}
+              />
+            </div>
+
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
+              <p style={{ fontSize:13, color:'rgba(255,255,255,0.4)', margin:0 }}>{form.nome}</p>
+              <button type="button" onClick={clearCanvas} style={{ fontSize:12, color:'rgba(255,255,255,0.45)', background:'none', border:'1px solid rgba(255,255,255,0.15)', borderRadius:6, padding:'4px 12px', cursor:'pointer' }}>
+                ↺ Limpar
+              </button>
+            </div>
+
+            <div style={{ background:'rgba(251,191,36,0.06)', border:'1px solid rgba(251,191,36,0.2)', borderRadius:10, padding:'12px 16px', marginBottom:20 }}>
+              <p style={{ fontSize:12, color:'rgba(251,191,36,0.9)', margin:0, lineHeight:1.6 }}>
+                Ao confirmar, você registra sua assinatura eletrônica com validade jurídica. Seus dados de acesso (IP, data e hora) serão gravados na trilha de auditoria conforme a <strong>Lei 14.063/2020</strong>.
+              </p>
+            </div>
+
+            {erro && (
+              <div style={{ background:'rgba(248,113,113,0.1)', border:'1px solid rgba(248,113,113,0.3)', borderRadius:10, padding:'12px 16px', color:'#f87171', fontSize:14, marginBottom:16 }}>
+                {erro}
+              </div>
+            )}
+
+            <div style={{ display:'flex', gap:12 }}>
+              <button onClick={() => setEtapa('confirmar')} className="btn btn-ghost" style={{ flex:1 }}>
+                ← Voltar
+              </button>
+              <button onClick={assinar} disabled={!hasSignature || loading}
+                style={{ flex:2, background: hasSignature && !loading ? '#22c55e' : 'rgba(255,255,255,0.1)', color:'#fff', border:'none', borderRadius:10, padding:'14px', fontWeight:700, fontSize:16, cursor: hasSignature && !loading ? 'pointer' : 'not-allowed', transition:'background 0.2s' }}>
+                {loading ? 'Registrando...' : '✅ Confirmar Assinatura'}
+              </button>
+            </div>
           </div>
         </div>
       </div>

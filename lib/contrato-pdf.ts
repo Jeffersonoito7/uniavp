@@ -34,6 +34,8 @@ export type DadosContratoAVP = {
     responsavel_nome?: string
     responsavel_cpf?: string
   }
+  // Imagem da assinatura desenhada (base64 PNG do canvas)
+  assinaturaBase64?: string
 }
 
 function safe(text: string): string {
@@ -416,7 +418,15 @@ export async function gerarPDFContrato(dados: DadosContratoAVP): Promise<Uint8Ar
   cy -= 16
 
   // Box — Contratado (signatário)
-  const sigH = 98
+  // Se tiver imagem de assinatura, aumenta o box para comportá-la
+  let sigImage = null
+  if (dados.assinaturaBase64) {
+    try {
+      const base64Data = dados.assinaturaBase64.replace(/^data:image\/\w+;base64,/, '')
+      sigImage = await doc.embedPng(Buffer.from(base64Data, 'base64'))
+    } catch { sigImage = null }
+  }
+  const sigH = sigImage ? 148 : 98
   certPage.drawRectangle({ x: 20, y: cy - sigH + 10, width: cw - 40, height: sigH, color: rgb(0.97, 0.99, 0.97), borderColor: rgb(0.82, 0.82, 0.82), borderWidth: 0.5 })
   certPage.drawRectangle({ x: 20, y: cy - sigH + 10, width: 4, height: sigH, color: verde })
   certPage.drawRectangle({ x: cw - 118, y: cy - 1, width: 96, height: 17, color: rgb(0.88, 0.98, 0.9), borderColor: verde, borderWidth: 0.5 })
@@ -428,6 +438,15 @@ export async function gerarPDFContrato(dados: DadosContratoAVP): Promise<Uint8Ar
   certPage.drawText(safe(`Data/Hora: ${new Date(dados.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })} (Brasilia)`), { x: 32, y: cy - 51, size: 8, font: regular, color: cinzaE })
   certPage.drawText(safe(`Endereco IP: ${dados.ip}`), { x: 32, y: cy - 63, size: 7.5, font: regular, color: cinzaE })
   certPage.drawText(safe(`Sede: ${dados.sedeMei.slice(0, 70)}`), { x: 32, y: cy - 76, size: 7, font: regular, color: rgb(0.55, 0.55, 0.55) })
+  // Assinatura desenhada
+  if (sigImage) {
+    const sigW = 160; const sigH2 = 50
+    const sigX = cw - sigW - 36; const sigY = cy - 135
+    certPage.drawRectangle({ x: sigX - 4, y: sigY - 6, width: sigW + 8, height: sigH2 + 20, color: rgb(1, 1, 1), borderColor: rgb(0.82, 0.82, 0.82), borderWidth: 0.4 })
+    certPage.drawImage(sigImage, { x: sigX, y: sigY, width: sigW, height: sigH2 })
+    certPage.drawLine({ start: { x: sigX - 4, y: sigY - 2 }, end: { x: sigX + sigW + 4, y: sigY - 2 }, thickness: 0.5, color: rgb(0.7, 0.7, 0.7) })
+    certPage.drawText(safe('Assinatura do Contratado'), { x: sigX + 16, y: sigY - 10, size: 6.5, font: regular, color: cinzaE })
+  }
   cy -= sigH + 12
 
   // Box — Contratante

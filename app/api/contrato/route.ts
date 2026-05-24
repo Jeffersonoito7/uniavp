@@ -53,7 +53,7 @@ async function gerarEEnviar(dados: DadosContratoAVP, registro: string, adminClie
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { nome, cpf, cnpj_mei, sede_mei, whatsapp, email, aluno_id, clausulas_aceitas, nf_dados } = body
+  const { nome, cpf, cnpj_mei, sede_mei, whatsapp, email, aluno_id, clausulas_aceitas, nf_dados, assinatura_base64 } = body
 
   if (!nome || !whatsapp || !cnpj_mei || !sede_mei)
     return NextResponse.json({ error: 'Nome, WhatsApp, CNPJ MEI e sede são obrigatórios.' }, { status: 400 })
@@ -107,6 +107,19 @@ export async function POST(req: NextRequest) {
   const cfgMap: Record<string,string> = {}
   for (const c of cfgs ?? []) cfgMap[c.chave] = typeof c.valor === 'string' ? c.valor : JSON.stringify(c.valor ?? '').replace(/"/g,'')
 
+  // Salva imagem da assinatura no storage
+  let assinaturaUrl: string | null = null
+  if (assinatura_base64) {
+    try {
+      const base64Data = assinatura_base64.replace(/^data:image\/\w+;base64,/, '')
+      const imageBuffer = Buffer.from(base64Data, 'base64')
+      const sigPath = `assinaturas/${numero_registro}.png`
+      await adminClient.storage.from('documentos').upload(sigPath, imageBuffer, { contentType: 'image/png', upsert: true })
+      const { data: urlData } = adminClient.storage.from('documentos').getPublicUrl(sigPath)
+      assinaturaUrl = urlData?.publicUrl ?? null
+    } catch { /* segue sem a imagem */ }
+  }
+
   const dadosGeracao: DadosContratoAVP = {
     nome: nome.trim(), cpf: cpf?.replace(/\D/g,'') || null,
     cnpjMei: cnpj_mei.replace(/\D/g,''), sedeMei: sede_mei,
@@ -120,6 +133,7 @@ export async function POST(req: NextRequest) {
     logoUrl: cfgMap['site_logo_url'] || siteConfig.logoUrl || undefined,
     clausulasPersonalizadas: cfgMap['contrato_corpo'] || undefined,
     nfDados: nf_dados ?? undefined,
+    assinaturaBase64: assinatura_base64 ?? undefined,
     hash_contrato, ip, assinado_em, numero_registro,
     appUrl: process.env.NEXT_PUBLIC_APP_URL || '',
   }
