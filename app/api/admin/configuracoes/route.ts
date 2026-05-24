@@ -31,7 +31,7 @@ export async function PUT(req: NextRequest) {
         .update({ valor })
         .eq('chave', chave)
         .eq('tenant_id', tenantId)
-        .select('id')
+        .select('chave')
       if (!updated || updated.length === 0) {
         await adminClient.from('configuracoes')
           .insert({ chave, valor, tenant_id: tenantId })
