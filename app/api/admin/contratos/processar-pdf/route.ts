@@ -6,10 +6,6 @@ import Anthropic from '@anthropic-ai/sdk'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
-export const config = {
-  api: { bodyParser: { sizeLimit: '20mb' } },
-}
-
 const PROMPT = `Você vai analisar um contrato de representação comercial e extrair as cláusulas mais importantes que protegem a associação.
 
 Seu objetivo é identificar e reformular os pontos críticos sobre:
