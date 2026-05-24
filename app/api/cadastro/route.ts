@@ -73,6 +73,18 @@ export async function POST(req: NextRequest) {
   const host = req.headers.get('host') || ''
   const tenantId = await getTenantId(host)
 
+  // Se o e-mail já existe no auth mas não tem aluno vinculado (registro órfão), limpa antes de recriar
+  const { data: existingAuthUser } = await adminClient.auth.admin.getUserByEmail(emailLimpo).catch(() => ({ data: null }))
+  if (existingAuthUser?.user) {
+    const { data: alunoExistente } = await adminClient.from('alunos')
+      .select('id').eq('user_id', existingAuthUser.user.id).maybeSingle()
+    if (alunoExistente) {
+      return NextResponse.json({ erro: 'Este e-mail já possui uma conta. Faça login ou use outro e-mail.' }, { status: 400 })
+    }
+    // Auth user órfão — remove para permitir novo cadastro
+    await adminClient.auth.admin.deleteUser(existingAuthUser.user.id).catch(() => {})
+  }
+
   const { data: authUser, error: authErr } = await adminClient.auth.admin.createUser({
     email: emailLimpo,
     password: senha,
