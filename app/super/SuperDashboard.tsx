@@ -325,7 +325,9 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
               <button key={item.id}
                 onClick={() => { setAba(item.id as any); if (item.id !== 'novo') { setEditando(null); setTipoNovo(''); setForm({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 }) } if (isMobile) setMenuAberto(false) }}
                 title={colapsada ? item.label : undefined}
-                style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 10, justifyContent: colapsada ? 'center' : 'flex-start', padding: colapsada ? '10px 0' : '9px 10px', borderRadius: 7, fontSize: 13, fontWeight: active ? 600 : 400, color: active ? C.text : C.dim, background: active ? `${C.accent}18` : 'transparent', border: active ? `1px solid ${C.accent}30` : '1px solid transparent', cursor: 'pointer', textAlign: 'left', width: '100%', whiteSpace: 'nowrap', transition: 'all 0.12s' }}>
+                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = darkMode ? '#ffffff10' : '#e2e8f0' }}
+                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
+                style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 10, justifyContent: colapsada ? 'center' : 'flex-start', padding: colapsada ? '10px 0' : '9px 10px', borderRadius: 7, fontSize: 13, fontWeight: active ? 600 : 400, color: active ? C.text : C.dim, background: active ? `${C.accent}18` : 'transparent', border: active ? `1px solid ${C.accent}30` : '1px solid transparent', cursor: 'pointer', textAlign: 'left', width: '100%', whiteSpace: 'nowrap', transition: 'background 0.1s' }}>
                 <span style={{ flexShrink: 0, color: active ? C.accent : 'inherit' }}>{item.icon}</span>
                 {!colapsada && <span>{item.label}</span>}
               </button>
