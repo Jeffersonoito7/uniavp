@@ -9,10 +9,10 @@ export default async function EventosPage() {
   if (!user) redirect('/entrar?p=adm')
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  const { data: adminRecord } = await adminClient.from('admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
 
-  const { data: eventos } = await (adminClient.from('eventos') as any)
+  const { data: eventos } = await adminClient.from('eventos')
     .select('*').order('data_hora')
 
   return (

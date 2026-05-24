@@ -47,90 +47,84 @@ export default function AssinarPage() {
       : null
 
   if (!info) return (
-    <div style={{ minHeight: '100vh', background: 'var(--avp-black)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="page-wrap">
       <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>Carregando...</p>
     </div>
   )
 
   if (info?.status === 'pendente_upgrade') return (
-    <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <div style={{ width: '100%', maxWidth: 480, textAlign: 'center' }}>
-        <div style={{ fontSize: 52, marginBottom: 16 }}>⏳</div>
+    <div className="page-wrap" style={{ textAlign: 'center' }}>
+      <div style={{ width: '100%', maxWidth: 480 }}>
         <p style={{ fontWeight: 800, fontSize: 20, marginBottom: 8 }}>Pagamento pendente</p>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 24 }}>Você iniciou o upgrade para PRO. Conclua o pagamento para ativar o acesso.</p>
-        <a href="/assinar-pro" style={{ display: 'inline-block', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 12, padding: '14px 32px', fontWeight: 800, fontSize: 16, textDecoration: 'none' }}>
-          → Concluir pagamento
+        <a href="/assinar-pro" className="btn btn-primary" style={{ textDecoration: 'none', fontSize: 16 }}>
+          Concluir pagamento
         </a>
       </div>
     </div>
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+    <div className="page-wrap">
       <div style={{ width: '100%', maxWidth: 480 }}>
 
-        {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 52, marginBottom: 12 }}>🏢</div>
           <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 8 }}>UNIAVP PRO</h1>
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>Gerencie sua equipe UNIAVP FREE</p>
         </div>
 
         {/* Trial ativo */}
         {info?.trialAtivo && (
-          <div style={{ background: '#02A15315', border: '1px solid var(--avp-green)', borderRadius: 14, padding: '20px 24px', marginBottom: 20, textAlign: 'center' }}>
-            <p style={{ fontSize: 28, marginBottom: 8 }}>🎁</p>
+          <div className="card-green" style={{ marginBottom: 20, textAlign: 'center' }}>
             <p style={{ fontWeight: 800, fontSize: 18, color: 'var(--avp-green)', marginBottom: 4 }}>
               {info.diasTrial} {info.diasTrial === 1 ? 'dia restante' : 'dias restantes'} de teste grátis
             </p>
             <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>
-              Aproveite ao máximo! Após o trial, o plano é R${(info?.valorPlano ?? 97).toFixed(2).replace('.', ',')}/mês.
+              Após o trial, o plano é R${(info?.valorPlano ?? 97).toFixed(2).replace('.', ',')}/mês.
             </p>
-            <a href="/pro" style={{ display: 'inline-block', marginTop: 16, background: 'var(--avp-green)', color: '#fff', borderRadius: 10, padding: '12px 28px', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
-              → Acessar painel
+            <a href="/pro" className="btn btn-green" style={{ textDecoration: 'none', marginTop: 16 }}>
+              Acessar painel
             </a>
           </div>
         )}
 
         {/* Plano ativo */}
         {info?.status === 'ativo' && (
-          <div style={{ background: '#02A15315', border: '1px solid var(--avp-green)', borderRadius: 14, padding: '20px 24px', marginBottom: 20, textAlign: 'center' }}>
-            <p style={{ fontSize: 28, marginBottom: 8 }}>✅</p>
+          <div className="card-green" style={{ marginBottom: 20, textAlign: 'center' }}>
             <p style={{ fontWeight: 800, fontSize: 18, color: 'var(--avp-green)', marginBottom: 4 }}>Plano ativo</p>
             {info.planoVencimento && (
               <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>
                 Válido até {new Date(info.planoVencimento).toLocaleDateString('pt-BR')}
               </p>
             )}
-            <a href="/pro" style={{ display: 'inline-block', marginTop: 16, background: 'var(--avp-green)', color: '#fff', borderRadius: 10, padding: '12px 28px', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
-              → Acessar painel
+            <a href="/pro" className="btn btn-green" style={{ textDecoration: 'none', marginTop: 16 }}>
+              Acessar painel
             </a>
           </div>
         )}
 
         {/* Plano expirado / precisa pagar */}
-        {(info?.status === 'suspenso' || info?.status === 'trial' && !info.trialAtivo) && (
+        {(info?.status === 'suspenso' || (info?.status === 'trial' && !info.trialAtivo)) && (
           <>
-            <div style={{ background: '#e6394615', border: '1px solid var(--avp-danger)', borderRadius: 14, padding: '20px 24px', marginBottom: 20, textAlign: 'center' }}>
-              <p style={{ fontSize: 28, marginBottom: 8 }}>⚠️</p>
+            <div className="alert alert-error" style={{ marginBottom: 20, textAlign: 'center', padding: '20px 24px' }}>
               <p style={{ fontWeight: 800, fontSize: 18, color: 'var(--avp-danger)', marginBottom: 4 }}>
                 {info?.status === 'suspenso' ? 'Acesso suspenso' : 'Trial encerrado'}
               </p>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0 }}>
                 Assine para continuar usando o UNIAVP PRO
               </p>
             </div>
 
             {/* Card do plano */}
-            <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: '24px', marginBottom: 20 }}>
+            <div className="card" style={{ marginBottom: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <div>
-                  <p style={{ fontWeight: 800, fontSize: 20 }}>Plano UNIAVP PRO</p>
-                  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Acesso completo ao painel</p>
+                  <p style={{ fontWeight: 800, fontSize: 20, margin: 0 }}>Plano UNIAVP PRO</p>
+                  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 4 }}>Acesso completo ao painel</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontWeight: 900, fontSize: 28, color: 'var(--avp-green)' }}>R$ {(info?.valorPlano ?? 97).toFixed(2).replace('.', ',')}</p>
-                  <p style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>/mês</p>
+                  <p style={{ fontWeight: 900, fontSize: 28, color: 'var(--avp-green)', margin: 0 }}>R$ {(info?.valorPlano ?? 97).toFixed(2).replace('.', ',')}</p>
+                  <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, margin: 0 }}>/mês</p>
                 </div>
               </div>
               {['Painel completo de gestão', 'Cadastro UNIAVP FREE ilimitado', 'Acompanhamento de progresso', 'Geração de artes', 'Relatórios e eventos'].map(item => (
@@ -143,7 +137,7 @@ export default function AssinarPage() {
 
             {/* PIX */}
             {pag && pag.status === 'pendente' ? (
-              <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: '24px', textAlign: 'center' }}>
+              <div className="card" style={{ textAlign: 'center' }}>
                 <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Pague via PIX</p>
                 <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 20 }}>
                   Vencimento: {pag.vencimento ? new Date(pag.vencimento + 'T12:00:00').toLocaleDateString('pt-BR') : '—'}
@@ -155,21 +149,19 @@ export default function AssinarPage() {
                     </div>
                   </div>
                 )}
-                <button onClick={copiarPix}
-                  style={{ width: '100%', background: copiado ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 10, padding: '13px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 10 }}>
-                  {copiado ? '✅ PIX copiado!' : '📋 Copiar PIX Copia e Cola'}
+                <button onClick={copiarPix} className={`btn btn-full ${copiado ? 'btn-green' : 'btn-primary'}`} style={{ marginBottom: 10 }}>
+                  {copiado ? 'PIX copiado!' : 'Copiar PIX Copia e Cola'}
                 </button>
                 <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.5 }}>
                   Após o pagamento, seu acesso é liberado automaticamente em segundos.
                 </p>
               </div>
             ) : (
-              <button onClick={gerarPix} disabled={gerando}
-                style={{ width: '100%', background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 12, padding: '16px', fontWeight: 800, fontSize: 16, cursor: gerando ? 'not-allowed' : 'pointer', opacity: gerando ? 0.7 : 1 }}>
-                {gerando ? '⏳ Gerando cobrança...' : `💳 Assinar por R$${(info?.valorPlano ?? 97).toFixed(2).replace('.', ',')}/mês`}
+              <button onClick={gerarPix} disabled={gerando} className="btn btn-primary btn-full btn-lg">
+                {gerando ? 'Gerando cobrança...' : `Assinar por R$${(info?.valorPlano ?? 97).toFixed(2).replace('.', ',')}/mês`}
               </button>
             )}
-            {msg && <p style={{ color: 'var(--avp-danger)', fontSize: 13, marginTop: 10, textAlign: 'center' }}>{msg}</p>}
+            {msg && <p className="alert alert-error" style={{ marginTop: 10, textAlign: 'center' }}>{msg}</p>}
           </>
         )}
 

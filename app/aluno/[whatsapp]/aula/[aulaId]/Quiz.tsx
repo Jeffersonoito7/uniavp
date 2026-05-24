@@ -239,8 +239,8 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
                     </p>
                   </div>
                   <button onClick={() => { setResultado(null); setRespostas({}); setIniciado(false); onPrecisaReassistir?.() }}
-                    style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 28px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>
-                    📺 Reassistir ao vídeo
+                    className="btn btn-amber">
+                    Reassistir ao vídeo
                   </button>
                 </>
               ) : (
@@ -279,8 +279,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
           Responda todas as perguntas abaixo. Se for aprovado, a próxima aula será liberada automaticamente.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-          <button onClick={() => setIniciado(true)}
-            style={{ background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 32px', fontWeight: 800, fontSize: 16, cursor: 'pointer' }}>
+          <button onClick={() => setIniciado(true)} className="btn btn-primary btn-lg">
             Iniciar quiz
           </button>
           {quizTipo === 'indicativo' && (
@@ -334,13 +333,8 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
       })}
 
       <button onClick={enviar} disabled={!todasRespondidas || enviando}
-        style={{
-          background: todasRespondidas ? 'var(--grad-brand)' : 'var(--avp-border)',
-          color: todasRespondidas ? '#fff' : 'var(--avp-text-dim)',
-          border: 'none', borderRadius: 10, padding: '14px', fontWeight: 800, fontSize: 16, cursor: todasRespondidas ? 'pointer' : 'not-allowed',
-          opacity: enviando ? 0.7 : 1,
-        }}>
-        {enviando ? 'Corrigindo...' : todasRespondidas ? '✅ Enviar respostas' : `Responda todas as ${questoes.length} perguntas para enviar`}
+        className="btn btn-primary btn-full btn-lg">
+        {enviando ? 'Corrigindo...' : todasRespondidas ? 'Enviar respostas' : `Responda todas as ${questoes.length} perguntas para enviar`}
       </button>
     </div>
   )

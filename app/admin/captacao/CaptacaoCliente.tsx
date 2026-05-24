@@ -29,7 +29,7 @@ function LinkCard({
   return (
     <div style={{ background: 'var(--avp-card)', border: `2px solid ${cor}30`, borderRadius: 16, padding: 24 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 16 }}>
-        <span style={{ fontSize: 36, flexShrink: 0 }}>{icon}</span>
+        <span style={{ fontSize: 22, flexShrink: 0 }}>{icon}</span>
         <div style={{ flex: 1 }}>
           <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 4 }}>{titulo}</p>
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, lineHeight: 1.5 }}>{desc}</p>
@@ -45,11 +45,11 @@ function LinkCard({
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button onClick={copiar}
           style={{ flex: 1, minWidth: 120, background: copiado ? '#02A153' : cor, color: '#fff', border: 'none', borderRadius: 8, padding: '10px 16px', fontWeight: 700, cursor: 'pointer', fontSize: 13, transition: 'background 0.2s' }}>
-          {copiado ? '✓ Copiado!' : '📋 Copiar link'}
+          {copiado ? 'Copiado!' : 'Copiar link'}
         </button>
         <a href={link} target="_blank" rel="noreferrer"
           style={{ background: 'var(--avp-border)', color: 'var(--avp-text)', borderRadius: 8, padding: '10px 16px', textDecoration: 'none', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
-          👁 Ver
+          Ver
         </a>
         <button onClick={compartilharWpp}
           style={{ background: '#25d36620', border: '1px solid #25d36640', color: '#25d366', borderRadius: 8, padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
@@ -123,7 +123,7 @@ export default function CaptacaoCliente({ gestores, baseUrl }: { gestores: Gesto
       {/* Link por gestor específico */}
       <div style={{ background: 'var(--avp-card)', border: '2px solid #02A15330', borderRadius: 16, padding: 24 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 16 }}>
-          <span style={{ fontSize: 36 }}>🎯</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
           <div>
             <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 4 }}>Link por PRO Específico</p>
             <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, lineHeight: 1.5 }}>

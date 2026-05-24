@@ -80,11 +80,13 @@ export default function MigrarPage() {
                     </div>
                     <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                       <button onClick={() => executar(m.id)} disabled={executando === m.id}
-                        style={{ background: resultado[m.id] === 'ok' ? '#22c55e' : 'linear-gradient(135deg, #f59e0b, #ef4444)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: executando === m.id ? 0.7 : 1 }}>
+                        className="btn btn-sm"
+                        style={{ background: resultado[m.id] === 'ok' ? '#22c55e' : '#f59e0b' }}>
                         {executando === m.id ? '⏳ Executando...' : resultado[m.id] === 'ok' ? '✅ Aplicada!' : '▶ Executar'}
                       </button>
                       <button onClick={() => copiar(m.sql, m.id)}
-                        style={{ background: copiado === m.id ? '#22c55e' : '#252836', color: '#fff', border: '1px solid #252836', borderRadius: 8, padding: '9px 16px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                        className="btn btn-sm"
+                        style={{ background: copiado === m.id ? '#22c55e' : '#252836', border: '1px solid #252836' }}>
                         {copiado === m.id ? '✓' : '📋'}
                       </button>
                     </div>

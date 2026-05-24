@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
 async function verificarAdmin(user: { id: string }, adminClient: ReturnType<typeof createServiceRoleClient>) {
-  const { data } = await (adminClient.from('admins') as any)
+  const { data } = await adminClient.from('admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   return !!data
 }
@@ -23,14 +23,14 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const { titulo, descricao, cidade, data_hora, notificar, imagem_url } = body
 
-  const { data: evento, error } = await (adminClient.from('eventos') as any)
+  const { data: evento, error } = await adminClient.from('eventos')
     .insert({ titulo, descricao: descricao || '', cidade: cidade || '', data_hora, imagem_url: imagem_url || '' })
     .select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   if (notificar) {
-    const { data: alunos } = await (adminClient.from('alunos') as any)
+    const { data: alunos } = await adminClient.from('alunos')
       .select('whatsapp, nome').eq('status', 'ativo')
 
     const dataFormatada = new Date(data_hora).toLocaleString('pt-BR', {
@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
       hour: '2-digit', minute: '2-digit', timeZone: 'America/Fortaleza'
     })
 
-    const { data: configNome } = await (adminClient.from('configuracoes') as any).select('valor').eq('chave', 'site_nome').maybeSingle()
-    const nomeEvento = configNome?.valor ? JSON.parse(configNome.valor) : 'Novo Evento'
+    const { data: configNome } = await adminClient.from('configuracoes').select('valor').eq('chave', 'site_nome').maybeSingle()
+    const nomeEvento = configNome?.valor ? JSON.parse(String(configNome.valor)) : 'Novo Evento'
     const msg = `🗓️ *${nomeEvento} — Novo Evento!*\n\n*${titulo}*\n📍 ${cidade || 'A definir'}\n📅 ${dataFormatada}${descricao ? `\n\n${descricao}` : ''}`
 
     for (const aluno of alunos ?? []) {
@@ -59,6 +59,6 @@ export async function DELETE(req: NextRequest) {
   if (!await verificarAdmin(user, adminClient)) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const { id } = await req.json()
-  await (adminClient.from('eventos') as any).delete().eq('id', id)
+  await adminClient.from('eventos').delete().eq('id', id)
   return NextResponse.json({ ok: true })
 }

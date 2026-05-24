@@ -1,6 +1,8 @@
 'use client'
 import { useState } from 'react'
 
+const DEMO_PWD = process.env.NEXT_PUBLIC_DEMO_PASSWORD ?? 'Demo@2025'
+
 const paineis = [
   {
     label: 'Painel Admin',
@@ -18,7 +20,7 @@ const paineis = [
     icon: '👤',
     cor: '#02A153',
     email: 'carlos.gestor@uniavp.demo',
-    senha: 'Demo@2025',
+    senha: DEMO_PWD,
   },
   {
     label: 'UNIAVP FREE',
@@ -27,7 +29,7 @@ const paineis = [
     icon: '🎓',
     cor: '#6366f1',
     email: 'ana.consultora@uniavp.demo',
-    senha: 'Demo@2025',
+    senha: DEMO_PWD,
   },
   {
     label: 'Login unificado',

@@ -2,7 +2,7 @@
 import { useRef, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 
-type Noticia = { id: string; titulo: string; conteudo: string; imagem_url: string; publicado: boolean; created_at: string }
+type Noticia = { id: string; titulo: string; conteudo: string | null; imagem_url: string | null; publicado: boolean | null; created_at: string | null }
 
 export default function NoticiasCliente({ inicial }: { inicial: Noticia[] }) {
   const [noticias, setNoticias] = useState<Noticia[]>(inicial)
@@ -87,7 +87,7 @@ export default function NoticiasCliente({ inicial }: { inicial: Noticia[] }) {
               <div>
                 <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{n.titulo}</p>
                 {n.conteudo && <p style={{ fontSize: 13, color: 'var(--avp-text-dim)' }}>{n.conteudo.slice(0, 100)}{n.conteudo.length > 100 ? '...' : ''}</p>}
-                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>{new Date(n.created_at).toLocaleDateString('pt-BR')}</p>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>{n.created_at ? new Date(n.created_at).toLocaleDateString('pt-BR') : '—'}</p>
               </div>
               <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                 <button onClick={() => togglePublicado(n)} style={{ background: n.publicado ? '#6366f120' : '#02A15320', color: n.publicado ? '#6366f1' : 'var(--avp-green)', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>

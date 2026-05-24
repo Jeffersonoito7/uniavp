@@ -15,12 +15,12 @@ export async function GET(req: NextRequest) {
   const agora = new Date()
   let enviados = 0
 
-  const { data: alunos } = await (admin.from('alunos') as any)
+  const { data: alunos } = await admin.from('alunos')
     .select('id, nome, whatsapp, gestor_nome, created_at')
     .eq('status', 'ativo')
 
   for (const a of alunos ?? []) {
-    const dias = Math.floor((agora.getTime() - new Date(a.created_at).getTime()) / 86400000)
+    const dias = Math.floor((agora.getTime() - new Date(a.created_at!).getTime()) / 86400000)
 
     if (dias === 1) {
       await enviarWhatsApp(a.whatsapp,
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (dias === 3) {
-      const { data: prog } = await (admin.from('progresso') as any).select('id').eq('aluno_id', a.id).limit(1).maybeSingle()
+      const { data: prog } = await admin.from('progresso').select('id').eq('aluno_id', a.id).limit(1).maybeSingle()
       if (!prog) {
         await enviarWhatsApp(a.whatsapp,
           `⏰ *${a.nome}*, você se cadastrou há 3 dias mas ainda não assistiu nenhuma aula!\n\nSua formação está te esperando. São apenas alguns minutos por dia que vão mudar seu resultado:\n👉 ${appUrl}/entrar\n\nVamos lá? 🚀`)
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (dias === 7) {
-      const { count } = await (admin.from('progresso') as any).select('id', { count: 'exact', head: true }).eq('aluno_id', a.id).eq('aprovado', true)
+      const { count } = await admin.from('progresso').select('id', { count: 'exact', head: true }).eq('aluno_id', a.id).eq('aprovado', true)
       if ((count ?? 0) === 0) {
         await enviarWhatsApp(a.whatsapp,
           `🔔 *${a.nome}*, já faz 1 semana desde o seu cadastro no UNIAVP FREE!\n\nSeus colegas já estão avançando. Não fique para trás — cada aula te aproxima do certificado!\n\n👉 ${appUrl}/aluno/${a.whatsapp}\n\nPrecisando de ajuda? Fale com seu PRO *${a.gestor_nome}* agora mesmo! 📞`)

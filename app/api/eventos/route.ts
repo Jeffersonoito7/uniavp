@@ -9,7 +9,7 @@ export async function GET() {
   if (!user) return NextResponse.json([], { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data } = await (adminClient.from('eventos') as any)
+  const { data } = await adminClient.from('eventos')
     .select('*')
     .order('data_hora')
 

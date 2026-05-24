@@ -2,12 +2,12 @@
 import { useRef, useState } from 'react'
 
 type Template = {
-  id: string; tipo: string; titulo: string; arte_url: string;
-  foto_x: number; foto_y: number; foto_largura: number; foto_altura: number;
-  foto_redondo: boolean; ativo: boolean; formato: string;
-  texto_ativo?: boolean; texto_template?: string;
-  texto_fonte?: string; texto_x?: number; texto_y?: number; texto_tamanho?: number;
-  texto_cor?: string; texto_negrito?: boolean; texto_alinhamento?: string; texto_sombra?: boolean;
+  id: string; tipo: string; titulo: string; arte_url: string | null;
+  foto_x: number | null; foto_y: number | null; foto_largura: number | null; foto_altura: number | null;
+  foto_redondo: boolean | null; ativo: boolean | null; formato: string | null;
+  texto_ativo?: boolean | null; texto_template?: string | null;
+  texto_fonte?: string | null; texto_x?: number | null; texto_y?: number | null; texto_tamanho?: number | null;
+  texto_cor?: string | null; texto_negrito?: boolean | null; texto_alinhamento?: string | null; texto_sombra?: boolean | null;
 }
 
 function supabase() { return null } // não usado diretamente
@@ -165,7 +165,7 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
       {/* Lista */}
       {filtrados.length === 0 ? (
         <div style={{ textAlign: 'center', padding: 48, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, color: 'var(--avp-text-dim)' }}>
-          <p style={{ fontSize: 36, marginBottom: 8 }}>🎨</p>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 12 }}><circle cx="12" cy="12" r="10"/><path d="m8 14 2.5-3 2.5 2.5 2.5-3L18 14"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>
           <p style={{ marginBottom: 12 }}>Nenhum template de {aba === 'feed' ? 'Feed' : 'Stories'}.</p>
           {aba === 'stories' && templates.filter(t => t.formato === 'feed').length > 0 && (
             <button onClick={duplicarComoStories} disabled={duplicando}
@@ -195,7 +195,7 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
-                    <input type="checkbox" checked={t.ativo}
+                    <input type="checkbox" checked={t.ativo ?? false}
                       onChange={e => atualizar(t.id, 'ativo', e.target.checked)}
                       style={{ width: 15, height: 15, accentColor: 'var(--avp-green)' }} />
                     <span style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>Ativo</span>
@@ -213,7 +213,7 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
                     <label style={labelStyle}>Arte PNG (fundo transparente) — {aba === 'feed' ? '1080×1080px' : '1080×1920px'}</label>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <input style={{ ...inputStyle, flex: 1 }}
-                        value={t.arte_url}
+                        value={t.arte_url ?? ''}
                         onChange={e => atualizar(t.id, 'arte_url', e.target.value)}
                         placeholder="Cole a URL ou use o botão para fazer upload" />
                       <input type="file" accept="image/png,image/webp,image/jpeg"
@@ -238,7 +238,7 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
                     ))}
                   </div>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                    <input type="checkbox" checked={t.foto_redondo}
+                    <input type="checkbox" checked={t.foto_redondo ?? false}
                       onChange={e => atualizar(t.id, 'foto_redondo', e.target.checked)}
                       style={{ width: 15, height: 15, accentColor: 'var(--avp-green)' }} />
                     <span style={{ fontSize: 13, color: 'var(--avp-text-dim)' }}>Foto em formato circular</span>

@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id, nome').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!gestor) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   const horas = espera_horas ?? 0
   const liberada_em = new Date(Date.now() + horas * 3600000).toISOString()
 
-  const { data, error } = await (adminClient.from('progresso') as any)
+  const { data, error } = await adminClient.from('progresso')
     .update({ pendente_liberacao: false, proxima_aula_liberada_em: liberada_em })
     .eq('id', progresso_id)
     .select('aluno_id, aula_id')
@@ -46,19 +46,19 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id, whatsapp').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!gestor) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   // Busca consultores do gestor com liberações pendentes
-  const { data: alunos } = await (adminClient.from('alunos') as any)
+  const { data: alunos } = await adminClient.from('alunos')
     .select('id').eq('gestor_whatsapp', gestor.whatsapp).eq('status', 'ativo')
 
   if (!alunos || alunos.length === 0) return NextResponse.json({ pendentes: [] })
 
   const alunoIds = alunos.map((a: { id: string }) => a.id)
 
-  const { data: pendentes } = await (adminClient.from('progresso') as any)
+  const { data: pendentes } = await adminClient.from('progresso')
     .select('id, aluno_id, aula_id, percentual, created_at, aluno:alunos(nome, whatsapp), aula:aulas(titulo, quiz_aprovacao_minima)')
     .eq('pendente_liberacao', true)
     .eq('aprovado', true)

@@ -1,8 +1,7 @@
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-
-const DOMINIO_MASTER = 'universidade.oito7digital.com.br'
+import { DOMINIO_MASTER } from '@/lib/constants'
 
 export default async function HomePage() {
   const headersList = headers()
@@ -18,22 +17,22 @@ export default async function HomePage() {
 
   // Se for o domínio master, verificar super admin
   if (isMaster) {
-    const { data: sa } = await (adminClient.from('super_admins') as any)
+    const { data: sa } = await adminClient.from('super_admins')
       .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
     if (sa) redirect('/super')
     redirect('/super/login')
   }
 
   // Domínio cliente — redirecionar pelo perfil
-  const { data: adminRecord } = await (adminClient.from('admins') as any)
+  const { data: adminRecord } = await adminClient.from('admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (adminRecord) redirect('/admin')
 
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (gestor) redirect('/pro')
 
-  const { data: aluno } = await (adminClient.from('alunos') as any)
+  const { data: aluno } = await adminClient.from('alunos')
     .select('whatsapp').eq('user_id', user.id).maybeSingle()
   if (aluno?.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 

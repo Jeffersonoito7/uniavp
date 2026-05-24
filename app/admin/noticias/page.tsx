@@ -8,9 +8,9 @@ export default async function NoticiasPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/entrar?p=adm')
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  const { data: adminRecord } = await adminClient.from('admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
-  const { data: noticias } = await (adminClient.from('noticias') as any).select('*').order('created_at', { ascending: false })
+  const { data: noticias } = await adminClient.from('noticias').select('*').order('created_at', { ascending: false })
   return (
     <AdminLayout>
       <div style={{ marginBottom: 28 }}>

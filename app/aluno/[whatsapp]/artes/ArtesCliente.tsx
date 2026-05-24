@@ -3,13 +3,13 @@ import { useRef, useState } from 'react'
 import ImageCropModal from '@/app/components/ImageCropModal'
 
 type Template = {
-  id: string; tipo: string; titulo: string; arte_url: string;
-  foto_x: number; foto_y: number; foto_largura: number; foto_altura: number;
-  foto_redondo: boolean; formato: string; ativo?: boolean;
-  texto_ativo?: boolean; texto_template?: string;
-  texto_x?: number; texto_y?: number; texto_tamanho?: number;
-  texto_cor?: string; texto_negrito?: boolean; texto_alinhamento?: string; texto_sombra?: boolean;
-  texto_fonte?: string;
+  id: string; tipo: string; titulo: string; arte_url: string | null;
+  foto_x: number | null; foto_y: number | null; foto_largura: number | null; foto_altura: number | null;
+  foto_redondo: boolean | null; formato: string | null; ativo?: boolean | null;
+  texto_ativo?: boolean | null; texto_template?: string | null;
+  texto_x?: number | null; texto_y?: number | null; texto_tamanho?: number | null;
+  texto_cor?: string | null; texto_negrito?: boolean | null; texto_alinhamento?: string | null; texto_sombra?: boolean | null;
+  texto_fonte?: string | null;
 }
 
 type Formato = 'feed' | 'stories'
@@ -169,10 +169,10 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
       const imgY = dh > h ? -(dh - h) * panBgY / 100 : (h - dh) / 2
 
       // Clipa se o template usar área específica (foto_redondo ou rect)
-      const fotoX = Math.round(w * templateSelecionado.foto_x / 100)
-      const fotoY = Math.round(h * templateSelecionado.foto_y / 100)
-      const fotoW = Math.round(w * templateSelecionado.foto_largura / 100)
-      const fotoH = Math.round(h * templateSelecionado.foto_altura / 100)
+      const fotoX = Math.round(w * (templateSelecionado.foto_x ?? 0) / 100)
+      const fotoY = Math.round(h * (templateSelecionado.foto_y ?? 0) / 100)
+      const fotoW = Math.round(w * (templateSelecionado.foto_largura ?? 0) / 100)
+      const fotoH = Math.round(h * (templateSelecionado.foto_altura ?? 0) / 100)
       const usaAreaEspecifica = fotoW > 0 && fotoH > 0 && (fotoW < w * 0.9 || fotoH < h * 0.9)
 
       if (usaAreaEspecifica) {

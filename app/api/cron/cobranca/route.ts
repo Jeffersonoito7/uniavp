@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const hoje = new Date(agora.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }))
   const hojeStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`
 
-  const { data: clientes } = await (adminClient.from('clientes') as any)
+  const { data: clientes } = await adminClient.from('clientes')
     .select('id, nome, mensalidade, contato_whatsapp, contato_nome, vencimento_dia, status_pagamento, ultimo_pagamento, ativo')
     .gt('mensalidade', 0)
 
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     const vencStr = vencimento.toISOString().split('T')[0]
 
     // Verifica se já existe cobrança pendente este mês
-    const { data: cobExistente } = await (adminClient.from('cobrancas') as any)
+    const { data: cobExistente } = await adminClient.from('cobrancas')
       .select('id, status')
       .eq('cliente_id', c.id)
       .gte('vencimento', new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0])
@@ -45,17 +45,17 @@ export async function GET(req: NextRequest) {
       try {
         const { pixCopiaECola, qrcodeBase64 } = await criarCobrancaPix({
           txid,
-          valor: c.mensalidade,
+          valor: c.mensalidade!,
           vencimento: vencStr,
           nomeDevedor: c.contato_nome || c.nome,
           descricao: `Mensalidade ${c.nome}`,
         })
-        await (adminClient.from('cobrancas') as any).insert({
-          cliente_id: c.id, txid, valor: c.mensalidade,
+        await adminClient.from('cobrancas').insert({
+          cliente_id: c.id, txid, valor: c.mensalidade!,
           status: 'pendente', pix_copia_cola: pixCopiaECola,
           qrcode_base64: qrcodeBase64, vencimento: vencStr,
         })
-        await (adminClient.from('clientes') as any).update({ status_pagamento: 'pendente', pix_txid: txid }).eq('id', c.id)
+        await adminClient.from('clientes').update({ status_pagamento: 'pendente', pix_txid: txid }).eq('id', c.id)
 
         if (c.contato_whatsapp) {
           const valor = Number(c.mensalidade).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
     if (c.ativo && c.status_pagamento === 'pendente' && hojeStr > vencStr) {
       const diasAtraso = Math.ceil((hoje.getTime() - vencimento.getTime()) / 86400000)
       if (diasAtraso >= 3) {
-        await (adminClient.from('clientes') as any)
+        await adminClient.from('clientes')
           .update({ ativo: false, status_pagamento: 'suspenso' })
           .eq('id', c.id)
 

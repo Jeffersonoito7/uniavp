@@ -169,7 +169,7 @@ export default function CertificadoPopup({
       <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 20, padding: 32, maxWidth: 780, width: '100%', textAlign: 'center' }}>
 
         <div style={{ fontSize: 56, marginBottom: 8 }}>🎓</div>
-        <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 8, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+        <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: 'var(--avp-text)' }}>
           Parabéns, {nomeAluno.split(' ')[0]}!
         </h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 16, marginBottom: 24, lineHeight: 1.6 }}>
@@ -245,18 +245,15 @@ export default function CertificadoPopup({
         </div>
 
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button onClick={baixar} disabled={baixando}
-            style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontWeight: 800, fontSize: 15, cursor: baixando ? 'not-allowed' : 'pointer', opacity: baixando ? 0.7 : 1 }}>
-            {baixando ? '⏳ Gerando...' : '⬇️ Baixar Certificado'}
+          <button onClick={baixar} disabled={baixando} className="btn btn-green">
+            {baixando ? 'Gerando...' : 'Baixar Certificado'}
           </button>
           {onVerCarteira && (
-            <button onClick={onVerCarteira}
-              style={{ background: '#fbbf2420', border: '1px solid #fbbf2460', color: '#fbbf24', borderRadius: 10, padding: '12px 20px', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>
-              🪪 Ver Carteirinha
+            <button onClick={onVerCarteira} className="btn btn-sm" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.4)', color: '#fbbf24' }}>
+              Ver Carteirinha
             </button>
           )}
-          <button onClick={onClose}
-            style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 10, padding: '12px 20px', cursor: 'pointer', fontSize: 14 }}>
+          <button onClick={onClose} className="btn btn-ghost btn-sm">
             Fechar
           </button>
         </div>

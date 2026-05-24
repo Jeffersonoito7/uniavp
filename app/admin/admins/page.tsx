@@ -9,11 +9,11 @@ export default async function AdminsPage() {
   if (!user) redirect('/entrar?p=adm')
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any)
+  const { data: adminRecord } = await adminClient.from('admins')
     .select('id, role').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
 
-  const { data: admins } = await (adminClient.from('admins') as any)
+  const { data: admins } = await adminClient.from('admins')
     .select('id, nome, email, role, ativo, created_at, user_id').order('created_at')
 
   return (

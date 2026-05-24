@@ -22,7 +22,7 @@ export type SiteConfig = {
   cncpvHabilitado: boolean
 }
 
-const DOMINIO_MASTER = 'universidade.oito7digital.com.br'
+import { DOMINIO_MASTER } from './constants'
 
 // Config padrão da Oito7Digital (domínio master — sem tenant)
 const CONFIG_MASTER: SiteConfig = {
@@ -63,7 +63,7 @@ export async function getSiteConfig(host?: string): Promise<SiteConfig> {
   if (!tenantId) return CONFIG_MASTER
 
   const client = createServiceRoleClient()
-  const { data } = await (client.from('configuracoes') as any)
+  const { data } = await client.from('configuracoes')
     .select('chave, valor')
     .eq('tenant_id', tenantId)
     .in('chave', [
@@ -76,7 +76,8 @@ export async function getSiteConfig(host?: string): Promise<SiteConfig> {
 
   const map: Record<string, string> = {}
   for (const row of data ?? []) {
-    try { map[row.chave] = JSON.parse(row.valor) } catch { map[row.chave] = row.valor }
+    const s = String(row.valor ?? '')
+    try { map[row.chave] = JSON.parse(s) } catch { map[row.chave] = s }
   }
 
   return {

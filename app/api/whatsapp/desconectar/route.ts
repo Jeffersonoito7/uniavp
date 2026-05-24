@@ -13,9 +13,9 @@ export async function POST(req: NextRequest) {
 
   const adminClient = createServiceRoleClient()
 
-  const { data: admin } = await (adminClient.from('admins') as any)
+  const { data: admin } = await adminClient.from('admins')
     .select('id, whatsapp_instancia').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id, whatsapp_instancia').eq('user_id', user.id).eq('ativo', true).maybeSingle()
 
   const instancia = admin?.whatsapp_instancia || gestor?.whatsapp_instancia
@@ -25,8 +25,8 @@ export async function POST(req: NextRequest) {
     method: 'DELETE', headers: { apikey: EVO_KEY }
   }).catch(() => {})
 
-  if (admin) await (adminClient.from('admins') as any).update({ whatsapp_instancia: null }).eq('id', admin.id)
-  if (gestor) await (adminClient.from('gestores') as any).update({ whatsapp_instancia: null }).eq('id', gestor.id)
+  if (admin) await adminClient.from('admins').update({ whatsapp_instancia: null }).eq('id', admin.id)
+  if (gestor) await adminClient.from('gestores').update({ whatsapp_instancia: null }).eq('id', gestor.id)
 
   return NextResponse.json({ ok: true })
 }

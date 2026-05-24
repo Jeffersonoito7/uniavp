@@ -35,16 +35,16 @@ const PLANOS_DEFAULT: PlanoSaaS[] = [
 ]
 
 async function isSuperAdmin(userId: string, adminClient: ReturnType<typeof createServiceRoleClient>) {
-  const { data } = await (adminClient.from('super_admins') as any).select('id').eq('user_id', userId).eq('ativo', true).maybeSingle()
+  const { data } = await adminClient.from('super_admins').select('id').eq('user_id', userId).eq('ativo', true).maybeSingle()
   return !!data
 }
 
 export async function GET() {
   const adminClient = createServiceRoleClient()
-  const { data } = await (adminClient.from('configuracoes') as any)
+  const { data } = await adminClient.from('configuracoes')
     .select('valor').eq('chave', 'planos_saas').maybeSingle()
   try {
-    if (data?.valor) return NextResponse.json(JSON.parse(data.valor))
+    if (data?.valor) return NextResponse.json(JSON.parse(String(data.valor)))
   } catch { /* usa default */ }
   return NextResponse.json(PLANOS_DEFAULT)
 }
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
   const planos: PlanoSaaS[] = await req.json()
   if (!Array.isArray(planos)) return NextResponse.json({ error: 'Formato inválido' }, { status: 400 })
 
-  await (adminClient.from('configuracoes') as any).upsert(
+  await adminClient.from('configuracoes').upsert(
     { chave: 'planos_saas', valor: JSON.stringify(planos), descricao: 'Planos SaaS da plataforma' },
     { onConflict: 'chave' }
   )

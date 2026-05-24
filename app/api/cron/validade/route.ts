@@ -15,14 +15,14 @@ export async function GET(req: NextRequest) {
   const agora = new Date()
   let avisos = 0
 
-  const { data: progressos } = await (admin.from('progresso') as any)
+  const { data: progressos } = await admin.from('progresso')
     .select('id, aluno_id, aula_id, created_at, aluno:alunos(nome, whatsapp), aula:aulas(titulo, validade_meses)')
     .eq('aprovado', true)
     .not('aula.validade_meses', 'is', null)
 
   for (const p of progressos ?? []) {
     if (!p.aula?.validade_meses || !p.aluno?.whatsapp) continue
-    const expira = new Date(p.created_at)
+    const expira = new Date(p.created_at!)
     expira.setMonth(expira.getMonth() + p.aula.validade_meses)
     const diasParaExpirar = Math.ceil((expira.getTime() - agora.getTime()) / 86400000)
 

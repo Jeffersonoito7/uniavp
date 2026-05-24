@@ -5,12 +5,12 @@ import Link from 'next/link'
 import AulasCliente from './AulasCliente'
 
 type Modulo = {
-  id: string; titulo: string; descricao: string | null; capa_url: string | null; ordem: number; publicado: boolean
-  cert_ativo?: boolean; cert_template_url?: string | null; cert_nome_y?: number; cert_nome_tamanho?: number; cert_nome_cor?: string; cert_nome_estilo?: string
-  cert_logo_esq_url?: string | null; cert_logo_dir_url?: string | null; cert_logo_y?: number; cert_logo_tam?: number
-  cert_assinatura_url?: string | null; cert_assinatura_nome?: string | null; cert_assinatura_cargo?: string | null; cert_assinatura_y?: number
+  id: string; titulo: string; descricao: string | null; capa_url: string | null; ordem: number; publicado: boolean | null
+  cert_ativo?: boolean | null; cert_template_url?: string | null; cert_nome_y?: number | null; cert_nome_tamanho?: number | null; cert_nome_cor?: string | null; cert_nome_estilo?: string | null
+  cert_logo_esq_url?: string | null; cert_logo_dir_url?: string | null; cert_logo_y?: number | null; cert_logo_tam?: number | null
+  cert_assinatura_url?: string | null; cert_assinatura_nome?: string | null; cert_assinatura_cargo?: string | null; cert_assinatura_y?: number | null
 }
-type Aula = { id: string; titulo: string; descricao: string | null; ordem: number; youtube_video_id: string; duracao_minutos: number | null; quiz_qtd_questoes: number; quiz_aprovacao_minima: number; espera_horas: number; publicado: boolean; ao_vivo_link: string | null; ao_vivo_data: string | null; ao_vivo_plataforma: string | null; validade_meses: number | null; capa_url: string | null; video_url: string | null; liberacao_modo: 'automatico' | 'manual_gestor' | 'manual_admin'; quiz_tipo: 'obrigatorio' | 'indicativo' | 'sim_nao'; quiz_sim_nao_pergunta?: string | null }
+type Aula = { id: string; titulo: string; descricao: string | null; ordem: number; youtube_video_id: string; duracao_minutos: number | null; quiz_qtd_questoes: number; quiz_aprovacao_minima: number; espera_horas: number; publicado: boolean | null; ao_vivo_link: string | null; ao_vivo_data: string | null; ao_vivo_plataforma: string | null; validade_meses: number | null; capa_url: string | null; video_url: string | null; liberacao_modo: string | null; quiz_tipo: string | null; quiz_sim_nao_pergunta?: string | null }
 
 type Aba = 'geral' | 'aulas' | 'configuracoes' | 'certificado'
 
@@ -22,7 +22,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
   const [titulo, setTitulo] = useState(inicial.titulo)
   const [descricao, setDescricao] = useState(inicial.descricao ?? '')
   const [ordem, setOrdem] = useState(String(inicial.ordem))
-  const [publicado, setPublicado] = useState(inicial.publicado)
+  const [publicado, setPublicado] = useState(inicial.publicado ?? false)
   const [capaPreview, setCapaPreview] = useState<string | null>(
     inicial.capa_url?.startsWith('data:') || inicial.capa_url?.startsWith('blob:') ? inicial.capa_url : null
   )
@@ -208,7 +208,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
                 style={{ cursor: 'pointer', borderRadius: 8, overflow: 'hidden', border: `2px dashed ${capaPreview ? 'var(--avp-green)' : 'var(--avp-border)'}`, background: 'var(--avp-black)', aspectRatio: '1380/1080', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
                 {capaPreview
                   ? <img src={capaPreview} alt="capa" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <span style={{ fontSize: 32, color: 'var(--avp-text-dim)' }}>🖼️</span>}
+                  : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--avp-text-dim)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>}
               </div>
               <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
                 onChange={e => { const f = e.target.files?.[0]; if (f) selecionarCapa(f); e.target.value = '' }} />

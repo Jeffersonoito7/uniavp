@@ -4,7 +4,7 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 export const dynamic = 'force-dynamic'
 
 async function verificarAdmin(adminClient: ReturnType<typeof createServiceRoleClient>, userId: string) {
-  const { data } = await (adminClient.from('admins') as any)
+  const { data } = await adminClient.from('admins')
     .select('id')
     .eq('user_id', userId)
     .eq('ativo', true)
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   const aulaId = req.nextUrl.searchParams.get('aula_id')
   if (!aulaId) return NextResponse.json({ error: 'aula_id obrigatório' }, { status: 400 })
 
-  const { data: questoes, error } = await (adminClient.from('questoes') as any)
+  const { data: questoes, error } = await adminClient.from('questoes')
     .select('*')
     .eq('aula_id', aulaId)
     .order('ordem')
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Pelo menos uma alternativa deve ser marcada como correta' }, { status: 400 })
   }
 
-  const { data: ultima } = await (adminClient.from('questoes') as any)
+  const { data: ultima } = await adminClient.from('questoes')
     .select('ordem')
     .eq('aula_id', aula_id)
     .order('ordem', { ascending: false })
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 
   const ordem = (ultima?.ordem ?? 0) + 1
 
-  const { data: questao, error } = await (adminClient.from('questoes') as any)
+  const { data: questao, error } = await adminClient.from('questoes')
     .insert({ aula_id, ordem, enunciado, alternativas, explicacao: explicacao ?? null })
     .select('*')
     .single()
@@ -88,15 +88,15 @@ export async function PUT(req: NextRequest) {
 
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  const updates: Record<string, unknown> = {}
+  const updates: { enunciado?: string; alternativas?: unknown; explicacao?: string | null; ativa?: boolean | null; ordem?: number } = {}
   if (enunciado !== undefined) updates.enunciado = enunciado
   if (alternativas !== undefined) updates.alternativas = alternativas
   if (explicacao !== undefined) updates.explicacao = explicacao
   if (ativa !== undefined) updates.ativa = ativa
   if (ordem !== undefined) updates.ordem = ordem
 
-  const { data: questao, error } = await (adminClient.from('questoes') as any)
-    .update(updates)
+  const { data: questao, error } = await adminClient.from('questoes')
+    .update(updates as import('@/lib/database.types').Database['public']['Tables']['questoes']['Update'])
     .eq('id', id)
     .select('*')
     .single()
@@ -118,7 +118,7 @@ export async function DELETE(req: NextRequest) {
   const { id } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  const { error } = await (adminClient.from('questoes') as any).delete().eq('id', id)
+  const { error } = await adminClient.from('questoes').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
   return NextResponse.json({ ok: true })

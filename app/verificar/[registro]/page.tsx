@@ -9,7 +9,7 @@ export default async function VerificarPage({ params }: { params: { registro: st
 
   const numBusca = parseInt(params.registro.replace(/^0+/, '') || '0')
 
-  const { data: aluno } = await (adminClient.from('alunos') as any)
+  const { data: aluno } = await adminClient.from('alunos')
     .select('nome, status, numero_registro, data_formacao')
     .eq('numero_registro', numBusca)
     .maybeSingle()

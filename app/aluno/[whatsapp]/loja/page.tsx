@@ -9,15 +9,15 @@ export default async function LojaPage({ params }: { params: { whatsapp: string 
   if (!user) redirect('/entrar?p=free')
 
   const adminClient = createServiceRoleClient()
-  const { data: aluno } = await (adminClient.from('alunos') as any).select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
+  const { data: aluno } = await adminClient.from('alunos').select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
   if (!aluno) redirect('/entrar?p=free')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}/loja`)
 
-  const { data: pontosRows } = await (adminClient.from('aluno_pontos') as any).select('quantidade').eq('aluno_id', aluno.id)
+  const { data: pontosRows } = await adminClient.from('aluno_pontos').select('quantidade').eq('aluno_id', aluno.id)
   const saldo = (pontosRows ?? []).reduce((s: number, r: { quantidade: number }) => s + r.quantidade, 0)
 
-  const { data: premios } = await (adminClient.from('premios') as any).select('*').eq('ativo', true).order('custo_pontos')
-  const { data: resgates } = await (adminClient.from('resgates') as any)
+  const { data: premios } = await adminClient.from('premios').select('*').eq('ativo', true).order('custo_pontos')
+  const { data: resgates } = await adminClient.from('resgates')
     .select('*, premio:premios(nome)')
     .eq('aluno_id', aluno.id)
     .order('created_at', { ascending: false })

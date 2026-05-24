@@ -9,17 +9,17 @@ export default async function TopicoPage({ params }: { params: { whatsapp: strin
   if (!user) redirect('/entrar?p=free')
 
   const adminClient = createServiceRoleClient()
-  const { data: aluno } = await (adminClient.from('alunos') as any).select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
+  const { data: aluno } = await adminClient.from('alunos').select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
   if (!aluno) redirect('/entrar?p=free')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}/forum`)
 
-  const { data: topico } = await (adminClient.from('forum_topicos') as any)
+  const { data: topico } = await adminClient.from('forum_topicos')
     .select('*, aluno:alunos(nome)')
     .eq('id', params.topicoId)
     .single()
   if (!topico) redirect(`/aluno/${params.whatsapp}/forum`)
 
-  const { data: respostas } = await (adminClient.from('forum_respostas') as any)
+  const { data: respostas } = await adminClient.from('forum_respostas')
     .select('*, aluno:alunos(nome)')
     .eq('topico_id', params.topicoId)
     .order('created_at')
@@ -38,7 +38,7 @@ export default async function TopicoPage({ params }: { params: { whatsapp: strin
           {topico.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 15, lineHeight: 1.6, marginBottom: 12 }}>{topico.descricao}</p>}
           <div style={{ display: 'flex', gap: 12, color: 'var(--avp-text-dim)', fontSize: 13 }}>
             <span>Por: {topico.aluno?.nome ?? 'Aluno'}</span>
-            <span>{new Date(topico.created_at).toLocaleDateString('pt-BR')}</span>
+            <span>{topico.created_at ? new Date(topico.created_at).toLocaleDateString('pt-BR') : '—'}</span>
           </div>
         </div>
         <TopicoCliente topicoId={params.topicoId} respostasIniciais={respostas ?? []} />

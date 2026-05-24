@@ -257,12 +257,12 @@ export default function ModulosCliente({ modulosIniciais, capaDefault }: { modul
                     onMouseLeave={e => (e.currentTarget.style.background = 'var(--avp-card)')}>
 
                     {/* Capa */}
-                    <div style={{ width: 120, height: 90, flexShrink: 0, overflow: 'hidden', background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                    <div style={{ width: 120, height: 90, flexShrink: 0, overflow: 'hidden', background: 'rgba(79,70,229,0.12)', border: '1px solid rgba(79,70,229,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                       {temCapa
                         ? <img src={m.capa_url!} alt={m.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         : capaDefault
                           ? <img src={capaDefault} alt="capa padrão" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          : <span style={{ fontSize: 36 }}>📚</span>}
+                          : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>}
                       <div style={{ position: 'absolute', bottom: 6, left: 6, background: 'rgba(0,0,0,0.6)', borderRadius: 4, padding: '2px 7px', fontSize: 10, color: '#fff', fontWeight: 700 }}>
                         Módulo {m.ordem}
                       </div>

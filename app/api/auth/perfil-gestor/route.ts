@@ -10,7 +10,7 @@ export async function GET() {
   if (!user) return NextResponse.json({ tipo: null })
 
   const admin = createServiceRoleClient()
-  const { data: gestorRecord } = await (admin.from('gestores') as any)
+  const { data: gestorRecord } = await admin.from('gestores')
     .select('id, ativo').eq('user_id', user.id).maybeSingle()
 
   if (!gestorRecord) return NextResponse.json({ tipo: null })

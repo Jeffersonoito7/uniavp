@@ -3,11 +3,11 @@ import CarteiraDisplay from '@/app/aluno/[whatsapp]/carteira/CarteiraDisplay'
 
 export default async function TesteCarteira() {
   const adminClient = createServiceRoleClient()
-  const { data: cfgRows } = await (adminClient.from('configuracoes') as any)
+  const { data: cfgRows } = await adminClient.from('configuracoes')
     .select('chave, valor')
     .in('chave', ['site_nome', 'site_logo_url', 'carteira_assinatura_nome', 'carteira_assinatura_cargo', 'carteira_assinatura_empresa', 'carteira_url_verificacao', 'carteira_tagline', 'carteira_logo_esquerda', 'carteira_logo_direita', 'carteira_assinatura_url'])
   const cfg: Record<string, string> = {}
-  for (const r of cfgRows ?? []) { try { cfg[r.chave] = JSON.parse(r.valor) } catch { cfg[r.chave] = r.valor } }
+  for (const r of cfgRows ?? []) { try { cfg[r.chave] = JSON.parse(String(r.valor)) } catch { cfg[r.chave] = String(r.valor) } }
 
   return (
     <CarteiraDisplay

@@ -32,7 +32,7 @@ type Consultor = {
   whatsapp: string
   email: string
   status: string
-  created_at: string
+  created_at: string | null
   user_id: string | null
   indicador: { nome: string } | null
   gestor_nome?: string
@@ -347,7 +347,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
                     </span>
                   </td>
                   <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 13 }}>
-                    {new Date(c.created_at).toLocaleDateString('pt-BR')}
+                    {c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '—'}
                   </td>
                   <td style={{ padding: '14px 16px' }}>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>

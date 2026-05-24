@@ -38,7 +38,7 @@ async function gerarEEnviar(dados: DadosContratoAVP, registro: string, adminClie
     const pdfBytes = await gerarPDFContrato(dados)
     const pdfUrl = await salvarPDF(adminClient, pdfBytes, registro)
     if (pdfUrl) {
-      await (adminClient.from('contratos') as any).update({ pdf_url: pdfUrl, pdf_status: 'gerado' }).eq('numero_registro', registro)
+      await adminClient.from('contratos').update({ pdf_url: pdfUrl, pdf_status: 'gerado' }).eq('numero_registro', registro)
     }
     const nome = `Contrato_${registro}.pdf`
     await Promise.allSettled([
@@ -46,7 +46,7 @@ async function gerarEEnviar(dados: DadosContratoAVP, registro: string, adminClie
     ])
   } catch (e) {
     console.error('Erro ao gerar contrato PDF:', e)
-    await (adminClient.from('contratos') as any).update({ pdf_status: 'erro' }).eq('numero_registro', registro)
+    await adminClient.from('contratos').update({ pdf_status: 'erro' }).eq('numero_registro', registro)
   }
 }
 
@@ -61,13 +61,13 @@ export async function POST(req: NextRequest) {
   const wppLimpo = whatsapp.replace(/\D/g,'')
 
   // Já assinou?
-  const { data: existente } = await (adminClient.from('contratos') as any)
+  const { data: existente } = await adminClient.from('contratos')
     .select('numero_registro, hash_contrato, pdf_url')
     .eq('whatsapp', wppLimpo).maybeSingle()
   if (existente) return NextResponse.json({ ok: true, ...existente, jaExistia: true })
 
   // Número sequencial
-  const { count } = await (adminClient.from('contratos') as any).select('id', { count: 'exact', head: true })
+  const { count } = await adminClient.from('contratos').select('id', { count: 'exact', head: true })
   const numero_registro = `CONT-${String(((count ?? 0) + 1)).padStart(6, '0')}`
 
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'desconhecido'
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     ? { clausulas: Array.isArray(clausulas_aceitas) ? clausulas_aceitas : [], nf: nf_dados }
     : clausulas_aceitas
 
-  const { error } = await (adminClient.from('contratos') as any).insert({
+  const { error } = await adminClient.from('contratos').insert({
     aluno_id: aluno_id ?? null, nome: nome.trim(),
     cpf: cpf?.replace(/\D/g,'') || null,
     cnpj_mei: cnpj_mei.replace(/\D/g,''), sede_mei,
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
   // Busca configs da contratante
   const [siteConfig, { data: cfgs }] = await Promise.all([
     getSiteConfig(req.headers.get('host') ?? ''),
-    (adminClient.from('configuracoes') as any).select('chave, valor')
+    adminClient.from('configuracoes').select('chave, valor')
       .in('chave', ['contrato_contratante_nome','contrato_contratante_cnpj','contrato_contratante_endereco','contrato_representante_nome','contrato_representante_cargo','contrato_foro','site_logo_url','contrato_corpo']),
   ])
   const cfgMap: Record<string,string> = {}
@@ -118,6 +118,7 @@ export async function POST(req: NextRequest) {
     clausulasPersonalizadas: cfgMap['contrato_corpo'] || undefined,
     nfDados: nf_dados ?? undefined,
     hash_contrato, ip, assinado_em, numero_registro,
+    appUrl: process.env.NEXT_PUBLIC_APP_URL || '',
   }
 
   // Envia confirmação de texto imediata
@@ -146,7 +147,7 @@ export async function GET(req: NextRequest) {
   const whatsapp = searchParams.get('whatsapp')
   if (!whatsapp) return NextResponse.json(null)
   const adminClient = createServiceRoleClient()
-  const { data } = await (adminClient.from('contratos') as any)
+  const { data } = await adminClient.from('contratos')
     .select('numero_registro, hash_contrato, pdf_url, assinado_em')
     .eq('whatsapp', whatsapp.replace(/\D/g,'')).maybeSingle()
   return NextResponse.json(data ?? null)

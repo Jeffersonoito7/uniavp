@@ -8,19 +8,19 @@ const EVO_KEY = process.env.EVOLUTION_API_KEY
 
 async function buscarWhatsAppPorEmail(email: string, adminClient: ReturnType<typeof createServiceRoleClient>): Promise<{ whatsapp: string; instancia: string | null } | null> {
   // Busca em alunos
-  const { data: aluno } = await (adminClient.from('alunos') as any)
+  const { data: aluno } = await adminClient.from('alunos')
     .select('whatsapp, gestor_nome').eq('email', email).maybeSingle()
   if (aluno?.whatsapp) {
     // Tenta pegar instância do gestor do aluno
     let instancia: string | null = null
     if (aluno.gestor_nome) {
-      const { data: g } = await (adminClient.from('gestores') as any)
+      const { data: g } = await adminClient.from('gestores')
         .select('whatsapp_instancia').eq('nome', aluno.gestor_nome).eq('ativo', true).maybeSingle()
       instancia = g?.whatsapp_instancia ?? null
     }
     // Fallback: instância do admin
     if (!instancia) {
-      const { data: adm } = await (adminClient.from('admins') as any)
+      const { data: adm } = await adminClient.from('admins')
         .select('whatsapp_instancia').eq('ativo', true).not('whatsapp_instancia', 'is', null).limit(1).maybeSingle()
       instancia = adm?.whatsapp_instancia ?? null
     }
@@ -28,7 +28,7 @@ async function buscarWhatsAppPorEmail(email: string, adminClient: ReturnType<typ
   }
 
   // Busca em gestores
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('whatsapp, whatsapp_instancia').eq('email', email).maybeSingle()
   if (gestor?.whatsapp) {
     const instancia = gestor.whatsapp_instancia ?? null
@@ -36,7 +36,7 @@ async function buscarWhatsAppPorEmail(email: string, adminClient: ReturnType<typ
   }
 
   // Busca em admins — usa instância do próprio admin
-  const { data: admin } = await (adminClient.from('admins') as any)
+  const { data: admin } = await adminClient.from('admins')
     .select('whatsapp, whatsapp_instancia').eq('email', email).maybeSingle()
   if (admin?.whatsapp) {
     const instancia = admin.whatsapp_instancia ?? null
@@ -87,10 +87,10 @@ export async function POST(req: NextRequest) {
 
   if (ctx?.whatsapp && ctx?.instancia) {
     // Pega nome do site
-    const { data: siteNomeCfg } = await (adminClient.from('configuracoes') as any)
+    const { data: siteNomeCfg } = await adminClient.from('configuracoes')
       .select('valor').eq('chave', 'site_nome').maybeSingle()
     let siteNome = 'Plataforma'
-    try { siteNome = JSON.parse(siteNomeCfg?.valor ?? '') || siteNome } catch { /* */ }
+    try { siteNome = JSON.parse(String(siteNomeCfg?.valor ?? '')) || siteNome } catch { /* */ }
 
     enviadoWpp = await enviarLinkWhatsApp(ctx.whatsapp, link, ctx.instancia, siteNome)
   }

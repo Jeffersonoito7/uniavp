@@ -7,7 +7,7 @@ export default async function ReciboPage({ params }: { params: { cobrancaId: str
   const adminClient = createServiceRoleClient()
   const config = await getSiteConfig(host)
 
-  const { data: cobranca } = await (adminClient.from('cobrancas') as any)
+  const { data: cobranca } = await adminClient.from('cobrancas')
     .select('*, cliente:clientes(nome, contato_nome, cpf_cnpj)')
     .eq('id', params.cobrancaId)
     .maybeSingle()
@@ -25,7 +25,7 @@ export default async function ReciboPage({ params }: { params: { cobrancaId: str
   const vencimento = cobranca.vencimento
     ? new Date(cobranca.vencimento + 'T12:00:00').toLocaleDateString('pt-BR')
     : '—'
-  const emissao = new Date(cobranca.created_at).toLocaleDateString('pt-BR')
+  const emissao = cobranca.created_at ? new Date(cobranca.created_at).toLocaleDateString('pt-BR') : '—'
   const nomeCliente = cobranca.cliente?.contato_nome || cobranca.cliente?.nome || '—'
   const docId = params.cobrancaId.slice(0, 8).toUpperCase()
 

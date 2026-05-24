@@ -21,10 +21,8 @@ export default function IndicacaoCard({ link, totalIndicados }: { link: string; 
 
   return (
     <div style={{
-      background: limiteBatido
-        ? 'linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.05) 100%)'
-        : 'linear-gradient(135deg, rgba(2,161,83,0.08) 0%, rgba(5,150,105,0.05) 100%)',
-      border: `1px solid ${limiteBatido ? 'rgba(99,102,241,0.3)' : 'rgba(2,161,83,0.25)'}`,
+      background: limiteBatido ? 'rgba(79,70,229,0.06)' : 'rgba(34,197,94,0.06)',
+      border: `1px solid ${limiteBatido ? 'rgba(79,70,229,0.25)' : 'rgba(34,197,94,0.2)'}`,
       borderRadius: 16,
       padding: '20px 24px',
       marginBottom: 28,
@@ -32,8 +30,8 @@ export default function IndicacaoCard({ link, totalIndicados }: { link: string; 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
         <div>
-          <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 4 }}>
-            🤝 Indique um amigo
+          <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>
+            Indique um amigo
           </p>
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, lineHeight: 1.5, margin: 0 }}>
             Compartilhe seu link e traga outros consultores gratuitamente
@@ -83,11 +81,7 @@ export default function IndicacaoCard({ link, totalIndicados }: { link: string; 
           <div style={{
             width: `${pct}%`,
             height: '100%',
-            background: limiteBatido
-              ? 'linear-gradient(90deg, #6366f1, #8b5cf6)'
-              : pct >= 75
-                ? 'linear-gradient(90deg, #f59e0b, #ef4444)'
-                : 'linear-gradient(90deg, #059669, #02A153)',
+            background: limiteBatido ? '#4f46e5' : pct >= 75 ? '#f59e0b' : '#22c55e',
             borderRadius: 100,
             transition: 'width 0.4s',
           }} />
@@ -108,9 +102,8 @@ export default function IndicacaoCard({ link, totalIndicados }: { link: string; 
             No plano gratuito o limite é de <strong style={{ color: 'var(--avp-text)' }}>20 indicados</strong>.
             Torne-se <strong style={{ color: '#818cf8' }}>UNIAVP PRO</strong> para indicar sem limites e ter acesso ao painel de gestão completo.
           </p>
-          <a href="/assinar-pro"
-            style={{ display: 'inline-block', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 10, padding: '12px 28px', fontWeight: 800, fontSize: 14, textDecoration: 'none', boxShadow: '0 4px 20px rgba(99,102,241,0.4)' }}>
-            ✨ Quero ser UNIAVP PRO
+          <a href="/assinar-pro" className="btn btn-primary" style={{ textDecoration: 'none' }}>
+            Quero ser UNIAVP PRO
           </a>
         </div>
       ) : (
@@ -121,12 +114,10 @@ export default function IndicacaoCard({ link, totalIndicados }: { link: string; 
           </div>
           {/* Botões */}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button onClick={copiar}
-              style={{ flex: 1, minWidth: 120, background: copiado ? '#02A153' : 'linear-gradient(135deg, #059669, #02A153)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 16px', fontWeight: 700, cursor: 'pointer', fontSize: 13, transition: 'background 0.2s' }}>
-              {copiado ? '✓ Copiado!' : '📋 Copiar link'}
+            <button onClick={copiar} className="btn btn-green btn-sm" style={{ flex: 1, minWidth: 120 }}>
+              {copiado ? '✓ Copiado!' : 'Copiar link'}
             </button>
-            <button onClick={compartilharWpp}
-              style={{ background: '#25d36620', border: '1px solid #25d36640', color: '#25d366', borderRadius: 8, padding: '10px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+            <button onClick={compartilharWpp} className="btn btn-sm" style={{ background: 'rgba(37,211,102,0.1)', border: '1px solid rgba(37,211,102,0.3)', color: '#25d366' }}>
               WhatsApp
             </button>
           </div>

@@ -8,11 +8,11 @@ export default async function GestoresPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/entrar?p=adm')
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  const { data: adminRecord } = await adminClient.from('admins').select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
   const tid = adminRecord.tenant_id as string | null
 
-  let q = (adminClient.from('gestores') as any)
+  let q = adminClient.from('gestores')
     .select('id, nome, email, whatsapp, ativo, created_at, status_assinatura, plano_vencimento, trial_expira_em')
     .order('created_at', { ascending: false })
   if (tid) q = q.eq('tenant_id', tid)

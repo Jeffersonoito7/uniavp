@@ -3,38 +3,19 @@ import { headers } from 'next/headers'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
 import Link from 'next/link'
-import EventosWidget from '@/app/components/EventosWidget'
-import MuralNoticias from '@/app/components/MuralNoticias'
-import LogoutButton from '@/app/components/LogoutButton'
 import CertificadoWrapper from '@/app/components/CertificadoWrapper'
 import CarteiraAutoShow from '@/app/components/CarteiraAutoShow'
 import SupportChat from '@/app/components/SupportChat'
-import PushButton from '@/app/components/PushButton'
-import PWAInstallButton from '@/app/components/PWAInstallButton'
 import RankingWidget from '@/app/components/RankingWidget'
 import RetomarPopup from '@/app/components/RetomarPopup'
 import IndicacaoCard from '@/app/components/IndicacaoCard'
 import ProTeaser from '@/app/components/ProTeaser'
 import SetupInicial from '@/app/components/SetupInicial'
-
-type TrilhaItem = {
-  modulo_id: string
-  modulo_ordem: number
-  modulo_titulo: string
-  aula_id: string
-  aula_ordem: number
-  aula_titulo: string
-  aula_descricao: string | null
-  duracao_minutos: number | null
-  capa_url: string | null
-  youtube_video_id: string
-  status: string
-  melhor_percentual: number | null
-  liberada_em: string | null
-  validade_meses?: number | null
-  progresso_created_at?: string | null
-  quiz_aprovacao_minima?: number | null
-}
+import AlunoHeader from './AlunoHeader'
+import AlunoStats from './AlunoStats'
+import ModulosGrid from './ModulosGrid'
+import AulasDoModulo from './AulasDoModulo'
+import type { TrilhaItem, ModuloComAulas } from './types'
 
 function calcularNivel(pontos: number) {
   if (pontos >= 300) return { nome: 'Especialista', prox: null, atual: pontos, min: 300, max: 300 }
@@ -53,15 +34,15 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
   const siteConfig = await getSiteConfig(host)
   const baseUrl = siteConfig.dominioCustomizado ? `https://${siteConfig.dominioCustomizado}` : `https://${host}`
 
-  const { data: aluno } = await (adminClient.from('alunos') as any)
-    .select('id, nome, whatsapp, email, cpf, status, numero_registro, streak_atual, maior_streak, tenant_id, setup_concluido, gestor_whatsapp')
+  const { data: aluno } = await adminClient.from('alunos')
+    .select('id, nome, whatsapp, email, cpf, status, numero_registro, streak_atual, maior_streak, tenant_id, setup_concluido, gestor_whatsapp, indicador_id')
     .eq('user_id', user.id)
     .maybeSingle()
 
   const tid = aluno?.tenant_id as string | null
   const tq = (q: any) => tid ? q.eq('tenant_id', tid) : q
 
-  const { data: certConfigs } = await tq((adminClient.from('configuracoes') as any)
+  const { data: certConfigs } = await tq(adminClient.from('configuracoes')
     .select('chave, valor'))
     .in('chave', [
       'certificado_template_url', 'certificado_nome_y', 'certificado_nome_tamanho', 'certificado_nome_cor',
@@ -73,6 +54,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
       'contrato_habilitado', 'carteira_quando', 'carteira_percentual_minimo',
       'passos_painel_habilitado',
       'captacao_mostrar_parceiro', 'captacao_bloquear_parceiro', 'captacao_parceiro_titulo',
+      'captacao_link_externo',
       'captacao_mostrar_app', 'captacao_bloquear_app',
       'app_ios_url', 'app_android_url',
     ])
@@ -93,46 +75,48 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
   if (!aluno) redirect('/entrar?p=free')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
-  // Busca link do gestor para o passo parceiro
+  // Resolve link parceiro: PRO do aluno → FREE que indicou → global admin
   const { data: gestorLink } = aluno.gestor_whatsapp
-    ? await (adminClient.from('gestores') as any)
-        .select('link_externo')
-        .eq('whatsapp', aluno.gestor_whatsapp)
-        .maybeSingle()
+    ? await adminClient.from('gestores').select('link_externo').eq('whatsapp', aluno.gestor_whatsapp).maybeSingle()
     : { data: null }
-  const setupLinkParceiro = gestorLink?.link_externo || undefined
 
-  // Se o FREE fez upgrade e já tem conta PRO ativa → redireciona para o painel PRO
-  const { data: gestorAtivo } = await (adminClient.from('gestores') as any)
+  const { data: indicadorRow } = !gestorLink?.link_externo && aluno.indicador_id
+    ? await adminClient.from('indicadores').select('whatsapp').eq('id', aluno.indicador_id).maybeSingle()
+    : { data: null }
+
+  const { data: indicadorAluno } = indicadorRow?.whatsapp
+    ? await adminClient.from('alunos').select('link_externo').eq('whatsapp', indicadorRow.whatsapp).maybeSingle()
+    : { data: null }
+
+  const setupLinkParceiro = gestorLink?.link_externo || indicadorAluno?.link_externo || certMap['captacao_link_externo'] || undefined
+
+  const { data: gestorAtivo } = await adminClient.from('gestores')
     .select('id')
     .eq('user_id', user.id)
     .eq('ativo', true)
     .maybeSingle()
   if (gestorAtivo) redirect('/pro')
 
-  // Limite de módulos para FREE (0 = ilimitado)
-  const { data: limiteRow } = await (adminClient.from('configuracoes') as any)
+  const { data: limiteRow } = await adminClient.from('configuracoes')
     .select('valor').eq('chave', 'free_max_modulos').maybeSingle()
   let freeMaxModulos = 0
-  try { freeMaxModulos = parseInt(JSON.parse(limiteRow?.valor ?? '0')) || 0 } catch { freeMaxModulos = 0 }
+  try { freeMaxModulos = parseInt(JSON.parse(String(limiteRow?.valor ?? '0'))) || 0 } catch { freeMaxModulos = 0 }
 
-  const { data: trilhaRaw } = await (adminClient as any).rpc('obter_trilha_aluno', { p_aluno_id: aluno.id })
+  const { data: trilhaRaw } = await adminClient.rpc('obter_trilha_aluno', { p_aluno_id: aluno.id })
   const trilhaBase: TrilhaItem[] = (trilhaRaw ?? []) as TrilhaItem[]
 
-  // Enriquecer trilha com quiz_aprovacao_minima (não vem na RPC atual)
   const aulaIds = trilhaBase.map(t => t.aula_id)
   const { data: aulasConfig } = aulaIds.length > 0
-    ? await (adminClient.from('aulas') as any).select('id, quiz_aprovacao_minima').in('id', aulaIds)
+    ? await adminClient.from('aulas').select('id, quiz_aprovacao_minima').in('id', aulaIds)
     : { data: [] }
   const aprovMinMap: Record<string, number> = {}
   for (const a of (aulasConfig ?? [])) aprovMinMap[a.id] = a.quiz_aprovacao_minima
 
   const trilha: TrilhaItem[] = trilhaBase.map(t => ({ ...t, quiz_aprovacao_minima: aprovMinMap[t.aula_id] ?? null }))
 
-  // Busca perfis_permitidos e config de certificado de cada módulo
   const moduloIds = [...new Set(trilhaBase.map(t => t.modulo_id))]
   const { data: modulosConfig } = moduloIds.length > 0
-    ? await (adminClient.from('modulos') as any)
+    ? await adminClient.from('modulos')
         .select('id, perfis_permitidos, cert_ativo, cert_template_url, cert_nome_y, cert_nome_tamanho, cert_nome_cor, cert_nome_estilo, cert_logo_esq_url, cert_logo_dir_url, cert_logo_y, cert_logo_tam, cert_assinatura_url, cert_assinatura_nome, cert_assinatura_cargo, cert_assinatura_y')
         .in('id', moduloIds)
     : { data: [] }
@@ -144,7 +128,6 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
     if (m.cert_ativo && m.cert_template_url) {
       moduloCerts[m.id] = m
     } else if (certGlobalUrl) {
-      // Usa cert global como fallback para módulos sem cert próprio
       moduloCerts[m.id] = {
         ...m,
         cert_template_url: certGlobalUrl,
@@ -155,7 +138,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
     }
   }
 
-  const agrupado: Record<string, { modulo_id: string; modulo_titulo: string; modulo_ordem: number; aulas: TrilhaItem[]; apenasProPermissao: boolean }> = {}
+  const agrupado: Record<string, ModuloComAulas> = {}
   for (const item of trilha) {
     if (!agrupado[item.modulo_id]) {
       const perfis = moduloPermissoes[item.modulo_id] ?? ['consultor', 'gestor']
@@ -165,7 +148,6 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
     agrupado[item.modulo_id].aulas.push(item)
   }
   const modulosOrdenados = Object.values(agrupado).sort((a, b) => a.modulo_ordem - b.modulo_ordem)
-  // Aplica limite FREE: módulos além do limite ficam como "apenas PRO"
   const modulos = modulosOrdenados.map((mod, idx) => {
     if (freeMaxModulos > 0 && idx >= freeMaxModulos) return { ...mod, apenasProPermissao: true }
     return mod
@@ -173,22 +155,21 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
   const moduloSelecionadoId = searchParams?.modulo
   const moduloAtivo = moduloSelecionadoId ? modulos.find(m => m.modulo_id === moduloSelecionadoId) ?? null : null
 
-  const { data: pontosRows } = await (adminClient.from('aluno_pontos') as any).select('quantidade').eq('aluno_id', aluno.id)
+  const { data: pontosRows } = await adminClient.from('aluno_pontos').select('quantidade').eq('aluno_id', aluno.id)
   const totalPontos = (pontosRows ?? []).reduce((s: number, r: { quantidade: number }) => s + r.quantidade, 0)
 
-  const { data: medalhasRows } = await (adminClient.from('aluno_medalhas') as any)
+  const { data: medalhasRows } = await adminClient.from('aluno_medalhas')
     .select('medalha:medalhas_config(nome, icone)')
     .eq('aluno_id', aluno.id)
   const medalhas = (medalhasRows ?? []).map((r: any) => r.medalha)
 
-  // Contagem de consultores indicados por este aluno
-  const { data: meuIndicador } = await (adminClient.from('indicadores') as any)
+  const { data: meuIndicador } = await adminClient.from('indicadores')
     .select('id')
     .eq('whatsapp', aluno.whatsapp)
     .eq('tipo', 'consultor')
     .maybeSingle()
   const { count: totalIndicadosReal } = meuIndicador
-    ? await (adminClient.from('alunos') as any)
+    ? await adminClient.from('alunos')
         .select('id', { count: 'exact', head: true })
         .eq('indicador_id', meuIndicador.id)
     : { count: 0 }
@@ -196,43 +177,21 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
   const nivel = calcularNivel(totalPontos)
   const progressoPct = nivel.prox ? Math.round(((nivel.atual - nivel.min) / (nivel.max - nivel.min)) * 100) : 100
 
-  // Documentos para download disponíveis no painel FREE
-  const { data: documentosFree } = await (adminClient.from('documentos_painel') as any)
+  const { data: documentosFree } = await adminClient.from('documentos_painel')
     .select('id, titulo, descricao, pdf_url')
     .eq('ativo', true)
     .in('painel', ['free', 'ambos'])
     .order('ordem', { ascending: true })
 
-
   const totalAulas = trilha.length
   const aulasConcluidas = trilha.filter(a => a.status === 'concluida').length
   const progressoGeral = totalAulas > 0 ? Math.round((aulasConcluidas / totalAulas) * 100) : 0
 
-  // Aula para "Continue assistindo": primeira disponível em ordem de módulo/aula
   const aulaAtual = trilha
     .slice()
     .sort((a, b) => a.modulo_ordem !== b.modulo_ordem ? a.modulo_ordem - b.modulo_ordem : a.aula_ordem - b.aula_ordem)
     .find(a => a.status === 'disponivel')
 
-  const agora = new Date()
-  function getStatusRecertificacao(item: TrilhaItem): boolean {
-    if (item.status !== 'concluida') return false
-    if (!item.validade_meses || item.validade_meses === 0) return false
-    if (!item.progresso_created_at) return false
-    const expira = new Date(item.progresso_created_at)
-    expira.setMonth(expira.getMonth() + item.validade_meses)
-    return agora > expira
-  }
-
-  const statusColor: Record<string, string> = {
-    concluida: '#22c55e',
-    disponivel: '#3b82f6',
-    aguardando_tempo: '#f59e0b',
-    bloqueada: '#6b7280',
-  }
-
-  // Mostra setup inicial se habilitado e aluno ainda não concluiu
-  // Visibilidade da carteira baseada na config do admin
   const mostrarCarteira =
     carteiraQuando === 'sempre' ||
     (carteiraQuando === 'percentual' && progressoGeral >= carteiraPercentualMinimo) ||
@@ -240,6 +199,20 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
 
   const precisaSetup = passosPainelHabilitado && !aluno.setup_concluido &&
     (setupMostrarParceiro || (setupMostrarApp && (setupAppIos || setupAppAndroid)))
+
+  // Aulas ao vivo: admin (gestor_id null) + gestor do aluno
+  let gestorIdAluno: string | null = null
+  if (aluno.gestor_whatsapp) {
+    const { data: gestorRow } = await adminClient.from('gestores').select('id').eq('whatsapp', aluno.gestor_whatsapp).maybeSingle()
+    gestorIdAluno = gestorRow?.id ?? null
+  }
+  const { data: aulasVivo } = await adminClient
+    .from('aulas_ao_vivo')
+    .select('id, titulo, descricao, plataforma, link, data_hora, duracao_minutos, obrigatoria, gravacao_url')
+    .or(gestorIdAluno ? `gestor_id.is.null,gestor_id.eq.${gestorIdAluno}` : 'gestor_id.is.null')
+    .gte('data_hora', new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString())
+    .order('data_hora')
+    .limit(5)
 
   return (
     <>
@@ -257,7 +230,6 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
         />
       )}
       <SupportChat painel="Consultor" />
-      {/* Popup Retomar — aparece uma vez por sessão quando há aula em andamento */}
       {aulaAtual && !moduloSelecionadoId && (
         <RetomarPopup
           whatsapp={aluno.whatsapp}
@@ -272,50 +244,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
       )}
       <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
 
-        {/* ── HEADER ── */}
-        <header style={{
-          background: 'var(--avp-header-bg)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid var(--avp-border)',
-          padding: '0 20px',
-          height: 62,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          position: 'sticky', top: 0, zIndex: 100,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            {siteConfig.logoUrl && !siteConfig.logoUrl.startsWith('/') ? (
-              <img src={siteConfig.logoUrl} alt={siteConfig.nome} className="logo-site" style={{ height: 34, objectFit: 'contain' }} />
-            ) : (
-              <span style={{ fontWeight: 800, fontSize: 17, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{siteConfig.nome}</span>
-            )}
-          </div>
-          <nav style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Link href={`/aluno/${params.whatsapp}/forum`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none', fontWeight: 500, padding: '6px 10px', borderRadius: 8, background: 'transparent' }}
-              className="hide-mobile">Fórum</Link>
-            <Link href={`/aluno/${params.whatsapp}/loja`} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none', fontWeight: 500, padding: '6px 10px', borderRadius: 8 }}
-              className="hide-mobile">Loja</Link>
-            {aluno.status === 'concluido' && (
-              <Link href={`/aluno/${params.whatsapp}/carteira`}
-                style={{ color: '#fbbf24', fontSize: 13, textDecoration: 'none', fontWeight: 700, padding: '6px 10px', borderRadius: 8, background: '#fbbf2415', border: '1px solid #fbbf2440' }}
-                title="Minha Carteira de Formação">🎓 Carteira</Link>
-            )}
-            <a href="/upgrade"
-              style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 8, padding: '5px 12px', textDecoration: 'none', fontSize: 12, fontWeight: 800, flexShrink: 0, boxShadow: '0 2px 10px rgba(99,102,241,0.4)' }}>
-              ✨ UNIAVP PRO
-            </a>
-            <PushButton />
-            <PWAInstallButton />
-            <MuralNoticias />
-            <EventosWidget />
-            <a href={`/aluno/${params.whatsapp}/perfil`} style={{ display: 'flex', alignItems: 'center', gap: 7, textDecoration: 'none', marginLeft: 4 }}>
-              <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14, color: '#fff', flexShrink: 0 }}>
-                {aluno.nome.charAt(0).toUpperCase()}
-              </div>
-              <span className="hide-mobile" style={{ fontSize: 13, fontWeight: 600, color: 'var(--avp-text)' }}>{aluno.nome.split(' ')[0]}</span>
-            </a>
-            <LogoutButton />
-          </nav>
-        </header>
+        <AlunoHeader whatsapp={params.whatsapp} aluno={aluno} siteConfig={siteConfig} />
 
         <div style={{ maxWidth: 1140, margin: '0 auto', padding: 'clamp(16px, 4vw, 28px) clamp(12px, 4vw, 20px) 60px' }}>
 
@@ -338,100 +267,93 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
                 {aulaAtual.duracao_minutos && <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 2 }}>⏱ {aulaAtual.duracao_minutos} min</p>}
               </div>
               <Link href={`/aluno/${params.whatsapp}/aula/${aulaAtual.aula_id}`}
-                style={{ flexShrink: 0, background: 'var(--grad-brand)', color: '#fff', borderRadius: 10, padding: '11px 24px', fontWeight: 700, fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                className="btn btn-primary"
+                style={{ flexShrink: 0, textDecoration: 'none', whiteSpace: 'nowrap', borderRadius: 10 }}>
                 ▶ Continuar agora
               </Link>
             </div>
           )}
 
-          {/* ── CARDS DE STATS + PROGRESSO ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14, marginBottom: 24 }}>
-            {/* Card nível */}
-            <div style={{ background: 'linear-gradient(135deg, #1e3a8a20, #3b82f610)', border: '1px solid #3b82f630', borderRadius: 14, padding: 20 }}>
-              <p style={{ color: '#93c5fd', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Nível</p>
-              <p style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 4 }}>{nivel.nome}</p>
-              <p style={{ color: '#93c5fd', fontSize: 12 }}>{totalPontos} pts{nivel.prox ? ` · próximo: ${nivel.prox}` : ' · Máximo!'}</p>
-              <div style={{ marginTop: 10, background: 'rgba(59,130,246,0.15)', borderRadius: 100, height: 5, overflow: 'hidden' }}>
-                <div style={{ width: `${progressoPct}%`, height: '100%', background: 'linear-gradient(90deg, #1e40af, #3b82f6)', borderRadius: 100 }} />
-              </div>
-            </div>
+          {/* ── STATS ── */}
+          <AlunoStats
+            whatsapp={params.whatsapp}
+            nivel={nivel}
+            totalPontos={totalPontos}
+            progressoPct={progressoPct}
+            progressoGeral={progressoGeral}
+            aulasConcluidas={aulasConcluidas}
+            totalAulas={totalAulas}
+            streakAtual={aluno.streak_atual}
+            maiorStreak={aluno.maior_streak}
+            medalhas={medalhas}
+            mostrarCarteira={mostrarCarteira}
+          />
 
-            {/* Card progresso geral */}
-            <div style={{ background: 'linear-gradient(135deg, #05260e20, #02A15310)', border: '1px solid #02A15330', borderRadius: 14, padding: 20 }}>
-              <p style={{ color: '#6ee7b7', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Progresso Geral</p>
-              <p style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 4 }}>{progressoGeral}%</p>
-              <p style={{ color: '#6ee7b7', fontSize: 12 }}>{aulasConcluidas} de {totalAulas} aulas concluídas</p>
-              <div style={{ marginTop: 10, background: 'rgba(2,161,83,0.15)', borderRadius: 100, height: 5, overflow: 'hidden' }}>
-                <div style={{ width: `${progressoGeral}%`, height: '100%', background: 'linear-gradient(90deg, #059669, #02A153)', borderRadius: 100 }} />
-              </div>
-            </div>
-
-            {/* Card streak */}
-            <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: 20 }}>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Sequência de Estudos</p>
-              <p style={{ fontSize: 26, fontWeight: 800, color: 'var(--avp-text)', marginBottom: 2 }}>
-                {(aluno.streak_atual ?? 0) >= 1 ? '🔥' : '💤'} {aluno.streak_atual ?? 0} {aluno.streak_atual === 1 ? 'dia' : 'dias'}
-              </p>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 11 }}>
-                Recorde: {aluno.maior_streak ?? 0} {(aluno.maior_streak ?? 0) === 1 ? 'dia' : 'dias'} consecutivos
-              </p>
-            </div>
-
-            {/* Medalhas */}
-            <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: 20 }}>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Medalhas</p>
-              {medalhas.length > 0 ? (
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {medalhas.map((m: { icone: string; nome: string }, i: number) => (
-                    <div key={i} title={m.nome} style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
-                      {m.icone}
+          {/* ── AULAS AO VIVO ── */}
+          {(aulasVivo ?? []).length > 0 && (
+            <div style={{ marginBottom: 28 }}>
+              <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>📺 Aulas ao Vivo</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {(aulasVivo ?? []).map((aula: any) => {
+                  const cor = aula.plataforma === 'zoom' ? '#2D8CFF' : '#34A853'
+                  const encerrada = new Date(aula.data_hora) < new Date()
+                  const dataHora = new Date(aula.data_hora).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                  return (
+                    <div key={aula.id} style={{ background: 'var(--avp-card)', border: `1px solid ${encerrada ? 'var(--avp-border)' : cor}`, borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', opacity: encerrada ? 0.65 : 1 }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                          <span style={{ background: cor, color: '#fff', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>{aula.plataforma === 'zoom' ? '🔵 Zoom' : '🟢 Google Meet'}</span>
+                          {aula.obrigatoria && <span style={{ background: '#ef444420', color: '#ef4444', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>Obrigatória</span>}
+                          {encerrada && aula.gravacao_url && <span style={{ background: '#8b5cf620', color: '#8b5cf6', fontSize: 11, padding: '2px 8px', borderRadius: 20 }}>Gravação disponível</span>}
+                        </div>
+                        <p style={{ fontWeight: 700, fontSize: 15, margin: '0 0 2px' }}>{aula.titulo}</p>
+                        {aula.descricao && <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', margin: '0 0 4px' }}>{aula.descricao}</p>}
+                        <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>📅 {dataHora} · ⏱️ {aula.duracao_minutos} min</p>
+                      </div>
+                      <div>
+                        {!encerrada ? (
+                          <a href={aula.link} target="_blank" rel="noopener noreferrer"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: cor, color: '#fff', borderRadius: 8, padding: '9px 18px', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+                            Entrar na aula
+                          </a>
+                        ) : aula.gravacao_url ? (
+                          <a href={aula.gravacao_url} target="_blank" rel="noopener noreferrer"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#8b5cf6', color: '#fff', borderRadius: 8, padding: '9px 18px', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+                            ▶️ Ver gravação
+                          </a>
+                        ) : null}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Complete aulas para ganhar medalhas!</p>
-              )}
-            </div>
-
-            {/* Atalhos mobile */}
-            <div className="hide-desktop" style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: 20 }}>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Acessar</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {[
-                  { href: `/aluno/${params.whatsapp}/forum`, label: '💬 Fórum' },
-                  { href: `/aluno/${params.whatsapp}/loja`, label: '🛍️ Loja' },
-                  { href: `/aluno/${params.whatsapp}/perfil`, label: '👤 Perfil' },
-                  ...(mostrarCarteira ? [{ href: `/aluno/${params.whatsapp}/carteira`, label: '🎓 Carteira' }] : []),
-                ].map(l => (
-                  <a key={l.href} href={l.href} style={{ color: 'var(--avp-text)', fontSize: 13, textDecoration: 'none', fontWeight: 500 }}>{l.label}</a>
-                ))}
+                  )
+                })}
               </div>
             </div>
-          </div>
+          )}
 
           {/* ── BANNER DE FORMAÇÃO / CARTEIRA ── */}
           {mostrarCarteira && (
-            <div style={{ background: 'linear-gradient(135deg, #1a1a3e, #2d1b69)', border: '1px solid #6366f140', borderRadius: 16, padding: '24px 28px', marginBottom: 28, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-              <div style={{ fontSize: 52, flexShrink: 0 }}>🎓</div>
+            <div style={{ background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(79,70,229,0.25)', borderRadius: 16, padding: '24px 28px', marginBottom: 28, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
               <div style={{ flex: 1 }}>
-                <p style={{ fontWeight: 900, fontSize: 18, color: '#fff', margin: '0 0 4px' }}>Parabéns, {aluno.nome.split(' ')[0]}! Você concluiu a formação UNIAVP FREE!</p>
-                <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 14, margin: 0 }}>Você concluiu 100% da formação. Acesse seus documentos abaixo.</p>
+                <p style={{ fontWeight: 800, fontSize: 18, color: 'var(--avp-text)', margin: '0 0 4px' }}>Parabéns, {aluno.nome.split(' ')[0]}! Você concluiu a formação UNIAVP FREE!</p>
+                <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, margin: 0 }}>Você concluiu 100% da formação. Acesse seus documentos abaixo.</p>
               </div>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <Link href={`/aluno/${params.whatsapp}/carteira`}
-                  style={{ background: '#fbbf24', color: '#1a1a1a', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  🪪 Carteira
+                  style={{ background: '#fbbf24', color: '#1a1a1a', borderRadius: 10, padding: '10px 20px', fontWeight: 700, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  Carteira
                 </Link>
                 {siteConfig.cncpvHabilitado && (
                   <Link href={`/cncpv?nome=${encodeURIComponent(aluno.nome)}&whatsapp=${aluno.whatsapp}&email=${encodeURIComponent(aluno.email ?? '')}&cpf=${encodeURIComponent(aluno.cpf ?? '')}`}
-                    style={{ background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                    🪪 Carteira CNCPV
+                    className="btn btn-green"
+                    style={{ textDecoration: 'none', borderRadius: 10 }}>
+                    Carteira CNCPV
                   </Link>
                 )}
                 {contratoHabilitado && (
                   <Link href={`/contrato?nome=${encodeURIComponent(aluno.nome)}&whatsapp=${aluno.whatsapp}&email=${encodeURIComponent(aluno.email ?? '')}&cpf=${encodeURIComponent(aluno.cpf ?? '')}&aluno_id=${aluno.id}`}
-                    style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                    📄 Assinar Contrato
+                    className="btn btn-primary"
+                    style={{ textDecoration: 'none', borderRadius: 10 }}>
+                    Assinar Contrato
                   </Link>
                 )}
               </div>
@@ -443,33 +365,33 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
             <Link
               href={`/contrato?nome=${encodeURIComponent(aluno.nome)}&whatsapp=${aluno.whatsapp}&email=${encodeURIComponent(aluno.email ?? '')}&cpf=${encodeURIComponent(aluno.cpf ?? '')}&aluno_id=${aluno.id}`}
               style={{ display: 'block', textDecoration: 'none', marginBottom: 20 }}>
-              <div style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.06))', border: '1px solid rgba(99,102,241,0.35)', borderRadius: 16, padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}>
-                <div style={{ fontSize: 40, flexShrink: 0 }}>📄</div>
+              <div style={{ background: 'rgba(79,70,229,0.06)', border: '1px solid rgba(79,70,229,0.25)', borderRadius: 16, padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}>
+                <div style={{ width: 44, height: 44, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(79,70,229,0.12)', borderRadius: 10, border: '1px solid rgba(79,70,229,0.2)' }}>
+                  <svg width="22" height="22" fill="none" stroke="#818cf8" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontWeight: 800, fontSize: 16, color: '#fff', margin: '0 0 2px' }}>Contrato de Representação</p>
-                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, margin: 0 }}>Assine o contrato digital de licenciamento com validade jurídica</p>
+                  <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--avp-text)', margin: '0 0 2px' }}>Contrato de Representação</p>
+                  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0 }}>Assine o contrato digital de licenciamento com validade jurídica</p>
                 </div>
-                <div style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                  Assinar →
-                </div>
+                <div className="btn btn-primary" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>Assinar →</div>
               </div>
             </Link>
           )}
 
-          {/* ── CNCPV — disponível para todos os consultores FREE ── */}
+          {/* ── CNCPV ── */}
           {!moduloAtivo && siteConfig.cncpvHabilitado && (
             <Link
               href={`/cncpv?nome=${encodeURIComponent(aluno.nome)}&whatsapp=${aluno.whatsapp}&email=${encodeURIComponent(aluno.email ?? '')}&cpf=${encodeURIComponent(aluno.cpf ?? '')}`}
               style={{ display: 'block', textDecoration: 'none', marginBottom: 20 }}>
-              <div style={{ background: 'linear-gradient(135deg, rgba(2,161,83,0.12), rgba(1,122,62,0.06))', border: '1px solid rgba(2,161,83,0.35)', borderRadius: 16, padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer', transition: 'border-color 0.2s' }}>
-                <div style={{ fontSize: 40, flexShrink: 0 }}>🪪</div>
+              <div style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 16, padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}>
+                <div style={{ width: 44, height: 44, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(34,197,94,0.1)', borderRadius: 10, border: '1px solid rgba(34,197,94,0.2)' }}>
+                  <svg width="22" height="22" fill="none" stroke="#22c55e" strokeWidth="1.8" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontWeight: 800, fontSize: 16, color: '#fff', margin: '0 0 2px' }}>Carteira Nacional do Consultor — CNCPV</p>
-                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, margin: 0 }}>Assine o contrato de conduta e emita sua credencial profissional oficial</p>
+                  <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--avp-text)', margin: '0 0 2px' }}>Carteira Nacional do Consultor — CNCPV</p>
+                  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0 }}>Assine o contrato de conduta e emita sua credencial profissional oficial</p>
                 </div>
-                <div style={{ background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                  Emitir →
-                </div>
+                <div className="btn btn-green" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>Emitir →</div>
               </div>
             </Link>
           )}
@@ -477,19 +399,19 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
           {/* ── DOCUMENTOS PARA DOWNLOAD ── */}
           {!moduloAtivo && documentosFree && documentosFree.length > 0 && (
             <div style={{ marginBottom: 20 }}>
-              <p style={{ fontWeight: 700, fontSize: 15, color: 'var(--avp-text)', marginBottom: 12 }}>📄 Documentos</p>
+              <p style={{ fontWeight: 700, fontSize: 15, color: 'var(--avp-text)', marginBottom: 12 }}>Documentos</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {documentosFree.map((doc: any) => (
                   <a key={doc.id} href={doc.pdf_url} target="_blank" rel="noreferrer"
-                    style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '14px 18px', textDecoration: 'none', transition: 'border-color 0.2s' }}>
-                    <span style={{ fontSize: 28, flexShrink: 0 }}>📄</span>
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '14px 18px', textDecoration: 'none' }}>
+                    <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(79,70,229,0.08)', borderRadius: 8, border: '1px solid rgba(79,70,229,0.15)' }}>
+                      <svg width="18" height="18" fill="none" stroke="#818cf8" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--avp-text)', margin: 0 }}>{doc.titulo}</p>
                       {doc.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.descricao}</p>}
                     </div>
-                    <span style={{ background: 'var(--grad-brand)', color: '#fff', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
-                      ⬇️ Baixar
-                    </span>
+                    <span style={{ background: 'rgba(79,70,229,0.1)', color: '#818cf8', border: '1px solid rgba(79,70,229,0.2)', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>Baixar</span>
                   </a>
                 ))}
               </div>
@@ -504,163 +426,31 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
             />
           )}
 
-          {/* ── PRO TEASER — preview desfocado + calculadora ── */}
+          {/* ── PRO TEASER ── */}
           {!moduloAtivo && (
             <ProTeaser totalIndicados={totalIndicadosReal ?? 0} />
           )}
 
-          {/* ── MÓDULOS (grade estilo Kiwify) ── */}
+          {/* ── MÓDULOS ── */}
           {!moduloAtivo && (
-            <>
-              {modulos.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: 80, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', borderRadius: 16, border: '1px solid var(--avp-border)' }}>
-                  <p style={{ fontSize: 48, marginBottom: 16 }}>📚</p>
-                  <p style={{ fontSize: 16 }}>Nenhuma aula disponível no momento.</p>
-                  <p style={{ fontSize: 14, marginTop: 8 }}>Em breve novos conteúdos serão liberados!</p>
-                </div>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
-                  {modulos.map(mod => {
-                    const eProExclusivo = mod.apenasProPermissao
-                    const concluidas = mod.aulas.filter(a => a.status === 'concluida').length
-                    const total = mod.aulas.length
-                    const pct = total > 0 ? Math.round(concluidas / total * 100) : 0
-                    const temDisponivel = !eProExclusivo && mod.aulas.some(a => a.status === 'disponivel')
-                    const todasConcluidas = !eProExclusivo && concluidas === total && total > 0
-                    const thumb = mod.aulas[0]?.capa_url || (mod.aulas[0]?.youtube_video_id ? `https://img.youtube.com/vi/${mod.aulas[0].youtube_video_id}/mqdefault.jpg` : null) || certMap['modulo_capa_padrao'] || null
-                    const cardStyle = { background: eProExclusivo ? 'linear-gradient(135deg, rgba(99,102,241,0.08), var(--avp-card))' : 'var(--avp-card)', border: `1px solid ${eProExclusivo ? 'rgba(99,102,241,0.35)' : todasConcluidas ? '#22c55e40' : temDisponivel ? '#3b82f640' : 'var(--avp-border)'}`, borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column' as const, textDecoration: 'none', color: 'inherit' }
-                    const conteudo = (
-                      <>
-                        <div style={{ height: 180, background: eProExclusivo ? 'linear-gradient(135deg, #312e81, #4c1d95)' : 'linear-gradient(135deg, #1e3a8a, #1e40af)', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
-                          {thumb && <img src={thumb} alt={mod.modulo_titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, filter: eProExclusivo ? 'blur(3px)' : 'none', opacity: eProExclusivo ? 0.5 : 1 }} />}
-                          <div style={{ position: 'absolute', inset: 0, background: eProExclusivo ? 'rgba(49,46,129,0.6)' : 'rgba(0,0,0,0.3)' }} />
-                          {eProExclusivo && (
-                            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                              <span style={{ fontSize: 32 }}>🔒</span>
-                              <div style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 20, padding: '4px 14px', fontSize: 11, fontWeight: 800, color: '#fff' }}>✨ EXCLUSIVO PRO</div>
-                            </div>
-                          )}
-                          {!eProExclusivo && <div style={{ position: 'absolute', top: 12, right: 12, background: todasConcluidas ? '#22c55e' : 'rgba(0,0,0,0.65)', borderRadius: 20, padding: '4px 10px', fontSize: 12, fontWeight: 700, color: '#fff' }}>{todasConcluidas ? '✓ Concluído' : `${concluidas}/${total} aulas`}</div>}
-                        </div>
-                        <div style={{ padding: '16px 18px', flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                          <p style={{ fontSize: 16, fontWeight: 800, lineHeight: 1.3, color: eProExclusivo ? '#c4b5fd' : 'var(--avp-text)', margin: 0 }}>{mod.modulo_titulo}</p>
-                          {!eProExclusivo && <div><div style={{ background: 'var(--avp-border)', borderRadius: 100, height: 5, overflow: 'hidden' }}><div style={{ width: `${pct}%`, height: '100%', background: todasConcluidas ? '#22c55e' : 'linear-gradient(90deg, #1e40af, #3b82f6)', borderRadius: 100, transition: 'width 0.3s' }} /></div><p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>{pct}% concluído</p></div>}
-                          {eProExclusivo
-                            ? <a href="/upgrade" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', textDecoration: 'none', borderRadius: 8, padding: '11px', fontWeight: 800, fontSize: 14, marginTop: 'auto', boxShadow: '0 4px 16px rgba(99,102,241,0.35)' }}>✨ Desbloquear — Ser PRO</a>
-                            : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: todasConcluidas ? '#22c55e' : temDisponivel ? 'linear-gradient(135deg, #1e40af, #3b82f6)' : 'var(--avp-border)', color: (todasConcluidas || temDisponivel) ? '#fff' : 'var(--avp-text-dim)', borderRadius: 8, padding: '11px', fontWeight: 700, fontSize: 15, marginTop: 'auto' }}>{todasConcluidas ? '✓ Rever módulo' : temDisponivel ? '▶ Acessar' : '🔒 Bloqueado'}</div>
-                          }
-                        </div>
-                      </>
-                    )
-                    return eProExclusivo
-                      ? <div key={mod.modulo_id} style={cardStyle}>{conteudo}</div>
-                      : <Link key={mod.modulo_id} href={`/aluno/${params.whatsapp}?modulo=${mod.modulo_id}`} style={cardStyle}>{conteudo}</Link>
-                  })}
-                </div>
-              )}
-            </>
+            <ModulosGrid
+              modulos={modulos}
+              whatsapp={params.whatsapp}
+              capaDefault={certMap['modulo_capa_padrao'] || null}
+            />
           )}
 
           {/* ── AULAS DO MÓDULO ── */}
           {moduloAtivo && (
-            <div>
-              {/* Cabeçalho */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid var(--avp-border)' }}>
-                <Link href={`/aluno/${params.whatsapp}`}
-                  style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '7px 14px', color: 'var(--avp-text-dim)', textDecoration: 'none', fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                  ← Módulos
-                </Link>
-                <div>
-                  <h2 style={{ fontSize: 20, fontWeight: 800, margin: 0 }}>{moduloAtivo.modulo_titulo}</h2>
-                  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: '3px 0 0' }}>
-                    {moduloAtivo.aulas.filter(a => a.status === 'concluida').length}/{moduloAtivo.aulas.length} aulas concluídas
-                  </p>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
-                {moduloAtivo.aulas.map(aula => {
-                  const recertNeeded = getStatusRecertificacao(aula)
-                  const isPro = moduloAtivo.apenasProPermissao
-                  const isDisponivel = !isPro && aula.status === 'disponivel'
-                  const isConcluida = aula.status === 'concluida'
-                  const isBloqueada = !isPro && aula.status === 'bloqueada'
-                  return (
-                    <div key={aula.aula_id} style={{
-                      background: isPro ? 'linear-gradient(135deg, rgba(99,102,241,0.08), var(--avp-card))' : 'var(--avp-card)',
-                      border: `1px solid ${isPro ? 'rgba(99,102,241,0.3)' : isConcluida ? '#22c55e30' : isDisponivel ? '#3b82f630' : 'var(--avp-border)'}`,
-                      borderRadius: 12, overflow: 'hidden',
-                      opacity: isBloqueada ? 0.55 : 1,
-                      display: 'flex', flexDirection: 'column',
-                    }}>
-                      {/* Thumbnail */}
-                      <div style={{ height: 130, position: 'relative', background: isPro ? 'linear-gradient(135deg, #312e81, #4c1d95)' : 'linear-gradient(135deg, #1e3a8a, #1e40af)', overflow: 'hidden', flexShrink: 0 }}>
-                        {(aula.capa_url || aula.youtube_video_id) && (
-                          <img src={aula.capa_url || `https://img.youtube.com/vi/${aula.youtube_video_id}/mqdefault.jpg`} alt={aula.aula_titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, filter: isPro ? 'blur(2.5px)' : 'none', opacity: isPro ? 0.6 : 1 }} />
-                        )}
-                        <div style={{ position: 'absolute', inset: 0, background: isPro ? 'rgba(49,46,129,0.7)' : 'rgba(0,0,0,0.3)' }} />
-                        {/* Badge PRO exclusivo no topo */}
-                        {isPro && (
-                          <div style={{ position: 'absolute', top: 8, left: 8, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 20, padding: '3px 10px', fontSize: 10, fontWeight: 800, color: '#fff', letterSpacing: 0.5 }}>
-                            ✨ EXCLUSIVO PRO
-                          </div>
-                        )}
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {isPro ? (
-                            <div style={{ textAlign: 'center' }}>
-                              <div style={{ fontSize: 32, marginBottom: 6 }}>🔒</div>
-                              <p style={{ color: '#c4b5fd', fontSize: 11, fontWeight: 700, margin: 0 }}>Apenas no PRO</p>
-                            </div>
-                          ) : (
-                            <div style={{ width: 42, height: 42, borderRadius: '50%', background: isConcluida ? '#22c55e' : isDisponivel ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: isDisponivel ? '#1e40af' : '#fff' }}>
-                              {isConcluida ? '✓' : isDisponivel ? '▶' : isBloqueada ? '🔒' : '⏳'}
-                            </div>
-                          )}
-                        </div>
-                        {recertNeeded && <div style={{ position: 'absolute', top: 8, right: 8, background: '#f59e0b', borderRadius: 6, padding: '2px 6px', fontSize: 10, fontWeight: 700, color: '#000' }}>RECERT.</div>}
-                      </div>
-
-                      {/* Info + botão */}
-                      <div style={{ padding: '12px 14px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        <p style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.35, color: isPro ? '#c4b5fd' : 'var(--avp-text)', margin: 0, flex: 1 }}>{aula.aula_titulo}</p>
-
-                        {(isConcluida || isDisponivel) && aula.quiz_aprovacao_minima != null && aula.quiz_aprovacao_minima > 0 && (
-                          <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>
-                            Mínimo: <strong style={{ color: isConcluida ? 'var(--avp-green)' : 'var(--avp-text)' }}>{aula.quiz_aprovacao_minima}%</strong>
-                            {aula.melhor_percentual != null && <> · Melhor: <strong style={{ color: aula.melhor_percentual >= (aula.quiz_aprovacao_minima ?? 0) ? 'var(--avp-green)' : '#f59e0b' }}>{aula.melhor_percentual}%</strong></>}
-                          </p>
-                        )}
-                        {isBloqueada && <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>🔒 Complete a aula anterior</p>}
-                        {aula.status === 'aguardando_tempo' && aula.liberada_em && <p style={{ fontSize: 11, color: '#f59e0b', margin: 0 }}>⏳ {new Date(aula.liberada_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>}
-
-                        {isPro ? (
-                          <a href="/upgrade"
-                            style={{ display: 'block', textAlign: 'center', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', textDecoration: 'none', fontWeight: 800, borderRadius: 8, padding: '9px', fontSize: 13 }}>
-                            ✨ Desbloquear — Ser Pro
-                          </a>
-                        ) : (isDisponivel || isConcluida) ? (
-                          <Link href={`/aluno/${params.whatsapp}/aula/${aula.aula_id}`}
-                            style={{ display: 'block', textAlign: 'center', background: isConcluida && !recertNeeded ? 'var(--avp-border)' : 'linear-gradient(135deg, #1e40af, #3b82f6)', color: isConcluida && !recertNeeded ? 'var(--avp-text-dim)' : '#fff', textDecoration: 'none', fontWeight: 700, borderRadius: 8, padding: '9px', fontSize: 14 }}>
-                            {isConcluida && !recertNeeded ? 'Rever' : '▶ Acessar'}
-                          </Link>
-                        ) : (
-                          <div style={{ display: 'block', textAlign: 'center', background: 'var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '9px', fontSize: 14, fontWeight: 700 }}>
-                            {aula.status === 'aguardando_tempo' ? '⏳ Aguardando' : '🔒 Bloqueada'}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
+            <AulasDoModulo moduloAtivo={moduloAtivo} whatsapp={params.whatsapp} />
           )}
+
         </div>
       </div>
 
       <RankingWidget meuId={aluno.id} />
 
-      {/* Certificados por módulo — aparece para módulos 100% concluídos com cert configurado */}
+      {/* Certificados por módulo */}
       {Object.entries(moduloCerts).map(([moduloId, cert]) => {
         const mod = modulos.find(m => m.modulo_id === moduloId)
         if (!mod) return null
@@ -689,7 +479,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
         )
       })}
 
-      {/* Carteirinha — aparece automaticamente quando aluno conclui o curso */}
+      {/* Carteirinha */}
       {aluno.status === 'concluido' && (
         <CarteiraAutoShow
           nomeAluno={aluno.nome}

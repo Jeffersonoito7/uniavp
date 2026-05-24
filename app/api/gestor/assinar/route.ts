@@ -12,14 +12,14 @@ export async function POST() {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id, nome, whatsapp, status_assinatura, plano_vencimento, tenant_id')
     .eq('user_id', user.id).eq('ativo', true).maybeSingle()
 
   if (!gestor) return NextResponse.json({ error: 'Gestor não encontrado' }, { status: 404 })
 
   // Verifica se já tem pagamento pendente
-  const { data: pagPendente } = await (adminClient.from('gestor_pagamentos') as any)
+  const { data: pagPendente } = await adminClient.from('gestor_pagamentos')
     .select('id, pix_copia_cola, qrcode_base64, vencimento')
     .eq('gestor_id', gestor.id)
     .eq('status', 'pendente')
@@ -35,14 +35,14 @@ export async function POST() {
   const ehGratuito = await verificarPROGratuito(gestor.id, adminClient)
   if (ehGratuito) {
     const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-    await (adminClient.from('gestores') as any)
+    await adminClient.from('gestores')
       .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento })
       .eq('id', gestor.id)
     return NextResponse.json({ ok: true, gratuito: true, vencimento })
   }
 
   // Lê valor configurado no painel admin (padrão 97)
-  const { data: valorCfg } = await (adminClient.from('configuracoes') as any)
+  const { data: valorCfg } = await adminClient.from('configuracoes')
     .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
   const valorStr = valorCfg?.valor ? String(valorCfg.valor).replace(/"/g, '') : ''
   const valorParsed = parseFloat(valorStr)
@@ -62,7 +62,7 @@ export async function POST() {
       descricao: 'Mensalidade Plataforma PRO',
     })
 
-    const { data: pagamento } = await (adminClient.from('gestor_pagamentos') as any)
+    const { data: pagamento } = await adminClient.from('gestor_pagamentos')
       .insert({
         gestor_id: gestor.id,
         txid,
@@ -75,14 +75,15 @@ export async function POST() {
       })
       .select().single()
 
-    await (adminClient.from('gestores') as any)
+    await adminClient.from('gestores')
       .update({ pix_txid: txid })
       .eq('id', gestor.id)
 
     return NextResponse.json({ ok: true, pagamento })
   } catch (e: any) {
     const raw: string = e.message ?? ''
-    console.error('[gestor/assinar] Erro Efi Bank:', raw)
+    // Loga apenas o tipo do erro — evita expor tokens ou respostas brutas da API
+    console.error('[gestor/assinar] Erro Efi Bank — tipo:', e.constructor?.name ?? 'Error')
     const msgUsuario = raw.includes('invalid_client') || raw.includes('credentials')
       ? 'Erro na integração de pagamento. Entre em contato com o suporte.'
       : raw.includes('Auth') || raw.includes('token')
@@ -98,7 +99,7 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id, status_assinatura, trial_expira_em, plano_vencimento')
     .eq('user_id', user.id).maybeSingle()
 
@@ -106,16 +107,16 @@ export async function GET() {
 
   const agora = new Date()
   const trialAtivo = gestor.status_assinatura === 'trial' && gestor.trial_expira_em && new Date(gestor.trial_expira_em) > agora
-  const diasTrial = trialAtivo ? Math.ceil((new Date(gestor.trial_expira_em).getTime() - agora.getTime()) / 86400000) : 0
+  const diasTrial = trialAtivo ? Math.ceil((new Date(gestor.trial_expira_em!).getTime() - agora.getTime()) / 86400000) : 0
 
-  const { data: ultimoPag } = await (adminClient.from('gestor_pagamentos') as any)
+  const { data: ultimoPag } = await adminClient.from('gestor_pagamentos')
     .select('*')
     .eq('gestor_id', gestor.id)
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
 
-  const { data: valorCfgGet } = await (adminClient.from('configuracoes') as any)
+  const { data: valorCfgGet } = await adminClient.from('configuracoes')
     .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
   const valorParsedGet = parseFloat(String(valorCfgGet?.valor ?? '').replace(/"/g, ''))
   const valorPlanoGet = isNaN(valorParsedGet) ? 97 : Math.max(1, valorParsedGet)

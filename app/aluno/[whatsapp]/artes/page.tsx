@@ -13,18 +13,18 @@ export default async function ArtesPage({ params }: { params: { whatsapp: string
 
   const host = (await headers()).get('host') ?? ''
   const [adminClient, siteConfig] = [createServiceRoleClient(), await getSiteConfig(host)]
-  const { data: aluno } = await (adminClient.from('alunos') as any)
+  const { data: aluno } = await adminClient.from('alunos')
     .select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
   if (!aluno) redirect('/entrar?p=free')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}/artes`)
 
-  const { data: templates } = await (adminClient.from('artes_templates') as any)
+  const { data: templates } = await adminClient.from('artes_templates')
     .select('*').eq('ativo', true).neq('arte_url', '').order('created_at')
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
       <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href={`/aluno/${params.whatsapp}`} style={{ fontWeight: 800, fontSize: 20, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textDecoration: 'none' }}>
+        <Link href={`/aluno/${params.whatsapp}`} style={{ fontWeight: 700, fontSize: 20, color: 'var(--avp-text)', textDecoration: 'none', letterSpacing: '-0.01em' }}>
           {siteConfig.nome}
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

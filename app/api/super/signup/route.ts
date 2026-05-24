@@ -25,15 +25,15 @@ export async function POST(req: NextRequest) {
 
   // Verifica duplicata por email e por whatsapp separadamente (evita crash do .maybeSingle() com múltiplos resultados)
   const [{ data: porEmail }, { data: porWpp }] = await Promise.all([
-    (adminClient.from('clientes') as any).select('id, status_pagamento, ativo').eq('contato_email', emailLimpo).maybeSingle(),
-    (adminClient.from('clientes') as any).select('id, status_pagamento, ativo').eq('contato_whatsapp', wppLimpo).maybeSingle(),
+    adminClient.from('clientes').select('id, status_pagamento, ativo').eq('contato_email', emailLimpo).maybeSingle(),
+    adminClient.from('clientes').select('id, status_pagamento, ativo').eq('contato_whatsapp', wppLimpo).maybeSingle(),
   ])
   const existe = porEmail || porWpp
 
   if (existe) {
     if (existe.ativo) return NextResponse.json({ error: 'Já existe uma conta ativa com este e-mail ou WhatsApp. Entre em contato com o suporte.' }, { status: 409 })
     if (existe.status_pagamento === 'aguardando_pagamento') {
-      const { data: cobranca } = await (adminClient.from('cobrancas') as any)
+      const { data: cobranca } = await adminClient.from('cobrancas')
         .select('pix_copia_cola, qrcode_base64, valor')
         .eq('cliente_id', existe.id)
         .eq('status', 'pendente')
@@ -47,11 +47,11 @@ export async function POST(req: NextRequest) {
   }
 
   // Busca o plano configurado
-  const { data: cfgPlanos } = await (adminClient.from('configuracoes') as any)
+  const { data: cfgPlanos } = await adminClient.from('configuracoes')
     .select('valor').eq('chave', 'planos_saas').maybeSingle()
 
   let planos: any[] = []
-  try { planos = JSON.parse(cfgPlanos?.valor ?? '[]') } catch { planos = [] }
+  try { planos = JSON.parse(String(cfgPlanos?.valor ?? '[]')) } catch { planos = [] }
 
   const plano = planos.find((p: any) => p.id === plano_id)
   if (!plano) return NextResponse.json({ error: 'Plano não encontrado.' }, { status: 404 })
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
   const admin_senha = gerarSenha()
 
   // Cria o cliente com status pendente
-  const { data: cliente, error: clienteErr } = await (adminClient.from('clientes') as any).insert({
+  const { data: cliente, error: clienteErr } = await adminClient.from('clientes').insert({
     nome: nome_empresa,
     dominio: dominio?.trim() || null,
     contato_nome,
@@ -97,16 +97,17 @@ export async function POST(req: NextRequest) {
       descricao: `Ativação ${plano.nome} — ${nome_empresa}`,
     })
 
-    await (adminClient.from('cobrancas') as any).insert({
+    await adminClient.from('cobrancas').insert({
       cliente_id: cliente.id,
       txid,
       valor: plano.preco,
       status: 'pendente',
       pix_copia_cola: pixCopiaECola,
       qrcode_base64: qrcodeBase64,
+      vencimento,
     })
 
-    await (adminClient.from('clientes') as any).update({ pix_txid: txid }).eq('id', cliente.id)
+    await adminClient.from('clientes').update({ pix_txid: txid }).eq('id', cliente.id)
 
     return NextResponse.json({
       ok: true,
@@ -118,7 +119,7 @@ export async function POST(req: NextRequest) {
     })
   } catch (e: any) {
     // Cleanup em caso de erro no PIX
-    await (adminClient.from('clientes') as any).delete().eq('id', cliente.id)
+    await adminClient.from('clientes').delete().eq('id', cliente.id)
     return NextResponse.json({ error: 'Erro ao gerar PIX: ' + e.message }, { status: 500 })
   }
 }
@@ -129,7 +130,7 @@ export async function GET(req: NextRequest) {
   if (!cliente_id) return NextResponse.json({ error: 'cliente_id obrigatório' }, { status: 400 })
 
   const adminClient = createServiceRoleClient()
-  const { data: cliente } = await (adminClient.from('clientes') as any)
+  const { data: cliente } = await adminClient.from('clientes')
     .select('id, ativo, status_pagamento, nome')
     .eq('id', cliente_id).maybeSingle()
 

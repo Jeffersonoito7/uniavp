@@ -1,13 +1,14 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen, Palette, UserCircle } from 'lucide-react'
+import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen, Palette, UserCircle, Video } from 'lucide-react'
 import SupportChat from '@/app/components/SupportChat'
 
 const navItems = [
   { id: 'dashboard',   label: 'Dashboard',  icon: LayoutDashboard },
   { id: 'consultores', label: 'Minha Equipe', icon: Users },
   { id: 'aulas',       label: 'Módulos',     icon: BookOpen },
+  { id: 'ao-vivo',     label: 'Ao Vivo',     icon: Video },
   { id: 'eventos',     label: 'Eventos',     icon: Calendar },
   { id: 'whatsapp',    label: 'WhatsApp',    icon: Smartphone },
   { id: 'artes',       label: 'Artes',       icon: Palette },
@@ -73,7 +74,7 @@ export default function GestorLayout({
           style={{ maxHeight: small ? 36 : 52, maxWidth: small ? 140 : 180, objectFit: 'contain', display: 'block' }}
           onError={() => setLogoError(true)} />
       ) : (
-        <span style={{ fontWeight: 800, fontSize: small ? 16 : 15, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <span style={{ fontWeight: 700, fontSize: small ? 16 : 15, color: 'var(--avp-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.01em' }}>
           {siteNome || 'PRO'}
         </span>
       )}
@@ -160,7 +161,7 @@ export default function GestorLayout({
             style={{ padding: '14px 20px', borderBottom: '1px solid var(--avp-border)', flexShrink: 0, background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' as const }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15, border: '2px solid var(--avp-border)' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'rgba(79,70,229,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15, border: '2px solid var(--avp-border)' }}>
                 {fotoPerfil
                   ? <img src={fotoPerfil} alt={nomeGestor} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   : <span style={{ color: '#fff' }}>{nomeGestor.charAt(0).toUpperCase()}</span>
@@ -168,7 +169,7 @@ export default function GestorLayout({
               </div>
               <div style={{ minWidth: 0 }}>
                 <p style={{ fontWeight: 600, fontSize: 13, color: 'var(--avp-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{nomeGestor}</p>
-                <p style={{ fontSize: 11, color: '#818cf8', margin: 0, fontWeight: 700 }}>✨ UNIAVP PRO</p>
+                <p style={{ fontSize: 11, color: '#818cf8', margin: 0, fontWeight: 600, letterSpacing: '0.04em' }}>UNIAVP PRO</p>
               </div>
             </div>
           </button>
@@ -188,8 +189,9 @@ export default function GestorLayout({
                   display: 'flex', alignItems: 'center', gap: colapsada && !isMobile ? 0 : 10,
                   padding: colapsada && !isMobile ? '10px 0' : '10px 12px',
                   justifyContent: colapsada && !isMobile ? 'center' : 'flex-start',
-                  borderRadius: 8, cursor: 'pointer', border: 'none',
-                  background: ativo ? 'var(--grad-brand)' : 'none',
+                  borderRadius: 8, cursor: 'pointer',
+                  background: ativo ? 'rgba(79,70,229,0.18)' : 'none',
+                  border: ativo ? '1px solid rgba(79,70,229,0.3)' : '1px solid transparent',
                   color: ativo ? '#fff' : 'var(--avp-text-dim)',
                   fontWeight: ativo ? 600 : 400, fontSize: 14,
                   width: '100%',

@@ -16,7 +16,7 @@ export async function PUT(req: NextRequest) {
   const { id, nome, email, whatsapp, status, gestor_nome, gestor_whatsapp, nova_senha, user_id } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  const updates: Record<string, unknown> = {}
+  const updates: { nome?: string; email?: string; whatsapp?: string; status?: string; gestor_nome?: string | null; gestor_whatsapp?: string | null } = {}
   if (nome !== undefined) updates.nome = nome
   if (email !== undefined) updates.email = email
   if (whatsapp !== undefined) updates.whatsapp = whatsapp
@@ -24,7 +24,7 @@ export async function PUT(req: NextRequest) {
   if (gestor_nome !== undefined) updates.gestor_nome = gestor_nome
   if (gestor_whatsapp !== undefined) updates.gestor_whatsapp = gestor_whatsapp
 
-  let putQuery = (adminClient.from('alunos') as any).update(updates).eq('id', id)
+  let putQuery = adminClient.from('alunos').update(updates).eq('id', id)
   if (ctx.tenantId) putQuery = putQuery.eq('tenant_id', ctx.tenantId)
   const { data: aluno, error } = await putQuery.select('*').single()
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
@@ -55,12 +55,12 @@ export async function DELETE(req: NextRequest) {
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
   // Busca o user_id do aluno
-  let deleteSelectQuery = (adminClient.from('alunos') as any).select('user_id').eq('id', id)
+  let deleteSelectQuery = adminClient.from('alunos').select('user_id').eq('id', id)
   if (ctx.tenantId) deleteSelectQuery = deleteSelectQuery.eq('tenant_id', ctx.tenantId)
   const { data: aluno } = await deleteSelectQuery.maybeSingle()
 
   // Remove do banco
-  let deleteQuery = (adminClient.from('alunos') as any).delete().eq('id', id)
+  let deleteQuery = adminClient.from('alunos').delete().eq('id', id)
   if (ctx.tenantId) deleteQuery = deleteQuery.eq('tenant_id', ctx.tenantId)
   const { error } = await deleteQuery
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

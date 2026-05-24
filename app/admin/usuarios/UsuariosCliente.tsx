@@ -2,8 +2,8 @@
 import { useState } from 'react'
 import PhoneInput from '@/app/components/PhoneInput'
 
-type Consultor = { id: string; nome: string; whatsapp: string; email: string; status: string; created_at: string; gestor_nome?: string; gestor_whatsapp?: string; user_id: string }
-type Gestor = { id: string; nome: string; email: string; whatsapp: string; ativo: boolean; created_at: string; user_id: string }
+type Consultor = { id: string; nome: string; whatsapp: string; email: string; status: string; created_at: string | null; gestor_nome?: string | null; gestor_whatsapp?: string | null; user_id: string | null }
+type Gestor = { id: string; nome: string; email: string; whatsapp: string; ativo: boolean | null; created_at: string | null; user_id: string | null }
 
 const EyeIcon = ({ open }: { open: boolean }) => open
   ? <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -169,11 +169,11 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
                     <td style={{ padding: '12px 14px' }}>
                       <span style={{ background: (statusCor[c.status] ?? '#8a8fa3') + '20', color: statusCor[c.status] ?? '#8a8fa3', borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>{c.status}</span>
                     </td>
-                    <td style={{ padding: '12px 14px', color: 'var(--avp-text-dim)', fontSize: 12 }}>{new Date(c.created_at).toLocaleDateString('pt-BR')}</td>
+                    <td style={{ padding: '12px 14px', color: 'var(--avp-text-dim)', fontSize: 12 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '—'}</td>
                     <td style={{ padding: '12px 14px' }}>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {btnAcao('✏️ Editar', () => abrirEdicao('consultor', c), 'var(--avp-blue)')}
-                        {btnAcao('🔑 Senha', () => { setResetando({ user_id: c.user_id, nome: c.nome }); setNovaSenha(''); setVerSenha(false) }, '#6366f1')}
+                        {c.user_id && btnAcao('🔑 Senha', () => { setResetando({ user_id: c.user_id!, nome: c.nome }); setNovaSenha(''); setVerSenha(false) }, '#6366f1')}
                         {btnAcao('🗑 Excluir', () => excluirConsultor(c), 'var(--avp-danger)')}
                       </div>
                     </td>
@@ -211,11 +211,11 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
                         {g.ativo ? 'Ativo' : 'Inativo'}
                       </span>
                     </td>
-                    <td style={{ padding: '12px 14px', color: 'var(--avp-text-dim)', fontSize: 12 }}>{new Date(g.created_at).toLocaleDateString('pt-BR')}</td>
+                    <td style={{ padding: '12px 14px', color: 'var(--avp-text-dim)', fontSize: 12 }}>{g.created_at ? new Date(g.created_at).toLocaleDateString('pt-BR') : '—'}</td>
                     <td style={{ padding: '12px 14px' }}>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {btnAcao('✏️ Editar', () => abrirEdicao('gestor', g), 'var(--avp-blue)')}
-                        {btnAcao('🔑 Senha', () => { setResetando({ user_id: g.user_id, nome: g.nome }); setNovaSenha(''); setVerSenha(false) }, '#6366f1')}
+                        {g.user_id && btnAcao('🔑 Senha', () => { setResetando({ user_id: g.user_id!, nome: g.nome }); setNovaSenha(''); setVerSenha(false) }, '#6366f1')}
                         {btnAcao(g.ativo ? 'Desativar' : 'Ativar', () => toggleGestor(g), g.ativo ? '#6366f1' : 'var(--avp-green)')}
                         {btnAcao('🗑 Excluir', () => excluirGestor(g), 'var(--avp-danger)')}
                       </div>

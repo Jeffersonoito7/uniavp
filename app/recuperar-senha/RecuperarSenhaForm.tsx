@@ -115,7 +115,7 @@ export default function RecuperarSenhaForm({ logoUrl, siteNome }: { logoUrl: str
 
               {/* WhatsApp enviado com sucesso */}
               {enviadoWpp && (
-                <div style={{ background: '#25d36615', border: '1px solid #25d36640', borderRadius: 10, padding: '14px 16px', marginBottom: 16, textAlign: 'center' }}>
+                <div className="alert" style={{ background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.25)', color: '#25d366', marginBottom: 16, textAlign: 'center' }}>
                   <p style={{ fontSize: 14, color: '#25d366', fontWeight: 700, marginBottom: 4 }}>
                     ✅ Abra o WhatsApp e clique no link recebido
                   </p>

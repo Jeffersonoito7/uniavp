@@ -6,7 +6,7 @@ import { getAppUrl } from '@/lib/get-app-url'
 export const dynamic = 'force-dynamic'
 
 async function isSuperAdmin(userId: string, adminClient: ReturnType<typeof createServiceRoleClient>) {
-  const { data } = await (adminClient.from('super_admins') as any).select('id').eq('user_id', userId).eq('ativo', true).maybeSingle()
+  const { data } = await adminClient.from('super_admins').select('id').eq('user_id', userId).eq('ativo', true).maybeSingle()
   return !!data
 }
 

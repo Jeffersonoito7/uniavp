@@ -10,7 +10,7 @@ export async function getAdminContext(
   userId: string,
   adminClient: ReturnType<typeof createServiceRoleClient>
 ): Promise<AdminContext | null> {
-  const { data } = await (adminClient.from('admins') as any)
+  const { data } = await adminClient.from('admins')
     .select('id, tenant_id')
     .eq('user_id', userId)
     .eq('ativo', true)

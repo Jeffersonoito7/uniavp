@@ -97,7 +97,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
   const [erro, setErro] = useState('')
   const [resultado, setResultado] = useState<{ numero_registro: string; hash_contrato: string } | null>(null)
 
-  const bg = 'linear-gradient(135deg, #06101f 0%, #0a1828 60%, #040d18 100%)'
+  const bg = '#0a0a0f'
   const inp: React.CSSProperties = { width: '100%', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, padding: '12px 14px', color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: 'Inter, sans-serif' }
   const lbl: React.CSSProperties = { display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }
 
@@ -268,7 +268,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
             </div>
 
             <button onClick={() => setEtapa('clausulas')} disabled={!podeAvancar}
-              style={{ width:'100%', background:podeAvancar ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'rgba(99,102,241,0.3)', color:'#fff', border:'none', borderRadius:12, padding:'15px', fontWeight:800, fontSize:16, cursor:podeAvancar ? 'pointer' : 'not-allowed', marginTop:24, boxShadow:podeAvancar ? '0 8px 32px rgba(99,102,241,0.35)' : 'none' }}>
+              className="btn btn-primary btn-full btn-lg" style={{ marginTop: 24 }}>
               Avançar para o Contrato →
             </button>
           </div>
@@ -293,7 +293,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
 
           {/* Barra de progresso */}
           <div style={{ background:'rgba(255,255,255,0.08)', borderRadius:100, height:8, marginBottom:28, overflow:'hidden' }}>
-            <div style={{ width:`${pct + (100/total)}%`, height:'100%', background:'linear-gradient(90deg,#6366f1,#8b5cf6)', borderRadius:100, transition:'width 0.4s' }} />
+            <div style={{ width:`${pct + (100/total)}%`, height:'100%', background:'#4f46e5', borderRadius:100, transition:'width 0.4s' }} />
           </div>
 
           {/* Card da cláusula */}
@@ -329,18 +329,18 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
           {/* Botões */}
           <div style={{ display:'flex', gap:12, marginTop:20 }}>
             <button onClick={() => clausulaAtual === 0 ? setEtapa('dados') : setClausulaAtual(c => c-1)}
-              style={{ flex:1, background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.15)', color:'rgba(255,255,255,0.6)', borderRadius:12, padding:'14px', fontWeight:600, fontSize:15, cursor:'pointer' }}>
+              className="btn btn-ghost" style={{ flex: 1, fontSize: 15 }}>
               ← Voltar
             </button>
             {clausulaAtual < CLAUSULAS_ATIVAS.length - 1 ? (
               <button onClick={() => setClausulaAtual(c => c+1)} disabled={!aceitas[clausulaAtual]}
-                style={{ flex:2, background: aceitas[clausulaAtual] ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'rgba(99,102,241,0.3)', color:'#fff', border:'none', borderRadius:12, padding:'14px', fontWeight:800, fontSize:16, cursor: aceitas[clausulaAtual] ? 'pointer' : 'not-allowed', boxShadow: aceitas[clausulaAtual] ? '0 8px 32px rgba(99,102,241,0.4)' : 'none' }}>
+                className="btn btn-primary" style={{ flex: 2, fontSize: 16 }}>
                 Próxima cláusula →
               </button>
             ) : (
               <button onClick={() => setEtapa('confirmar')} disabled={!aceitas[clausulaAtual]}
-                style={{ flex:2, background: aceitas[clausulaAtual] ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'rgba(99,102,241,0.3)', color:'#fff', border:'none', borderRadius:12, padding:'14px', fontWeight:800, fontSize:16, cursor: aceitas[clausulaAtual] ? 'pointer' : 'not-allowed' }}>
-                Revisar e Assinar ✍️
+                className="btn btn-primary" style={{ flex: 2, fontSize: 16 }}>
+                Revisar e Assinar
               </button>
             )}
           </div>
@@ -360,7 +360,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
             <p style={{ color:'rgba(255,255,255,0.5)', fontSize:14 }}>Confirme seus dados antes de assinar</p>
           </div>
 
-          <div style={{ background:'rgba(10,22,40,0.85)', border:'1px solid rgba(99,102,241,0.3)', borderRadius:20, padding:28, marginBottom:20 }}>
+          <div style={{ background:'rgba(10,22,40,0.85)', border:'1px solid rgba(79,70,229,0.3)', borderRadius:20, padding:28, marginBottom:20 }}>
             <p style={{ fontWeight:700, fontSize:13, color:'#818cf8', marginBottom:16 }}>📋 Dados do contrato</p>
             <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
               {[
@@ -395,12 +395,12 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
 
           <div style={{ display:'flex', gap:12 }}>
             <button onClick={() => { setClausulaAtual(CLAUSULAS_ATIVAS.length-1); setEtapa('clausulas') }}
-              style={{ flex:1, background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.15)', color:'rgba(255,255,255,0.6)', borderRadius:12, padding:'14px', fontWeight:600, fontSize:15, cursor:'pointer' }}>
+              className="btn btn-ghost" style={{ flex: 1, fontSize: 15 }}>
               ← Rever
             </button>
             <button onClick={assinar} disabled={loading}
-              style={{ flex:2, background:'linear-gradient(135deg,#6366f1,#8b5cf6)', color:'#fff', border:'none', borderRadius:12, padding:'14px', fontWeight:900, fontSize:16, cursor: loading ? 'not-allowed' : 'pointer', boxShadow:'0 8px 32px rgba(99,102,241,0.4)', opacity: loading ? 0.7 : 1 }}>
-              {loading ? '⏳ Registrando...' : '✍️ Assinar Contrato Digitalmente'}
+              className="btn btn-primary" style={{ flex: 2, fontSize: 16 }}>
+              {loading ? 'Registrando...' : 'Assinar Contrato Digitalmente'}
             </button>
           </div>
         </div>
@@ -427,7 +427,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
               </p>
             </div>
             <button onClick={() => navigator.clipboard.writeText(resultado.numero_registro).then(() => alert('Registro copiado!'))}
-              style={{ background:'rgba(99,102,241,0.15)', border:'1px solid rgba(99,102,241,0.3)', color:'#818cf8', borderRadius:10, padding:'12px 24px', fontWeight:700, fontSize:14, cursor:'pointer' }}>
+              style={{ background:'rgba(99,102,241,0.15)', border:'1px solid rgba(79,70,229,0.3)', color:'#818cf8', borderRadius:10, padding:'12px 24px', fontWeight:700, fontSize:14, cursor:'pointer' }}>
               📋 Copiar número do registro
             </button>
           </>

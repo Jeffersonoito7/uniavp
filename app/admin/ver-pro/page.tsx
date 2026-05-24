@@ -10,11 +10,11 @@ export default async function VerProPage() {
   if (!user) redirect('/entrar?p=adm')
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any)
+  const { data: adminRecord } = await adminClient.from('admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
 
-  const { data: gestores } = await (adminClient.from('gestores') as any)
+  const { data: gestores } = await adminClient.from('gestores')
     .select('id, nome, whatsapp, email, ativo')
     .order('nome')
     .limit(100)

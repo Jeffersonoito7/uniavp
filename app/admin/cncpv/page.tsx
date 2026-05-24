@@ -8,11 +8,11 @@ export default async function AdminCNCPVPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/entrar?p=adm')
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any)
+  const { data: adminRecord } = await adminClient.from('admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
 
-  const { data: assinaturas, count } = await (adminClient.from('cncpv_assinaturas') as any)
+  const { data: assinaturas, count } = await adminClient.from('cncpv_assinaturas')
     .select('id, nome, cpf, whatsapp, email, numero_registro, assinado_em, hash_contrato, pdf_url, pdf_status, status, revogado_em, revogado_motivo', { count: 'exact' })
     .order('assinado_em', { ascending: false })
 

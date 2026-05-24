@@ -127,7 +127,7 @@ export default function AssinarProPage() {
         {!info?.jaEhPro && (
           <>
             {/* Card do plano */}
-            <div style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08))', border: '2px solid rgba(99,102,241,0.4)', borderRadius: 16, padding: '28px', marginBottom: 20 }}>
+            <div style={{ background: 'rgba(79,70,229,0.08)', border: '2px solid rgba(79,70,229,0.3)', borderRadius: 16, padding: '28px', marginBottom: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <div>
                   <p style={{ fontWeight: 800, fontSize: 20 }}>Plano PRO</p>
@@ -168,9 +168,8 @@ export default function AssinarProPage() {
                     </div>
                   </div>
                 )}
-                <button onClick={copiarPix}
-                  style={{ width: '100%', background: copiado ? '#22c55e' : 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px', fontWeight: 800, fontSize: 15, cursor: 'pointer', marginBottom: 12 }}>
-                  {copiado ? '✅ PIX copiado!' : '📋 Copiar PIX Copia e Cola'}
+                <button onClick={copiarPix} className={`btn btn-full ${copiado ? 'btn-green' : 'btn-primary'}`} style={{ marginBottom: 12, fontSize: 15 }}>
+                  {copiado ? 'PIX copiado!' : 'Copiar PIX Copia e Cola'}
                 </button>
                 <div style={{ background: 'rgba(2,161,83,0.08)', border: '1px solid rgba(2,161,83,0.2)', borderRadius: 10, padding: '12px 16px', fontSize: 13, color: '#6ee7b7', lineHeight: 1.6 }}>
                   ✅ Assim que o pagamento for confirmado, seu acesso PRO é ativado automaticamente.
@@ -203,9 +202,8 @@ export default function AssinarProPage() {
 
                     {!wppCodigoEnviado ? (
                       <>
-                        <button onClick={enviarCodigoWpp} disabled={wppCarregando}
-                          style={{ width: '100%', background: 'linear-gradient(135deg, #25d366, #128c7e)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px', fontWeight: 800, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 20px rgba(37,211,102,0.3)' }}>
-                          {wppCarregando ? '⏳ Enviando...' : <><span>📲</span> Enviar código de verificação</>}
+                        <button onClick={enviarCodigoWpp} disabled={wppCarregando} className="btn btn-wpp btn-full" style={{ fontSize: 15 }}>
+                          {wppCarregando ? 'Enviando...' : 'Enviar código de verificação'}
                         </button>
                         {wppErro && <p style={{ color: '#f87171', fontSize: 13, marginTop: 8, textAlign: 'center' }}>{wppErro}</p>}
                       </>
@@ -225,8 +223,8 @@ export default function AssinarProPage() {
                           />
                           <button onClick={confirmarCodigoWpp}
                             disabled={wppCarregando || wppCodigo.length < 6}
-                            style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 10, padding: '0 18px', fontWeight: 800, fontSize: 15, cursor: wppCodigo.length < 6 ? 'not-allowed' : 'pointer', opacity: wppCodigo.length < 6 ? 0.5 : 1, whiteSpace: 'nowrap' }}>
-                            {wppCarregando ? '⏳' : '✓ OK'}
+                            className="btn btn-green" style={{ padding: '0 18px', borderRadius: 10, whiteSpace: 'nowrap' }}>
+                            {wppCarregando ? '...' : '✓ OK'}
                           </button>
                         </div>
                         {wppErro && <p style={{ color: '#f87171', fontSize: 13, textAlign: 'center', margin: 0 }}>{wppErro}</p>}
@@ -243,9 +241,8 @@ export default function AssinarProPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#22c55e', fontSize: 14, fontWeight: 700, marginBottom: 20 }}>
                       <span style={{ fontSize: 20 }}>✅</span> WhatsApp verificado!
                     </div>
-                    <button onClick={gerarPix} disabled={gerando}
-                      style={{ width: '100%', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', border: 'none', borderRadius: 12, padding: '18px', fontWeight: 900, fontSize: 18, cursor: gerando ? 'not-allowed' : 'pointer', opacity: gerando ? 0.7 : 1, boxShadow: '0 8px 32px rgba(99,102,241,0.4)' }}>
-                      {gerando ? '⏳ Gerando PIX...' : `🚀 Assinar ${nomePro} — R$ ${valor.toFixed(2).replace('.', ',')} /mês`}
+                    <button onClick={gerarPix} disabled={gerando} className="btn btn-primary btn-full btn-lg" style={{ fontSize: 18 }}>
+                      {gerando ? 'Gerando PIX...' : `Assinar ${nomePro} — R$ ${valor.toFixed(2).replace('.', ',')} /mês`}
                     </button>
                   </div>
                 )}

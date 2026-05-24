@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   let alertasRede = 0
 
   // ── 1. Busca PROs ativos com plano ativo (não trial) ─────────────
-  const { data: gestores } = await (admin.from('gestores') as any)
+  const { data: gestores } = await admin.from('gestores')
     .select('id, nome, whatsapp, plano_vencimento, status_assinatura, indicado_por_gestor_id')
     .eq('ativo', true)
     .eq('status_assinatura', 'ativo')
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
 
     // ── Suspende após 2 dias de atraso ────────────────────────────
     if (diasParaVencer < -2) {
-      await (admin.from('gestores') as any)
+      await admin.from('gestores')
         .update({ ativo: false, status_assinatura: 'suspenso' })
         .eq('id', g.id)
 
@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
 
       // ── Notifica o PRO da rede (indicado_por_gestor_id) ──────────
       if (g.indicado_por_gestor_id) {
-        const { data: gestorOrigem } = await (admin.from('gestores') as any)
+        const { data: gestorOrigem } = await admin.from('gestores')
           .select('id, nome, whatsapp')
           .eq('id', g.indicado_por_gestor_id)
           .eq('ativo', true)
@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
 
   // ── 2. Verifica PROs suspensos que voltaram a ter rede completa ──
   // (caso alguém da rede de um PRO suspenso renove → reativa gratuito)
-  const { data: gestoresSuspensos } = await (admin.from('gestores') as any)
+  const { data: gestoresSuspensos } = await admin.from('gestores')
     .select('id, nome, whatsapp, status_assinatura')
     .eq('ativo', false)
     .eq('status_assinatura', 'suspenso')
@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
     if (total >= LIMITE) {
       // Reativa gratuitamente
       const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      await (admin.from('gestores') as any)
+      await admin.from('gestores')
         .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento })
         .eq('id', g.id)
 

@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     const gestorNome = row.gestor_nome ? String(row.gestor_nome).trim() : null
     const gestorWpp = row.gestor_whatsapp ? String(row.gestor_whatsapp).replace(/\D/g, '') : null
 
-    const { error: alunoErr } = await (adminClient.from('alunos') as any).insert({
+    const { error: alunoErr } = await adminClient.from('alunos').insert({
       user_id: authUser.user.id,
       nome,
       whatsapp,

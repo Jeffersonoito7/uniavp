@@ -24,14 +24,14 @@ export default async function PlanoProPage() {
   const config = await getSiteConfig(host)
   const admin = createServiceRoleClient()
 
-  const { data: valorCfg } = await (admin.from('configuracoes') as any)
+  const { data: valorCfg } = await admin.from('configuracoes')
     .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
   const valorPro = Math.max(1, parseFloat(String(valorCfg?.valor ?? '').replace(/"/g, '')) || 97)
 
-  const { count: totalPros } = await (admin.from('gestores') as any)
+  const { count: totalPros } = await admin.from('gestores')
     .select('id', { count: 'exact', head: true }).eq('ativo', true).eq('status_assinatura', 'ativo')
-  const { count: totalFrees } = await (admin.from('alunos') as any)
-    .select('id', { count: 'exact', head: true }).eq('ativo', true)
+  const { count: totalFrees } = await admin.from('alunos')
+    .select('id', { count: 'exact', head: true }).eq('status', 'ativo')
 
   const beneficios = [
     { icon: '👥', titulo: 'Gestão completa da equipe', desc: 'Veja todos os FREEs da sua rede, status, progresso e data de cadastro em um painel centralizado.' },
@@ -65,7 +65,7 @@ export default async function PlanoProPage() {
           <span style={{ fontWeight: 800, fontSize: 16 }}>{config.nome}</span>
         </div>
         <a href="/captacao?direto=1&plano=pro"
-          style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 10, padding: '9px 22px', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+          className="btn btn-primary" style={{ textDecoration: 'none' }}>
           Quero ser PRO
         </a>
       </header>
@@ -75,7 +75,7 @@ export default async function PlanoProPage() {
         {/* Badge */}
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.35)', borderRadius: 100, padding: '6px 20px', fontSize: 12, fontWeight: 700, color: '#818cf8', letterSpacing: 1 }}>
-            ✨ UNIAVP PRO
+            UNIAVP PRO
           </span>
         </div>
 
@@ -83,7 +83,7 @@ export default async function PlanoProPage() {
         <div style={{ textAlign: 'center', marginBottom: 56 }}>
           <h1 style={{ fontSize: 'clamp(2rem, 6vw, 3.5rem)', fontWeight: 900, lineHeight: 1.15, marginBottom: 20 }}>
             Gerencie sua equipe.<br />
-            <span style={{ background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Cresça com método.</span>
+            <span style={{ color: '#818cf8' }}>Cresça com método.</span>
           </h1>
           <p style={{ color: 'rgba(241,245,249,0.6)', fontSize: 'clamp(15px, 2.5vw, 18px)', lineHeight: 1.8, maxWidth: 580, margin: '0 auto 36px' }}>
             O <strong style={{ color: '#c4b5fd' }}>UNIAVP PRO</strong> é o painel completo para líderes que querem acompanhar, engajar e fazer crescer a sua equipe de FREEs — tudo em um só lugar.
@@ -111,9 +111,8 @@ export default async function PlanoProPage() {
             </div>
           ) : null}
 
-          <a href="/captacao?direto=1&plano=pro"
-            style={{ display: 'inline-block', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 14, padding: '18px 52px', fontWeight: 900, fontSize: 18, textDecoration: 'none', boxShadow: '0 8px 32px rgba(99,102,241,0.4)', marginBottom: 12 }}>
-            🚀 Começar agora — R${Number(valorPro).toFixed(2).replace('.', ',')}/mês
+          <a href="/captacao?direto=1&plano=pro" className="btn btn-primary btn-lg" style={{ textDecoration: 'none', marginBottom: 12, fontSize: 18, borderRadius: 14, padding: '18px 52px' }}>
+            Começar agora — R${Number(valorPro).toFixed(2).replace('.', ',')}/mês
           </a>
           <p style={{ fontSize: 12, color: 'rgba(241,245,249,0.4)', marginTop: 12 }}>
             Pagamento via PIX • Acesso imediato • Cancele quando quiser
@@ -121,7 +120,7 @@ export default async function PlanoProPage() {
         </div>
 
         {/* Destaque: PRO grátis por rede */}
-        <div style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08))', border: '1px solid rgba(99,102,241,0.4)', borderRadius: 20, padding: 28, marginBottom: 48, textAlign: 'center' }}>
+        <div style={{ background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(79,70,229,0.25)', borderRadius: 20, padding: 28, marginBottom: 48, textAlign: 'center' }}>
           <p style={{ fontSize: 28, marginBottom: 8 }}>🎁</p>
           <p style={{ fontWeight: 900, fontSize: 20, color: '#c4b5fd', marginBottom: 8 }}>Sua assinatura pode ser ZERO</p>
           <p style={{ color: 'rgba(241,245,249,0.6)', fontSize: 15, maxWidth: 500, margin: '0 auto', lineHeight: 1.7 }}>
@@ -204,14 +203,13 @@ export default async function PlanoProPage() {
         </div>
 
         {/* CTA final */}
-        <div style={{ textAlign: 'center', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08))', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 24, padding: 'clamp(36px, 6vw, 64px) 24px' }}>
-          <p style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 900, marginBottom: 12 }}>Pronto para liderar?</p>
+        <div style={{ textAlign: 'center', background: 'rgba(79,70,229,0.06)', border: '1px solid rgba(79,70,229,0.2)', borderRadius: 24, padding: 'clamp(36px, 6vw, 64px) 24px' }}>
+          <p style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 700, marginBottom: 12 }}>Pronto para liderar?</p>
           <p style={{ color: 'rgba(241,245,249,0.55)', fontSize: 15, marginBottom: 32, maxWidth: 440, margin: '0 auto 32px' }}>
             Junte-se a quem já usa o UNIAVP PRO para gerenciar e crescer sua equipe com método.
           </p>
-          <a href="/captacao?direto=1&plano=pro"
-            style={{ display: 'inline-block', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 14, padding: '20px 60px', fontWeight: 900, fontSize: 20, textDecoration: 'none', boxShadow: '0 8px 40px rgba(99,102,241,0.45)', marginBottom: 16 }}>
-            🚀 Quero ser PRO — R${Number(valorPro).toFixed(2).replace('.', ',')}/mês
+          <a href="/captacao?direto=1&plano=pro" className="btn btn-primary" style={{ textDecoration: 'none', marginBottom: 16, fontSize: 20, borderRadius: 14, padding: '20px 60px' }}>
+            Quero ser PRO — R${Number(valorPro).toFixed(2).replace('.', ',')}/mês
           </a>
           <p style={{ fontSize: 13, color: 'rgba(241,245,249,0.35)', marginTop: 14 }}>
             Pagamento via PIX • Acesso em minutos • Sem fidelidade

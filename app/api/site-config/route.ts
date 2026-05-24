@@ -3,7 +3,7 @@ import { getSiteConfig } from '@/lib/site-config'
 
 export const dynamic = 'force-dynamic'
 
-const DOMINIO_MASTER = 'universidade.oito7digital.com.br'
+import { DOMINIO_MASTER } from '@/lib/constants'
 
 export async function GET(req: NextRequest) {
   const host = req.headers.get('host')?.replace(/:\d+$/, '') ?? ''

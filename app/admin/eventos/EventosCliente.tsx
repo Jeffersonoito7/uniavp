@@ -1,7 +1,7 @@
 'use client'
 import { useRef, useState } from 'react'
 
-type Evento = { id: string; titulo: string; descricao: string; cidade: string; data_hora: string; imagem_url?: string }
+type Evento = { id: string; titulo: string; descricao: string | null; cidade: string | null; data_hora: string; imagem_url?: string | null; created_at?: string | null; gestor_id?: string | null }
 
 export default function EventosCliente({ inicial }: { inicial: Evento[] }) {
   const [eventos, setEventos] = useState<Evento[]>(inicial)
@@ -166,7 +166,7 @@ function EventoCard({ e, onDelete, futuro }: { e: Evento; onDelete: (id: string)
   const temImagem = e.imagem_url?.startsWith('data:') || e.imagem_url?.startsWith('blob:')
   return (
     <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden', opacity: futuro ? 1 : 0.6 }}>
-      {temImagem && (
+      {temImagem && e.imagem_url && (
         <img src={e.imagem_url} alt={e.titulo} style={{ width: '100%', maxHeight: 180, objectFit: 'cover', display: 'block' }} />
       )}
       <div style={{ padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>

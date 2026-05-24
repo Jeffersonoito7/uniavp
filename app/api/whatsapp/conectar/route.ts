@@ -7,11 +7,11 @@ const EVO_URL = process.env.EVOLUTION_API_URL!
 const EVO_KEY = process.env.EVOLUTION_API_KEY!
 
 async function getUserInfo(userId: string, adminClient: ReturnType<typeof createServiceRoleClient>) {
-  const { data: admin } = await (adminClient.from('admins') as any)
+  const { data: admin } = await adminClient.from('admins')
     .select('id, whatsapp_instancia').eq('user_id', userId).eq('ativo', true).maybeSingle()
   if (admin) return { tipo: 'admin', id: admin.id, instancia: admin.whatsapp_instancia }
 
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id, whatsapp_instancia').eq('user_id', userId).eq('ativo', true).maybeSingle()
   if (gestor) return { tipo: 'gestor', id: gestor.id, instancia: gestor.whatsapp_instancia }
 
@@ -49,9 +49,9 @@ export async function POST(req: NextRequest) {
 
     // Salva instância no banco
     if (info.tipo === 'admin') {
-      await (adminClient.from('admins') as any).update({ whatsapp_instancia: instanceName }).eq('id', info.id)
+      await adminClient.from('admins').update({ whatsapp_instancia: instanceName }).eq('id', info.id)
     } else {
-      await (adminClient.from('gestores') as any).update({ whatsapp_instancia: instanceName }).eq('id', info.id)
+      await adminClient.from('gestores').update({ whatsapp_instancia: instanceName }).eq('id', info.id)
     }
 
     return NextResponse.json({ ok: true, instancia: instanceName, qrcode: data.qrcode?.base64 })

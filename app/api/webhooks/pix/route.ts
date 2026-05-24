@@ -30,27 +30,27 @@ export async function POST(req: NextRequest) {
       } catch { continue }
 
       // ── Pagamento de cliente SaaS ──
-      const { data: cobranca } = await (adminClient.from('cobrancas') as any)
+      const { data: cobranca } = await adminClient.from('cobrancas')
         .select('id, cliente_id, valor')
         .eq('txid', txid)
         .maybeSingle()
 
       if (cobranca) {
         // Update atômico — evita race condition com o cron de polling
-        const { data: atualizado } = await (adminClient.from('cobrancas') as any)
+        const { data: atualizado } = await adminClient.from('cobrancas')
           .update({ status: 'pago', pago_em: new Date().toISOString() })
           .eq('id', cobranca.id)
           .eq('status', 'pendente')
           .select('id')
         if (!atualizado?.length) continue // Já processado pelo cron
 
-        const { data: cliente } = await (adminClient.from('clientes') as any)
+        const { data: cliente } = await adminClient.from('clientes')
           .select('id, nome, dominio, contato_whatsapp, contato_nome, contato_email, gestor_ativo, limite_consultores, status_pagamento, observacoes')
-          .eq('id', cobranca.cliente_id).maybeSingle()
+          .eq('id', cobranca.cliente_id!).maybeSingle()
 
-        await (adminClient.from('clientes') as any)
+        await adminClient.from('clientes')
           .update({ ativo: true, status_pagamento: 'em_dia', ultimo_pagamento: new Date().toISOString().split('T')[0], pix_txid: null })
-          .eq('id', cobranca.cliente_id)
+          .eq('id', cobranca.cliente_id!)
 
         // ── Onboarding automático para novos clientes (self-service) ──
         if (cliente?.status_pagamento === 'aguardando_pagamento' && cliente.observacoes) {
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
               })
               if (!authErr && authUser?.user) {
                 // Cria admin vinculado ao tenant (cliente_id)
-                await (adminClient.from('admins') as any).insert({
+                await adminClient.from('admins').insert({
                   user_id: authUser.user.id, nome: signup.admin_nome || cliente.contato_nome,
                   email: signup.admin_email, ativo: true, role: 'admin', tenant_id: cliente.id,
                 })
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
                 }
 
                 // Limpa dados sensíveis após onboarding
-                await (adminClient.from('clientes') as any).update({ observacoes: null }).eq('id', cliente.id)
+                await adminClient.from('clientes').update({ observacoes: null }).eq('id', cliente.id)
 
                 // Envia credenciais e links por WhatsApp
                 if (cliente.contato_whatsapp) {
@@ -131,14 +131,14 @@ export async function POST(req: NextRequest) {
       }
 
       // ── Pagamento de mensalidade do gestor ──
-      const { data: pagGestor } = await (adminClient.from('gestor_pagamentos') as any)
+      const { data: pagGestor } = await adminClient.from('gestor_pagamentos')
         .select('id, gestor_id, valor')
         .eq('txid', txid)
         .maybeSingle()
 
       if (pagGestor) {
         // Update atômico — evita race condition com o cron de polling
-        const { data: atualizadoGestor } = await (adminClient.from('gestor_pagamentos') as any)
+        const { data: atualizadoGestor } = await adminClient.from('gestor_pagamentos')
           .update({ status: 'pago', pago_em: new Date().toISOString() })
           .eq('id', pagGestor.id)
           .eq('status', 'pendente')
@@ -147,14 +147,14 @@ export async function POST(req: NextRequest) {
 
         // Ativa plano por 30 dias (e ativa conta se era upgrade de free)
         const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-        const { data: gestor } = await (adminClient.from('gestores') as any)
+        const { data: gestor } = await adminClient.from('gestores')
           .select('id, nome, whatsapp, ativo, status_assinatura')
           .eq('id', pagGestor.gestor_id)
           .maybeSingle()
 
         if (gestor) {
           const eraUpgrade = !gestor.ativo || gestor.status_assinatura === 'pendente_upgrade'
-          await (adminClient.from('gestores') as any)
+          await adminClient.from('gestores')
             .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
             .eq('id', gestor.id)
 

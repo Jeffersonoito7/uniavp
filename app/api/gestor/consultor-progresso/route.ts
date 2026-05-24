@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
   const adminClient = createServiceRoleClient()
 
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id, whatsapp')
     .eq('user_id', user.id)
     .eq('ativo', true)
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   const alunoId = request.nextUrl.searchParams.get('alunoId')
   if (!alunoId) return NextResponse.json({ error: 'alunoId obrigatório' }, { status: 400 })
 
-  const { data: aluno } = await (adminClient.from('alunos') as any)
+  const { data: aluno } = await adminClient.from('alunos')
     .select('id, gestor_whatsapp')
     .eq('id', alunoId)
     .maybeSingle()
@@ -28,12 +28,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
   }
 
-  const { data: modulos } = await (adminClient.from('modulos') as any)
+  const { data: modulos } = await adminClient.from('modulos')
     .select('id, titulo, ordem')
     .eq('publicado', true)
     .order('ordem')
 
-  const { data: progresso } = await (adminClient.from('progresso') as any)
+  const { data: progresso } = await adminClient.from('progresso')
     .select('aula_id')
     .eq('aluno_id', alunoId)
     .eq('aprovado', true)
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
   const result = []
   for (const modulo of (modulos ?? [])) {
-    const { data: aulas } = await (adminClient.from('aulas') as any)
+    const { data: aulas } = await adminClient.from('aulas')
       .select('id')
       .eq('modulo_id', modulo.id)
       .eq('publicado', true)

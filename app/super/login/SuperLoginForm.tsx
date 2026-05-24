@@ -6,7 +6,7 @@ function LogoOito7() {
   const [err, setErr] = useState(false)
   if (err) {
     return (
-      <span style={{ fontWeight: 900, fontSize: 28, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 4 }}>
+      <span style={{ fontWeight: 700, fontSize: 28, color: '#818cf8', marginBottom: 4 }}>
         Oito7 Digital
       </span>
     )
@@ -69,50 +69,37 @@ export default function SuperLoginPage() {
     setShowReset(false)
   }
 
-  const inputStyle: React.CSSProperties = {
-    flex: 1, background: '#08090d', border: '1px solid #252836',
-    borderRadius: 8, padding: '12px 14px', color: '#f0f1f5', fontSize: 14,
-    outline: 'none', boxSizing: 'border-box', width: '100%',
-  }
-
   return (
-    <div style={{ minHeight: '100vh', background: '#08090d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif' }}>
-      <div style={{ width: 400, maxWidth: '95vw' }}>
+    <div className="page-wrap">
+      <div className="page-box">
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
           <LogoOito7 />
-          <p style={{ color: '#8a8fa3', fontSize: 14 }}>Painel Master — Gestão de Clientes</p>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Painel Master — Gestão de Clientes</p>
         </div>
 
-        <div style={{ background: '#181b24', border: '1px solid #252836', borderRadius: 16, padding: 32 }}>
-          {erro && (
-            <div style={{ background: '#e6394620', border: '1px solid #e63946', borderRadius: 8, padding: '10px 14px', color: '#e63946', fontSize: 14, marginBottom: 16 }}>
-              {erro}
-            </div>
-          )}
-          {msg && (
-            <div style={{ background: '#02A15320', border: '1px solid #02A153', borderRadius: 8, padding: '10px 14px', color: '#02A153', fontSize: 14, marginBottom: 16 }}>
-              {msg}
-            </div>
-          )}
+        <div className="card" style={{ padding: 32 }}>
+          {erro && <div className="alert alert-error" style={{ marginBottom: 16 }}>{erro}</div>}
+          {msg  && <div className="alert alert-success" style={{ marginBottom: 16 }}>{msg}</div>}
 
           {!showReset ? (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label style={{ display: 'block', color: '#8a8fa3', fontSize: 13, marginBottom: 6, fontWeight: 500 }}>E-mail</label>
-                <input type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} required style={inputStyle} />
+                <label className="label">E-mail</label>
+                <input type="email" className="input" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} required />
               </div>
               <div>
-                <label style={{ display: 'block', color: '#8a8fa3', fontSize: 13, marginBottom: 6, fontWeight: 500 }}>Senha</label>
+                <label className="label">Senha</label>
                 <div style={{ position: 'relative' }}>
                   <input
                     type={showPassword ? 'text' : 'password'}
+                    className="input"
                     value={form.password}
                     onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
                     required
-                    style={{ ...inputStyle, paddingRight: 44 }}
+                    style={{ paddingRight: 44 }}
                   />
                   <button type="button" onClick={() => setShowPassword(p => !p)}
-                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#8a8fa3', padding: 0, display: 'flex' }}>
+                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--avp-text-dim)', padding: 0, display: 'flex' }}>
                     {showPassword
                       ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                       : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -120,28 +107,26 @@ export default function SuperLoginPage() {
                   </button>
                 </div>
               </div>
-              <button type="submit" disabled={loading}
-                style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', border: 'none', borderRadius: 8, padding: '13px', fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
+              <button type="submit" disabled={loading} className="btn btn-primary btn-full" style={{ fontSize: 15 }}>
                 {loading ? 'Entrando...' : 'Acessar Painel'}
               </button>
               <button type="button" onClick={() => { setShowReset(true); setErro(''); setMsg('') }}
-                style={{ background: 'none', border: 'none', color: '#6366f1', fontSize: 13, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+                style={{ background: 'none', border: 'none', color: 'var(--avp-blue)', fontSize: 13, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
                 Esqueci minha senha
               </button>
             </form>
           ) : (
             <form onSubmit={handleReset} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <p style={{ color: '#8a8fa3', fontSize: 14, marginBottom: 4 }}>Digite seu e-mail para receber o link de redefinição:</p>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 4 }}>Digite seu e-mail para receber o link de redefinição:</p>
               <div>
-                <label style={{ display: 'block', color: '#8a8fa3', fontSize: 13, marginBottom: 6, fontWeight: 500 }}>E-mail</label>
-                <input type="email" value={resetEmail} onChange={e => setResetEmail(e.target.value)} required style={inputStyle} />
+                <label className="label">E-mail</label>
+                <input type="email" className="input" value={resetEmail} onChange={e => setResetEmail(e.target.value)} required />
               </div>
-              <button type="submit" disabled={resetLoading}
-                style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', border: 'none', borderRadius: 8, padding: '13px', fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: resetLoading ? 0.7 : 1 }}>
+              <button type="submit" disabled={resetLoading} className="btn btn-primary btn-full" style={{ fontSize: 15 }}>
                 {resetLoading ? 'Enviando...' : 'Enviar link'}
               </button>
               <button type="button" onClick={() => { setShowReset(false); setErro(''); setMsg('') }}
-                style={{ background: 'none', border: 'none', color: '#8a8fa3', fontSize: 13, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+                style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', fontSize: 13, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
                 Voltar ao login
               </button>
             </form>

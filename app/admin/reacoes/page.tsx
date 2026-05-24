@@ -8,7 +8,7 @@ export default async function ReacoesPage() {
   if (!user) redirect('/entrar?p=adm')
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  const { data: adminRecord } = await adminClient.from('admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
 
   const [
@@ -16,9 +16,9 @@ export default async function ReacoesPage() {
     { data: aulas },
     { data: alunos },
   ] = await Promise.all([
-    (adminClient.from('reacoes_aula') as any).select('*').order('created_at', { ascending: false }),
-    (adminClient.from('aulas') as any).select('id, titulo, modulo_id'),
-    (adminClient.from('alunos') as any).select('id, nome, whatsapp'),
+    adminClient.from('reacoes_aula').select('*').order('created_at', { ascending: false }),
+    adminClient.from('aulas').select('id, titulo, modulo_id'),
+    adminClient.from('alunos').select('id, nome, whatsapp'),
   ])
 
   const reacoesData = reacoes ?? []
@@ -43,7 +43,7 @@ export default async function ReacoesPage() {
         nota: r.nota,
         comentario: r.comentario,
         aluno: alunoMap[r.aluno_id]?.nome || 'Desconhecido',
-        data: new Date(r.created_at).toLocaleDateString('pt-BR'),
+        data: r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '—',
       })
     }
   }

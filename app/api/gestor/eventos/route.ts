@@ -6,7 +6,7 @@ import { enviarPushParaGestorConsultores } from '@/lib/push'
 export const dynamic = 'force-dynamic'
 
 async function getGestor(user: { id: string }, adminClient: ReturnType<typeof createServiceRoleClient>) {
-  const { data } = await (adminClient.from('gestores') as any)
+  const { data } = await adminClient.from('gestores')
     .select('id, nome, whatsapp').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   return data
 }
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const adminClient = createServiceRoleClient()
   const gestor = await getGestor(user, adminClient)
   if (!gestor) return NextResponse.json([], { status: 403 })
-  const { data } = await (adminClient.from('eventos') as any)
+  const { data } = await adminClient.from('eventos')
     .select('*').eq('gestor_id', gestor.id).order('data_hora', { ascending: true })
   return NextResponse.json(data ?? [])
 }
@@ -32,13 +32,13 @@ export async function POST(req: NextRequest) {
   if (!gestor) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const { titulo, descricao, cidade, data_hora, notificar } = await req.json()
-  const { data: evento, error } = await (adminClient.from('eventos') as any)
+  const { data: evento, error } = await adminClient.from('eventos')
     .insert({ titulo, descricao: descricao || '', cidade: cidade || '', data_hora, gestor_id: gestor.id })
     .select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   if (notificar) {
-    const { data: consultores } = await (adminClient.from('alunos') as any)
+    const { data: consultores } = await adminClient.from('alunos')
       .select('whatsapp, nome').eq('gestor_nome', gestor.nome).eq('status', 'ativo')
     const dataFormatada = new Date(data_hora).toLocaleString('pt-BR', {
       day: '2-digit', month: '2-digit', year: 'numeric',
@@ -68,6 +68,6 @@ export async function DELETE(req: NextRequest) {
   const gestor = await getGestor(user, adminClient)
   if (!gestor) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
   const { id } = await req.json()
-  await (adminClient.from('eventos') as any).delete().eq('id', id).eq('gestor_id', gestor.id)
+  await adminClient.from('eventos').delete().eq('id', id).eq('gestor_id', gestor.id)
   return NextResponse.json({ ok: true })
 }

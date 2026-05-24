@@ -59,15 +59,18 @@ export default function SupportChat({ painel, bottomOffset = 24 }: { painel?: st
         style={{
           position: 'fixed', bottom: bottomOffset, right: 24, zIndex: 9000,
           width: 52, height: 52, borderRadius: '50%',
-          background: 'linear-gradient(135deg, #333687, #02A153)',
-          border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(51,54,135,0.5)',
+          background: '#4f46e5',
+          border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(79,70,229,0.4)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 22, transition: 'transform 0.2s',
+          transition: 'transform 0.2s',
         }}
         onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
         onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
       >
-        {aberto ? '✕' : '💬'}
+        {aberto
+          ? <svg width="18" height="18" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          : <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        }
         {pulse && !aberto && (
           <span style={{
             position: 'absolute', top: 0, right: 0,
@@ -90,10 +93,12 @@ export default function SupportChat({ painel, bottomOffset = 24 }: { painel?: st
         }}>
           {/* Header */}
           <div style={{
-            padding: '14px 16px', background: 'linear-gradient(135deg, #333687, #02A153)',
+            padding: '14px 16px', background: '#4f46e5',
             display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0,
           }}>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🤖</div>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="18" height="18" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V3"/><circle cx="12" cy="3" r="1"/><path d="M8 11V7"/><path d="M16 11V7"/><path d="M8 15h.01M12 15h.01M16 15h.01"/></svg>
+            </div>
             <div>
               <p style={{ fontWeight: 700, fontSize: 14, color: '#fff', margin: 0 }}>Suporte AVP</p>
               <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)', margin: 0 }}>Agente de IA • Resposta imediata</p>
@@ -110,7 +115,7 @@ export default function SupportChat({ painel, bottomOffset = 24 }: { painel?: st
               <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
                 <div style={{
                   maxWidth: '82%', padding: '9px 13px', borderRadius: m.role === 'user' ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
-                  background: m.role === 'user' ? 'linear-gradient(135deg, #333687, #4f46e5)' : 'var(--avp-black)',
+                  background: m.role === 'user' ? '#4f46e5' : 'var(--avp-black)',
                   border: m.role === 'user' ? 'none' : '1px solid var(--avp-border)',
                   color: 'var(--avp-text)', fontSize: 13, lineHeight: 1.5,
                   whiteSpace: 'pre-wrap',
@@ -144,11 +149,7 @@ export default function SupportChat({ painel, bottomOffset = 24 }: { painel?: st
               }}
             />
             <button onClick={enviar} disabled={loading || !input.trim()}
-              style={{
-                background: input.trim() && !loading ? 'linear-gradient(135deg, #333687, #02A153)' : 'var(--avp-border)',
-                border: 'none', borderRadius: 8, padding: '8px 14px', cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
-                color: '#fff', fontSize: 16, transition: 'all 0.2s', flexShrink: 0,
-              }}>
+              className="btn btn-primary btn-sm" style={{ fontSize: 16, flexShrink: 0, padding: '8px 14px' }}>
               ↑
             </button>
           </div>

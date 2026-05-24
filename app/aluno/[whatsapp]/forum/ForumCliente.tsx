@@ -6,8 +6,9 @@ type Topico = {
   id: string
   titulo: string
   descricao: string | null
-  fixado: boolean
-  created_at: string
+  fixado: boolean | null
+  created_at: string | null
+  aluno_id: string | null
   aluno: { nome: string } | null
   respostas: { count: number }[]
 }
@@ -81,7 +82,7 @@ export default function ForumCliente({ topicosIniciais, whatsapp, alunoId, aluno
               {t.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 6, lineHeight: 1.4 }}>{t.descricao}</p>}
               <div style={{ display: 'flex', gap: 12, color: 'var(--avp-text-dim)', fontSize: 12 }}>
                 <span>{t.aluno?.nome ?? 'Aluno'}</span>
-                <span>{new Date(t.created_at).toLocaleDateString('pt-BR')}</span>
+                <span>{t.created_at ? new Date(t.created_at).toLocaleDateString('pt-BR') : '—'}</span>
               </div>
             </div>
           </Link>

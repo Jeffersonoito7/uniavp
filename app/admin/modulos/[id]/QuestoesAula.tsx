@@ -411,7 +411,7 @@ export default function QuestoesAula({
 
               {questoes.length === 0 && !adicionando && (
                 <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                  <p style={{ fontSize: 32, marginBottom: 8 }}>📝</p>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--avp-text-dim)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 8 }}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                   <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 16 }}>Nenhuma pergunta ainda. Adicione pelo menos uma para o quiz funcionar.</p>
                   <button type="button" onClick={() => setAdicionando(true)} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>+ Adicionar primeira pergunta</button>
                 </div>

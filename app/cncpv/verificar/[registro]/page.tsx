@@ -2,14 +2,14 @@ import { createServiceRoleClient } from '@/lib/supabase-server'
 
 export default async function VerificarCNCPVPage({ params }: { params: { registro: string } }) {
   const adminClient = createServiceRoleClient()
-  const { data } = await (adminClient.from('cncpv_assinaturas') as any)
+  const { data } = await adminClient.from('cncpv_assinaturas')
     .select('nome, numero_registro, assinado_em, cpf, hash_contrato, pdf_url, status, revogado_em, revogado_motivo')
     .eq('numero_registro', params.registro)
     .maybeSingle()
 
   const valido = !!data
   const revogada = data?.status === 'revogada'
-  const bg = 'linear-gradient(135deg, #020d1a 0%, #03183a 60%, #021a0e 100%)'
+  const bg = '#0a0a0f'
 
   const corBorda = revogada ? 'rgba(230,57,70,0.5)' : valido ? 'rgba(2,161,83,0.5)' : 'rgba(230,57,70,0.5)'
   const icone = revogada ? '🚫' : valido ? '✅' : '❌'
@@ -73,7 +73,7 @@ export default async function VerificarCNCPVPage({ params }: { params: { registr
                 {[
                   ['Consultor', data.nome],
                   ['Nº de Registro', data.numero_registro],
-                  ['Data de Emissão', new Date(data.assinado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })],
+                  ['Data de Emissão', data.assinado_em ? new Date(data.assinado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) : '—'],
                 ].map(([l, v]) => (
                   <div key={l} style={{ marginBottom: 14 }}>
                     <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 3px' }}>{l}</p>

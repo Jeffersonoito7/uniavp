@@ -14,12 +14,12 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   if (!user) redirect('/entrar?p=free')
 
   const adminClient = createServiceRoleClient()
-  const { data: aluno } = await (adminClient.from('alunos') as any)
+  const { data: aluno } = await adminClient.from('alunos')
     .select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
   if (!aluno) redirect('/entrar?p=free')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
-  const { data: aula } = await (adminClient.from('aulas') as any)
+  const { data: aula } = await adminClient.from('aulas')
     .select('*, modulo:modulos(titulo)').eq('id', params.aulaId).single()
   if (!aula || !aula.publicado) redirect(`/aluno/${params.whatsapp}`)
 
@@ -31,7 +31,7 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   if (trilhaStatus?.status === 'bloqueada') redirect(`/aluno/${params.whatsapp}`)
 
   // ── Verificação de permissão do módulo (PRO exclusivo) ──
-  const { data: moduloPerm } = await (adminClient.from('modulos') as any)
+  const { data: moduloPerm } = await adminClient.from('modulos')
     .select('perfis_permitidos').eq('id', aula.modulo_id).maybeSingle()
   const perfisPermitidos: string[] = moduloPerm?.perfis_permitidos ?? ['consultor', 'gestor']
   const moduloApenasProPermissao = !perfisPermitidos.includes('consultor') && perfisPermitidos.includes('gestor')
@@ -54,7 +54,7 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   const proximaStatus = proximaAulaNav ? (aulasModulo[idxAtual + 1]?.status ?? 'bloqueada') : 'nenhuma'
 
   // Determina se é realmente a última aula publicada do módulo (por ordem)
-  const { data: ultimaAulaPublicada } = await (adminClient.from('aulas') as any)
+  const { data: ultimaAulaPublicada } = await adminClient.from('aulas')
     .select('id')
     .eq('modulo_id', aula.modulo_id)
     .eq('publicado', true)
@@ -64,50 +64,50 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   const eUltimaAula = ultimaAulaPublicada?.id === params.aulaId
 
   // Avaliação existente
-  const { data: avaliacaoExistente } = await (adminClient.from('aula_avaliacoes') as any)
+  const { data: avaliacaoExistente } = await adminClient.from('aula_avaliacoes')
     .select('estrelas, sugestao').eq('aluno_id', aluno.id).eq('aula_id', params.aulaId).maybeSingle()
 
   // Curtidas
-  const { count: totalCurtidas } = await (adminClient.from('aula_curtidas') as any)
+  const { count: totalCurtidas } = await adminClient.from('aula_curtidas')
     .select('*', { count: 'exact', head: true }).eq('aula_id', params.aulaId)
-  const { data: minhaCurtida } = await (adminClient.from('aula_curtidas') as any)
+  const { data: minhaCurtida } = await adminClient.from('aula_curtidas')
     .select('id').eq('aula_id', params.aulaId).eq('aluno_id', aluno.id).maybeSingle()
 
   // Reação
-  const { data: minhaReacao } = await (adminClient.from('reacoes_aula') as any)
+  const { data: minhaReacao } = await adminClient.from('reacoes_aula')
     .select('id').eq('aula_id', params.aulaId).eq('aluno_id', aluno.id).maybeSingle()
 
   // Arquivos
-  const { data: arquivos } = await (adminClient.from('aula_arquivos') as any)
+  const { data: arquivos } = await adminClient.from('aula_arquivos')
     .select('*').eq('aula_id', params.aulaId).order('created_at')
 
   // Link externo: usa o do próprio aluno (se configurado) ou fallback pro link do PRO
-  const { data: alunoCompleto } = await (adminClient.from('alunos') as any)
+  const { data: alunoCompleto } = await adminClient.from('alunos')
     .select('gestor_whatsapp, link_externo').eq('id', aluno.id).maybeSingle()
   let linkExternoPro: string | null = alunoCompleto?.link_externo ?? null
   if (!linkExternoPro && alunoCompleto?.gestor_whatsapp) {
-    const { data: gestorLink } = await (adminClient.from('gestores') as any)
+    const { data: gestorLink } = await adminClient.from('gestores')
       .select('link_externo').eq('whatsapp', alunoCompleto.gestor_whatsapp).eq('ativo', true).maybeSingle()
     linkExternoPro = gestorLink?.link_externo ?? null
   }
 
   // Links do app consultor
-  const { data: appCfgRows } = await (adminClient.from('configuracoes') as any)
+  const { data: appCfgRows } = await adminClient.from('configuracoes')
     .select('chave, valor').in('chave', ['app_ios_url', 'app_android_url'])
   const appCfg: Record<string, string> = {}
-  for (const r of appCfgRows ?? []) { try { appCfg[r.chave] = JSON.parse(r.valor) } catch { appCfg[r.chave] = r.valor } }
+  for (const r of appCfgRows ?? []) { try { appCfg[r.chave] = JSON.parse(String(r.valor)) } catch { appCfg[r.chave] = String(r.valor) } }
   const appIosUrl = appCfg['app_ios_url'] || null
   const appAndroidUrl = appCfg['app_android_url'] || null
 
   // Regras globais de aprendizado
-  const { data: regrasRaw } = await (adminClient.from('configuracoes') as any)
+  const { data: regrasRaw } = await adminClient.from('configuracoes')
     .select('chave, valor')
     .in('chave', ['free_quiz_obrigatorio', 'free_bloquear_video', 'pro_quiz_obrigatorio', 'pro_bloquear_video'])
   const regras: Record<string, string> = {}
-  for (const r of regrasRaw ?? []) regras[r.chave] = r.valor
+  for (const r of regrasRaw ?? []) regras[r.chave] = String(r.valor)
 
   // Verifica se o aluno é também gestor (PRO)
-  const { data: gestorRow } = await (adminClient.from('gestores') as any)
+  const { data: gestorRow } = await adminClient.from('gestores')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   const isPro = !!gestorRow
 
@@ -119,24 +119,24 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
     : regras['free_bloquear_video'] !== 'false'
 
   // Aplica regra global: se quiz obrigatório, força tipo 'obrigatorio'; senão mantém o da aula
-  const quizTipoEfetivo = quizObrigatorioGlobal ? 'obrigatorio' : (aula.quiz_tipo ?? 'indicativo')
+  const quizTipoEfetivo = (quizObrigatorioGlobal ? 'obrigatorio' : (aula.quiz_tipo ?? 'indicativo')) as 'obrigatorio' | 'indicativo' | 'sim_nao'
   // Aplica regra global: bloquear vídeo substitui config da aula
-  const bloquearAvancarEfetivo = bloquearVideoGlobal || !!(aula as any).bloquear_avancar
+  const bloquearAvancarEfetivo = bloquearVideoGlobal || !!aula.bloquear_avancar
 
   // Quiz
-  const { data: questoesRaw } = await (adminClient.from('questoes') as any)
+  const { data: questoesRaw } = await adminClient.from('questoes')
     .select('id, enunciado, alternativas, explicacao, ordem')
     .eq('aula_id', params.aulaId).eq('ativa', true).order('ordem')
-  const questoes = questoesRaw ?? []
+  const questoes = (questoesRaw ?? []) as any[]
 
   // Progresso do aluno nesta aula
-  const { data: progressoRow } = await (adminClient.from('progresso') as any)
+  const { data: progressoRow } = await adminClient.from('progresso')
     .select('aprovado, tentativa_numero')
     .eq('aula_id', params.aulaId).eq('aluno_id', aluno.id)
     .eq('aprovado', true).limit(1).maybeSingle()
   const jaAprovado = !!progressoRow
 
-  const { data: tentativas } = await (adminClient.from('progresso') as any)
+  const { data: tentativas } = await adminClient.from('progresso')
     .select('tentativa_numero').eq('aula_id', params.aulaId).eq('aluno_id', aluno.id)
     .order('tentativa_numero', { ascending: false }).limit(1).maybeSingle()
   const tentativasAnteriores = tentativas?.tentativa_numero ?? 0
@@ -176,7 +176,7 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
           {/* Vídeo + Quiz + Navegação (client) */}
           {temAoVivo && (
             <div style={{ padding: '20px 24px' }}>
-              <CountdownAoVivo aoVivoData={aula.ao_vivo_data} aoVivoLink={aula.ao_vivo_link} plataforma={aula.ao_vivo_plataforma ?? 'outro'} />
+              <CountdownAoVivo aoVivoData={aula.ao_vivo_data ?? ''} aoVivoLink={aula.ao_vivo_link ?? ''} plataforma={aula.ao_vivo_plataforma ?? 'outro'} />
             </div>
           )}
           <AulaInterativa
@@ -184,15 +184,15 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
             aulaId={params.aulaId}
             moduloId={aula.modulo_id}
             youtubeId={(!temAoVivo || aoVivoPassou) ? aula.youtube_video_id : null}
-            videoUrl={(!temAoVivo || aoVivoPassou) ? (aula as any).video_url : null}
+            videoUrl={(!temAoVivo || aoVivoPassou) ? aula.video_url : null}
             titulo={aula.titulo}
             bloquearAvancar={bloquearAvancarEfetivo}
-            linkExterno={(aula as any).mostrar_link_externo ? linkExternoPro : null}
-            linkExternoTitulo={(aula as any).link_externo_titulo || 'Cadastre-se na plataforma parceira'}
-            bloquearLinkExterno={!!(aula as any).bloquear_link_externo}
-            appIosUrl={(aula as any).mostrar_links_app ? appIosUrl : null}
-            appAndroidUrl={(aula as any).mostrar_links_app ? appAndroidUrl : null}
-            bloquearLinksApp={!!(aula as any).bloquear_links_app}
+            linkExterno={aula.mostrar_link_externo ? linkExternoPro : null}
+            linkExternoTitulo={aula.link_externo_titulo || 'Cadastre-se na plataforma parceira'}
+            bloquearLinkExterno={!!aula.bloquear_link_externo}
+            appIosUrl={aula.mostrar_links_app ? appIosUrl : null}
+            appAndroidUrl={aula.mostrar_links_app ? appAndroidUrl : null}
+            bloquearLinksApp={!!aula.bloquear_links_app}
             aulaAnterior={aulaAnteriorNav}
             proximaAula={proximaAulaNav}
             proximaStatus={proximaStatus}
@@ -202,9 +202,9 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
             jaAprovado={jaAprovado}
             tentativasAnteriores={tentativasAnteriores}
             quizTipo={quizTipoEfetivo}
-            simNaoPergunta={(aula as any).quiz_sim_nao_pergunta ?? ''}
-            simNaoNaoMensagem={(aula as any).quiz_sim_nao_nao_mensagem ?? ''}
-            simNaoPerguntas={(aula as any).quiz_sim_nao_perguntas ?? []}
+            simNaoPergunta={aula.quiz_sim_nao_pergunta ?? ''}
+            simNaoNaoMensagem={aula.quiz_sim_nao_nao_mensagem ?? ''}
+            simNaoPerguntas={(aula.quiz_sim_nao_perguntas ?? []) as { pergunta: string; nao_mensagem: string }[]}
             temQuiz={questoes.length > 0 || aula.quiz_tipo === 'sim_nao'}
           />
 

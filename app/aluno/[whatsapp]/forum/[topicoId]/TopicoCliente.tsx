@@ -4,7 +4,8 @@ import { useState } from 'react'
 type Resposta = {
   id: string
   texto: string
-  created_at: string
+  created_at: string | null
+  aluno_id: string | null
   aluno: { nome: string } | null
 }
 
@@ -42,7 +43,7 @@ export default function TopicoCliente({ topicoId, respostasIniciais }: { topicoI
           <div key={r.id} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '16px 20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
               <span style={{ fontWeight: 700, fontSize: 13 }}>{r.aluno?.nome ?? 'Aluno'}</span>
-              <span style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>{new Date(r.created_at).toLocaleDateString('pt-BR')}</span>
+              <span style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>{r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '—'}</span>
             </div>
             <p style={{ color: 'var(--avp-text)', fontSize: 14, lineHeight: 1.6 }}>{r.texto}</p>
           </div>

@@ -36,7 +36,7 @@ export default function RetomarPopup({ whatsapp, aulaId, aulaId_titulo, moduloTi
       <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 18, width: '100%', maxWidth: 520, overflow: 'hidden', boxShadow: '0 24px 60px rgba(0,0,0,0.5)' }}>
 
         {/* Thumbnail com overlay */}
-        <div style={{ height: 220, position: 'relative', background: 'linear-gradient(135deg, #1e3a8a, #166534)', overflow: 'hidden' }}>
+        <div style={{ height: 220, position: 'relative', background: 'rgba(79,70,229,0.12)', overflow: 'hidden' }}>
           {thumbUrl && <img src={thumbUrl} alt={aulaId_titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />}
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0.2) 100%)' }} />
 
@@ -59,8 +59,8 @@ export default function RetomarPopup({ whatsapp, aulaId, aulaId_titulo, moduloTi
           )}
 
           <Link href={`/aluno/${whatsapp}/aula/${aulaId}`} onClick={fechar}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'linear-gradient(135deg, #1e40af, #3b82f6)', color: '#fff', textDecoration: 'none', borderRadius: 10, padding: '14px', fontWeight: 800, fontSize: 16 }}>
-            <span style={{ fontSize: 20 }}>▶</span> Retomar
+            className="btn btn-primary btn-full" style={{ textDecoration: 'none', fontSize: 16, gap: 10 }}>
+            <span style={{ fontSize: 18 }}>▶</span> Retomar
           </Link>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, borderTop: '1px solid var(--avp-border)' }}>

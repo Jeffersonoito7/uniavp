@@ -101,7 +101,7 @@ export default function PerfilCliente({ aluno, email, podeCfgLink }: { aluno: Al
 
         {/* Header */}
         <header style={{ background: 'var(--avp-card)', borderBottom: '1px solid var(--avp-border)', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontWeight: 800, fontSize: 18, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          <span style={{ fontWeight: 700, fontSize: 18, color: 'var(--avp-text)', letterSpacing: '-0.01em' }}>
             {siteNome}
           </span>
           <a href={`/aluno/${aluno.whatsapp}`} style={{ color: 'var(--avp-text-dim)', fontSize: 14, textDecoration: 'none', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -112,11 +112,11 @@ export default function PerfilCliente({ aluno, email, podeCfgLink }: { aluno: Al
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 20px 60px' }}>
 
           {/* Banner + avatar */}
-          <div style={{ background: 'var(--grad-brand)', borderRadius: '16px 16px 0 0', height: 120, position: 'relative', marginBottom: 60 }}>
+          <div style={{ background: 'rgba(79,70,229,0.12)', border: '1px solid rgba(79,70,229,0.2)', borderRadius: '16px 16px 0 0', height: 120, position: 'relative', marginBottom: 60 }}>
             <div style={{ position: 'absolute', bottom: -52, left: 28, display: 'flex', alignItems: 'flex-end', gap: 16 }}>
               {/* Avatar com botão de edição */}
               <div style={{ position: 'relative' }}>
-                <div style={{ width: 104, height: 104, borderRadius: '50%', border: '4px solid var(--avp-black)', overflow: 'hidden', background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                <div style={{ width: 104, height: 104, borderRadius: '50%', border: '4px solid var(--avp-black)', overflow: 'hidden', background: 'rgba(79,70,229,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                   onClick={() => inputFotoRef.current?.click()} title="Clique para trocar foto">
                   {fotoUrl
                     ? <img src={fotoUrl} alt={nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -133,7 +133,7 @@ export default function PerfilCliente({ aluno, email, podeCfgLink }: { aluno: Al
                   style={{ position: 'absolute', bottom: 2, right: 2, width: 28, height: 28, borderRadius: '50%', background: 'var(--avp-green)', border: '2px solid var(--avp-black)', color: '#fff', cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}
                   title="Trocar foto"
                 >
-                  📷
+                  <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                 </button>
                 <input ref={inputFotoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFotoChange} />
               </div>

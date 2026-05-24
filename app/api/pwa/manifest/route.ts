@@ -5,13 +5,14 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const admin = createServiceRoleClient()
-  const { data } = await (admin.from('configuracoes') as any)
+  const { data } = await admin.from('configuracoes')
     .select('chave, valor')
     .in('chave', ['site_nome', 'site_cor_primaria', 'site_cor_secundaria', 'logo_favicon_url', 'site_logo_url'])
 
   const map: Record<string, string> = {}
   for (const row of data ?? []) {
-    try { map[row.chave] = JSON.parse(row.valor) } catch { map[row.chave] = row.valor }
+    const s = String(row.valor ?? '')
+    try { map[row.chave] = JSON.parse(s) } catch { map[row.chave] = s }
   }
 
   const nome = map['site_nome'] || 'UNIAVP'

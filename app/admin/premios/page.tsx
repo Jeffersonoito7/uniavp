@@ -8,11 +8,11 @@ export default async function PremiosPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/entrar?p=adm')
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  const { data: adminRecord } = await adminClient.from('admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
 
-  const { data: premios } = await (adminClient.from('premios') as any).select('*').order('created_at', { ascending: false })
-  const { data: resgates } = await (adminClient.from('resgates') as any)
+  const { data: premios } = await adminClient.from('premios').select('*').order('created_at', { ascending: false })
+  const { data: resgates } = await adminClient.from('resgates')
     .select('*, aluno:alunos(nome), premio:premios(nome)')
     .order('created_at', { ascending: false })
 

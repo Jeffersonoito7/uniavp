@@ -9,7 +9,7 @@ export async function DELETE(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id, whatsapp')
     .eq('user_id', user.id)
     .eq('ativo', true)
@@ -19,7 +19,7 @@ export async function DELETE(req: NextRequest) {
   const { alunoId } = await req.json()
 
   // Verifica se o consultor pertence a este gestor
-  const { data: aluno } = await (adminClient.from('alunos') as any)
+  const { data: aluno } = await adminClient.from('alunos')
     .select('id, gestor_whatsapp')
     .eq('id', alunoId)
     .maybeSingle()
@@ -29,7 +29,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   // Remove a associação com o gestor (não deleta o aluno)
-  await (adminClient.from('alunos') as any)
+  await adminClient.from('alunos')
     .update({ gestor_whatsapp: null, gestor_nome: null })
     .eq('id', alunoId)
 
@@ -42,7 +42,7 @@ export async function PATCH(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id, whatsapp')
     .eq('user_id', user.id)
     .eq('ativo', true)
@@ -54,7 +54,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Status inválido' }, { status: 400 })
   }
 
-  const { data: aluno } = await (adminClient.from('alunos') as any)
+  const { data: aluno } = await adminClient.from('alunos')
     .select('id, gestor_whatsapp')
     .eq('id', alunoId)
     .maybeSingle()
@@ -62,7 +62,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Consultor não encontrado' }, { status: 404 })
   }
 
-  await (adminClient.from('alunos') as any)
+  await adminClient.from('alunos')
     .update({ status })
     .eq('id', alunoId)
 

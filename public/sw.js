@@ -1,5 +1,5 @@
-const CACHE = 'uniavp-v3'
-const OFFLINE_URLS = ['/entrar', '/captacao', '/manifest.json', '/logo.png', '/api/pwa/manifest']
+const CACHE = 'uniavp-v4'
+const OFFLINE_URLS = ['/entrar', '/captacao', '/logo.png', '/api/pwa/manifest']
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
@@ -35,7 +35,7 @@ self.addEventListener('fetch', (e) => {
 })
 
 self.addEventListener('push', (e) => {
-  let data = { title: 'UNIAVP', body: 'Você tem uma nova notificação!', url: '/entrar' }
+  let data = { title: 'Notificação', body: 'Você tem uma nova notificação!', url: '/entrar' }
   try { data = { ...data, ...e.data.json() } } catch (_) {}
   e.waitUntil(
     self.registration.showNotification(data.title, {

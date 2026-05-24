@@ -7,9 +7,9 @@ type Gestor = {
   nome: string
   email: string
   whatsapp: string
-  ativo: boolean
-  created_at: string
-  status_assinatura?: string
+  ativo: boolean | null
+  created_at: string | null
+  status_assinatura?: string | null
   plano_vencimento?: string | null
   trial_expira_em?: string | null
 }
@@ -301,7 +301,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
                       Copiar link
                     </button>
                   </td>
-                  <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 13 }}>{new Date(g.created_at).toLocaleDateString('pt-BR')}</td>
+                  <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 13 }}>{g.created_at ? new Date(g.created_at).toLocaleDateString('pt-BR') : '—'}</td>
                   <td style={{ padding: '14px 16px' }}>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       <button onClick={() => { setAtivandoPro(g); setDiasPro('30') }}

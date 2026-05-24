@@ -11,7 +11,7 @@ import ImageCropModal from '@/app/components/ImageCropModal'
 import GestorArtesTemplates from './artes/GestorArtesTemplates'
 
 // ── Componente de Perfil do Gestor ──────────────────────────────────────────
-function PerfilGestor({ gestor, onNomeAtualizado, cncpvHabilitado }: { gestor: Gestor; onNomeAtualizado: (n: string) => void; cncpvHabilitado?: boolean }) {
+function PerfilGestor({ gestor, onNomeAtualizado, cncpvHabilitado, podeCfgLink }: { gestor: Gestor; onNomeAtualizado: (n: string) => void; cncpvHabilitado?: boolean; podeCfgLink?: boolean }) {
   const [nome, setNome]         = useState(gestor.nome)
   const [linkExterno, setLinkExterno] = useState(gestor.link_externo ?? '')
   const [fotoUrl, setFotoUrl]   = useState<string | null>(gestor.foto_perfil ?? null)
@@ -70,7 +70,7 @@ function PerfilGestor({ gestor, onNomeAtualizado, cncpvHabilitado }: { gestor: G
         </div>
 
         {msg && (
-          <div style={{ padding: '12px 16px', background: msg.tipo === 'ok' ? '#02A15320' : '#e6394620', border: `1px solid ${msg.tipo === 'ok' ? 'var(--avp-green)' : 'var(--avp-danger)'}`, borderRadius: 10, color: msg.tipo === 'ok' ? 'var(--avp-green)' : 'var(--avp-danger)', fontSize: 14, marginBottom: 20 }}>
+          <div className={`alert ${msg.tipo === 'ok' ? 'alert-success' : 'alert-error'}`} style={{ marginBottom: 20, fontSize: 14 }}>
             {msg.texto}
           </div>
         )}
@@ -79,7 +79,7 @@ function PerfilGestor({ gestor, onNomeAtualizado, cncpvHabilitado }: { gestor: G
         <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: '24px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 24 }}>
           <div style={{ position: 'relative', flexShrink: 0 }}>
             <div onClick={() => fotoRef.current?.click()}
-              style={{ width: 96, height: 96, borderRadius: '50%', overflow: 'hidden', background: 'var(--grad-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '3px solid var(--avp-border)' }}>
+              style={{ width: 96, height: 96, borderRadius: '50%', overflow: 'hidden', background: 'rgba(79,70,229,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '3px solid var(--avp-border)' }}>
               {fotoUrl
                 ? <img src={fotoUrl} alt={nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <span style={{ fontSize: 36, fontWeight: 800, color: '#fff' }}>{nome.charAt(0).toUpperCase()}</span>}
@@ -92,10 +92,9 @@ function PerfilGestor({ gestor, onNomeAtualizado, cncpvHabilitado }: { gestor: G
           </div>
           <div>
             <p style={{ fontWeight: 700, fontSize: 16, margin: '0 0 4px' }}>{gestor.nome}</p>
-            <p style={{ color: '#818cf8', fontSize: 13, margin: '0 0 10px', fontWeight: 700 }}>✨ UNIAVP PRO</p>
-            <button onClick={() => fotoRef.current?.click()}
-              style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
-              📷 Trocar foto
+            <p style={{ color: '#818cf8', fontSize: 12, margin: '0 0 10px', fontWeight: 600, letterSpacing: '0.04em' }}>UNIAVP PRO</p>
+            <button onClick={() => fotoRef.current?.click()} className="btn btn-ghost btn-sm">
+              Trocar foto
             </button>
           </div>
         </div>
@@ -110,14 +109,15 @@ function PerfilGestor({ gestor, onNomeAtualizado, cncpvHabilitado }: { gestor: G
               <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>Nome *</label>
               <input style={inp} value={nome} onChange={e => setNome(e.target.value)} required />
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>🔗 Seu link da plataforma parceira</label>
-              <input style={inp} value={linkExterno} onChange={e => setLinkExterno(e.target.value)} placeholder="Cole aqui o seu link de indicação (qualquer formato)" />
-              <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>
-                Este é o seu link pessoal de indicação — cada PRO tem o seu. Cole exatamente como você recebeu.<br />
-                Ele aparece para seus FREE ao se cadastrarem e também nas aulas configuradas pelo admin.
-              </p>
-            </div>
+            {podeCfgLink && (
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>🔗 Meu link da plataforma parceira</label>
+                <input style={inp} value={linkExterno} onChange={e => setLinkExterno(e.target.value)} placeholder="Cole aqui o seu link de indicação" />
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>
+                  Cole exatamente como você recebeu. Aparece para os FREEs que você recrutar.
+                </p>
+              </div>
+            )}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>WhatsApp</label>
@@ -129,8 +129,7 @@ function PerfilGestor({ gestor, onNomeAtualizado, cncpvHabilitado }: { gestor: G
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 4, borderTop: '1px solid var(--avp-border)' }}>
-              <button type="submit" disabled={salvando}
-                style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 28px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: salvando ? 0.7 : 1 }}>
+              <button type="submit" disabled={salvando} className="btn btn-green btn-sm">
                 {salvando ? 'Salvando...' : '✓ Salvar'}
               </button>
             </div>
@@ -146,8 +145,7 @@ function PerfilGestor({ gestor, onNomeAtualizado, cncpvHabilitado }: { gestor: G
               <p style={{ fontWeight: 600, fontSize: 14, margin: '0 0 4px' }}>Senha</p>
               <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0 }}>Altere sua senha de acesso</p>
             </div>
-            <a href="/recuperar-senha"
-              style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', color: 'var(--avp-text)', borderRadius: 8, padding: '8px 18px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+            <a href="/recuperar-senha" className="btn btn-ghost btn-sm" style={{ textDecoration: 'none' }}>
               Alterar senha
             </a>
           </div>
@@ -157,14 +155,14 @@ function PerfilGestor({ gestor, onNomeAtualizado, cncpvHabilitado }: { gestor: G
         {cncpvHabilitado !== false && (
           <a href={`/cncpv?nome=${encodeURIComponent(gestor.nome)}&whatsapp=${gestor.whatsapp}&email=${encodeURIComponent(gestor.email ?? '')}`}
             style={{ display: 'block', textDecoration: 'none', marginTop: 20 }}>
-            <div style={{ background: 'linear-gradient(135deg, rgba(2,161,83,0.12), rgba(1,122,62,0.06))', border: '1px solid rgba(2,161,83,0.35)', borderRadius: 16, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}>
-              <div style={{ fontSize: 40, flexShrink: 0 }}>🪪</div>
+            <div style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 12, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
               <div style={{ flex: 1 }}>
-                <p style={{ fontWeight: 800, fontSize: 16, color: '#fff', margin: '0 0 2px' }}>Carteira Nacional do Consultor — CNCPV</p>
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, margin: 0 }}>Assine o contrato de conduta e emita sua credencial profissional oficial</p>
+                <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--avp-text)', margin: '0 0 2px' }}>Carteira Nacional do Consultor — CNCPV</p>
+                <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, margin: 0 }}>Assine o contrato e emita sua credencial profissional</p>
               </div>
-              <div style={{ background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', borderRadius: 10, padding: '10px 20px', fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                Emitir →
+              <div style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.25)', color: '#4ade80', borderRadius: 8, padding: '8px 16px', fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                Emitir
               </div>
             </div>
           </a>
@@ -175,7 +173,7 @@ function PerfilGestor({ gestor, onNomeAtualizado, cncpvHabilitado }: { gestor: G
 }
 
 type Consultor = {
-  id: string; nome: string; whatsapp: string; email: string; status: string; created_at: string
+  id: string; nome: string; whatsapp: string; email: string; status: string; created_at: string | null
   ultimo_estudo_em?: string | null; streak_atual?: number | null
 }
 type Modulo = {
@@ -203,7 +201,7 @@ function BarraProgresso({ pct }: { pct: number }) {
   )
 }
 
-type ArteTemplate = { id: string; tipo: string; titulo: string; arte_url: string; foto_x: number; foto_y: number; foto_largura: number; foto_altura: number; foto_redondo: boolean; ativo: boolean; formato: string; gestor_id: string | null; texto_ativo?: boolean; texto_template?: string; texto_x?: number; texto_y?: number; texto_tamanho?: number; texto_cor?: string; texto_negrito?: boolean; texto_alinhamento?: string; texto_sombra?: boolean }
+type ArteTemplate = { id: string; tipo: string; titulo: string; arte_url: string | null; foto_x: number | null; foto_y: number | null; foto_largura: number | null; foto_altura: number | null; foto_redondo: boolean | null; ativo: boolean | null; formato: string | null; gestor_id: string | null; texto_ativo?: boolean | null; texto_template?: string | null; texto_x?: number | null; texto_y?: number | null; texto_tamanho?: number | null; texto_cor?: string | null; texto_negrito?: boolean | null; texto_alinhamento?: string | null; texto_sombra?: boolean | null }
 
 function NavAulas({ aulas, aulaAtualId, onPrev, onNext }: { aulas: any[]; aulaAtualId: string; onPrev: (a: any) => void; onNext: (a: any) => void }) {
   const idx = aulas.findIndex(a => a.id === aulaAtualId)
@@ -246,10 +244,10 @@ function CardProGratuito({ prosIndicados, limite }: { prosIndicados: number; lim
   const pct = Math.min(100, Math.round((prosIndicados / limite) * 100))
   const ehGratuito = prosIndicados >= limite
   return (
-    <div style={{ background: ehGratuito ? 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))' : 'var(--avp-card)', border: `1px solid ${ehGratuito ? 'rgba(99,102,241,0.5)' : 'var(--avp-border)'}`, borderRadius: 16, padding: '20px 24px', marginBottom: 24 }}>
+    <div style={{ background: ehGratuito ? 'rgba(79,70,229,0.08)' : 'var(--avp-card)', border: `1px solid ${ehGratuito ? 'rgba(79,70,229,0.3)' : 'var(--avp-border)'}`, borderRadius: 12, padding: '18px 22px', marginBottom: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
         <div>
-          <p style={{ fontWeight: 800, fontSize: 15, margin: 0 }}>{ehGratuito ? '🎉 Seu PRO está gratuito!' : '✨ PRO gratuito por rede'}</p>
+          <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>{ehGratuito ? 'Seu PRO está gratuito!' : 'PRO gratuito por rede'}</p>
           <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '3px 0 0' }}>
             {ehGratuito ? `Você tem ${prosIndicados} PROs ativos na sua rede — continue assim!` : `Indique ${limite - prosIndicados} PROs ativos para ter o plano gratuito`}
           </p>
@@ -262,7 +260,7 @@ function CardProGratuito({ prosIndicados, limite }: { prosIndicados: number; lim
         </div>
       </div>
       <div style={{ background: 'var(--avp-border)', borderRadius: 100, height: 8, overflow: 'hidden' }}>
-        <div style={{ width: `${pct}%`, height: '100%', background: ehGratuito ? 'linear-gradient(90deg, #6366f1, #8b5cf6)' : pct >= 75 ? 'linear-gradient(90deg, #6366f1, #6366f1)' : 'linear-gradient(90deg, #3b82f6, #6366f1)', borderRadius: 100, transition: 'width 0.4s' }} />
+        <div style={{ width: `${pct}%`, height: '100%', background: '#4f46e5', borderRadius: 100, transition: 'width 0.4s' }} />
       </div>
       {!ehGratuito && (
         <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 6 }}>
@@ -274,9 +272,9 @@ function CardProGratuito({ prosIndicados, limite }: { prosIndicados: number; lim
 }
 
 export default function GestorDashboard({
-  gestor, consultores, progressoMap, indicacoesMap, artesTemplatesIniciais, baseUrl, capaDefault, prosIndicados, limiteProGratuito, cncpvHabilitado, documentos,
+  gestor, consultores, progressoMap, indicacoesMap, artesTemplatesIniciais, baseUrl, capaDefault, prosIndicados, limiteProGratuito, cncpvHabilitado, documentos, podeCfgLink,
 }: {
-  gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; indicacoesMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string; capaDefault?: string | null; prosIndicados?: number; limiteProGratuito?: number; cncpvHabilitado?: boolean; documentos?: { id: string; titulo: string; descricao: string | null; pdf_url: string }[]
+  gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; indicacoesMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string; capaDefault?: string | null; prosIndicados?: number; limiteProGratuito?: number; cncpvHabilitado?: boolean; documentos?: { id: string; titulo: string; descricao: string | null; pdf_url: string }[]; podeCfgLink?: boolean
 }) {
   const [aba, setAba] = useState('dashboard')
   const [listaConsultores, setListaConsultores] = useState(consultores)
@@ -302,6 +300,13 @@ export default function GestorDashboard({
   const [msgEvento, setMsgEvento] = useState('')
   const [artesSubAba, setArtesSubAba] = useState<'templates' | 'consultores'>('consultores')
   const [artesTemplates] = useState<ArteTemplate[]>(artesTemplatesIniciais)
+  type AulaAoVivo = { id: string; titulo: string; descricao: string | null; plataforma: 'zoom' | 'meet'; link: string; data_hora: string; duracao_minutos: number; obrigatoria: boolean; gravacao_url: string | null; lembrete_enviado: boolean }
+  const [aulasVivo, setAulasVivo] = useState<AulaAoVivo[]>([])
+  const [aulasVivoCarregadas, setAulasVivoCarregadas] = useState(false)
+  const [vivoForm, setVivoForm] = useState({ titulo: '', descricao: '', plataforma: 'zoom' as 'zoom' | 'meet', link: '', data_hora: '', duracao_minutos: 60, obrigatoria: false })
+  const [salvandoVivo, setSalvandoVivo] = useState(false)
+  const [msgVivo, setMsgVivo] = useState('')
+  const [showVivoForm, setShowVivoForm] = useState(false)
 
   const ativos = listaConsultores.filter(c => c.status !== 'concluido')
   const emAndamento = listaConsultores.filter(c => c.status === 'ativo' && progressoMap[c.id] > 0).length
@@ -435,10 +440,43 @@ export default function GestorDashboard({
     setEventos(prev => prev.filter(ev => ev.id !== id))
   }
 
+  async function carregarAulasVivo() {
+    if (aulasVivoCarregadas) return
+    const res = await fetch(`/api/aulas-ao-vivo?modo=gestor&gestor_id=${gestor.id}`)
+    if (res.ok) setAulasVivo(await res.json())
+    setAulasVivoCarregadas(true)
+  }
+
+  async function criarAulaVivo(e: React.FormEvent) {
+    e.preventDefault()
+    if (!vivoForm.titulo || !vivoForm.link || !vivoForm.data_hora) { setMsgVivo('Preencha título, link e data/hora.'); return }
+    setSalvandoVivo(true); setMsgVivo('')
+    const res = await fetch('/api/aulas-ao-vivo', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...vivoForm, gestor_id: gestor.id }),
+    })
+    if (res.ok) {
+      const nova = await res.json()
+      setAulasVivo(prev => [...prev, nova].sort((a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime()))
+      setVivoForm({ titulo: '', descricao: '', plataforma: 'zoom', link: '', data_hora: '', duracao_minutos: 60, obrigatoria: false })
+      setShowVivoForm(false)
+      setMsgVivo('✅ Aula ao vivo criada! Seus consultores receberão lembrete 1h antes.')
+    } else { setMsgVivo('Erro ao criar.') }
+    setSalvandoVivo(false)
+    setTimeout(() => setMsgVivo(''), 4000)
+  }
+
+  async function removerAulaVivo(id: string) {
+    if (!confirm('Excluir esta aula ao vivo?')) return
+    await fetch('/api/aulas-ao-vivo', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    setAulasVivo(prev => prev.filter(a => a.id !== id))
+  }
+
   function handleSetAba(id: string) {
     setAba(id)
     if (id === 'eventos') carregarEventos()
     if (id === 'aulas') carregarAulas()
+    if (id === 'ao-vivo') carregarAulasVivo()
   }
 
   const inp: React.CSSProperties = { width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' }
@@ -621,13 +659,13 @@ export default function GestorDashboard({
                 {documentos.map(doc => (
                   <a key={doc.id} href={doc.pdf_url} target="_blank" rel="noreferrer"
                     style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '14px 18px', textDecoration: 'none' }}>
-                    <span style={{ fontSize: 28, flexShrink: 0 }}>📄</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--avp-text-dim)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--avp-text)', margin: 0 }}>{doc.titulo}</p>
                       {doc.descricao && <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.descricao}</p>}
                     </div>
-                    <span style={{ background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
-                      ⬇️ Baixar
+                    <span style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#4ade80', borderRadius: 7, padding: '5px 12px', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>
+                      Baixar
                     </span>
                   </a>
                 ))}
@@ -963,12 +1001,12 @@ export default function GestorDashboard({
                       onMouseLeave={e => { const el = e.currentTarget as HTMLDivElement; el.style.transform = ''; el.style.borderColor = 'var(--avp-border)'; el.style.boxShadow = '' }}
                     >
                       {/* Capa do módulo */}
-                      <div style={{ height: 130, background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ height: 130, background: 'rgba(79,70,229,0.12)', border: '0 0 1px 0 solid var(--avp-border)', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {mod.capa_url
                           ? <img src={mod.capa_url} alt={mod.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
                           : capaDefault
                             ? <img src={capaDefault} alt="capa" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
-                            : <span style={{ fontSize: 48 }}>📁</span>
+                            : <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                         }
                         {/* Badge de quantidade */}
                         <div style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(0,0,0,0.65)', borderRadius: 20, padding: '3px 10px', fontSize: 11, color: '#fff', fontWeight: 600, backdropFilter: 'blur(4px)' }}>
@@ -1008,7 +1046,7 @@ export default function GestorDashboard({
                         onMouseEnter={e => { const el = e.currentTarget as HTMLDivElement; el.style.transform = 'translateY(-3px)'; el.style.borderColor = 'var(--avp-blue)'; el.style.boxShadow = '0 8px 24px rgba(59,130,246,0.15)' }}
                         onMouseLeave={e => { const el = e.currentTarget as HTMLDivElement; el.style.transform = ''; el.style.borderColor = 'var(--avp-border)'; el.style.boxShadow = '' }}
                       >
-                        <div style={{ height: 120, background: 'var(--grad-brand)', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ height: 120, background: 'rgba(79,70,229,0.12)', position: 'relative', overflow: 'hidden' }}>
                           {thumb && <img src={thumb} alt={aula.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />}
                           {/* Play overlay */}
                           {temVideo && (
@@ -1053,6 +1091,92 @@ export default function GestorDashboard({
             </>
           )}
 
+        </>
+      )}
+
+      {/* ── AO VIVO ── */}
+      {aba === 'ao-vivo' && (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <h1 style={{ fontSize: 22, fontWeight: 800 }}>Aulas ao Vivo</h1>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Agende transmissões via Zoom ou Google Meet — seus consultores recebem lembrete 1h antes</p>
+            </div>
+            <button onClick={() => setShowVivoForm(s => !s)}
+              style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>
+              {showVivoForm ? 'Cancelar' : '+ Nova Aula ao Vivo'}
+            </button>
+          </div>
+
+          {msgVivo && (
+            <div style={{ padding: '10px 16px', background: msgVivo.includes('Erro') ? '#e6394620' : '#02A15320', border: `1px solid ${msgVivo.includes('Erro') ? 'var(--avp-danger)' : 'var(--avp-green)'}`, borderRadius: 8, color: msgVivo.includes('Erro') ? 'var(--avp-danger)' : 'var(--avp-green)', fontSize: 14, marginBottom: 16 }}>{msgVivo}</div>
+          )}
+
+          {showVivoForm && (
+            <form onSubmit={criarAulaVivo} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
+              <h3 style={{ fontWeight: 700, fontSize: 16 }}>Nova Aula ao Vivo</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div style={{ gridColumn: '1 / -1' }}><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Título *</label><input required value={vivoForm.titulo} onChange={e => setVivoForm(p => ({ ...p, titulo: e.target.value }))} style={inp} placeholder="Ex: Técnicas de abordagem" /></div>
+                <div>
+                  <label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Plataforma *</label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {(['zoom', 'meet'] as const).map(p => (
+                      <button type="button" key={p} onClick={() => setVivoForm(prev => ({ ...prev, plataforma: p }))}
+                        style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: `2px solid ${vivoForm.plataforma === p ? (p === 'zoom' ? '#2D8CFF' : '#34A853') : 'var(--avp-border)'}`, background: vivoForm.plataforma === p ? (p === 'zoom' ? 'rgba(45,140,255,0.1)' : 'rgba(52,168,83,0.1)') : 'transparent', color: 'var(--avp-text)', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>
+                        {p === 'zoom' ? '🔵 Zoom' : '🟢 Google Meet'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Data e Hora *</label><input required type="datetime-local" value={vivoForm.data_hora} onChange={e => setVivoForm(p => ({ ...p, data_hora: e.target.value }))} style={inp} /></div>
+                <div style={{ gridColumn: '1 / -1' }}><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Link da reunião *</label><input required value={vivoForm.link} onChange={e => setVivoForm(p => ({ ...p, link: e.target.value }))} style={inp} placeholder={vivoForm.plataforma === 'zoom' ? 'https://zoom.us/j/...' : 'https://meet.google.com/...'} /></div>
+                <div><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Duração (minutos)</label><input type="number" min={15} max={480} value={vivoForm.duracao_minutos} onChange={e => setVivoForm(p => ({ ...p, duracao_minutos: Number(e.target.value) }))} style={inp} /></div>
+                <div><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Descrição</label><input value={vivoForm.descricao} onChange={e => setVivoForm(p => ({ ...p, descricao: e.target.value }))} style={inp} placeholder="Assuntos abordados..." /></div>
+              </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                <input type="checkbox" checked={vivoForm.obrigatoria} onChange={e => setVivoForm(p => ({ ...p, obrigatoria: e.target.checked }))} style={{ width: 16, height: 16, accentColor: 'var(--avp-green)' }} />
+                <span style={{ fontSize: 14 }}>Presença obrigatória</span>
+              </label>
+              <button type="submit" disabled={salvandoVivo} style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 700, cursor: 'pointer', fontSize: 14, alignSelf: 'flex-start', opacity: salvandoVivo ? 0.7 : 1 }}>
+                {salvandoVivo ? 'Criando...' : 'Criar Aula ao Vivo'}
+              </button>
+            </form>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {aulasVivo.length === 0 && !showVivoForm && (
+              <div style={{ textAlign: 'center', padding: 48, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', borderRadius: 12, border: '1px solid var(--avp-border)' }}>
+                Nenhuma aula ao vivo agendada. Clique em "+ Nova Aula ao Vivo" para criar.
+              </div>
+            )}
+            {aulasVivo.map(aula => {
+              const cor = aula.plataforma === 'zoom' ? '#2D8CFF' : '#34A853'
+              const encerrada = new Date(aula.data_hora) < new Date()
+              return (
+                <div key={aula.id} style={{ background: 'var(--avp-card)', border: `1px solid ${encerrada ? 'var(--avp-border)' : cor}`, borderRadius: 10, padding: 16, opacity: encerrada ? 0.7 : 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ background: cor, color: '#fff', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>{aula.plataforma === 'zoom' ? '🔵 Zoom' : '🟢 Google Meet'}</span>
+                        {aula.obrigatoria && <span style={{ background: '#ef444420', color: '#ef4444', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>Obrigatória</span>}
+                        {encerrada && <span style={{ background: 'var(--avp-border)', color: 'var(--avp-text-dim)', fontSize: 11, padding: '2px 8px', borderRadius: 20 }}>Encerrada</span>}
+                      </div>
+                      <p style={{ fontWeight: 700, fontSize: 15, margin: '0 0 4px' }}>{aula.titulo}</p>
+                      {aula.descricao && <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', margin: '0 0 6px' }}>{aula.descricao}</p>}
+                      <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', margin: 0 }}>
+                        📅 {new Date(aula.data_hora).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })} · ⏱️ {aula.duracao_minutos} min
+                      </p>
+                      {aula.gravacao_url && <a href={aula.gravacao_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: '#8b5cf6', display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 6, fontWeight: 600 }}>▶️ Ver gravação</a>}
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                      {!encerrada && <a href={aula.link} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 12px', borderRadius: 6, background: cor + '20', color: cor, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>Abrir</a>}
+                      <button onClick={() => removerAulaVivo(aula.id)} style={{ padding: '6px 10px', borderRadius: 6, background: '#ef444420', color: '#ef4444', border: 'none', cursor: 'pointer', fontSize: 12 }}>Remover</button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </>
       )}
 
@@ -1226,8 +1350,8 @@ export default function GestorDashboard({
                       onMouseEnter={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = 'translateY(-2px)'; el.style.borderColor = '#8b5cf6' }}
                       onMouseLeave={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = ''; el.style.borderColor = 'var(--avp-border)' }}
                     >
-                      <div style={{ height: 80, background: 'linear-gradient(135deg, #4c1d95, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>
-                        🎨
+                      <div style={{ height: 80, background: 'rgba(79,70,229,0.12)', border: '1px solid rgba(79,70,229,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg width="28" height="28" fill="none" stroke="#818cf8" strokeWidth="1.5" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
                       </div>
                       <div style={{ padding: '12px 14px' }}>
                         <p style={{ fontWeight: 700, fontSize: 14, margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.nome}</p>
@@ -1247,7 +1371,7 @@ export default function GestorDashboard({
 
       {/* ── PERFIL DO GESTOR ── */}
       {aba === 'perfil' && (
-        <PerfilGestor gestor={gestor} onNomeAtualizado={(_nome) => { /* update handled internally */ }} cncpvHabilitado={cncpvHabilitado} />
+        <PerfilGestor gestor={gestor} onNomeAtualizado={(_nome) => { /* update handled internally */ }} cncpvHabilitado={cncpvHabilitado} podeCfgLink={podeCfgLink} />
       )}
 
     </GestorLayout>

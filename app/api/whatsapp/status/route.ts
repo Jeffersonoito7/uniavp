@@ -13,10 +13,10 @@ export async function GET(req: NextRequest) {
 
   const adminClient = createServiceRoleClient()
 
-  const { data: admin } = await (adminClient.from('admins') as any)
+  const { data: admin } = await adminClient.from('admins')
     .select('whatsapp_instancia').eq('user_id', user.id).eq('ativo', true).maybeSingle()
 
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('whatsapp_instancia').eq('user_id', user.id).eq('ativo', true).maybeSingle()
 
   const instancia = admin?.whatsapp_instancia || gestor?.whatsapp_instancia

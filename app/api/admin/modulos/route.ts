@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
+import type { Database } from '@/lib/database.types'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,12 +18,12 @@ export async function POST(req: NextRequest) {
   const { titulo, descricao, capa_url } = body
   if (!titulo) return NextResponse.json({ error: 'Título obrigatório' }, { status: 400 })
 
-  let q = (adminClient.from('modulos') as any).select('ordem').order('ordem', { ascending: false }).limit(1)
+  let q = adminClient.from('modulos').select('ordem').order('ordem', { ascending: false }).limit(1)
   if (ctx.tenantId) q = q.eq('tenant_id', ctx.tenantId)
   const { data: ultimo } = await q.maybeSingle()
   const ordem = (ultimo?.ordem ?? 0) + 1
 
-  const { data: modulo, error } = await (adminClient.from('modulos') as any)
+  const { data: modulo, error } = await adminClient.from('modulos')
     .insert({ titulo, descricao: descricao ?? null, capa_url: capa_url ?? null, ordem, publicado: false, perfis_permitidos: body.perfis_permitidos ?? ['consultor', 'gestor'], ...(ctx.tenantId ? { tenant_id: ctx.tenantId } : {}) })
     .select('*').single()
 
@@ -49,12 +50,11 @@ export async function PUT(req: NextRequest) {
     'cert_logo_esq_url', 'cert_logo_dir_url', 'cert_logo_y', 'cert_logo_tam',
     'cert_assinatura_url', 'cert_assinatura_nome', 'cert_assinatura_cargo', 'cert_assinatura_y',
   ]
-  const atualizacoes: Record<string, unknown> = {}
-  for (const campo of camposPermitidos) {
-    if (campo in updates) atualizacoes[campo] = updates[campo]
-  }
+  const atualizacoes = Object.fromEntries(
+    camposPermitidos.filter(c => c in updates).map(c => [c, updates[c]])
+  ) as Database['public']['Tables']['modulos']['Update']
 
-  let q = (adminClient.from('modulos') as any).update(atualizacoes).eq('id', id)
+  let q = adminClient.from('modulos').update(atualizacoes).eq('id', id)
   if (ctx.tenantId) q = q.eq('tenant_id', ctx.tenantId)
   const { data: modulo, error } = await q.select('*').single()
 
@@ -74,7 +74,7 @@ export async function DELETE(req: NextRequest) {
   const { id } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  let q = (adminClient.from('modulos') as any).delete().eq('id', id)
+  let q = adminClient.from('modulos').delete().eq('id', id)
   if (ctx.tenantId) q = q.eq('tenant_id', ctx.tenantId)
   const { error } = await q
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })

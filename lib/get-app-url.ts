@@ -9,12 +9,12 @@ export async function getAppUrl(): Promise<string> {
 
   try {
     const client = createServiceRoleClient()
-    const { data } = await (client.from('configuracoes') as any)
+    const { data } = await client.from('configuracoes')
       .select('valor')
       .eq('chave', 'dominio_customizado')
       .maybeSingle()
 
-    const dominio = data?.valor ? JSON.parse(data.valor).replace(/^https?:\/\//, '') : ''
+    const dominio = data?.valor ? JSON.parse(String(data.valor)).replace(/^https?:\/\//, '') : ''
     if (dominio) {
       cached = `https://${dominio}`
       cacheAt = Date.now()

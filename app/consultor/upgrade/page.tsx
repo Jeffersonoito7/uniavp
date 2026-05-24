@@ -9,12 +9,12 @@ export default async function UpgradePage() {
   if (!user) redirect('/entrar?p=free')
 
   const adminClient = createServiceRoleClient()
-  const { data: aluno } = await (adminClient.from('alunos') as any)
+  const { data: aluno } = await adminClient.from('alunos')
     .select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
   if (!aluno) redirect('/entrar?p=free')
 
   // Se já é PRO ativo, redireciona direto
-  const { data: gestorAtivo } = await (adminClient.from('gestores') as any)
+  const { data: gestorAtivo } = await adminClient.from('gestores')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (gestorAtivo) redirect('/pro')
 
@@ -50,12 +50,12 @@ export default async function UpgradePage() {
 
         {/* Hero */}
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 100, padding: '6px 18px', fontSize: 12, fontWeight: 700, color: '#818cf8', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 20 }}>
-            ✨ {nomePro}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(79,70,229,0.12)', border: '1px solid rgba(79,70,229,0.25)', borderRadius: 100, padding: '6px 18px', fontSize: 12, fontWeight: 700, color: '#818cf8', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 20 }}>
+            {nomePro}
           </div>
-          <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.6rem)', fontWeight: 900, lineHeight: 1.2, marginBottom: 16 }}>
+          <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.6rem)', fontWeight: 700, lineHeight: 1.2, marginBottom: 16 }}>
             Você chegou ao limite do<br />
-            <span style={{ background: 'linear-gradient(90deg, #6366f1, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{nomeFree}</span>
+            <span style={{ color: '#818cf8' }}>{nomeFree}</span>
           </h1>
           <p style={{ color: 'var(--avp-text-dim)', fontSize: 16, lineHeight: 1.7, maxWidth: 480, margin: '0 auto' }}>
             No <strong style={{ color: 'var(--avp-text)' }}>{nomeFree}</strong> você acessa módulos limitados.
@@ -80,8 +80,8 @@ export default async function UpgradePage() {
             ))}
           </div>
           {/* Pro */}
-          <div style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08))', border: '2px solid rgba(99,102,241,0.4)', borderRadius: 16, padding: 24, position: 'relative' }}>
-            <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 100, padding: '4px 16px', fontSize: 11, fontWeight: 800, color: '#fff', whiteSpace: 'nowrap' }}>
+          <div style={{ background: 'rgba(79,70,229,0.08)', border: '2px solid rgba(79,70,229,0.35)', borderRadius: 16, padding: 24, position: 'relative' }}>
+            <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: '#4f46e5', borderRadius: 100, padding: '4px 16px', fontSize: 11, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap' }}>
               RECOMENDADO
             </div>
             <p style={{ fontSize: 11, fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>{nomePro}</p>
@@ -116,9 +116,8 @@ export default async function UpgradePage() {
 
         {/* CTA */}
         <div style={{ textAlign: 'center' }}>
-          <a href="/assinar-pro"
-            style={{ display: 'inline-block', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 14, padding: '18px 48px', fontWeight: 900, fontSize: 18, textDecoration: 'none', boxShadow: '0 8px 32px rgba(99,102,241,0.4)', marginBottom: 12 }}>
-            🚀 Quero ser {nomePro}
+          <a href="/assinar-pro" className="btn btn-primary" style={{ textDecoration: 'none', marginBottom: 12, fontSize: 18, borderRadius: 14, padding: '18px 48px' }}>
+            Quero ser {nomePro}
           </a>
           <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 10 }}>
             Você terá acesso imediato a todos os módulos e ao painel de gestão.

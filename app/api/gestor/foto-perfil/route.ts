@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id').eq('user_id', user.id).maybeSingle()
   if (!gestor) return NextResponse.json({ error: 'Gestor não encontrado' }, { status: 404 })
 
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
   const { data: { publicUrl } } = adminClient.storage.from('avatares').getPublicUrl(path)
 
-  await (adminClient.from('gestores') as any).update({ foto_perfil: publicUrl }).eq('id', gestor.id)
+  await adminClient.from('gestores').update({ foto_perfil: publicUrl }).eq('id', gestor.id)
 
   return NextResponse.json({ url: publicUrl })
 }

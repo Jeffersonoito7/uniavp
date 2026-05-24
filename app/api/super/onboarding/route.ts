@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: sa } = await (adminClient.from('super_admins') as any)
+  const { data: sa } = await adminClient.from('super_admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!sa) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   resultados.push(`✅ Auth criado: ${admin_email}`)
 
   // ── 2. Inserir admin na tabela admins (vinculado ao tenant) ──────
-  const { error: adminErr } = await (adminClient.from('admins') as any)
+  const { error: adminErr } = await adminClient.from('admins')
     .insert({ user_id: authUser.user!.id, nome: admin_nome, email: admin_email, ativo: true, role: 'admin', tenant_id: cliente_id })
   if (adminErr) { resultados.push(`⚠️ Admin DB: ${adminErr.message}`) }
   else resultados.push('✅ Admin registrado no banco')
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── 5. Enviar credenciais por WhatsApp ───────────────────────
-  const { data: cliente } = await (adminClient.from('clientes') as any)
+  const { data: cliente } = await adminClient.from('clientes')
     .select('contato_whatsapp, contato_nome, nome, observacoes').eq('id', cliente_id).maybeSingle()
 
   if (cliente?.contato_whatsapp) {

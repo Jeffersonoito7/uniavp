@@ -9,17 +9,17 @@ export default async function AdminArtesConsultorPage({ params }: { params: { wh
   if (!user) redirect('/entrar?p=adm')
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any)
+  const { data: adminRecord } = await adminClient.from('admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
 
-  const { data: consultor } = await (adminClient.from('alunos') as any)
+  const { data: consultor } = await adminClient.from('alunos')
     .select('id, nome, whatsapp, foto_perfil, status')
     .eq('whatsapp', params.whatsapp)
     .maybeSingle()
   if (!consultor) redirect('/admin/consultores')
 
-  const { data: templates } = await (adminClient.from('artes_templates') as any)
+  const { data: templates } = await adminClient.from('artes_templates')
     .select('*')
     .eq('ativo', true)
     .neq('arte_url', '')

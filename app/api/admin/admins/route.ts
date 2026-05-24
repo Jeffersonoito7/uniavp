@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: me } = await (adminClient.from('admins') as any)
+  const { data: me } = await adminClient.from('admins')
     .select('id, role').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!me) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   if (authErr) return NextResponse.json({ error: authErr.message }, { status: 400 })
 
   // Inserir na tabela admins
-  const { data: novo, error: dbErr } = await (adminClient.from('admins') as any)
+  const { data: novo, error: dbErr } = await adminClient.from('admins')
     .insert({ user_id: authUser.user!.id, nome, email, ativo: true, role: 'admin' })
     .select('id, nome, email, role, ativo, created_at').single()
   if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 400 })
@@ -38,7 +38,7 @@ export async function DELETE(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: me } = await (adminClient.from('admins') as any)
+  const { data: me } = await adminClient.from('admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!me) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
@@ -46,12 +46,12 @@ export async function DELETE(req: NextRequest) {
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
   // Não deixar excluir a si mesmo
-  const { data: target } = await (adminClient.from('admins') as any)
+  const { data: target } = await adminClient.from('admins')
     .select('user_id').eq('id', id).maybeSingle()
   if (target?.user_id === user.id)
     return NextResponse.json({ error: 'Você não pode excluir sua própria conta' }, { status: 400 })
 
-  await (adminClient.from('admins') as any).delete().eq('id', id)
+  await adminClient.from('admins').delete().eq('id', id)
   return NextResponse.json({ ok: true })
 }
 
@@ -61,7 +61,7 @@ export async function PUT(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: me } = await (adminClient.from('admins') as any)
+  const { data: me } = await adminClient.from('admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!me) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
@@ -69,7 +69,7 @@ export async function PUT(req: NextRequest) {
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
   if (nova_senha) {
-    const { data: target } = await (adminClient.from('admins') as any)
+    const { data: target } = await adminClient.from('admins')
       .select('user_id').eq('id', id).maybeSingle()
     if (target?.user_id) {
       await adminClient.auth.admin.updateUserById(target.user_id, { password: nova_senha })
@@ -77,7 +77,7 @@ export async function PUT(req: NextRequest) {
   }
 
   if (ativo !== undefined) {
-    await (adminClient.from('admins') as any).update({ ativo }).eq('id', id)
+    await adminClient.from('admins').update({ ativo }).eq('id', id)
   }
 
   return NextResponse.json({ ok: true })

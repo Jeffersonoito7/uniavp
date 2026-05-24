@@ -50,7 +50,7 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const todosAceitos = aceitos.every(Boolean)
-  const bg = 'linear-gradient(135deg, #020d1a 0%, #03183a 60%, #021a0e 100%)'
+  const bg = '#0a0a0f'
 
   useEffect(() => {
     if (etapa === 'carteira' && registro) { gerarCard() }
@@ -462,8 +462,8 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
               <button
                 onClick={() => setEtapa('termos')}
                 disabled={!form.nome || !form.whatsapp || !form.email || !form.cpf || !validarCPF(form.cpf)}
-                style={{ background: (!form.nome || !form.whatsapp || !form.email || !form.cpf || !validarCPF(form.cpf)) ? 'rgba(2,161,83,0.3)' : 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', border: 'none', borderRadius: 12, padding: '15px', fontWeight: 800, fontSize: 16, cursor: !form.nome || !form.whatsapp || !form.email ? 'not-allowed' : 'pointer', marginTop: 8, boxShadow: '0 8px 32px rgba(2,161,83,0.3)' }}>
-                Avançar para os Termos →
+                className="btn btn-green btn-full btn-lg" style={{ marginTop: 8 }}>
+                Avançar para os Termos
               </button>
             </div>
           </div>
@@ -487,7 +487,7 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
 
           {/* Progresso */}
           <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 100, height: 6, marginBottom: 24, overflow: 'hidden' }}>
-            <div style={{ width: `${(aceitos.filter(Boolean).length / TERMOS.length) * 100}%`, height: '100%', background: 'linear-gradient(90deg, #02A153, #22c55e)', borderRadius: 100, transition: 'width 0.3s' }} />
+            <div style={{ width: `${(aceitos.filter(Boolean).length / TERMOS.length) * 100}%`, height: '100%', background: '#22c55e', borderRadius: 100, transition: 'width 0.3s' }} />
           </div>
           <p style={{ color: aceitos.filter(Boolean).length === TERMOS.length ? '#22c55e' : 'rgba(255,255,255,0.4)', fontSize: 13, textAlign: 'center', marginBottom: 20, fontWeight: 600 }}>
             {aceitos.filter(Boolean).length}/{TERMOS.length} itens confirmados
@@ -509,20 +509,14 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
             ))}
           </div>
 
-          {erro && (
-            <div style={{ background: '#e6394620', border: '1px solid #e63946', borderRadius: 10, padding: '12px 16px', color: '#f87171', fontSize: 14, marginBottom: 16, textAlign: 'center' }}>
-              {erro}
-            </div>
-          )}
+          {erro && <div className="alert alert-error" style={{ marginBottom: 16, textAlign: 'center' }}>{erro}</div>}
 
           <div style={{ display: 'flex', gap: 12 }}>
-            <button onClick={() => setEtapa('form')}
-              style={{ flex: 1, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', borderRadius: 12, padding: '14px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
+            <button onClick={() => setEtapa('form')} className="btn btn-ghost" style={{ flex: 1 }}>
               ← Voltar
             </button>
-            <button onClick={assinar} disabled={!todosAceitos || loading}
-              style={{ flex: 2, background: !todosAceitos ? 'rgba(2,161,83,0.3)' : 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', border: 'none', borderRadius: 12, padding: '14px', fontWeight: 800, fontSize: 16, cursor: !todosAceitos || loading ? 'not-allowed' : 'pointer', boxShadow: todosAceitos ? '0 8px 32px rgba(2,161,83,0.4)' : 'none', transition: 'all 0.2s' }}>
-              {loading ? '⏳ Assinando...' : todosAceitos ? '🪪 Assinar e Emitir Carteira CNCPV' : `Aceite todos os ${TERMOS.length} itens para continuar`}
+            <button onClick={assinar} disabled={!todosAceitos || loading} className="btn btn-green" style={{ flex: 2, fontSize: 15 }}>
+              {loading ? 'Assinando...' : todosAceitos ? 'Assinar e Emitir Carteira CNCPV' : `Aceite todos os ${TERMOS.length} itens para continuar`}
             </button>
           </div>
         </div>
@@ -563,22 +557,19 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
         <canvas ref={canvasRef} style={{ width: '100%', maxWidth: 680, borderRadius: 16, boxShadow: '0 24px 80px rgba(0,0,0,0.6)', display: 'block', margin: '0 auto 24px' }} />
 
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button onClick={baixarCard}
-            style={{ background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', border: 'none', borderRadius: 12, padding: '14px 28px', fontWeight: 800, fontSize: 15, cursor: 'pointer', boxShadow: '0 8px 32px rgba(2,161,83,0.4)' }}>
-            🖼️ Baixar Carteira (PNG)
+          <button onClick={baixarCard} className="btn btn-green">
+            Baixar Carteira (PNG)
           </button>
           {pdfUrl && (
-            <a href={pdfUrl} target="_blank" rel="noreferrer"
-              style={{ background: 'linear-gradient(135deg, #e63946, #c1121f)', color: '#fff', border: 'none', borderRadius: 12, padding: '14px 28px', fontWeight: 800, fontSize: 15, cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              📄 Baixar Contrato (PDF)
+            <a href={pdfUrl} target="_blank" rel="noreferrer" className="btn btn-danger" style={{ textDecoration: 'none' }}>
+              Baixar Contrato (PDF)
             </a>
           )}
           <button onClick={() => {
             navigator.clipboard.writeText(`${window.location.origin}/cncpv/verificar/${registro}`)
             alert('Link de verificação copiado!')
-          }}
-            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: 12, padding: '14px 24px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
-            🔗 Copiar link de verificação
+          }} className="btn btn-ghost">
+            Copiar link de verificação
           </button>
         </div>
 

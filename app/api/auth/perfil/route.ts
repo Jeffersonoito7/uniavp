@@ -19,7 +19,7 @@ export async function GET(req: Request) {
 
   // Se veio do painel gestor, verifica gestor primeiro
   if (from === 'gestor') {
-    const { data: gestorRecord } = await (admin.from('gestores') as any)
+    const { data: gestorRecord } = await admin.from('gestores')
       .select('id, ativo').eq('user_id', user.id).maybeSingle()
     if (gestorRecord) {
       if (!gestorRecord.ativo) return NextResponse.json({ tipo: 'gestor_inativo' })
@@ -27,18 +27,18 @@ export async function GET(req: Request) {
     }
   }
 
-  const { data: adminRecord } = await (admin.from('admins') as any)
+  const { data: adminRecord } = await admin.from('admins')
     .select('id, role').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (adminRecord) return NextResponse.json({ tipo: 'admin', redirect: '/admin' })
 
-  const { data: superRecord } = await (admin.from('super_admins') as any)
+  const { data: superRecord } = await admin.from('super_admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (superRecord) return NextResponse.json({ tipo: 'super', redirect: '/super' })
 
-  const { data: gestorRecord } = await (admin.from('gestores') as any)
+  const { data: gestorRecord } = await admin.from('gestores')
     .select('id, ativo').eq('user_id', user.id).maybeSingle()
 
-  const { data: alunoRecord } = await (admin.from('alunos') as any)
+  const { data: alunoRecord } = await admin.from('alunos')
     .select('whatsapp').eq('user_id', user.id).maybeSingle()
 
   // Se está no domínio admin mas é aluno/gestor → redireciona pro domínio correto

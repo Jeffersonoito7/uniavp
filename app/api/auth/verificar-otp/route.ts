@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
   const adminClient = createServiceRoleClient()
 
-  const { data: otp } = await (adminClient.from('verificacao_otp') as any)
+  const { data: otp } = await adminClient.from('verificacao_otp')
     .select('id, codigo, expira_em, usado')
     .eq('user_id', user.id)
     .eq('usado', false)
@@ -25,22 +25,22 @@ export async function POST(req: NextRequest) {
   if (new Date(otp.expira_em) < new Date()) return NextResponse.json({ error: 'Código expirado. Solicite um novo.' }, { status: 400 })
   if (otp.codigo !== String(codigo).trim()) return NextResponse.json({ error: 'Código incorreto.' }, { status: 400 })
 
-  await (adminClient.from('verificacao_otp') as any).update({ usado: true }).eq('id', otp.id)
+  await adminClient.from('verificacao_otp').update({ usado: true }).eq('id', otp.id)
 
   // Determina redirect pelo perfil
   let redirect = '/'
 
-  const { data: adminRec } = await (adminClient.from('admins') as any)
+  const { data: adminRec } = await adminClient.from('admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (adminRec) {
     redirect = '/admin'
   } else {
-    const { data: gestor } = await (adminClient.from('gestores') as any)
+    const { data: gestor } = await adminClient.from('gestores')
       .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
     if (gestor) {
       redirect = '/pro'
     } else {
-      const { data: aluno } = await (adminClient.from('alunos') as any)
+      const { data: aluno } = await adminClient.from('alunos')
         .select('whatsapp').eq('user_id', user.id).maybeSingle()
       if (aluno?.whatsapp) redirect = `/aluno/${aluno.whatsapp}`
     }

@@ -5,52 +5,52 @@ import { createBrowserClient } from '@supabase/ssr'
 
 const TEMAS = {
   pro: {
-    bg: 'linear-gradient(135deg, #021a0e 0%, #032a14 60%, #011008 100%)',
-    glow1: 'rgba(2,161,83,0.28)',
-    glow2: 'rgba(1,122,62,0.14)',
-    cardBorder: 'rgba(2,161,83,0.28)',
-    btn: 'linear-gradient(135deg, #02A153, #059669)',
-    btnShadow: 'rgba(2,161,83,0.45)',
-    linkColor: 'rgba(2,200,100,0.9)',
+    bg: '#0a0a0f',
+    glow1: 'rgba(34,197,94,0.12)',
+    glow2: 'rgba(34,197,94,0.06)',
+    cardBorder: 'rgba(34,197,94,0.2)',
+    btn: '#22c55e',
+    btnShadow: 'rgba(34,197,94,0.3)',
+    linkColor: '#4ade80',
     badge: 'PRO',
-    badgeIcon: '✨',
+    badgeIcon: '',
     badgeColor: '#22c55e',
     label: 'Painel PRO',
   },
   free: {
-    bg: 'linear-gradient(135deg, #020d1a 0%, #03183a 60%, #020a28 100%)',
-    glow1: 'rgba(59,130,246,0.22)',
-    glow2: 'rgba(29,78,216,0.12)',
-    cardBorder: 'rgba(59,130,246,0.22)',
-    btn: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-    btnShadow: 'rgba(59,130,246,0.4)',
-    linkColor: 'rgba(96,165,250,0.9)',
+    bg: '#0a0a0f',
+    glow1: 'rgba(59,130,246,0.12)',
+    glow2: 'rgba(59,130,246,0.06)',
+    cardBorder: 'rgba(59,130,246,0.2)',
+    btn: '#3b82f6',
+    btnShadow: 'rgba(59,130,246,0.3)',
+    linkColor: '#60a5fa',
     badge: 'FREE',
-    badgeIcon: '🆓',
+    badgeIcon: '',
     badgeColor: '#60a5fa',
     label: 'Painel FREE',
   },
   adm: {
-    bg: 'linear-gradient(135deg, #0a0a0f 0%, #111118 60%, #07070c 100%)',
-    glow1: 'rgba(99,102,241,0.14)',
-    glow2: 'rgba(30,30,40,0.5)',
+    bg: '#0a0a0f',
+    glow1: 'rgba(99,102,241,0.1)',
+    glow2: 'rgba(99,102,241,0.05)',
     cardBorder: 'rgba(99,102,241,0.2)',
-    btn: 'linear-gradient(135deg, #6366f1, #4f46e5)',
-    btnShadow: 'rgba(99,102,241,0.35)',
-    linkColor: 'rgba(129,140,248,0.9)',
+    btn: '#4f46e5',
+    btnShadow: 'rgba(99,102,241,0.3)',
+    linkColor: '#818cf8',
     badge: 'Admin',
-    badgeIcon: '🛡',
+    badgeIcon: '',
     badgeColor: '#818cf8',
     label: 'Painel Admin',
   },
   default: {
-    bg: 'linear-gradient(135deg, #020d1a 0%, #03183a 60%, #021a0e 100%)',
-    glow1: 'rgba(51,54,135,0.15)',
-    glow2: 'rgba(2,161,83,0.08)',
+    bg: '#0a0a0f',
+    glow1: 'rgba(99,102,241,0.1)',
+    glow2: 'rgba(34,197,94,0.06)',
     cardBorder: 'rgba(99,102,241,0.2)',
-    btn: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-    btnShadow: 'rgba(99,102,241,0.4)',
-    linkColor: 'rgba(99,102,241,0.8)',
+    btn: '#4f46e5',
+    btnShadow: 'rgba(99,102,241,0.3)',
+    linkColor: '#818cf8',
     badge: '',
     badgeIcon: '',
     badgeColor: '',
@@ -162,7 +162,7 @@ function EntrarForm() {
           boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
         }}>
           {erro && (
-            <div style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: 10, padding: '12px 16px', color: '#f87171', fontSize: 14, marginBottom: 20, textAlign: 'center' }}>
+            <div className="alert alert-error" style={{ marginBottom: 20, textAlign: 'center', fontSize: 14 }}>
               {erro}
             </div>
           )}
@@ -198,14 +198,9 @@ function EntrarForm() {
               </a>
             </div>
 
-            <button type="submit" disabled={loading} style={{
-              background: loading ? 'rgba(100,100,100,0.4)' : tema.btn,
-              color: '#fff', border: 'none', borderRadius: 12, padding: '15px',
-              fontWeight: 800, fontSize: 16, cursor: loading ? 'not-allowed' : 'pointer',
-              marginTop: 4, boxShadow: loading ? 'none' : `0 8px 32px ${tema.btnShadow}`,
-              transition: 'all 0.2s',
-            }}>
-              {loading ? '⏳ Entrando...' : 'Entrar →'}
+            <button type="submit" disabled={loading}
+              style={{ background: loading ? 'rgba(100,100,100,0.4)' : tema.btn, border: 'none', borderRadius: 12, padding: '15px', color: '#fff', fontWeight: 700, fontSize: 16, cursor: loading ? 'not-allowed' : 'pointer', marginTop: 4, transition: 'background 0.2s', width: '100%' }}>
+              {loading ? 'Entrando...' : 'Entrar →'}
             </button>
           </form>
         </div>

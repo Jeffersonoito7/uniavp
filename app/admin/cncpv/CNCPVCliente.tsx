@@ -3,8 +3,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 
 type Assinatura = {
-  id: string; nome: string; cpf: string | null; whatsapp: string; email: string
-  numero_registro: string; assinado_em: string; hash_contrato: string | null
+  id: string; nome: string; cpf: string | null; whatsapp: string | null; email: string | null
+  numero_registro: string | null; assinado_em: string | null; hash_contrato: string | null
   pdf_url: string | null; pdf_status: string | null; status: string | null
   revogado_em: string | null; revogado_motivo: string | null
 }
@@ -35,12 +35,13 @@ export default function CNCPVCliente({ assinaturasIniciais, total }: { assinatur
 
   const mes = new Date()
   const emitidosMes = lista.filter(a => {
+    if (!a.assinado_em) return false
     const d = new Date(a.assinado_em)
     return d.getMonth() === mes.getMonth() && d.getFullYear() === mes.getFullYear()
   }).length
 
   const filtrada = lista.filter(a => {
-    const buscaOk = !busca || a.nome.toLowerCase().includes(busca.toLowerCase()) || a.numero_registro.includes(busca) || a.email.toLowerCase().includes(busca.toLowerCase())
+    const buscaOk = !busca || a.nome.toLowerCase().includes(busca.toLowerCase()) || (a.numero_registro ?? '').includes(busca) || (a.email ?? '').toLowerCase().includes(busca.toLowerCase())
     const filtroOk = filtro === 'todas' || (filtro === 'ativas' ? a.status !== 'revogada' : a.status === 'revogada')
     return buscaOk && filtroOk
   })
@@ -140,11 +141,11 @@ export default function CNCPVCliente({ assinaturasIniciais, total }: { assinatur
                     <td style={{ padding: '12px 14px', fontWeight: 600, color: 'var(--avp-text)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.nome}</td>
                     <td style={{ padding: '12px 14px', fontFamily: 'monospace', color: 'var(--avp-text-dim)', whiteSpace: 'nowrap' }}>{mascaraCPF(a.cpf)}</td>
                     <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
-                      <a href={wppLink(a.whatsapp)} target="_blank" rel="noreferrer" style={{ color: '#22c55e', textDecoration: 'none' }}>{mascaraWpp(a.whatsapp)}</a>
+                      <a href={a.whatsapp ? wppLink(a.whatsapp) : '#'} target="_blank" rel="noreferrer" style={{ color: '#22c55e', textDecoration: 'none' }}>{a.whatsapp ? mascaraWpp(a.whatsapp) : '—'}</a>
                     </td>
                     <td style={{ padding: '12px 14px', color: 'var(--avp-text-dim)', fontSize: 12, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.email}</td>
                     <td style={{ padding: '12px 14px', whiteSpace: 'nowrap', color: 'var(--avp-text-dim)', fontSize: 11 }}>
-                      {new Date(a.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {a.assinado_em ? new Date(a.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
                     </td>
                     <td style={{ padding: '12px 14px' }}>
                       {a.pdf_url ? (
@@ -167,18 +168,18 @@ export default function CNCPVCliente({ assinaturasIniciais, total }: { assinatur
                     </td>
                     <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
                       <div style={{ display: 'flex', gap: 6 }}>
-                        <Link href={`/cncpv/verificar/${a.numero_registro}`} target="_blank"
+                        <Link href={`/cncpv/verificar/${a.numero_registro ?? ''}`} target="_blank"
                           style={{ color: '#6366f1', fontSize: 11, fontWeight: 700, textDecoration: 'none', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 6, padding: '4px 8px' }}>
                           Ver
                         </Link>
                         {!revogada ? (
-                          <button onClick={() => setModal({ registro: a.numero_registro, nome: a.nome, acao: 'revogar' })}
+                          <button onClick={() => setModal({ registro: a.numero_registro ?? '', nome: a.nome, acao: 'revogar' })}
                             disabled={loading === a.numero_registro}
                             style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171', borderRadius: 6, padding: '4px 8px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
                             Revogar
                           </button>
                         ) : (
-                          <button onClick={() => acionar(a.numero_registro, 'reativar')}
+                          <button onClick={() => acionar(a.numero_registro ?? '', 'reativar')}
                             disabled={loading === a.numero_registro}
                             style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e', borderRadius: 6, padding: '4px 8px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
                             Reativar

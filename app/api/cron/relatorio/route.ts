@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp, getInstanciaGestorPorNome } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
+import { EMAIL_FROM } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
@@ -78,7 +79,7 @@ async function enviarEmailRelatorio(para: string, nomeGestor: string, stats: {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      from: 'Universidade AVP <noreply@oito7digital.com.br>',
+      from: EMAIL_FROM,
       to: [para],
       subject: `📊 Relatório semanal — ${nomeGestor}`,
       html,
@@ -95,11 +96,11 @@ export async function GET(req: NextRequest) {
   let relatorios = 0
 
   // ── Relatório por gestor ──────────────────────────────────────
-  const { data: gestores } = await (admin.from('gestores') as any)
+  const { data: gestores } = await admin.from('gestores')
     .select('id, nome, email, whatsapp').eq('ativo', true)
 
   for (const g of gestores ?? []) {
-    const { data: consultores } = await (admin.from('alunos') as any)
+    const { data: consultores } = await admin.from('alunos')
       .select('id, nome, status').eq('gestor_whatsapp', g.whatsapp)
 
     if (!consultores?.length) continue
@@ -111,7 +112,7 @@ export async function GET(req: NextRequest) {
     const parados: string[] = []
     const alunoIds = ativos.map((c: any) => c.id)
     if (alunoIds.length > 0) {
-      const { data: recentes } = await (admin.from('progresso') as any)
+      const { data: recentes } = await admin.from('progresso')
         .select('aluno_id')
         .in('aluno_id', alunoIds)
         .gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString())
@@ -141,19 +142,19 @@ export async function GET(req: NextRequest) {
   }
 
   // ── Relatório geral para admins ───────────────────────────────
-  const { data: admins } = await (admin.from('admins') as any)
+  const { data: admins } = await admin.from('admins')
     .select('id, user_id').eq('ativo', true)
 
   if (admins?.length) {
-    const { count: totalAtivos } = await (admin.from('alunos') as any).select('id', { count: 'exact', head: true }).eq('status', 'ativo')
-    const { count: totalConcluidos } = await (admin.from('alunos') as any).select('id', { count: 'exact', head: true }).eq('status', 'concluido')
-    const { count: novosEstaSemana } = await (admin.from('alunos') as any).select('id', { count: 'exact', head: true })
+    const { count: totalAtivos } = await admin.from('alunos').select('id', { count: 'exact', head: true }).eq('status', 'ativo')
+    const { count: totalConcluidos } = await admin.from('alunos').select('id', { count: 'exact', head: true }).eq('status', 'concluido')
+    const { count: novosEstaSemana } = await admin.from('alunos').select('id', { count: 'exact', head: true })
       .gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString())
 
-    const { data: configWpp } = await (admin.from('configuracoes') as any)
+    const { data: configWpp } = await admin.from('configuracoes')
       .select('valor').eq('chave', 'whatsapp_admin').maybeSingle()
     if (configWpp?.valor) {
-      const wppAdmin = JSON.parse(configWpp.valor)
+      const wppAdmin = JSON.parse(String(configWpp.valor))
       await enviarWhatsApp(wppAdmin,
         `📈 *Relatório Semanal — Plataforma AVP*\n\n` +
         `🆕 Novos esta semana: *${novosEstaSemana ?? 0}*\n` +

@@ -10,7 +10,7 @@ export default async function ContratoPage({ searchParams }: { searchParams?: { 
   const adminClient = createServiceRoleClient()
   const siteConfig = await getSiteConfig(host)
 
-  const { data: cfgs } = await (adminClient.from('configuracoes') as any)
+  const { data: cfgs } = await adminClient.from('configuracoes')
     .select('chave, valor')
     .in('chave', ['contrato_contratante_nome','contrato_contratante_cnpj','contrato_contratante_endereco','contrato_representante_nome','contrato_representante_cargo','contrato_foro','contrato_clausulas'])
   const cfgMap: Record<string,string> = {}

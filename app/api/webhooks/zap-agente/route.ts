@@ -26,7 +26,7 @@ async function buscarResumoMes(gestorId: string, adminClient: ReturnType<typeof 
   inicio.setDate(1)
   const inicioStr = inicio.toISOString().split('T')[0]
 
-  const { data: registros } = await (adminClient.from('gestor_registros') as any)
+  const { data: registros } = await adminClient.from('gestor_registros')
     .select('tipo, valor, quantidade, descricao, data_referencia, created_at')
     .eq('gestor_id', gestorId)
     .gte('data_referencia', inicioStr)
@@ -167,7 +167,7 @@ export async function POST(req: NextRequest) {
     const adminClient = createServiceRoleClient()
 
     // Identifica o gestor pelo WhatsApp
-    const { data: gestor } = await (adminClient.from('gestores') as any)
+    const { data: gestor } = await adminClient.from('gestores')
       .select('id, nome, whatsapp')
       .eq('whatsapp', numero)
       .eq('ativo', true)
@@ -186,7 +186,7 @@ export async function POST(req: NextRequest) {
 
     // Executa ação de registro se necessário
     if (resultado.acao === 'registrar' && resultado.tipo) {
-      await (adminClient.from('gestor_registros') as any).insert({
+      await adminClient.from('gestor_registros').insert({
         gestor_id: gestor.id,
         tipo: resultado.tipo,
         quantidade: resultado.quantidade ?? 1,

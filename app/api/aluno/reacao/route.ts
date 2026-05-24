@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   if (!nota || nota < 1 || nota > 5) return NextResponse.json({ error: 'Nota inválida' }, { status: 400 })
 
   const adminClient = createServiceRoleClient()
-  await (adminClient.from('reacoes_aula') as any)
+  await adminClient.from('reacoes_aula')
     .upsert({ aula_id: aulaId, aluno_id: alunoId, nota, comentario: comentario || '' }, { onConflict: 'aluno_id,aula_id' })
 
   return NextResponse.json({ ok: true })

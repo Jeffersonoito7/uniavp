@@ -9,11 +9,11 @@ export default async function ForumPage({ params }: { params: { whatsapp: string
   if (!user) redirect('/entrar?p=free')
 
   const adminClient = createServiceRoleClient()
-  const { data: aluno } = await (adminClient.from('alunos') as any).select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
+  const { data: aluno } = await adminClient.from('alunos').select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
   if (!aluno) redirect('/entrar?p=free')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}/forum`)
 
-  const { data: topicos } = await (adminClient.from('forum_topicos') as any)
+  const { data: topicos } = await adminClient.from('forum_topicos')
     .select('*, aluno:alunos(nome), respostas:forum_respostas(count)')
     .order('fixado', { ascending: false })
     .order('created_at', { ascending: false })

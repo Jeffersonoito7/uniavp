@@ -6,7 +6,7 @@ import { enviarWhatsApp } from '@/lib/whatsapp'
 export const dynamic = 'force-dynamic'
 
 async function isSuperAdmin(userId: string, adminClient: ReturnType<typeof createServiceRoleClient>) {
-  const { data } = await (adminClient.from('super_admins') as any)
+  const { data } = await adminClient.from('super_admins')
     .select('id').eq('user_id', userId).eq('ativo', true).maybeSingle()
   return !!data
 }
@@ -33,12 +33,12 @@ export async function POST(req: NextRequest) {
   }
 
   // Lê configurações de boleto do banco
-  const { data: cfgRows } = await (adminClient.from('configuracoes') as any)
+  const { data: cfgRows } = await adminClient.from('configuracoes')
     .select('chave, valor')
     .in('chave', ['boleto_mensagem', 'boleto_instrucoes', 'boleto_multa', 'boleto_juros', 'site_nome'])
   const cfg: Record<string, string> = {}
   for (const r of cfgRows ?? []) {
-    try { cfg[r.chave] = JSON.parse(r.valor) } catch { cfg[r.chave] = r.valor }
+    try { cfg[r.chave] = JSON.parse(String(r.valor)) } catch { cfg[r.chave] = String(r.valor) }
   }
 
   try {

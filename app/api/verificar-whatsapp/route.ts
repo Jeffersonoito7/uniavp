@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
   // ── CONFIRMAÇÃO DO CÓDIGO ────────────────────────────────────────
   if (codigo) {
-    const { data: otp } = await (admin.from('otp_whatsapp') as any)
+    const { data: otp } = await admin.from('otp_whatsapp')
       .select('id, codigo, expira_em, usado')
       .eq('whatsapp', wpp)
       .eq('usado', false)
@@ -34,14 +34,14 @@ export async function POST(req: NextRequest) {
     if (new Date(otp.expira_em) < new Date()) return NextResponse.json({ error: 'Código expirado. Clique em "Reenviar".' }, { status: 400 })
     if (otp.codigo !== String(codigo).trim()) return NextResponse.json({ error: 'Código incorreto. Verifique e tente novamente.' }, { status: 400 })
 
-    await (admin.from('otp_whatsapp') as any).update({ usado: true }).eq('id', otp.id)
+    await admin.from('otp_whatsapp').update({ usado: true }).eq('id', otp.id)
     return NextResponse.json({ ok: true, verificado: true })
   }
 
   // ── ENVIO DO CÓDIGO ──────────────────────────────────────────────
   // Máximo 3 envios por número nos últimos 10 minutos (anti-spam)
   const dezMinAtras = new Date(Date.now() - 10 * 60 * 1000).toISOString()
-  const { count } = await (admin.from('otp_whatsapp') as any)
+  const { count } = await admin.from('otp_whatsapp')
     .select('id', { count: 'exact', head: true })
     .eq('whatsapp', wpp)
     .gte('created_at', dezMinAtras)
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
   const novoCodigo = gerarCodigo()
   const expira = new Date(Date.now() + 10 * 60 * 1000)
 
-  await (admin.from('otp_whatsapp') as any).insert({
+  await admin.from('otp_whatsapp').insert({
     whatsapp: wpp,
     codigo: novoCodigo,
     expira_em: expira.toISOString(),
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true })
   } catch {
     // WhatsApp indisponível — libera o pagamento sem verificação
-    await (admin.from('otp_whatsapp') as any).update({ usado: true }).eq('whatsapp', wpp).eq('usado', false)
+    await admin.from('otp_whatsapp').update({ usado: true }).eq('whatsapp', wpp).eq('usado', false)
     return NextResponse.json({ ok: true, wppIndisponivel: true })
   }
 }

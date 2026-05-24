@@ -12,7 +12,7 @@ export async function getTenantId(host: string): Promise<string | null> {
 
   try {
     const client = createServiceRoleClient()
-    const { data } = await (client.from('tenant_domains') as any)
+    const { data } = await client.from('tenant_domains')
       .select('tenant_id')
       .eq('domain', domain)
       .maybeSingle()
@@ -38,6 +38,6 @@ export async function registrarDominiosTenant(tenantId: string, dominios: string
   const client = createServiceRoleClient()
   const rows = dominios.filter(Boolean).map(d => ({ domain: d.replace(/:\d+$/, ''), tenant_id: tenantId }))
   if (rows.length === 0) return
-  await (client.from('tenant_domains') as any)
+  await client.from('tenant_domains')
     .upsert(rows, { onConflict: 'domain' })
 }

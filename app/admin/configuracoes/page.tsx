@@ -7,7 +7,7 @@ import WhatsAppConectar from '@/app/components/WhatsAppConectar'
 
 export const dynamic = 'force-dynamic'
 
-const DOMINIO_MASTER = 'universidade.oito7digital.com.br'
+import { DOMINIO_MASTER } from '@/lib/constants'
 
 export default async function ConfiguracoesPage() {
   const headersList = await headers()
@@ -18,11 +18,11 @@ export default async function ConfiguracoesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/entrar?p=adm')
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  const { data: adminRecord } = await adminClient.from('admins').select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
   const tid = adminRecord.tenant_id as string | null
 
-  let q = (adminClient.from('configuracoes') as any).select('chave, valor, descricao').order('chave')
+  let q = adminClient.from('configuracoes').select('chave, valor, descricao').order('chave')
   if (tid) q = q.eq('tenant_id', tid)
   const { data: configs } = await q
 
@@ -32,7 +32,7 @@ export default async function ConfiguracoesPage() {
         <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Configurações</h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Configurações da plataforma</p>
       </div>
-      <ConfiguracoesCliente configs={configs ?? []} isMaster={isMaster} />
+      <ConfiguracoesCliente configs={(configs ?? []) as any} isMaster={isMaster} />
       <div style={{ marginTop: 24 }}>
         <WhatsAppConectar />
       </div>

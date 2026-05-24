@@ -56,8 +56,7 @@ export default function QualificacaoStep({ gestorNome, onAprovado }: Props) {
             : `Responda ${PERGUNTAS.length} pergunta${PERGUNTAS.length > 1 ? 's' : ''} rápida${PERGUNTAS.length > 1 ? 's' : ''} para confirmar que essa oportunidade é para você.`
           }
         </p>
-        <button onClick={() => setEtapa('perguntas')}
-          style={{ background: 'linear-gradient(135deg, #1e40af, #3b82f6)', color: '#fff', border: 'none', borderRadius: 12, padding: '14px 40px', fontWeight: 800, fontSize: 16, cursor: 'pointer', boxShadow: '0 8px 24px rgba(59,130,246,0.4)' }}>
+        <button onClick={() => setEtapa('perguntas')} className="btn btn-primary btn-lg">
           Começar →
         </button>
       </div>
@@ -99,7 +98,7 @@ export default function QualificacaoStep({ gestorNome, onAprovado }: Props) {
           <span style={{ fontSize: 12, color: '#60a5fa', fontWeight: 700 }}>{progresso}%</span>
         </div>
         <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 100, height: 4 }}>
-          <div style={{ width: `${progresso}%`, height: '100%', background: 'linear-gradient(90deg, #1e40af, #3b82f6)', borderRadius: 100, transition: 'width 0.4s ease' }} />
+          <div style={{ width: `${progresso}%`, height: '100%', background: '#4f46e5', borderRadius: 100, transition: 'width 0.4s ease' }} />
         </div>
       </div>
 

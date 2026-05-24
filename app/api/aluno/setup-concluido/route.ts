@@ -9,7 +9,7 @@ export async function POST() {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const admin = createServiceRoleClient()
-  await (admin.from('alunos') as any)
+  await admin.from('alunos')
     .update({ setup_concluido: true })
     .eq('user_id', user.id)
 

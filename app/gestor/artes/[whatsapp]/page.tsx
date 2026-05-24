@@ -9,19 +9,19 @@ export default async function GestorArtesPage({ params }: { params: { whatsapp: 
   if (!user) redirect('/entrar?p=pro')
 
   const adminClient = createServiceRoleClient()
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id, nome, whatsapp').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!gestor) redirect('/entrar?p=pro')
 
   // Verifica se o consultor pertence a este gestor
-  const { data: consultor } = await (adminClient.from('alunos') as any)
+  const { data: consultor } = await adminClient.from('alunos')
     .select('id, nome, whatsapp, foto_perfil, status')
     .eq('whatsapp', params.whatsapp)
     .eq('gestor_whatsapp', gestor.whatsapp)
     .maybeSingle()
   if (!consultor) redirect('/pro')
 
-  const { data: templatesRaw } = await (adminClient.from('artes_templates') as any)
+  const { data: templatesRaw } = await adminClient.from('artes_templates')
     .select('*')
     .eq('ativo', true)
     .neq('arte_url', '')

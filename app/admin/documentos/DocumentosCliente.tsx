@@ -7,9 +7,9 @@ type Documento = {
   descricao: string | null
   pdf_url: string
   painel: string
-  ativo: boolean
-  ordem: number
-  created_at: string
+  ativo: boolean | null
+  ordem: number | null
+  created_at: string | null
 }
 
 const painelLabel: Record<string, string> = {
@@ -128,10 +128,10 @@ export default function DocumentosCliente({ documentosIniciais }: { documentosIn
 
       {docs.length === 0 ? (
         <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: '64px 32px', textAlign: 'center' }}>
-          <p style={{ fontSize: 40, marginBottom: 16 }}>📄</p>
-          <p style={{ fontWeight: 700, fontSize: 18, color: 'var(--avp-text)', marginBottom: 8 }}>Nenhum documento cadastrado</p>
-          <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 24 }}>Adicione PDFs como manuais, guias ou contratos para disponibilizar nos painéis</p>
-          <button onClick={abrirNovo} style={{ background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--avp-text-dim)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--avp-text)', marginBottom: 8 }}>Nenhum documento cadastrado</p>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 24 }}>Adicione PDFs como manuais, guias ou contratos para disponibilizar nos painéis</p>
+          <button onClick={abrirNovo} style={{ background: 'var(--avp-accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
             + Adicionar primeiro documento
           </button>
         </div>
@@ -139,7 +139,7 @@ export default function DocumentosCliente({ documentosIniciais }: { documentosIn
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {docs.map(doc => (
             <div key={doc.id} style={{ background: 'var(--avp-card)', border: `1px solid ${doc.ativo ? 'var(--avp-border)' : 'rgba(255,255,255,0.05)'}`, borderRadius: 14, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', opacity: doc.ativo ? 1 : 0.5 }}>
-              <div style={{ fontSize: 32, flexShrink: 0 }}>📄</div>
+              <div style={{ flexShrink: 0, color: 'var(--avp-text-dim)' }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
               <div style={{ flex: 1, minWidth: 200 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
                   <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--avp-text)', margin: 0 }}>{doc.titulo}</p>

@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import SuperLoginForm from './SuperLoginForm'
 
-const DOMINIO_MASTER = 'universidade.oito7digital.com.br'
+import { DOMINIO_MASTER } from '@/lib/constants'
 
 export default async function SuperLoginPage() {
   const host = headers().get('host')?.replace(/:\d+$/, '') ?? ''

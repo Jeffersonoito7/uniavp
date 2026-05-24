@@ -13,8 +13,8 @@ export async function PUT(req: NextRequest) {
 
   if (!aluno_id) return NextResponse.json({ error: 'aluno_id obrigatório' }, { status: 400 })
 
-  const { data: aluno } = await (adminClient.from('alunos') as any)
-    .select('id, user_id')
+  const { data: aluno } = await adminClient.from('alunos')
+    .select('id, user_id, nome')
     .eq('id', aluno_id)
     .maybeSingle()
 
@@ -22,11 +22,8 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
   }
 
-  const updates: Record<string, unknown> = { nome: nome ?? aluno.nome, bio: bio ?? null }
-  if (link_externo !== undefined) updates.link_externo = link_externo
-
-  const { error } = await (adminClient.from('alunos') as any)
-    .update(updates)
+  const { error } = await adminClient.from('alunos')
+    .update({ nome: nome ?? aluno.nome, bio: bio ?? null, link_externo: link_externo ?? undefined })
     .eq('id', aluno_id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })

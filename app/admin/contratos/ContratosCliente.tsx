@@ -4,7 +4,7 @@ import { useState } from 'react'
 type Contrato = {
   id: string; nome: string; cpf: string | null; whatsapp: string; email: string | null
   cnpj_mei: string | null; sede_mei: string | null; numero_registro: string | null
-  assinado_em: string; hash_contrato: string | null; pdf_url: string | null; pdf_status: string | null
+  assinado_em: string | null; hash_contrato: string | null; pdf_url: string | null; pdf_status: string | null
 }
 
 function PainelEnvioContrato({ formadosSemContrato }: { formadosSemContrato: number }) {
@@ -47,8 +47,8 @@ function PainelEnvioContrato({ formadosSemContrato }: { formadosSemContrato: num
             <button
               onClick={enviarParaTodos}
               disabled={enviando}
-              style={{ background: enviando ? 'var(--avp-border)' : 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 800, fontSize: 13, cursor: enviando ? 'not-allowed' : 'pointer', opacity: enviando ? 0.7 : 1, whiteSpace: 'nowrap' }}>
-              {enviando ? '⏳ Enviando...' : `📲 Enviar para ${formadosSemContrato}`}
+              style={{ background: enviando ? 'var(--avp-border)' : 'var(--avp-accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 600, fontSize: 13, cursor: enviando ? 'not-allowed' : 'pointer', opacity: enviando ? 0.6 : 1, whiteSpace: 'nowrap' }}>
+              {enviando ? 'Enviando...' : `Enviar para ${formadosSemContrato}`}
             </button>
           </div>
         )}
@@ -59,12 +59,12 @@ function PainelEnvioContrato({ formadosSemContrato }: { formadosSemContrato: num
           <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, margin: '0 0 10px' }}>Prévia da mensagem enviada</p>
           <pre style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--avp-text)', whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'Inter, sans-serif' }}>{`📄 *Contrato de Representação*
 
-Olá, *[Nome]*!
+Olá, *[Nome do consultor]*!
 
 Você concluiu o treinamento e está apto(a) a assinar seu contrato de representação. 🎉
 
 👉 Acesse o link abaixo e assine digitalmente em poucos minutos:
-[link do contrato]
+${typeof window !== 'undefined' ? window.location.origin : 'https://suaplataforma.com'}/contrato
 
 _Após assinar, você receberá o PDF aqui no WhatsApp._`}</pre>
         </div>
@@ -106,6 +106,7 @@ export default function ContratosCliente({ contratosIniciais, total, formadosSem
 
   const mes = new Date()
   const esteMes = lista.filter(c => {
+    if (!c.assinado_em) return false
     const d = new Date(c.assinado_em)
     return d.getMonth() === mes.getMonth() && d.getFullYear() === mes.getFullYear()
   }).length
@@ -191,7 +192,7 @@ export default function ContratosCliente({ contratosIniciais, total, formadosSem
                   </td>
                   <td style={{ padding: '12px 14px', color: 'var(--avp-text-dim)', fontSize: 12, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.email || '—'}</td>
                   <td style={{ padding: '12px 14px', whiteSpace: 'nowrap', color: 'var(--avp-text-dim)', fontSize: 11 }}>
-                    {new Date(c.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    {c.assinado_em ? new Date(c.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
                   </td>
                   <td style={{ padding: '12px 14px' }}>
                     {c.pdf_url ? (

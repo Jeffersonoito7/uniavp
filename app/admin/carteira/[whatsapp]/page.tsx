@@ -8,18 +8,18 @@ export default async function AdminCarteiraPage({ params }: { params: { whatsapp
   if (!user) redirect('/entrar?p=adm')
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any)
+  const { data: adminRecord } = await adminClient.from('admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
 
-  const { data: aluno } = await (adminClient.from('alunos') as any)
+  const { data: aluno } = await adminClient.from('alunos')
     .select('id, nome, whatsapp, status, numero_registro, foto_perfil, data_formacao')
     .eq('whatsapp', params.whatsapp)
     .maybeSingle()
 
   if (!aluno) redirect('/admin/consultores')
 
-  const { data: aulas } = await (adminClient.from('aulas') as any)
+  const { data: aulas } = await adminClient.from('aulas')
     .select('duracao_minutos').eq('publicado', true)
   const totalMin = (aulas ?? []).reduce((s: number, a: { duracao_minutos: number | null }) => s + (a.duracao_minutos ?? 0), 0)
   const horas = Math.floor(totalMin / 60)
@@ -35,11 +35,11 @@ export default async function AdminCarteiraPage({ params }: { params: { whatsapp
 
   const numRegistro = String(aluno.numero_registro ?? 1001).padStart(6, '0')
 
-  const { data: cfgRows } = await (adminClient.from('configuracoes') as any)
+  const { data: cfgRows } = await adminClient.from('configuracoes')
     .select('chave, valor')
     .in('chave', ['site_nome', 'site_logo_url', 'carteira_assinatura_nome', 'carteira_assinatura_cargo', 'carteira_assinatura_empresa', 'carteira_url_verificacao', 'carteira_tagline', 'carteira_logo_esquerda', 'carteira_logo_direita', 'carteira_assinatura_url'])
   const cfg: Record<string, string> = {}
-  for (const r of cfgRows ?? []) { try { cfg[r.chave] = JSON.parse(r.valor) } catch { cfg[r.chave] = r.valor } }
+  for (const r of cfgRows ?? []) { try { cfg[r.chave] = JSON.parse(String(r.valor)) } catch { cfg[r.chave] = String(r.valor) } }
 
   return (
     <CarteiraDisplay

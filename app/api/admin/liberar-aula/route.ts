@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any)
+  const { data: adminRecord } = await adminClient.from('admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   const horas = espera_horas ?? 0
   const liberada_em = new Date(Date.now() + horas * 3600000).toISOString()
 
-  const { error } = await (adminClient.from('progresso') as any)
+  const { error } = await adminClient.from('progresso')
     .update({ pendente_liberacao: false, proxima_aula_liberada_em: liberada_em })
     .eq('id', progresso_id)
 
@@ -33,11 +33,11 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any)
+  const { data: adminRecord } = await adminClient.from('admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
-  const { data: pendentes } = await (adminClient.from('progresso') as any)
+  const { data: pendentes } = await adminClient.from('progresso')
     .select('id, aluno_id, aula_id, percentual, aprovado, tentativa_numero, created_at, aluno:alunos(nome, whatsapp, gestor_nome), aula:aulas(titulo, quiz_aprovacao_minima, liberacao_modo, modulo:modulos(titulo))')
     .eq('pendente_liberacao', true)
     .order('created_at', { ascending: false })

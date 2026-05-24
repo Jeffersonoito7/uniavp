@@ -1,4 +1,5 @@
 import { PDFDocument, rgb, StandardFonts, PDFFont, PDFPage } from 'pdf-lib'
+import QRCode from 'qrcode'
 
 export type DadosContratoAVP = {
   // Contratado (consultor)
@@ -23,6 +24,8 @@ export type DadosContratoAVP = {
   logoUrl?: string
   // Cláusulas personalizadas (opcional — se ausente, usa texto padrão)
   clausulasPersonalizadas?: string
+  // URL base da aplicação (para QR code de verificação)
+  appUrl?: string
   // Delegação de Nota Fiscal
   nfDados?: {
     emite_proprio: boolean
@@ -31,6 +34,12 @@ export type DadosContratoAVP = {
     responsavel_nome?: string
     responsavel_cpf?: string
   }
+}
+
+function safe(text: string): string {
+  return (text ?? '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^\x00-\xFF]/g, '?')
 }
 
 function hexToRgb(hex: string) {
@@ -118,13 +127,14 @@ class PageWriter {
   }
 
   drawFooter() {
-    const { page, width, M, regular, cinzaE, dados } = this
-    const fy = 18
-    page.drawRectangle({ x: 0, y: 0, width, height: fy + 10, color: rgb(0.97,0.97,0.97) })
+    const { page, width, M, regular, cinzaE, verde, dados } = this
+    const fy = 20
+    page.drawRectangle({ x: 0, y: 0, width, height: fy + 14, color: rgb(0.95, 0.98, 0.97) })
+    page.drawRectangle({ x: 0, y: fy + 13, width, height: 1, color: verde })
     page.drawText(`${dados.contratanteNome} · CNPJ ${dados.contratanteCnpj} · ${dados.foro || 'Petrolina/PE'}`, {
       x: M, y: fy, size: 6.5, font: regular, color: cinzaE,
     })
-    page.drawText(`Assinado eletronicamente em ${new Date(dados.assinado_em).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})} · Registro ${dados.numero_registro}`, {
+    page.drawText(safe(`Assinado eletronicamente · Registro ${dados.numero_registro} · Lei 14.063/2020 · MP 2.200-2/2001`), {
       x: M, y: 8, size: 6, font: regular, color: cinzaE,
     })
   }
@@ -352,59 +362,127 @@ export async function gerarPDFContrato(dados: DadosContratoAVP): Promise<Uint8Ar
   pw.text(`Para dirimir qualquer controvérsia oriunda do presente instrumento, as partes elegem o foro da comarca de ${dados.foro || 'Petrolina/PE'}, com exclusão de qualquer outro por mais privilegiado que seja.`, 8.5, oblique, cinzaE)
   } // fim do else (cláusulas padrão)
 
-  // ── PÁGINA DE ASSINATURA ──────────────────────────────────────────────────
-  pw.newPage()
-  pw.gap(10)
-  pw.text('REGISTRO DE ASSINATURA ELETRÔNICA', 13, bold, preto)
-  pw.gap(4)
-  pw.page.drawRectangle({ x: pw.M, y: pw.y, width: pw.width - pw.M * 2, height: 1.5, color: rgb(0.78, 0.647, 0.204) })
-  pw.gap(16)
-  pw.text('Este documento foi assinado eletronicamente com validade jurídica nos termos da Medida Provisória 2.200-2/2001,', 8, oblique, cinzaE)
-  pw.text('Art. 107 do Código Civil Brasileiro e Lei 14.063/2020. O hash SHA-256 abaixo é a impressão digital do contrato.', 8, oblique, cinzaE)
-  pw.gap(14)
+  // ── PÁGINA DE CERTIFICADO (padrão NovoSign) ───────────────────────────────
+  const certPage = doc.addPage([pw.width, pw.height])
+  const cw = pw.width
+  const ch = pw.height
 
-  const bSigH = 140
-  const half = (pw.width - pw.M * 2) / 2 - 8
-  // Signatário
-  pw.page.drawRectangle({ x: pw.M, y: pw.y - bSigH, width: half, height: bSigH, color: rgb(0.97,0.99,0.98), borderColor: verde, borderWidth: 1 })
-  pw.page.drawRectangle({ x: pw.M, y: pw.y - 26, width: half, height: 26, color: rgb(0.004,0.435,0.22) })
-  pw.page.drawText('CONTRATADO — SIGNATÁRIO', { x: pw.M + 10, y: pw.y - 18, size: 9, font: bold, color: branco })
-  let sy = pw.y - 44
-  for (const [lbl, val] of [['Nome',dados.nome.toUpperCase()],['CPF',formatCPF(dados.cpf)],['CNPJ MEI',formatCNPJ(dados.cnpjMei)],['Sede',dados.sedeMei.slice(0,40)+(dados.sedeMei.length>40?'…':'')],['Assinou em',new Date(dados.assinado_em).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})]]) {
-    pw.page.drawText(lbl, { x: pw.M+10, y: sy, size: 7, font: bold, color: cinzaE })
-    pw.page.drawText(String(val), { x: pw.M+10, y: sy-12, size: 8.5, font: bold, color: preto })
-    sy -= 26
+  // URL de verificação e QR code
+  const verifyUrl = dados.appUrl
+    ? `${dados.appUrl}/contrato/verificar/${dados.numero_registro}`
+    : dados.numero_registro
+  let qrImage = null
+  try {
+    const qrDataUrl = await QRCode.toDataURL(
+      dados.appUrl ? verifyUrl : `SHA256:${dados.hash_contrato.slice(0, 20)}`,
+      { width: 200, margin: 1, errorCorrectionLevel: 'H' }
+    )
+    qrImage = await doc.embedPng(Buffer.from(qrDataUrl.replace('data:image/png;base64,', ''), 'base64'))
+  } catch {}
+
+  // Cabeçalho verde
+  certPage.drawRectangle({ x: 0, y: ch - 88, width: cw, height: 88, color: verde })
+  certPage.drawText(safe('CERTIFICADO DE ASSINATURA ELETRONICA'), {
+    x: 30, y: ch - 34, size: 16, font: bold, color: branco,
+  })
+  certPage.drawText(safe('Documento com validade juridica - Lei 14.063/2020 | MP 2.200-2/2001 | Art. 107 CC'), {
+    x: 30, y: ch - 52, size: 8, font: regular, color: rgb(0.75, 1, 0.85),
+  })
+  certPage.drawText(safe(`Emitido em: ${new Date(dados.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`), {
+    x: 30, y: ch - 66, size: 7.5, font: regular, color: rgb(0.75, 1, 0.85),
+  })
+  if (logoImage) {
+    const d = logoImage.scaleToFit(80, 35)
+    certPage.drawImage(logoImage, { x: cw - 58 - d.width, y: ch - 68, ...d, opacity: 0.88 })
+  }
+  certPage.drawRectangle({ x: 0, y: ch - 90, width: cw, height: 2, color: rgb(0.78, 0.647, 0.204) })
+
+  let cy = ch - 106
+
+  // Identificação do documento
+  certPage.drawRectangle({ x: 20, y: cy - 86, width: cw - 40, height: 96, color: rgb(0.97, 0.99, 0.97), borderColor: rgb(0.82, 0.82, 0.82), borderWidth: 0.5 })
+  certPage.drawRectangle({ x: 20, y: cy - 86, width: 4, height: 96, color: verde })
+  certPage.drawText(safe('IDENTIFICACAO DO DOCUMENTO'), { x: 30, y: cy + 2, size: 9, font: bold, color: verde })
+  certPage.drawText(safe('Contrato de Licenciamento de Representacao e Prestacao de Servicos'), { x: 30, y: cy - 13, size: 9, font: bold, color: preto })
+  certPage.drawText(safe(`Numero de Registro: ${dados.numero_registro}`), { x: 30, y: cy - 28, size: 8, font: regular, color: cinzaE })
+  certPage.drawText(safe(`Hash SHA-256: ${dados.hash_contrato.slice(0, 48)}`), { x: 30, y: cy - 40, size: 6.5, font: regular, color: cinzaE })
+  certPage.drawText(safe(`           ${dados.hash_contrato.slice(48)}`), { x: 30, y: cy - 50, size: 6.5, font: regular, color: cinzaE })
+  certPage.drawText(safe(`Assinado em: ${new Date(dados.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })} (Brasilia)`), { x: 30, y: cy - 62, size: 7.5, font: regular, color: cinzaE })
+  if (dados.appUrl) certPage.drawText(safe(`Verificar em: ${verifyUrl}`), { x: 30, y: cy - 74, size: 7, font: regular, color: verde })
+  cy -= 104
+
+  // Título do bloco de assinaturas
+  certPage.drawText(safe('REGISTRO DE ASSINATURAS'), { x: 30, y: cy + 4, size: 9, font: bold, color: verde })
+  cy -= 16
+
+  // Box — Contratado (signatário)
+  const sigH = 98
+  certPage.drawRectangle({ x: 20, y: cy - sigH + 10, width: cw - 40, height: sigH, color: rgb(0.97, 0.99, 0.97), borderColor: rgb(0.82, 0.82, 0.82), borderWidth: 0.5 })
+  certPage.drawRectangle({ x: 20, y: cy - sigH + 10, width: 4, height: sigH, color: verde })
+  certPage.drawRectangle({ x: cw - 118, y: cy - 1, width: 96, height: 17, color: rgb(0.88, 0.98, 0.9), borderColor: verde, borderWidth: 0.5 })
+  certPage.drawText(safe('ASSINADO'), { x: cw - 103, y: cy + 4, size: 9, font: bold, color: verde })
+  certPage.drawText(dados.nome.toUpperCase().slice(0, 60), { x: 32, y: cy, size: 11, font: bold, color: preto })
+  certPage.drawText(`CPF: ${formatCPF(dados.cpf)}`, { x: 32, y: cy - 15, size: 8, font: regular, color: cinzaE })
+  certPage.drawText(`CNPJ MEI: ${formatCNPJ(dados.cnpjMei)}`, { x: 32, y: cy - 27, size: 8, font: regular, color: cinzaE })
+  certPage.drawText(safe(`E-mail: ${dados.email}`), { x: 32, y: cy - 39, size: 8, font: regular, color: cinzaE })
+  certPage.drawText(safe(`Data/Hora: ${new Date(dados.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })} (Brasilia)`), { x: 32, y: cy - 51, size: 8, font: regular, color: cinzaE })
+  certPage.drawText(safe(`Endereco IP: ${dados.ip}`), { x: 32, y: cy - 63, size: 7.5, font: regular, color: cinzaE })
+  certPage.drawText(safe(`Sede: ${dados.sedeMei.slice(0, 70)}`), { x: 32, y: cy - 76, size: 7, font: regular, color: rgb(0.55, 0.55, 0.55) })
+  cy -= sigH + 12
+
+  // Box — Contratante
+  const conH = 72
+  certPage.drawRectangle({ x: 20, y: cy - conH + 10, width: cw - 40, height: conH, color: rgb(0.97, 0.98, 1), borderColor: rgb(0.82, 0.82, 0.82), borderWidth: 0.5 })
+  certPage.drawRectangle({ x: 20, y: cy - conH + 10, width: 4, height: conH, color: rgb(0.2, 0.2, 0.6) })
+  certPage.drawRectangle({ x: cw - 142, y: cy - 1, width: 120, height: 17, color: rgb(0.9, 0.9, 0.98), borderColor: rgb(0.3, 0.3, 0.75), borderWidth: 0.5 })
+  certPage.drawText(safe('CONTRATANTE'), { x: cw - 128, y: cy + 4, size: 9, font: bold, color: rgb(0.2, 0.2, 0.6) })
+  certPage.drawText(dados.contratanteNome.toUpperCase().slice(0, 55), { x: 32, y: cy, size: 10, font: bold, color: preto })
+  certPage.drawText(`CNPJ: ${dados.contratanteCnpj}`, { x: 32, y: cy - 14, size: 8, font: regular, color: cinzaE })
+  if (dados.representanteNome) certPage.drawText(safe(`Representante: ${dados.representanteNome}${dados.representanteCargo ? ` (${dados.representanteCargo})` : ''}`), { x: 32, y: cy - 26, size: 8, font: regular, color: cinzaE })
+  certPage.drawText(safe(`Sede: ${dados.contratanteEndereco.slice(0, 65)}`), { x: 32, y: cy - 38, size: 7.5, font: regular, color: cinzaE })
+  certPage.drawText(safe(`Aceite automatico no registro em: ${new Date(dados.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`), { x: 32, y: cy - 52, size: 7, font: regular, color: rgb(0.55, 0.55, 0.55) })
+  cy -= conH + 14
+
+  // QR code + texto de validade jurídica
+  const qrSize = 95
+  const qrX = cw - qrSize - 28
+  const qrY = Math.max(cy - qrSize - 10, 58)
+  if (qrImage) {
+    certPage.drawRectangle({ x: qrX - 7, y: qrY - 7, width: qrSize + 14, height: qrSize + 28, color: rgb(0.97, 0.97, 0.97), borderColor: rgb(0.8, 0.8, 0.8), borderWidth: 0.5 })
+    certPage.drawImage(qrImage, { x: qrX, y: qrY, width: qrSize, height: qrSize })
+    certPage.drawText(safe('Escanear para'), { x: qrX + 10, y: qrY + qrSize + 12, size: 6.5, font: regular, color: cinzaE })
+    certPage.drawText(safe('verificar autenticidade'), { x: qrX + 1, y: qrY + qrSize + 3, size: 6.5, font: regular, color: cinzaE })
   }
 
-  // Contratante
-  const tx = pw.M + half + 16
-  pw.page.drawRectangle({ x: tx, y: pw.y - bSigH, width: half, height: bSigH, color: rgb(0.97,0.98,1), borderColor: rgb(0.3,0.3,0.75), borderWidth: 1 })
-  pw.page.drawRectangle({ x: tx, y: pw.y - 26, width: half, height: 26, color: rgb(0.2,0.2,0.6) })
-  pw.page.drawText('CONTRATANTE — REPRESENTANTE', { x: tx+10, y: pw.y-18, size: 9, font: bold, color: branco })
-  let ty = pw.y - 44
-  for (const [lbl, val] of [['Empresa',dados.contratanteNome.slice(0,30)],['CNPJ',dados.contratanteCnpj],['Representante',(dados.representanteNome||'—').slice(0,30)],['Cargo',(dados.representanteCargo||'—')],['Data',new Date(dados.assinado_em).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})]]) {
-    pw.page.drawText(lbl, { x: tx+10, y: ty, size: 7, font: bold, color: cinzaE })
-    pw.page.drawText(String(val), { x: tx+10, y: ty-12, size: 8.5, font: bold, color: preto })
-    ty -= 26
-  }
-  pw.y -= bSigH + 24
+  const legalX = 28
+  const legalY = qrY + qrSize + 2
+  certPage.drawText(safe('VALIDADE JURIDICA'), { x: legalX, y: legalY + 2, size: 9, font: bold, color: verde })
+  const legalLines = [
+    safe('Este documento possui validade juridica plena conforme:'),
+    safe('- Lei 14.063/2020 (Assinatura Eletronica Avancada)'),
+    safe('- Medida Provisoria 2.200-2/2001 (ICP-Brasil)'),
+    safe('- Codigo Civil Brasileiro, Art. 107'),
+    '',
+    safe('A identidade do signatario foi verificada por aceite'),
+    safe('eletronico com captura de IP, data, hora e registro'),
+    safe('em base de dados imutavel.'),
+  ]
+  legalLines.forEach((line, i) => {
+    certPage.drawText(line, {
+      x: legalX, y: legalY - 4 - i * 11,
+      size: 7.5, font: i === 0 ? bold : regular,
+      color: i === 0 ? preto : cinzaE,
+    })
+  })
 
-  // Hash
-  pw.page.drawRectangle({ x: pw.M, y: pw.y - 52, width: pw.width - pw.M * 2, height: 52, color: rgb(0.05,0.06,0.09), borderColor: rgb(0.78,0.647,0.204), borderWidth: 1 })
-  pw.page.drawText('HASH SHA-256 — IMPRESSÃO DIGITAL DO CONTRATO', { x: pw.M+12, y: pw.y-14, size: 8, font: bold, color: rgb(0.78,0.647,0.204) })
-  pw.page.drawText(dados.hash_contrato.slice(0,48), { x: pw.M+12, y: pw.y-28, size: 8.5, font: bold, color: rgb(0.8,0.82,0.85) })
-  pw.page.drawText(dados.hash_contrato.slice(48), { x: pw.M+12, y: pw.y-42, size: 8.5, font: bold, color: rgb(0.8,0.82,0.85) })
-  pw.y -= 68
-
-  // Metadados
-  pw.gap(10)
-  pw.page.drawRectangle({ x: pw.M, y: pw.y - 52, width: pw.width - pw.M * 2, height: 52, color: rgb(0.97,0.97,0.97), borderColor: pw.cinzaL, borderWidth: 0.5 })
-  pw.page.drawText('DADOS TÉCNICOS DA ASSINATURA', { x: pw.M+12, y: pw.y-14, size: 8, font: bold, color: preto })
-  let mx = pw.M + 12; const mxW = (pw.width - pw.M*2 - 24) / 3
-  for (const [l,v] of [['Registro',dados.numero_registro],['IP de Origem',dados.ip],['Data/Hora UTC',dados.assinado_em.slice(0,19)]]) {
-    pw.page.drawText(l+':', { x: mx, y: pw.y-30, size: 7.5, font: bold, color: cinzaE })
-    pw.page.drawText(v, { x: mx, y: pw.y-43, size: 8.5, font: bold, color: preto })
-    mx += mxW
+  // Rodapé do certificado
+  certPage.drawLine({ start: { x: 20, y: 50 }, end: { x: cw - 20, y: 50 }, thickness: 0.5, color: rgb(0.78, 0.647, 0.204) })
+  certPage.drawText(safe(`${dados.contratanteNome} | Registro: ${dados.numero_registro} | Lei 14.063/2020 | MP 2.200-2/2001`), { x: 20, y: 38, size: 6.5, font: regular, color: cinzaE })
+  certPage.drawText(safe(`Hash SHA-256: ${dados.hash_contrato}`), { x: 20, y: 28, size: 5.5, font: regular, color: rgb(0.6, 0.6, 0.6) })
+  if (dados.appUrl) {
+    certPage.drawText(safe(`Verificacao online: ${verifyUrl}`), { x: 20, y: 18, size: 6.5, font: regular, color: verde })
+  } else {
+    certPage.drawText(safe(`Contratante: ${dados.contratanteNome} · CNPJ: ${dados.contratanteCnpj}`), { x: 20, y: 18, size: 6.5, font: regular, color: cinzaE })
   }
 
   doc.setTitle(`Contrato AVP — ${dados.numero_registro} — ${dados.nome}`)

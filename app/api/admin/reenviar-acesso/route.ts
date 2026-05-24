@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any)
+  const { data: adminRecord } = await adminClient.from('admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Vincula o user_id ao aluno
-  await (adminClient.from('alunos') as any)
+  await adminClient.from('alunos')
     .update({ user_id: authUser.id })
     .eq('id', aluno_id)
 

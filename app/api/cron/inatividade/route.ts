@@ -22,12 +22,12 @@ export async function GET(req: NextRequest) {
   const nomePlat = siteConfig.nome || 'Universidade'
   let notificacoes = 0
 
-  const { data: alunos } = await (adminClient.from('alunos') as any)
+  const { data: alunos } = await adminClient.from('alunos')
     .select('id, nome, whatsapp, gestor_nome, gestor_whatsapp, status, created_at')
     .eq('status', 'ativo')
 
   for (const aluno of alunos ?? []) {
-    const { data: ultimoProgresso } = await (adminClient.from('progresso') as any)
+    const { data: ultimoProgresso } = await adminClient.from('progresso')
       .select('created_at')
       .eq('aluno_id', aluno.id)
       .order('created_at', { ascending: false })
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
       .maybeSingle()
 
     const dataRef = ultimoProgresso
-      ? new Date(ultimoProgresso.created_at)
+      ? new Date(ultimoProgresso.created_at ?? agora)
       : new Date(aluno.created_at ?? agora)
 
     const dias = Math.floor((agora.getTime() - dataRef.getTime()) / 86400000)
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
 
     // 2. Avisa o PRO com nível de urgência crescente + link direto para contato
     if (aluno.gestor_whatsapp) {
-      const instancia = await getInstanciaGestorPorNome(aluno.gestor_nome, adminClient)
+      const instancia = await getInstanciaGestorPorNome(aluno.gestor_nome ?? '', adminClient)
       const wppFree = aluno.whatsapp?.replace(/\D/g, '')
       const linkContato = wppFree ? `\n\n📲 Contatar agora: https://wa.me/55${wppFree}` : ''
       const linkPainel = `\n📊 Ver painel: ${appUrl}/pro`
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
         ? `⏰ *Atenção, ${aluno.gestor_nome || 'PRO'}!*\n\nSeu membro FREE *${aluno.nome}* está há *1 semana* sem avançar nos estudos.\n\nEste é o momento certo para um reengajamento direto. Entre em contato agora! 🎯${linkContato}${linkPainel}`
         : `🚨 *ALERTA, ${aluno.gestor_nome || 'PRO'}!*\n\nSeu membro FREE *${aluno.nome}* está há *${dias} dias* sem acessar a plataforma.\n\n⚠️ Risco alto de abandono — contato urgente!${linkContato}${linkPainel}`
 
-      await enviarWhatsApp(aluno.gestor_whatsapp, msgGestor, instancia)
+      await enviarWhatsApp(aluno.gestor_whatsapp!, msgGestor, instancia)
       notificacoes++
     }
   }

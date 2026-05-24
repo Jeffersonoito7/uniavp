@@ -32,16 +32,16 @@ export default function RankingWidget({ meuId }: { meuId: string }) {
         style={{
           position: 'fixed', bottom: 88, right: 20, zIndex: 900,
           width: 52, height: 52, borderRadius: '50%',
-          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-          border: 'none', cursor: 'pointer', fontSize: 22,
-          boxShadow: '0 4px 20px rgba(245,158,11,0.5)',
+          background: '#d97706',
+          border: 'none', cursor: 'pointer',
+          boxShadow: '0 4px 20px rgba(217,119,6,0.4)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'transform 0.2s',
         }}
         onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
         onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
       >
-        🏆
+        <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 15c4.97 0 9-2.686 9-6S16.97 3 12 3 3 5.686 3 9s4.03 6 9 6z"/><path d="M5.88 13.47C4.15 14.26 3 15.52 3 17c0 3.314 4.03 6 9 6s9-2.686 9-6c0-1.48-1.15-2.74-2.88-3.53"/><path d="M12 15v6"/></svg>
       </button>
 
       {/* Painel do ranking */}
@@ -61,7 +61,7 @@ export default function RankingWidget({ meuId }: { meuId: string }) {
           }}>
             {/* Header */}
             <div style={{
-              background: 'linear-gradient(135deg, #d97706, #f59e0b)',
+              background: '#d97706',
               padding: '16px 20px',
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>

@@ -9,7 +9,7 @@ export async function GET() {
   if (!user) return NextResponse.json([])
 
   const adminClient = createServiceRoleClient()
-  const { data } = await (adminClient.from('noticias') as any)
+  const { data } = await adminClient.from('noticias')
     .select('*').eq('publicado', true).order('created_at', { ascending: false }).limit(20)
 
   return NextResponse.json(data ?? [])

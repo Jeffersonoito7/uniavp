@@ -11,8 +11,8 @@ type Premio = {
 
 type Resgate = {
   id: string
-  status: string
-  created_at: string
+  status: string | null
+  created_at: string | null
   premio: { nome: string }
 }
 
@@ -89,10 +89,10 @@ export default function LojaCliente({ saldoInicial, premios, resgatesIniciais, w
             <div key={r.id} style={{ ...cardStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <p style={{ fontWeight: 600, fontSize: 14 }}>{r.premio?.nome}</p>
-                <p style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>{new Date(r.created_at).toLocaleDateString('pt-BR')}</p>
+                <p style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>{r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '—'}</p>
               </div>
-              <span style={{ background: statusColor[r.status] + '20', color: statusColor[r.status], borderRadius: 20, padding: '3px 10px', fontSize: 12, fontWeight: 600 }}>
-                {r.status}
+              <span style={{ background: (statusColor[r.status ?? ''] ?? '#8a8fa3') + '20', color: statusColor[r.status ?? ''] ?? '#8a8fa3', borderRadius: 20, padding: '3px 10px', fontSize: 12, fontWeight: 600 }}>
+                {r.status ?? '—'}
               </span>
             </div>
           ))}

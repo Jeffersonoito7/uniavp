@@ -9,12 +9,12 @@ export async function GET(req: NextRequest) {
   if (!aulaId) return NextResponse.json({ total: 0, curtido: false })
 
   const adminClient = createServiceRoleClient()
-  const { count } = await (adminClient.from('aula_curtidas') as any)
+  const { count } = await adminClient.from('aula_curtidas')
     .select('*', { count: 'exact', head: true }).eq('aula_id', aulaId)
 
   let curtido = false
   if (alunoId) {
-    const { data } = await (adminClient.from('aula_curtidas') as any)
+    const { data } = await adminClient.from('aula_curtidas')
       .select('id').eq('aula_id', aulaId).eq('aluno_id', alunoId).maybeSingle()
     curtido = !!data
   }
@@ -29,16 +29,16 @@ export async function POST(req: NextRequest) {
   const { aulaId, alunoId } = await req.json()
   const adminClient = createServiceRoleClient()
 
-  const { data: existente } = await (adminClient.from('aula_curtidas') as any)
+  const { data: existente } = await adminClient.from('aula_curtidas')
     .select('id').eq('aula_id', aulaId).eq('aluno_id', alunoId).maybeSingle()
 
   if (existente) {
-    await (adminClient.from('aula_curtidas') as any).delete().eq('id', existente.id)
+    await adminClient.from('aula_curtidas').delete().eq('id', existente.id)
   } else {
-    await (adminClient.from('aula_curtidas') as any).insert({ aula_id: aulaId, aluno_id: alunoId })
+    await adminClient.from('aula_curtidas').insert({ aula_id: aulaId, aluno_id: alunoId })
   }
 
-  const { count } = await (adminClient.from('aula_curtidas') as any)
+  const { count } = await adminClient.from('aula_curtidas')
     .select('*', { count: 'exact', head: true }).eq('aula_id', aulaId)
 
   return NextResponse.json({ curtido: !existente, total: count ?? 0 })

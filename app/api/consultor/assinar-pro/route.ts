@@ -11,7 +11,7 @@ async function getAluno() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
   const adminClient = createServiceRoleClient()
-  const { data: aluno } = await (adminClient.from('alunos') as any)
+  const { data: aluno } = await adminClient.from('alunos')
     .select('id, nome, whatsapp, email')
     .eq('user_id', user.id)
     .maybeSingle()
@@ -19,7 +19,7 @@ async function getAluno() {
 }
 
 async function getValorPlano(adminClient: any): Promise<number> {
-  const { data } = await (adminClient.from('configuracoes') as any)
+  const { data } = await adminClient.from('configuracoes')
     .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
   const parsed = parseFloat(String(data?.valor ?? '').replace(/"/g, ''))
   return isNaN(parsed) ? 97 : Math.max(1, parsed)
@@ -33,7 +33,7 @@ export async function GET() {
   const valorPlano = await getValorPlano(adminClient)
 
   // Verifica se já tem gestor ativo (já é PRO)
-  const { data: gestorAtivo } = await (adminClient.from('gestores') as any)
+  const { data: gestorAtivo } = await adminClient.from('gestores')
     .select('id, status_assinatura, plano_vencimento')
     .eq('user_id', user.id)
     .eq('ativo', true)
@@ -47,12 +47,12 @@ export async function GET() {
   }
 
   // Verifica pagamento pendente
-  const { data: gestorPendente } = await (adminClient.from('gestores') as any)
+  const { data: gestorPendente } = await adminClient.from('gestores')
     .select('id').eq('user_id', user.id).eq('ativo', false).maybeSingle()
 
   let ultimoPag = null
   if (gestorPendente) {
-    const { data: pag } = await (adminClient.from('gestor_pagamentos') as any)
+    const { data: pag } = await adminClient.from('gestor_pagamentos')
       .select('pix_copia_cola, qrcode_base64, vencimento, status')
       .eq('gestor_id', gestorPendente.id)
       .eq('status', 'pendente')
@@ -62,10 +62,10 @@ export async function GET() {
     ultimoPag = pag
   }
 
-  const { data: siteNomeCfg } = await (adminClient.from('configuracoes') as any)
+  const { data: siteNomeCfg } = await adminClient.from('configuracoes')
     .select('valor').eq('chave', 'site_nome').maybeSingle()
   let nomeSite = 'Universidade'
-  try { nomeSite = JSON.parse(siteNomeCfg?.valor ?? '') || nomeSite } catch { /* */ }
+  try { nomeSite = JSON.parse(String(siteNomeCfg?.valor ?? '')) || nomeSite } catch { /* */ }
 
   return NextResponse.json({ jaEhPro: false, valorPlano, ultimoPagamento: ultimoPag, whatsapp: aluno.whatsapp, nomeSite })
 }
@@ -78,36 +78,36 @@ export async function POST() {
   const valorPlano = await getValorPlano(adminClient)
 
   // Verifica se já é PRO
-  const { data: gestorAtivo } = await (adminClient.from('gestores') as any)
+  const { data: gestorAtivo } = await adminClient.from('gestores')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (gestorAtivo) return NextResponse.json({ error: 'Já possui conta PRO' }, { status: 400 })
 
   // Busca tenant_id e gestor de origem do aluno (necessário para multi-tenancy)
-  const { data: alunoCompleto } = await (adminClient.from('alunos') as any)
+  const { data: alunoCompleto } = await adminClient.from('alunos')
     .select('gestor_whatsapp, tenant_id').eq('user_id', user.id).maybeSingle()
   const tenantId: string | null = alunoCompleto?.tenant_id ?? null
 
   // Cria ou reutiliza gestor pendente
   let gestorId: string
-  const { data: gestorPendente } = await (adminClient.from('gestores') as any)
+  const { data: gestorPendente } = await adminClient.from('gestores')
     .select('id').eq('user_id', user.id).eq('ativo', false).maybeSingle()
 
   if (gestorPendente) {
     gestorId = gestorPendente.id
     // Cancela pagamento pendente anterior
-    await (adminClient.from('gestor_pagamentos') as any)
+    await adminClient.from('gestor_pagamentos')
       .update({ status: 'cancelado' })
       .eq('gestor_id', gestorId)
       .eq('status', 'pendente')
   } else {
     let indicadoPorGestorId: string | null = null
     if (alunoCompleto?.gestor_whatsapp) {
-      const { data: gestorOrigem } = await (adminClient.from('gestores') as any)
+      const { data: gestorOrigem } = await adminClient.from('gestores')
         .select('id').eq('whatsapp', alunoCompleto.gestor_whatsapp).eq('ativo', true).maybeSingle()
       indicadoPorGestorId = gestorOrigem?.id ?? null
     }
 
-    const { data: novoGestor } = await (adminClient.from('gestores') as any)
+    const { data: novoGestor } = await adminClient.from('gestores')
       .insert({
         user_id: user.id,
         nome: aluno.nome,
@@ -137,7 +137,7 @@ export async function POST() {
       descricao: 'Assinatura Plataforma PRO',
     })
 
-    const { data: pagamento } = await (adminClient.from('gestor_pagamentos') as any)
+    const { data: pagamento } = await adminClient.from('gestor_pagamentos')
       .insert({
         gestor_id: gestorId,
         txid,
@@ -151,14 +151,15 @@ export async function POST() {
       .select()
       .single()
 
-    await (adminClient.from('gestores') as any)
+    await adminClient.from('gestores')
       .update({ pix_txid: txid })
       .eq('id', gestorId)
 
     return NextResponse.json({ ok: true, pagamento })
   } catch (e: any) {
     const raw: string = e.message ?? ''
-    console.error('[assinar-pro] Erro Efi Bank:', raw)
+    // Loga apenas o tipo do erro — evita expor tokens ou respostas brutas da API
+    console.error('[assinar-pro] Erro Efi Bank — tipo:', e.constructor?.name ?? 'Error')
     const msgUsuario = raw.includes('invalid_client') || raw.includes('credentials')
       ? 'Erro na integração de pagamento. Entre em contato com o suporte.'
       : raw.includes('Auth') || raw.includes('token')

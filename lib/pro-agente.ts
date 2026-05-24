@@ -90,11 +90,11 @@ async function executarFerramenta(nome: string, input: any, gestorId: string, ad
   const hoje = new Date().toISOString().split('T')[0]
 
   if (nome === 'registrar_cotacao') {
-    await (admin.from('pro_registros') as any).insert({
+    await admin.from('pro_registros').insert({
       gestor_id: gestorId, tipo: 'cotacao',
       descricao: input.descricao, data: input.data || hoje,
     })
-    const { count } = await (admin.from('pro_registros') as any)
+    const { count } = await admin.from('pro_registros')
       .select('id', { count: 'exact', head: true })
       .eq('gestor_id', gestorId).eq('tipo', 'cotacao')
       .gte('data', hoje.slice(0, 7) + '-01')
@@ -102,11 +102,11 @@ async function executarFerramenta(nome: string, input: any, gestorId: string, ad
   }
 
   if (nome === 'registrar_adesao') {
-    await (admin.from('pro_registros') as any).insert({
+    await admin.from('pro_registros').insert({
       gestor_id: gestorId, tipo: 'adesao',
       descricao: input.descricao, valor: input.valor, data: input.data || hoje,
     })
-    const { data: adesoes } = await (admin.from('pro_registros') as any)
+    const { data: adesoes } = await admin.from('pro_registros')
       .select('valor').eq('gestor_id', gestorId).eq('tipo', 'adesao')
       .gte('data', hoje.slice(0, 7) + '-01')
     const totalMes = (adesoes ?? []).reduce((s: number, a: any) => s + Number(a.valor), 0)
@@ -114,7 +114,7 @@ async function executarFerramenta(nome: string, input: any, gestorId: string, ad
   }
 
   if (nome === 'registrar_despesa') {
-    await (admin.from('pro_registros') as any).insert({
+    await admin.from('pro_registros').insert({
       gestor_id: gestorId, tipo: 'despesa',
       descricao: input.descricao, valor: input.valor, data: input.data || hoje,
     })
@@ -122,7 +122,7 @@ async function executarFerramenta(nome: string, input: any, gestorId: string, ad
   }
 
   if (nome === 'criar_lembrete') {
-    await (admin.from('pro_lembretes') as any).insert({
+    await admin.from('pro_lembretes').insert({
       gestor_id: gestorId, mensagem: input.mensagem, lembrar_em: input.lembrar_em,
     })
     const dt = new Date(input.lembrar_em)
@@ -138,7 +138,7 @@ async function executarFerramenta(nome: string, input: any, gestorId: string, ad
       return hoje.slice(0, 7) + '-01'
     }
     const desde = inicio(input.periodo)
-    const { data: registros } = await (admin.from('pro_registros') as any)
+    const { data: registros } = await admin.from('pro_registros')
       .select('tipo, valor').eq('gestor_id', gestorId).gte('data', desde)
 
     const cotacoes = (registros ?? []).filter((r: any) => r.tipo === 'cotacao').length
@@ -159,7 +159,7 @@ async function executarFerramenta(nome: string, input: any, gestorId: string, ad
   }
 
   if (nome === 'buscar_equipe') {
-    const { data: consultores } = await (admin.from('alunos') as any)
+    const { data: consultores } = await admin.from('alunos')
       .select('nome, status, created_at').eq('gestor_id', gestorId).eq('ativo', true).order('created_at', { ascending: false }).limit(5)
     const total = consultores?.length ?? 0
     const lista = (consultores ?? []).map((c: any) => `• ${c.nome}`).join('\n')
@@ -167,7 +167,7 @@ async function executarFerramenta(nome: string, input: any, gestorId: string, ad
   }
 
   if (nome === 'listar_lembretes') {
-    const { data: lembretes } = await (admin.from('pro_lembretes') as any)
+    const { data: lembretes } = await admin.from('pro_lembretes')
       .select('mensagem, lembrar_em').eq('gestor_id', gestorId).eq('enviado', false)
       .gte('lembrar_em', new Date().toISOString()).order('lembrar_em').limit(5)
     if (!lembretes?.length) return '📭 Nenhum lembrete pendente.'
@@ -188,7 +188,7 @@ export async function processarMensagemPRO(whatsapp: string, mensagem: string): 
 
   // Busca o gestor pelo WhatsApp
   const numero = whatsapp.replace(/\D/g, '').replace(/^55/, '')
-  const { data: gestor } = await (admin.from('gestores') as any)
+  const { data: gestor } = await admin.from('gestores')
     .select('id, nome').eq('whatsapp', numero).eq('ativo', true).maybeSingle()
 
   if (!gestor) return null as any // Não é PRO, ignora

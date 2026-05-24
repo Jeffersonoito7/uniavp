@@ -23,7 +23,7 @@ export default async function PlanoFreePage() {
   const host = (await headers()).get('host') ?? ''
   const config = await getSiteConfig(host)
   const admin = createServiceRoleClient()
-  const { data: valorCfg } = await (admin.from('configuracoes') as any)
+  const { data: valorCfg } = await admin.from('configuracoes')
     .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
   const valorPro = Math.max(1, parseFloat(String(valorCfg?.valor ?? '').replace(/"/g, '')) || 97)
 
@@ -46,7 +46,7 @@ export default async function PlanoFreePage() {
           <span style={{ fontWeight: 800, fontSize: 16 }}>{config.nome}</span>
         </div>
         <a href="/captacao?direto=1"
-          style={{ background: 'linear-gradient(135deg, #02A153, #00c46a)', color: '#fff', borderRadius: 10, padding: '9px 22px', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+          className="btn btn-green" style={{ textDecoration: 'none' }}>
           Cadastrar grátis
         </a>
       </header>
@@ -55,8 +55,8 @@ export default async function PlanoFreePage() {
 
         {/* Badge */}
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(2,161,83,0.15)', border: '1px solid rgba(2,161,83,0.35)', borderRadius: 100, padding: '6px 20px', fontSize: 12, fontWeight: 700, color: '#4ade80', letterSpacing: 1 }}>
-            🆓 TOTALMENTE GRATUITO
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 100, padding: '6px 20px', fontSize: 12, fontWeight: 700, color: '#4ade80', letterSpacing: 1 }}>
+            TOTALMENTE GRATUITO
           </span>
         </div>
 
@@ -64,13 +64,12 @@ export default async function PlanoFreePage() {
         <div style={{ textAlign: 'center', marginBottom: 56 }}>
           <h1 style={{ fontSize: 'clamp(2rem, 6vw, 3.4rem)', fontWeight: 900, lineHeight: 1.15, marginBottom: 20 }}>
             Comece sua jornada<br />
-            <span style={{ background: 'linear-gradient(90deg, #02A153, #4ade80)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>100% de graça</span>
+            <span style={{ color: '#4ade80' }}>100% de graça</span>
           </h1>
           <p style={{ color: 'rgba(241,245,249,0.6)', fontSize: 'clamp(15px, 2.5vw, 18px)', lineHeight: 1.8, maxWidth: 540, margin: '0 auto 32px' }}>
             A <strong style={{ color: '#f1f5f9' }}>{config.nome} FREE</strong> é para quem quer aprender, crescer e desenvolver habilidades — sem pagar nada para começar.
           </p>
-          <a href="/captacao?direto=1"
-            style={{ display: 'inline-block', background: 'linear-gradient(135deg, #02A153, #00c46a)', color: '#fff', borderRadius: 14, padding: '18px 48px', fontWeight: 900, fontSize: 18, textDecoration: 'none', boxShadow: '0 8px 32px rgba(2,161,83,0.35)' }}>
+          <a href="/captacao?direto=1" className="btn btn-green" style={{ textDecoration: 'none', fontSize: 18, borderRadius: 14, padding: '18px 48px' }}>
             Quero meu acesso grátis →
           </a>
           <p style={{ fontSize: 12, color: 'rgba(241,245,249,0.4)', marginTop: 12 }}>Sem cartão de crédito. Sem burocracia.</p>
@@ -114,8 +113,8 @@ export default async function PlanoFreePage() {
           </div>
 
           {/* PRO */}
-          <div style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08))', border: '2px solid rgba(99,102,241,0.4)', borderRadius: 16, padding: 28, position: 'relative' }}>
-            <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 100, padding: '4px 18px', fontSize: 11, fontWeight: 800, color: '#fff', whiteSpace: 'nowrap' }}>
+          <div style={{ background: 'rgba(79,70,229,0.08)', border: '2px solid rgba(79,70,229,0.3)', borderRadius: 16, padding: 28, position: 'relative' }}>
+            <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', background: '#4f46e5', borderRadius: 100, padding: '4px 18px', fontSize: 11, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap' }}>
               PRÓXIMO NÍVEL
             </div>
             <p style={{ fontSize: 13, fontWeight: 700, color: '#818cf8', marginBottom: 8 }}>PRO</p>
@@ -133,18 +132,17 @@ export default async function PlanoFreePage() {
                 {txt}
               </p>
             ))}
-            <a href="/planos/pro" style={{ display: 'block', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 10, padding: '12px', fontWeight: 700, fontSize: 14, textDecoration: 'none', textAlign: 'center', marginTop: 16 }}>
+            <a href="/planos/pro" className="btn btn-primary btn-full" style={{ textDecoration: 'none', marginTop: 16 }}>
               Conhecer o PRO →
             </a>
           </div>
         </div>
 
         {/* CTA final */}
-        <div style={{ textAlign: 'center', background: 'linear-gradient(135deg, rgba(2,161,83,0.12), rgba(0,196,106,0.06))', border: '1px solid rgba(2,161,83,0.25)', borderRadius: 20, padding: 'clamp(32px, 5vw, 56px) 24px' }}>
-          <p style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Pronto para começar?</p>
+        <div style={{ textAlign: 'center', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 20, padding: 'clamp(32px, 5vw, 56px) 24px' }}>
+          <p style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Pronto para começar?</p>
           <p style={{ color: 'rgba(241,245,249,0.55)', fontSize: 15, marginBottom: 28 }}>Faça seu cadastro agora e tenha acesso imediato à plataforma.</p>
-          <a href="/captacao?direto=1"
-            style={{ display: 'inline-block', background: 'linear-gradient(135deg, #02A153, #00c46a)', color: '#fff', borderRadius: 14, padding: '18px 52px', fontWeight: 900, fontSize: 18, textDecoration: 'none', boxShadow: '0 8px 32px rgba(2,161,83,0.35)' }}>
+          <a href="/captacao?direto=1" className="btn btn-green" style={{ textDecoration: 'none', fontSize: 18, borderRadius: 14, padding: '18px 52px' }}>
             Criar conta grátis
           </a>
           <p style={{ fontSize: 12, color: 'rgba(241,245,249,0.35)', marginTop: 14 }}>

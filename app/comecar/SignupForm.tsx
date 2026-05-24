@@ -13,7 +13,6 @@ export default function SignupForm({ planos, planoInicial }: { planos: PlanoSaaS
 
   const plano = planos.find(p => p.id === planoId)
 
-  // Polling de pagamento
   useEffect(() => {
     if (etapa !== 'aguardando' || !pixData?.cliente_id) return
     const interval = setInterval(async () => {
@@ -39,9 +38,6 @@ export default function SignupForm({ planos, planoInicial }: { planos: PlanoSaaS
     setLoading(false)
     if (!res.ok) {
       setErro(data.error || 'Erro ao processar. Tente novamente.')
-      if (res.status === 400 && data.error?.includes('cotação')) {
-        // Plano sem preço — redireciona para WhatsApp
-      }
       return
     }
     setPixData({ pix_copia_cola: data.pix_copia_cola, qrcode_base64: data.qrcode_base64, valor: data.valor, plano_nome: data.plano_nome, cliente_id: data.cliente_id })
@@ -55,88 +51,132 @@ export default function SignupForm({ planos, planoInicial }: { planos: PlanoSaaS
     setTimeout(() => setCopiado(false), 2500)
   }
 
-  const inp: React.CSSProperties = { width: '100%', background: '#08090d', border: '1px solid #252836', borderRadius: 8, padding: '12px 14px', color: '#f0f1f5', fontSize: 15, outline: 'none', boxSizing: 'border-box' }
-  const lbl: React.CSSProperties = { display: 'block', color: '#8a8fa3', fontSize: 13, marginBottom: 6, fontWeight: 600 }
+  const S = {
+    page: { minHeight: '100vh', background: '#0a0a0f', color: '#f1f5f9', fontFamily: 'Inter, system-ui, sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 16px' } as React.CSSProperties,
+    card: { background: '#0f0f17', border: '1px solid #1e1f2e', borderRadius: 12 } as React.CSSProperties,
+    inp: { width: '100%', background: '#080810', border: '1px solid #1e1f2e', borderRadius: 8, padding: '11px 14px', color: '#f1f5f9', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const, transition: 'border-color 0.15s' },
+    lbl: { display: 'block', color: '#94a3b8', fontSize: 12, fontWeight: 600, marginBottom: 6, letterSpacing: '0.02em', textTransform: 'uppercase' as const },
+    btn: { background: '#4f46e5', color: '#fff', border: 'none', borderRadius: 8, padding: '13px 28px', fontWeight: 600, fontSize: 14, cursor: 'pointer', letterSpacing: '0.01em' } as React.CSSProperties,
+    btnGhost: { background: 'none', border: '1px solid #1e1f2e', color: '#64748b', borderRadius: 8, padding: '12px 20px', fontWeight: 500, fontSize: 14, cursor: 'pointer' } as React.CSSProperties,
+  }
+
+  const CheckIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#08090d', color: '#f0f1f5', fontFamily: 'Inter, sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
-
-      <a href="/landing" style={{ fontSize: 13, color: '#8a8fa3', textDecoration: 'none', marginBottom: 40 }}>← Voltar para o início</a>
+    <div style={S.page}>
+      <a href="/landing" style={{ fontSize: 13, color: '#64748b', textDecoration: 'none', marginBottom: 48, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        Voltar ao início
+      </a>
 
       {/* Etapa: Escolher plano */}
       {etapa === 'plano' && (
-        <div style={{ width: '100%', maxWidth: 860 }}>
-          <h1 style={{ fontSize: 32, fontWeight: 800, textAlign: 'center', marginBottom: 8 }}>Escolha seu plano</h1>
-          <p style={{ color: '#8a8fa3', textAlign: 'center', marginBottom: 40 }}>Todos incluem suporte por WhatsApp e setup em menos de 24h.</p>
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(planos.length, 3)}, 1fr)`, gap: 20, marginBottom: 24 }}>
+        <div style={{ width: '100%', maxWidth: 900 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 700, textAlign: 'center', marginBottom: 6, letterSpacing: '-0.02em' }}>Escolha seu plano</h1>
+          <p style={{ color: '#64748b', textAlign: 'center', marginBottom: 40, fontSize: 15 }}>Suporte incluso. Plataforma ativa em menos de 24 horas.</p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(planos.length, 3)}, 1fr)`, gap: 16, marginBottom: 28 }}>
             {planos.map(p => (
-              <div key={p.id} onClick={() => { setPlanoId(p.id); setErro('') }}
-                style={{ background: planoId === p.id ? '#6366f115' : '#181b24', border: planoId === p.id ? '2px solid #6366f1' : '1px solid #252836', borderRadius: 14, padding: '28px 22px', cursor: 'pointer', position: 'relative', transition: 'border-color 0.2s' }}>
-                {p.destaque && <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', borderRadius: 20, padding: '3px 14px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>⭐ Popular</div>}
-                <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{p.nome}</h3>
-                <p style={{ fontSize: 12, color: '#8a8fa3', marginBottom: 16 }}>{p.descricao}</p>
-                <p style={{ fontSize: 28, fontWeight: 900, marginBottom: 16, color: planoId === p.id ? '#6366f1' : '#f0f1f5' }}>
-                  {p.preco > 0 ? `R$ ${p.preco.toLocaleString('pt-BR')}/mês` : (p.preco_label || 'Sob consulta')}
+              <div key={p.id} onClick={() => { setPlanoId(p.id); setErro('') }} style={{
+                ...S.card,
+                padding: '24px 20px',
+                cursor: 'pointer',
+                position: 'relative',
+                border: planoId === p.id ? '1.5px solid #4f46e5' : '1px solid #1e1f2e',
+                background: planoId === p.id ? '#0d0d1f' : '#0f0f17',
+                transition: 'border-color 0.15s, background 0.15s',
+              }}>
+                {p.destaque && (
+                  <div style={{ position: 'absolute', top: -11, left: '50%', transform: 'translateX(-50%)', background: '#4f46e5', color: '#fff', borderRadius: 20, padding: '2px 12px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', letterSpacing: '0.04em' }}>
+                    MAIS POPULAR
+                  </div>
+                )}
+                <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4, color: '#f1f5f9' }}>{p.nome}</h3>
+                <p style={{ fontSize: 12, color: '#64748b', marginBottom: 16, lineHeight: 1.5 }}>{p.descricao}</p>
+                <p style={{ fontSize: 26, fontWeight: 700, marginBottom: 20, color: planoId === p.id ? '#818cf8' : '#f1f5f9', letterSpacing: '-0.02em' }}>
+                  {p.preco > 0 ? (
+                    <>{`R$ ${p.preco.toLocaleString('pt-BR')}`}<span style={{ fontSize: 14, fontWeight: 400, color: '#64748b' }}>/mês</span></>
+                  ) : (p.preco_label || 'Sob consulta')}
                 </p>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 7 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {p.recursos.map(r => (
-                    <li key={r} style={{ fontSize: 13, color: '#c9cce0', display: 'flex', gap: 8 }}>
-                      <span style={{ color: '#02A153', flexShrink: 0 }}>✓</span> {r}
-                    </li>
+                    <div key={r} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <CheckIcon />
+                      <span style={{ fontSize: 13, color: '#94a3b8' }}>{r}</span>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             ))}
           </div>
-          {erro && <p style={{ color: '#e63946', textAlign: 'center', marginBottom: 12 }}>{erro}</p>}
+
+          {erro && <p style={{ color: '#ef4444', textAlign: 'center', fontSize: 13, marginBottom: 16 }}>{erro}</p>}
+
           <div style={{ textAlign: 'center' }}>
-            <button onClick={() => { if (!planoId) { setErro('Selecione um plano.'); return }; setErro(''); setEtapa('dados') }}
-              style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', border: 'none', borderRadius: 10, padding: '16px 48px', fontSize: 16, fontWeight: 800, cursor: 'pointer' }}>
-              Continuar →
+            <button onClick={() => { if (!planoId) { setErro('Selecione um plano.'); return }; setErro(''); setEtapa('dados') }} style={S.btn}>
+              Continuar
             </button>
           </div>
         </div>
       )}
 
-      {/* Etapa: Dados da associação */}
+      {/* Etapa: Dados */}
       {etapa === 'dados' && (
-        <div style={{ width: '100%', maxWidth: 520 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 800, textAlign: 'center', marginBottom: 6 }}>Dados da sua associação</h1>
-          {plano && <p style={{ color: '#6366f1', textAlign: 'center', marginBottom: 32, fontSize: 14, fontWeight: 600 }}>Plano {plano.nome} · R$ {plano.preco.toLocaleString('pt-BR')}/mês</p>}
-          <div style={{ background: '#181b24', border: '1px solid #252836', borderRadius: 14, padding: '32px 28px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <div style={{ width: '100%', maxWidth: 500 }}>
+          <div style={{ textAlign: 'center', marginBottom: 32 }}>
+            <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 6, letterSpacing: '-0.02em' }}>Dados da organização</h1>
+            {plano && (
+              <span style={{ display: 'inline-block', background: '#0d0d1f', border: '1px solid #1e1f2e', borderRadius: 20, padding: '3px 14px', fontSize: 12, color: '#818cf8', fontWeight: 600 }}>
+                Plano {plano.nome}
+              </span>
+            )}
+          </div>
+
+          <div style={{ ...S.card, padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <label style={lbl}>Nome da associação *</label>
-              <input style={inp} placeholder="Ex: Associação de Consultores XYZ" value={form.nome_empresa} onChange={e => setForm(p => ({ ...p, nome_empresa: e.target.value }))} />
+              <label style={S.lbl}>Nome da associação *</label>
+              <input style={S.inp} placeholder="Associação dos Consultores XYZ" value={form.nome_empresa} onChange={e => setForm(p => ({ ...p, nome_empresa: e.target.value }))} />
             </div>
             <div>
-              <label style={lbl}>Seu nome (responsável) *</label>
-              <input style={inp} placeholder="Nome completo" value={form.contato_nome} onChange={e => setForm(p => ({ ...p, contato_nome: e.target.value }))} />
+              <label style={S.lbl}>Responsável *</label>
+              <input style={S.inp} placeholder="Seu nome completo" value={form.contato_nome} onChange={e => setForm(p => ({ ...p, contato_nome: e.target.value }))} />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div>
-                <label style={lbl}>WhatsApp *</label>
-                <input style={inp} placeholder="(11) 99999-9999" value={form.whatsapp} onChange={e => setForm(p => ({ ...p, whatsapp: e.target.value }))} />
+                <label style={S.lbl}>WhatsApp *</label>
+                <input style={S.inp} placeholder="(11) 99999-9999" value={form.whatsapp} onChange={e => setForm(p => ({ ...p, whatsapp: e.target.value }))} />
               </div>
               <div>
-                <label style={lbl}>E-mail *</label>
-                <input style={inp} type="email" placeholder="seu@email.com" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} />
+                <label style={S.lbl}>E-mail *</label>
+                <input style={S.inp} type="email" placeholder="seu@email.com" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} />
               </div>
             </div>
             <div>
-              <label style={lbl}>Domínio personalizado <span style={{ color: '#8a8fa3', fontWeight: 400 }}>(opcional)</span></label>
-              <input style={inp} placeholder="Ex: uni.suaassociacao.com.br" value={form.dominio} onChange={e => setForm(p => ({ ...p, dominio: e.target.value }))} />
-              <p style={{ fontSize: 12, color: '#8a8fa3', marginTop: 6 }}>Se não tiver domínio próprio, usaremos um subdomínio padrão.</p>
+              <label style={S.lbl}>Domínio personalizado <span style={{ fontWeight: 400, textTransform: 'none', color: '#475569' }}>(opcional)</span></label>
+              <input style={S.inp} placeholder="uni.suaassociacao.com.br" value={form.dominio} onChange={e => setForm(p => ({ ...p, dominio: e.target.value }))} />
+              <p style={{ fontSize: 12, color: '#475569', marginTop: 6 }}>Sem domínio próprio? Usamos um subdomínio padrão.</p>
             </div>
-            {erro && <p style={{ color: '#e63946', fontSize: 13 }}>{erro}</p>}
+
+            {erro && (
+              <div style={{ background: '#1a0a0a', border: '1px solid #3f1515', borderRadius: 8, padding: '10px 14px', color: '#f87171', fontSize: 13 }}>
+                {erro}
+              </div>
+            )}
+
             <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
               {!planoInicial && (
-                <button onClick={() => setEtapa('plano')} style={{ flex: 1, background: 'none', border: '1px solid #252836', color: '#8a8fa3', borderRadius: 8, padding: '13px', cursor: 'pointer', fontSize: 14 }}>
-                  ← Voltar
+                <button onClick={() => setEtapa('plano')} style={S.btnGhost}>
+                  Voltar
                 </button>
               )}
-              <button onClick={handleSubmit} disabled={loading}
-                style={{ flex: 2, background: loading ? '#252836' : 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', border: 'none', borderRadius: 8, padding: '14px', fontWeight: 800, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-                {loading ? '⏳ Aguarde...' : 'Gerar PIX e ativar →'}
+              <button onClick={handleSubmit} disabled={loading} style={{ ...S.btn, flex: 1, opacity: loading ? 0.6 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>
+                {loading ? 'Aguarde...' : 'Gerar PIX e continuar'}
               </button>
             </div>
           </div>
@@ -145,65 +185,96 @@ export default function SignupForm({ planos, planoInicial }: { planos: PlanoSaaS
 
       {/* Etapa: PIX */}
       {etapa === 'pix' && pixData && (
-        <div style={{ width: '100%', maxWidth: 480, textAlign: 'center' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>💳</div>
-          <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>Pague para ativar</h1>
-          <p style={{ color: '#8a8fa3', marginBottom: 32 }}>Plano {pixData.plano_nome} · R$ {pixData.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+        <div style={{ width: '100%', maxWidth: 460, textAlign: 'center' }}>
+          <div style={{ marginBottom: 8 }}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 16px' }}>
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" />
+            </svg>
+          </div>
+          <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, letterSpacing: '-0.02em' }}>Pague para ativar</h1>
+          <p style={{ color: '#64748b', marginBottom: 28, fontSize: 14 }}>
+            Plano {pixData.plano_nome} · {pixData.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+          </p>
 
           {pixData.qrcode_base64 && (
-            <div style={{ background: '#fff', borderRadius: 16, padding: 20, display: 'inline-block', marginBottom: 24 }}>
-              <img src={`data:image/png;base64,${pixData.qrcode_base64}`} alt="QR Code PIX" style={{ width: 220, height: 220 }} />
+            <div style={{ background: '#fff', borderRadius: 12, padding: 16, display: 'inline-block', marginBottom: 20 }}>
+              <img src={`data:image/png;base64,${pixData.qrcode_base64}`} alt="QR Code PIX" style={{ width: 200, height: 200, display: 'block' }} />
             </div>
           )}
 
-          <div style={{ background: '#181b24', border: '1px solid #252836', borderRadius: 12, padding: '16px 20px', marginBottom: 20 }}>
-            <p style={{ fontSize: 12, color: '#8a8fa3', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase' }}>PIX Copia e Cola</p>
-            <p style={{ fontFamily: 'monospace', fontSize: 11, color: '#c9cce0', wordBreak: 'break-all', lineHeight: 1.5, marginBottom: 14 }}>
+          <div style={{ ...S.card, padding: '16px 20px', marginBottom: 16, textAlign: 'left' }}>
+            <p style={{ fontSize: 11, color: '#64748b', marginBottom: 8, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>PIX Copia e Cola</p>
+            <p style={{ fontFamily: 'monospace', fontSize: 11, color: '#94a3b8', wordBreak: 'break-all', lineHeight: 1.6, marginBottom: 12 }}>
               {pixData.pix_copia_cola}
             </p>
-            <button onClick={copiar} style={{ background: copiado ? '#02A15320' : '#6366f115', border: `1px solid ${copiado ? '#02A153' : '#6366f140'}`, color: copiado ? '#02A153' : '#6366f1', borderRadius: 8, padding: '9px 20px', cursor: 'pointer', fontSize: 13, fontWeight: 700, width: '100%' }}>
-              {copiado ? '✅ Copiado!' : '📋 Copiar código PIX'}
+            <button onClick={copiar} style={{
+              background: copiado ? '#0a1f12' : '#0d0d1f',
+              border: `1px solid ${copiado ? '#166534' : '#1e1f2e'}`,
+              color: copiado ? '#4ade80' : '#818cf8',
+              borderRadius: 7, padding: '9px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600, width: '100%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}>
+              {copiado ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  Copiado!
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                  Copiar código PIX
+                </>
+              )}
             </button>
           </div>
 
-          <p style={{ color: '#8a8fa3', fontSize: 13, marginBottom: 20 }}>Após o pagamento, você receberá as credenciais de acesso no WhatsApp automaticamente.</p>
+          <p style={{ color: '#64748b', fontSize: 12, marginBottom: 20, lineHeight: 1.6 }}>
+            Após o pagamento, você receberá as credenciais de acesso no WhatsApp automaticamente.
+          </p>
 
-          <button onClick={() => setEtapa('aguardando')}
-            style={{ background: '#02A15320', border: '1px solid #02A15340', color: '#02A153', borderRadius: 10, padding: '14px 32px', cursor: 'pointer', fontSize: 14, fontWeight: 700, width: '100%' }}>
-            ✅ Já paguei — verificar pagamento
+          <button onClick={() => setEtapa('aguardando')} style={{ ...S.btn, width: '100%' }}>
+            Já paguei — verificar agora
           </button>
         </div>
       )}
 
-      {/* Etapa: Aguardando confirmação */}
+      {/* Etapa: Aguardando */}
       {etapa === 'aguardando' && (
-        <div style={{ textAlign: 'center', maxWidth: 400 }}>
-          <div style={{ fontSize: 64, marginBottom: 24, animation: 'spin 2s linear infinite' }}>⏳</div>
-          <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>Verificando pagamento...</h2>
-          <p style={{ color: '#8a8fa3', marginBottom: 24 }}>Aguarde. Assim que confirmarmos o pagamento, você receberá um WhatsApp com seus dados de acesso.</p>
-          <button onClick={() => setEtapa('pix')} style={{ background: 'none', border: '1px solid #252836', color: '#8a8fa3', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 13 }}>
-            ← Voltar ao PIX
+        <div style={{ textAlign: 'center', maxWidth: 380 }}>
+          <div style={{ width: 56, height: 56, border: '3px solid #1e1f2e', borderTopColor: '#4f46e5', borderRadius: '50%', margin: '0 auto 28px', animation: 'spin 0.8s linear infinite' }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 10, letterSpacing: '-0.01em' }}>Verificando pagamento</h2>
+          <p style={{ color: '#64748b', fontSize: 14, marginBottom: 28, lineHeight: 1.6 }}>
+            Assim que confirmarmos o pagamento, você receberá um WhatsApp com seus dados de acesso.
+          </p>
+          <button onClick={() => setEtapa('pix')} style={S.btnGhost}>
+            Voltar ao PIX
           </button>
         </div>
       )}
 
       {/* Etapa: Sucesso */}
       {etapa === 'sucesso' && (
-        <div style={{ textAlign: 'center', maxWidth: 480 }}>
-          <div style={{ fontSize: 80, marginBottom: 24 }}>🎉</div>
-          <h1 style={{ fontSize: 32, fontWeight: 900, marginBottom: 12 }}>Pagamento confirmado!</h1>
-          <p style={{ color: '#8a8fa3', fontSize: 16, marginBottom: 32 }}>
-            Sua plataforma está sendo configurada. Em instantes você receberá um <strong style={{ color: '#f0f1f5' }}>WhatsApp</strong> com o link de acesso e as credenciais do seu painel admin.
+        <div style={{ textAlign: 'center', maxWidth: 460 }}>
+          <div style={{ width: 56, height: 56, background: '#0a1f12', border: '1px solid #166534', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <h1 style={{ fontSize: 26, fontWeight: 700, marginBottom: 10, letterSpacing: '-0.02em' }}>Pagamento confirmado</h1>
+          <p style={{ color: '#64748b', fontSize: 15, marginBottom: 28, lineHeight: 1.6 }}>
+            Sua plataforma está sendo configurada. Você receberá um WhatsApp em instantes com o link e as credenciais do painel admin.
           </p>
-          <div style={{ background: '#02A15315', border: '1px solid #02A15340', borderRadius: 12, padding: '20px 24px' }}>
-            <p style={{ color: '#02A153', fontWeight: 700, fontSize: 15, marginBottom: 8 }}>✅ O que acontece agora:</p>
-            <ol style={{ listStyle: 'none', padding: 0, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ ...S.card, padding: '20px 24px', textAlign: 'left' }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: '#4ade80', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 14 }}>Próximos passos</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {['Receba as credenciais no WhatsApp', 'Acesse seu painel admin', 'Configure logo, cores e conteúdo', 'Comece a cadastrar seus consultores'].map((s, i) => (
-                <li key={i} style={{ color: '#c9cce0', fontSize: 14, display: 'flex', gap: 10 }}>
-                  <span style={{ color: '#02A153', fontWeight: 700 }}>{i + 1}.</span> {s}
-                </li>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ width: 22, height: 22, background: '#0d0d1f', border: '1px solid #1e1f2e', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#818cf8', fontWeight: 700, flexShrink: 0 }}>{i + 1}</span>
+                  <span style={{ fontSize: 14, color: '#94a3b8' }}>{s}</span>
+                </div>
               ))}
-            </ol>
+            </div>
           </div>
         </div>
       )}

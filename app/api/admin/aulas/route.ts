@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
+import type { Database } from '@/lib/database.types'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,12 +23,11 @@ export async function PUT(req: NextRequest) {
     'quiz_aprovacao_minima', 'espera_horas', 'publicado', 'ao_vivo_link', 'ao_vivo_data',
     'ao_vivo_plataforma', 'validade_meses', 'ordem']
 
-  const atualizacoes: Record<string, unknown> = {}
-  for (const campo of camposPermitidos) {
-    if (campo in updates) atualizacoes[campo] = updates[campo]
-  }
+  const atualizacoes = Object.fromEntries(
+    camposPermitidos.filter(c => c in updates).map(c => [c, updates[c]])
+  ) as Database['public']['Tables']['aulas']['Update']
 
-  let updateQuery = (adminClient.from('aulas') as any)
+  let updateQuery = adminClient.from('aulas')
     .update(atualizacoes)
     .eq('id', id)
   if (ctx.tenantId) updateQuery = updateQuery.eq('tenant_id', ctx.tenantId)
@@ -50,7 +50,7 @@ export async function PATCH(req: NextRequest) {
   const { id, quiz_tipo, quiz_sim_nao_pergunta, quiz_sim_nao_nao_mensagem, quiz_sim_nao_perguntas } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  let patchQuery = (adminClient.from('aulas') as any)
+  let patchQuery = adminClient.from('aulas')
     .update({
       quiz_tipo,
       quiz_sim_nao_pergunta: quiz_sim_nao_pergunta ?? null,
@@ -79,7 +79,7 @@ export async function DELETE(req: NextRequest) {
   const { id } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  let deleteQuery = (adminClient.from('aulas') as any).delete().eq('id', id)
+  let deleteQuery = adminClient.from('aulas').delete().eq('id', id)
   if (ctx.tenantId) deleteQuery = deleteQuery.eq('tenant_id', ctx.tenantId)
   const { error } = await deleteQuery
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })

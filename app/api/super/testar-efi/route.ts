@@ -10,7 +10,7 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any)
+  const { data: adminRecord } = await adminClient.from('admins')
     .select('tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
@@ -40,11 +40,11 @@ export async function GET() {
   }
 
   // Conta pagamentos pendentes no banco para cruzar com o que chegou na Efí
-  const { count: pendentes } = await (adminClient.from('gestor_pagamentos') as any)
+  const { count: pendentes } = await adminClient.from('gestor_pagamentos')
     .select('id', { count: 'exact', head: true })
     .eq('status', 'pendente')
 
-  const { count: cobrancasPendentes } = await (adminClient.from('cobrancas') as any)
+  const { count: cobrancasPendentes } = await adminClient.from('cobrancas')
     .select('id', { count: 'exact', head: true })
     .eq('status', 'pendente')
 

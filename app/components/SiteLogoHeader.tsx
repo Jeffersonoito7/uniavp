@@ -27,7 +27,7 @@ export default function SiteLogoHeader({ height = 72 }: { height?: number }) {
 
   if (nome) {
     return (
-      <h1 style={{ fontSize: 22, fontWeight: 900, background: 'var(--grad-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textAlign: 'center', margin: 0 }}>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--avp-text)', textAlign: 'center', margin: 0, letterSpacing: '-0.01em' }}>
         {nome}
       </h1>
     )

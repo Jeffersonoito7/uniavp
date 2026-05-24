@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   const adminClient = createServiceRoleClient()
 
   if (tipo === 'topicos') {
-    const { data } = await (adminClient.from('forum_topicos') as any)
+    const { data } = await adminClient.from('forum_topicos')
       .select('*, aluno:alunos(nome), respostas:forum_respostas(count)')
       .order('fixado', { ascending: false })
       .order('created_at', { ascending: false })
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   if (tipo === 'respostas') {
     const topicoId = req.nextUrl.searchParams.get('topico_id')
     if (!topicoId) return NextResponse.json({ error: 'topico_id obrigatório' }, { status: 400 })
-    const { data } = await (adminClient.from('forum_respostas') as any)
+    const { data } = await adminClient.from('forum_respostas')
       .select('*, aluno:alunos(nome)')
       .eq('topico_id', topicoId)
       .order('created_at')
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: aluno } = await (adminClient.from('alunos') as any).select('id').eq('user_id', user.id).maybeSingle()
+  const { data: aluno } = await adminClient.from('alunos').select('id').eq('user_id', user.id).maybeSingle()
   if (!aluno) return NextResponse.json({ error: 'Aluno não encontrado' }, { status: 404 })
 
   const body = await req.json()
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   if (body.tipo === 'topico') {
     const { titulo, descricao } = body
     if (!titulo?.trim()) return NextResponse.json({ error: 'Título obrigatório' }, { status: 400 })
-    const { data: topico } = await (adminClient.from('forum_topicos') as any)
+    const { data: topico } = await adminClient.from('forum_topicos')
       .insert({ titulo: titulo.trim(), descricao: descricao?.trim() ?? null, aluno_id: aluno.id })
       .select('*')
       .single()
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
   if (body.tipo === 'resposta') {
     const { topico_id, texto } = body
     if (!topico_id || !texto?.trim()) return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
-    const { data: resposta } = await (adminClient.from('forum_respostas') as any)
+    const { data: resposta } = await adminClient.from('forum_respostas')
       .insert({ topico_id, aluno_id: aluno.id, texto: texto.trim() })
       .select('*, aluno:alunos(nome)')
       .single()

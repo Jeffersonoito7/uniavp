@@ -2,12 +2,12 @@
 import { useRef, useState } from 'react'
 
 type Template = {
-  id: string; tipo: string; titulo: string; arte_url: string;
-  foto_x: number; foto_y: number; foto_largura: number; foto_altura: number;
-  foto_redondo: boolean; ativo: boolean; formato: string; gestor_id: string | null;
-  texto_ativo?: boolean; texto_template?: string; texto_fonte?: string;
-  texto_x?: number; texto_y?: number; texto_tamanho?: number;
-  texto_cor?: string; texto_negrito?: boolean; texto_alinhamento?: string; texto_sombra?: boolean;
+  id: string; tipo: string; titulo: string; arte_url: string | null;
+  foto_x: number | null; foto_y: number | null; foto_largura: number | null; foto_altura: number | null;
+  foto_redondo: boolean | null; ativo: boolean | null; formato: string | null; gestor_id: string | null;
+  texto_ativo?: boolean | null; texto_template?: string | null; texto_fonte?: string | null;
+  texto_x?: number | null; texto_y?: number | null; texto_tamanho?: number | null;
+  texto_cor?: string | null; texto_negrito?: boolean | null; texto_alinhamento?: string | null; texto_sombra?: boolean | null;
 }
 
 type Formato = 'feed' | 'stories'
@@ -267,7 +267,7 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, marginRight: isAdmin ? 64 : 0 }}>
                     {!isAdmin && (
                       <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
-                        <input type="checkbox" checked={t.ativo}
+                        <input type="checkbox" checked={t.ativo ?? false}
                           onChange={e => atualizar(t.id, 'ativo', e.target.checked)}
                           style={{ width: 15, height: 15, accentColor: 'var(--avp-green)' }} />
                         <span style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>Ativo</span>
@@ -288,7 +288,7 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
                       <label style={labelStyle}>Arte PNG (fundo transparente) — {aba === 'feed' ? '1080×1080px' : '1080×1920px'}</label>
                       <div style={{ display: 'flex', gap: 8 }}>
                         <input style={{ ...inputStyle, flex: 1 }}
-                          value={t.arte_url}
+                          value={t.arte_url ?? ''}
                           onChange={e => atualizar(t.id, 'arte_url', e.target.value)}
                           placeholder="Cole a URL ou use o botão para fazer upload" />
                         <input type="file" accept="image/png,image/webp,image/jpeg"
@@ -314,7 +314,7 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
                       ))}
                     </div>
                     <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: isAdmin ? 'default' : 'pointer' }}>
-                      <input type="checkbox" checked={t.foto_redondo}
+                      <input type="checkbox" checked={t.foto_redondo ?? false}
                         disabled={isAdmin}
                         onChange={e => !isAdmin && atualizar(t.id, 'foto_redondo', e.target.checked)}
                         style={{ width: 15, height: 15, accentColor: 'var(--avp-green)' }} />

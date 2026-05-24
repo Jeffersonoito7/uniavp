@@ -1,8 +1,9 @@
 'use client'
 import { useRef, useState, useEffect } from 'react'
 import PhoneInput from '@/app/components/PhoneInput'
+import CarteiraCardPreview from '@/app/components/CarteiraCardPreview'
 
-type Config = { chave: string; valor: string; descricao?: string }
+type Config = { chave: string; valor: string | null; descricao?: string | null }
 
 function LogoCard({ label, campo, value, desc, rec, fileRef, uploading, onUpload, onDelete }: {
   label: string; campo: string; value: string; desc: string; rec: string
@@ -72,6 +73,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [planoPROValor, setPlanoPROValor] = useState(get('plano_pro_valor') || '97')
   const [prosGratuitoLimite, setProsGratuitoLimite] = useState(get('pros_gratuito_limite') || '20')
   const [freePodeConfigurarLink, setFreePodeConfigurarLink] = useState(get('free_pode_configurar_link') === 'true')
+  const [proPodeConfigurarLink, setProPodeConfigurarLink] = useState(get('pro_pode_configurar_link') === 'true')
   const [freeMaxModulos, setFreeMaxModulos] = useState(get('free_max_modulos') || '0')
   const [appIosUrl, setAppIosUrl] = useState(get('app_ios_url') || '')
   const [appAndroidUrl, setAppAndroidUrl] = useState(get('app_android_url') || '')
@@ -340,6 +342,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         { chave: 'plano_pro_valor', valor: planoPROValor },
         { chave: 'pros_gratuito_limite', valor: prosGratuitoLimite },
         { chave: 'free_pode_configurar_link', valor: String(freePodeConfigurarLink) },
+        { chave: 'pro_pode_configurar_link', valor: String(proPodeConfigurarLink) },
         { chave: 'free_max_modulos', valor: String(parseInt(freeMaxModulos) || 0) },
         { chave: 'app_ios_url', valor: appIosUrl },
         { chave: 'app_android_url', valor: appAndroidUrl },
@@ -607,6 +610,21 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
               </button>
             </div>
           </div>
+          <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <div>
+                <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>🔗 PRO pode configurar link da plataforma parceira</p>
+                <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0', lineHeight: 1.5 }}>
+                  Quando ativado, cada PRO pode colocar o próprio link de indicação no perfil dele.
+                  Esse link aparece para os FREE que ele recrutar.
+                </p>
+              </div>
+              <button onClick={() => setProPodeConfigurarLink(v => !v)}
+                style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: proPodeConfigurarLink ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+                <span style={{ position: 'absolute', top: 3, left: proPodeConfigurarLink ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+              </button>
+            </div>
+          </div>
         </div>
       </div>}
 
@@ -761,6 +779,33 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
             <label style={lbl}>Tagline (rodapé)</label>
             <input style={inp} value={carteiraTagline} onChange={e => setCarteiraTagline(e.target.value)} placeholder="Ex: PROTEÇÃO VEICULAR DE VERDADE!" />
           </div>
+        </div>
+
+        {/* Preview ao vivo da carteira */}
+        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '20px 24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+            <div>
+              <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>👁 Preview ao vivo</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0' }}>Atualiza em tempo real conforme você edita as configurações acima.</p>
+            </div>
+            <a href="/teste/carteira" target="_blank" rel="noreferrer"
+              style={{ background: '#fbbf2420', border: '1px solid #fbbf2460', color: '#fbbf24', borderRadius: 8, padding: '7px 14px', fontWeight: 700, fontSize: 12, textDecoration: 'none', flexShrink: 0 }}>
+              Abrir em tela cheia ↗
+            </a>
+          </div>
+          <CarteiraCardPreview
+            empresaNome={nome || 'UNIVERSIDADE'}
+            logoEsquerdaUrl={carteiraLogoEsquerda || null}
+            logoDireitaUrl={carteiraLogoDireita || null}
+            assinaturaNome={carteiraAssinaturaNome || 'Presidente'}
+            assinaturaCargo={carteiraAssinaturaCargo || 'PRESIDENTE'}
+            assinaturaEmpresa={carteiraAssinaturaEmpresa || nome || ''}
+            assinaturaUrl={carteiraAssinaturaUrl || null}
+            urlVerificacao={carteiraUrlVerificacao || ''}
+            tagline={carteiraTagline || ''}
+            corPrimaria={corPrimaria || '#0D2B6E'}
+            corSecundaria={corSecundaria || '#0A7A42'}
+          />
         </div>
       </div>
 
@@ -1370,7 +1415,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
           <button
             onClick={() => contratoPDFRef.current?.click()}
             disabled={processandoPDF}
-            style={{ background: processandoPDF ? 'var(--avp-border)' : 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 800, fontSize: 14, cursor: processandoPDF ? 'not-allowed' : 'pointer', opacity: processandoPDF ? 0.7 : 1 }}>
+            style={{ background: processandoPDF ? 'var(--avp-border)' : '#4f46e5', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 800, fontSize: 14, cursor: processandoPDF ? 'not-allowed' : 'pointer', opacity: processandoPDF ? 0.7 : 1 }}>
             {processandoPDF ? '⏳ Processando com IA...' : '📄 Fazer upload e extrair com IA'}
           </button>
           {msgIA && (

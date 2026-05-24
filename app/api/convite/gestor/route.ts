@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: authError?.message ?? 'Erro ao criar conta.' }, { status: 400 })
   }
 
-  const { error: gestorError } = await (adminClient.from('gestores') as any)
+  const { error: gestorError } = await adminClient.from('gestores')
     .insert({
       user_id: authUser.user.id,
       nome,

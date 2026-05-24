@@ -18,13 +18,13 @@ export async function enviarPushParaUsuario(userId: string, payload: PushPayload
   const client = getClient()
   if (!client) return
   const admin = createServiceRoleClient()
-  const { data: subs } = await (admin.from('push_subscriptions') as any)
+  const { data: subs } = await admin.from('push_subscriptions')
     .select('*').eq('user_id', userId)
   if (!subs?.length) return
 
   const expiradas: string[] = []
   await Promise.allSettled(
-    subs.map(async (s: any) => {
+    subs.map(async (s) => {
       try {
         await client.sendNotification(
           { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth_key } },
@@ -36,14 +36,14 @@ export async function enviarPushParaUsuario(userId: string, payload: PushPayload
     })
   )
   if (expiradas.length > 0) {
-    await (admin.from('push_subscriptions') as any).delete().in('id', expiradas)
+    await admin.from('push_subscriptions').delete().in('id', expiradas)
   }
 }
 
 export async function enviarPushParaAluno(alunoId: string, payload: PushPayload) {
   if (!process.env.VAPID_PUBLIC_KEY) return
   const admin = createServiceRoleClient()
-  const { data: aluno } = await (admin.from('alunos') as any)
+  const { data: aluno } = await admin.from('alunos')
     .select('user_id').eq('id', alunoId).maybeSingle()
   if (aluno?.user_id) await enviarPushParaUsuario(aluno.user_id, payload)
 }
@@ -51,10 +51,10 @@ export async function enviarPushParaAluno(alunoId: string, payload: PushPayload)
 export async function enviarPushParaGestorConsultores(gestorWhatsapp: string, payload: PushPayload) {
   if (!process.env.VAPID_PUBLIC_KEY) return
   const admin = createServiceRoleClient()
-  const { data: alunos } = await (admin.from('alunos') as any)
+  const { data: alunos } = await admin.from('alunos')
     .select('user_id').eq('gestor_whatsapp', gestorWhatsapp).eq('status', 'ativo')
   if (!alunos?.length) return
   await Promise.allSettled(
-    alunos.map((a: any) => a.user_id ? enviarPushParaUsuario(a.user_id, payload) : null)
+    alunos.map((a) => a.user_id ? enviarPushParaUsuario(a.user_id, payload) : null)
   )
 }

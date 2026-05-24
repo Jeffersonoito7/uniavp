@@ -6,14 +6,14 @@ const MULTIPLICADORES = [3, 5, 10]
 function FakeRow({ nome, prog, dias }: { nome: string; prog: number; dias: number }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#fff', fontWeight: 700, flexShrink: 0 }}>
+      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(79,70,229,0.2)', border: '1px solid rgba(79,70,229,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#818cf8', fontWeight: 700, flexShrink: 0 }}>
         {nome[0]}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: 12, fontWeight: 600, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nome}</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
           <div style={{ flex: 1, background: 'rgba(255,255,255,0.1)', borderRadius: 100, height: 4 }}>
-            <div style={{ width: `${prog}%`, height: '100%', background: prog === 100 ? '#22c55e' : 'linear-gradient(90deg,#3b82f6,#6366f1)', borderRadius: 100 }} />
+            <div style={{ width: `${prog}%`, height: '100%', background: prog === 100 ? '#22c55e' : '#4f46e5', borderRadius: 100 }} />
           </div>
           <span style={{ fontSize: 10, color: 'var(--avp-text-dim)', flexShrink: 0 }}>{prog}%</span>
         </div>
@@ -41,7 +41,7 @@ export default function ProTeaser({ totalIndicados }: { totalIndicados: number }
   ]
 
   return (
-    <div style={{ marginBottom: 28, borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(99,102,241,0.3)', background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.04))' }}>
+    <div style={{ marginBottom: 28, borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(79,70,229,0.25)', background: 'rgba(79,70,229,0.05)' }}>
 
       {/* Header */}
       <div style={{ padding: '18px 24px 14px', borderBottom: '1px solid rgba(99,102,241,0.2)' }}>
@@ -73,8 +73,8 @@ export default function ProTeaser({ totalIndicados }: { totalIndicados: number }
             alignItems: 'center', justifyContent: 'center', gap: 6,
             background: 'rgba(10,10,20,0.45)',
           }}>
-            <div style={{ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
-              🔒
+            <div style={{ background: 'rgba(79,70,229,0.2)', border: '1px solid rgba(79,70,229,0.4)', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="18" height="18" fill="none" stroke="#818cf8" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </div>
             <p style={{ fontSize: 12, fontWeight: 700, color: '#a5b4fc', textAlign: 'center', margin: 0 }}>
               Disponível no PRO
@@ -85,7 +85,7 @@ export default function ProTeaser({ totalIndicados }: { totalIndicados: number }
         {/* Calculadora */}
         <div style={{ padding: '16px 20px' }}>
           <p style={{ fontSize: 11, fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>
-            📊 Calculadora de equipe
+            Calculadora de equipe
           </p>
 
           <div style={{ marginBottom: 14 }}>
@@ -123,9 +123,8 @@ export default function ProTeaser({ totalIndicados }: { totalIndicados: number }
             Com PRO você acompanha cada um em tempo real.
           </p>
 
-          <a href="/upgrade"
-            style={{ display: 'block', textAlign: 'center', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', borderRadius: 10, padding: '10px 12px', fontWeight: 800, fontSize: 13, textDecoration: 'none', boxShadow: '0 4px 16px rgba(99,102,241,0.4)' }}>
-            ✨ Quero ser PRO
+          <a href="/upgrade" className="btn btn-primary btn-full" style={{ textDecoration: 'none', fontSize: 13 }}>
+            Quero ser PRO
           </a>
         </div>
       </div>

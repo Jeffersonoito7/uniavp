@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.redirect(new URL('/entrar?p=adm', req.url))
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any)
+  const { data: adminRecord } = await adminClient.from('admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) return NextResponse.redirect(new URL('/entrar?p=adm', req.url))
 

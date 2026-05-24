@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   }
 
   const trialExpira = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-  const { data: gestor, error: gestorError } = await (adminClient.from('gestores') as any)
+  const { data: gestor, error: gestorError } = await adminClient.from('gestores')
     .insert({
       user_id: authUser.user.id, nome, email,
       whatsapp: whatsapp.replace(/\D/g, ''), ativo: true,
@@ -60,13 +60,13 @@ export async function PUT(request: NextRequest) {
   const { id, ativo, nome, email, whatsapp, nova_senha } = body
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  const updates: Record<string, unknown> = {}
+  const updates: { ativo?: boolean; nome?: string; email?: string; whatsapp?: string } = {}
   if (ativo !== undefined) updates.ativo = ativo
   if (nome !== undefined) updates.nome = nome
   if (email !== undefined) updates.email = email
   if (whatsapp !== undefined) updates.whatsapp = whatsapp.replace?.(/\D/g, '') ?? whatsapp
 
-  let updateQuery = (adminClient.from('gestores') as any).update(updates).eq('id', id)
+  let updateQuery = adminClient.from('gestores').update(updates).eq('id', id)
   if (ctx.tenantId) updateQuery = updateQuery.eq('tenant_id', ctx.tenantId)
   const { data: gestor, error } = await updateQuery.select('*').single()
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
@@ -97,7 +97,7 @@ export async function PATCH(request: NextRequest) {
   if (!id || !senha) return NextResponse.json({ error: 'id e senha obrigatórios' }, { status: 400 })
   if (senha.length < 6) return NextResponse.json({ error: 'Senha mínimo 6 caracteres' }, { status: 400 })
 
-  let patchSelectQuery = (adminClient.from('gestores') as any).select('user_id').eq('id', id)
+  let patchSelectQuery = adminClient.from('gestores').select('user_id').eq('id', id)
   if (ctx.tenantId) patchSelectQuery = patchSelectQuery.eq('tenant_id', ctx.tenantId)
   const { data: gestor } = await patchSelectQuery.maybeSingle()
   if (!gestor?.user_id) return NextResponse.json({ error: 'Gestor não encontrado' }, { status: 404 })
@@ -120,11 +120,11 @@ export async function DELETE(request: NextRequest) {
   const { id } = await request.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  let deleteSelectQuery = (adminClient.from('gestores') as any).select('user_id').eq('id', id)
+  let deleteSelectQuery = adminClient.from('gestores').select('user_id').eq('id', id)
   if (ctx.tenantId) deleteSelectQuery = deleteSelectQuery.eq('tenant_id', ctx.tenantId)
   const { data: gestor } = await deleteSelectQuery.maybeSingle()
 
-  let deleteQuery = (adminClient.from('gestores') as any).delete().eq('id', id)
+  let deleteQuery = adminClient.from('gestores').delete().eq('id', id)
   if (ctx.tenantId) deleteQuery = deleteQuery.eq('tenant_id', ctx.tenantId)
   const { error } = await deleteQuery
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

@@ -64,7 +64,7 @@ async function gerarEEnviar(dados: {
     const pdfBytes = await gerarPDFContratoCNCPV(dados)
     const pdfUrl = await salvarPDF(adminClient, pdfBytes, dados.numero_registro)
     if (pdfUrl) {
-      await (adminClient.from('cncpv_assinaturas') as any)
+      await adminClient.from('cncpv_assinaturas')
         .update({ pdf_url: pdfUrl, pdf_status: 'gerado' })
         .eq('numero_registro', dados.numero_registro)
     }
@@ -83,7 +83,7 @@ async function gerarEEnviar(dados: {
     ])
   } catch (e) {
     console.error('Erro ao gerar/enviar PDF CNCPV:', e)
-    await (adminClient.from('cncpv_assinaturas') as any)
+    await adminClient.from('cncpv_assinaturas')
       .update({ pdf_status: 'erro' })
       .eq('numero_registro', dados.numero_registro)
   }
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
   const wppLimpo = whatsapp.replace(/\D/g, '')
 
   // Já assinou?
-  const { data: existente } = await (adminClient.from('cncpv_assinaturas') as any)
+  const { data: existente } = await adminClient.from('cncpv_assinaturas')
     .select('numero_registro, hash_contrato, pdf_url, pdf_status')
     .eq('whatsapp', wppLimpo)
     .maybeSingle()
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Número sequencial
-  const { count } = await (adminClient.from('cncpv_assinaturas') as any)
+  const { count } = await adminClient.from('cncpv_assinaturas')
     .select('id', { count: 'exact', head: true })
   const numero_registro = `CNCPV-${String(((count ?? 0) + 1)).padStart(6, '0')}`
 
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
   }), 'utf8').digest('hex')
 
   // ── SALVA NO BANCO IMEDIATAMENTE ────────────────────────────────────
-  const { error } = await (adminClient.from('cncpv_assinaturas') as any).insert({
+  const { error } = await adminClient.from('cncpv_assinaturas').insert({
     aluno_id: aluno_id ?? null,
     nome: nome.trim(),
     cpf: cpf?.replace(/\D/g, '') || null,
@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
   const siteConfig = await getSiteConfig(req.headers.get('host') ?? '')
 
   // Busca config de testemunha e logo do admin
-  const { data: cfgs } = await (adminClient.from('configuracoes') as any)
+  const { data: cfgs } = await adminClient.from('configuracoes')
     .select('chave, valor')
     .in('chave', [
       'cncpv_testemunha_nome', 'cncpv_testemunha_cargo', 'cncpv_testemunha_empresa',
@@ -157,7 +157,7 @@ export async function POST(req: NextRequest) {
     ])
 
   const cfgMap: Record<string, string> = {}
-  for (const c of cfgs ?? []) cfgMap[c.chave] = c.valor
+  for (const c of cfgs ?? []) cfgMap[c.chave] = String(c.valor)
 
   const dadosGeracao = {
     nome: nome.trim(),
@@ -211,7 +211,7 @@ export async function GET(req: NextRequest) {
   const adminClient = createServiceRoleClient()
 
   if (registro) {
-    const { data } = await (adminClient.from('cncpv_assinaturas') as any)
+    const { data } = await adminClient.from('cncpv_assinaturas')
       .select('nome, numero_registro, assinado_em, cpf, hash_contrato, pdf_url, status, revogado_em, revogado_motivo')
       .eq('numero_registro', registro)
       .maybeSingle()
@@ -219,7 +219,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (whatsapp) {
-    const { data } = await (adminClient.from('cncpv_assinaturas') as any)
+    const { data } = await adminClient.from('cncpv_assinaturas')
       .select('nome, numero_registro, assinado_em, hash_contrato, pdf_url, status')
       .eq('whatsapp', whatsapp.replace(/\D/g, ''))
       .maybeSingle()

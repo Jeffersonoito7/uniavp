@@ -7,7 +7,7 @@ import { z } from 'zod'
 export const dynamic = 'force-dynamic'
 
 async function buscarInstanciaAdmin(adminClient: ReturnType<typeof createServiceRoleClient>) {
-  const { data } = await (adminClient.from('admins') as any)
+  const { data } = await adminClient.from('admins')
     .select('whatsapp_instancia').eq('ativo', true).not('whatsapp_instancia', 'is', null).limit(1).maybeSingle()
   return data?.whatsapp_instancia ?? null
 }
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
-    const { data: adminRecord } = await (adminClient.from('admins') as any)
+    const { data: adminRecord } = await adminClient.from('admins')
       .select('id')
       .eq('user_id', user.id)
       .eq('ativo', true)
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
   // Se informou WhatsApp do indicador mas não o nome, busca o nome automaticamente
   if (gestor_whatsapp && !gestor_nome) {
     const wppIndicador = gestor_whatsapp.replace(/\D/g, '')
-    const { data: gestorEncontrado } = await (adminClient.from('gestores') as any)
+    const { data: gestorEncontrado } = await adminClient.from('gestores')
       .select('nome').eq('whatsapp', wppIndicador).eq('ativo', true).maybeSingle()
     if (gestorEncontrado) gestor_nome = gestorEncontrado.nome
   }
@@ -84,13 +84,13 @@ export async function POST(req: NextRequest) {
   let indicadorId: string | null = null
   if (indicador_whatsapp) {
     const refWpp = indicador_whatsapp.replace(/\D/g, '')
-    const { data: alunoRef } = await (adminClient.from('alunos') as any)
+    const { data: alunoRef } = await adminClient.from('alunos')
       .select('id, nome, email')
       .eq('whatsapp', refWpp)
       .maybeSingle()
     if (alunoRef) {
       // Busca ou cria entrada na tabela indicadores para este consultor
-      const { data: indExistente } = await (adminClient.from('indicadores') as any)
+      const { data: indExistente } = await adminClient.from('indicadores')
         .select('id')
         .eq('whatsapp', refWpp)
         .eq('tipo', 'consultor')
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
       const indId = indExistente?.id ?? null
       let resolvedId = indId
       if (!resolvedId) {
-        const { data: indNovo } = await (adminClient.from('indicadores') as any)
+        const { data: indNovo } = await adminClient.from('indicadores')
           .insert({ nome: alunoRef.nome, tipo: 'consultor', whatsapp: refWpp, email: alunoRef.email ?? null })
           .select('id')
           .single()
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
       }
       if (resolvedId) {
         // Limite de 20 indicações para consultor free
-        const { count: jaIndicou } = await (adminClient.from('alunos') as any)
+        const { count: jaIndicou } = await adminClient.from('alunos')
           .select('id', { count: 'exact', head: true })
           .eq('indicador_id', resolvedId)
         indicadorId = (jaIndicou ?? 0) < 20 ? resolvedId : null
@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const { data: aluno, error: alunoErr } = await (adminClient.from('alunos') as any)
+  const { data: aluno, error: alunoErr } = await adminClient.from('alunos')
     .insert({
       user_id: authUser.user.id,
       nome: nome.trim(),
@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
 
   // Busca o gestor (PRO) para pegar o link externo configurado
   const gestorWppLimpo = gestor_whatsapp.replace(/\D/g, '')
-  const { data: gestorData } = await (adminClient.from('gestores') as any)
+  const { data: gestorData } = await adminClient.from('gestores')
     .select('id, link_externo').eq('whatsapp', gestorWppLimpo).eq('ativo', true).maybeSingle()
   const linkExterno: string | null = gestorData?.link_externo ?? null
 

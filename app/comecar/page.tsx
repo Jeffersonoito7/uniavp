@@ -24,11 +24,11 @@ const PLANOS_DEFAULT: PlanoSaaS[] = [
 
 export default async function ComecarPage({ searchParams }: { searchParams?: { plano?: string } }) {
   const adminClient = createServiceRoleClient()
-  const { data: cfgPlanos } = await (adminClient.from('configuracoes') as any)
+  const { data: cfgPlanos } = await adminClient.from('configuracoes')
     .select('valor').eq('chave', 'planos_saas').maybeSingle()
 
   let planos: PlanoSaaS[] = PLANOS_DEFAULT
-  try { if (cfgPlanos?.valor) planos = JSON.parse(cfgPlanos.valor) } catch { /* usa default */ }
+  try { if (cfgPlanos?.valor) planos = JSON.parse(String(cfgPlanos.valor)) } catch { /* usa default */ }
 
   // Filtra apenas planos ativos com preço definido (exclui "sob consulta")
   const planosAtivos = planos.filter(p => p.ativo && p.preco > 0)

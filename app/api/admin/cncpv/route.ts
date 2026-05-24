@@ -10,7 +10,7 @@ export async function PATCH(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any)
+  const { data: adminRecord } = await adminClient.from('admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
@@ -18,7 +18,7 @@ export async function PATCH(req: NextRequest) {
   if (!numero_registro || !acao) return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
 
   if (acao === 'revogar') {
-    const { error } = await (adminClient.from('cncpv_assinaturas') as any)
+    const { error } = await adminClient.from('cncpv_assinaturas')
       .update({ status: 'revogada', revogado_em: new Date().toISOString(), revogado_motivo: motivo || 'Revogado pelo administrador' })
       .eq('numero_registro', numero_registro)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -26,7 +26,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   if (acao === 'reativar') {
-    const { error } = await (adminClient.from('cncpv_assinaturas') as any)
+    const { error } = await adminClient.from('cncpv_assinaturas')
       .update({ status: 'ativa', revogado_em: null, revogado_motivo: null })
       .eq('numero_registro', numero_registro)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })

@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   if (!ctx) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
   // Busca formados do tenant
-  let q = (adminClient.from('alunos') as any)
+  let q = adminClient.from('alunos')
     .select('id, nome, whatsapp')
     .eq('status', 'concluido')
   if (ctx.tenantId) q = q.eq('tenant_id', ctx.tenantId)
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 
   // Quais já assinaram (pelo whatsapp)
   const wppFormados = formados.map((a: any) => a.whatsapp.replace(/\D/g, ''))
-  const { data: jaAssinaram } = await (adminClient.from('contratos') as any)
+  const { data: jaAssinaram } = await adminClient.from('contratos')
     .select('whatsapp')
     .in('whatsapp', wppFormados)
 
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   let lista: { nome: string; whatsapp: string }[] = body.lista ?? []
 
   if (!lista.length) {
-    let q = (adminClient.from('alunos') as any)
+    let q = adminClient.from('alunos')
       .select('nome, whatsapp')
       .eq('status', 'concluido')
     if (ctx.tenantId) q = q.eq('tenant_id', ctx.tenantId)
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     if (!formados?.length) return NextResponse.json({ enviados: 0, erros: 0 })
 
     const wppFormados = formados.map((a: any) => a.whatsapp.replace(/\D/g, ''))
-    const { data: jaAssinaram } = await (adminClient.from('contratos') as any)
+    const { data: jaAssinaram } = await adminClient.from('contratos')
       .select('whatsapp').in('whatsapp', wppFormados)
     const setAssinados = new Set((jaAssinaram ?? []).map((c: any) => c.whatsapp))
     lista = formados.filter((a: any) => !setAssinados.has(a.whatsapp.replace(/\D/g, '')))
@@ -77,10 +77,10 @@ export async function POST(req: NextRequest) {
   const linkContrato = `${appUrl}/contrato`
 
   // Busca nome da plataforma
-  const { data: nomeCfg } = await (adminClient.from('configuracoes') as any)
+  const { data: nomeCfg } = await adminClient.from('configuracoes')
     .select('valor').eq('chave', 'site_nome').maybeSingle()
   let nomePlataforma = 'Plataforma'
-  try { nomePlataforma = JSON.parse(nomeCfg?.valor ?? '') || nomePlataforma } catch { /**/ }
+  try { nomePlataforma = JSON.parse(String(nomeCfg?.valor ?? '')) || nomePlataforma } catch { /**/ }
 
   let enviados = 0
   let erros = 0

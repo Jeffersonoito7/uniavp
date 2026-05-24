@@ -8,7 +8,7 @@ async function getGestor() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
   const adminClient = createServiceRoleClient()
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id, whatsapp').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   return gestor ? { gestor, adminClient } : null
 }
@@ -18,7 +18,7 @@ export async function GET() {
   if (!ctx) return NextResponse.json([], { status: 401 })
   const { gestor, adminClient } = ctx
 
-  const { data } = await (adminClient.from('artes_templates') as any)
+  const { data } = await adminClient.from('artes_templates')
     .select('*')
     .order('created_at')
 
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   const { gestor, adminClient } = ctx
 
   const body = await req.json()
-  const { data, error } = await (adminClient.from('artes_templates') as any)
+  const { data, error } = await adminClient.from('artes_templates')
     .insert({
       gestor_id: gestor.id,
       tipo: body.tipo || 'custom',
@@ -75,7 +75,7 @@ export async function PUT(req: NextRequest) {
 
   for (const t of body) {
     if (t.gestor_id === gestor.id) {
-      await (adminClient.from('artes_templates') as any)
+      await adminClient.from('artes_templates')
         .update({
           titulo: t.titulo,
           tipo: t.tipo,
@@ -92,7 +92,7 @@ export async function PUT(req: NextRequest) {
         .eq('gestor_id', gestor.id)
     } else {
       // template do admin — gestor pode atualizar arte e texto
-      await (adminClient.from('artes_templates') as any)
+      await adminClient.from('artes_templates')
         .update({ arte_url: t.arte_url, ...textoCampos(t) })
         .eq('id', t.id)
         .is('gestor_id', null)
@@ -108,7 +108,7 @@ export async function DELETE(req: NextRequest) {
   const { gestor, adminClient } = ctx
 
   const { id } = await req.json()
-  await (adminClient.from('artes_templates') as any)
+  await adminClient.from('artes_templates')
     .delete()
     .eq('id', id)
     .eq('gestor_id', gestor.id)

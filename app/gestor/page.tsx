@@ -13,7 +13,7 @@ export default async function GestorPage() {
 
   const adminClient = createServiceRoleClient()
 
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id, nome, email, whatsapp, foto_perfil, status_assinatura, trial_expira_em, plano_vencimento')
     .eq('user_id', user.id)
     .eq('ativo', true)
@@ -23,7 +23,7 @@ export default async function GestorPage() {
   // Se trial sem data de expiração → auto-concede 7 dias (bug da migration DEFAULT)
   if (gestor.status_assinatura === 'trial' && !gestor.trial_expira_em) {
     const trialExpira = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-    await (adminClient.from('gestores') as any)
+    await adminClient.from('gestores')
       .update({ trial_expira_em: trialExpira })
       .eq('id', gestor.id)
     gestor.trial_expira_em = trialExpira
@@ -37,19 +37,19 @@ export default async function GestorPage() {
 
   const gestorFoto: string | null = gestor.foto_perfil ?? null
 
-  const { data: consultores } = await (adminClient.from('alunos') as any)
+  const { data: consultores } = await adminClient.from('alunos')
     .select('id, nome, whatsapp, email, status, created_at, ultimo_estudo_em, streak_atual')
     .eq('gestor_whatsapp', gestor.whatsapp)
     .order('created_at', { ascending: false })
 
-  const { count: totalAulas } = await (adminClient.from('aulas') as any)
+  const { count: totalAulas } = await adminClient.from('aulas')
     .select('*', { count: 'exact', head: true })
     .eq('publicado', true)
 
   const progressoMap: Record<string, number> = {}
   if ((consultores ?? []).length > 0) {
     const alunoIds = (consultores ?? []).map((c: any) => c.id)
-    const { data: todosProgresso } = await (adminClient.from('progresso') as any)
+    const { data: todosProgresso } = await adminClient.from('progresso')
       .select('aluno_id, aula_id')
       .in('aluno_id', alunoIds)
       .eq('aprovado', true)
@@ -68,25 +68,25 @@ export default async function GestorPage() {
   const indicacoesMap: Record<string, number> = {}
   if ((consultores ?? []).length > 0) {
     const whatsapps = (consultores ?? []).map((c: any) => c.whatsapp)
-    const { data: indRows } = await (adminClient.from('indicadores') as any)
+    const { data: indRows } = await adminClient.from('indicadores')
       .select('id, whatsapp')
       .eq('tipo', 'consultor')
       .in('whatsapp', whatsapps)
     if ((indRows ?? []).length > 0) {
       const indIds = (indRows ?? []).map((r: any) => r.id)
-      const { data: alunosInd } = await (adminClient.from('alunos') as any)
+      const { data: alunosInd } = await adminClient.from('alunos')
         .select('indicador_id')
         .in('indicador_id', indIds)
       const wppById: Record<string, string> = {}
       for (const r of (indRows ?? [])) wppById[r.id] = r.whatsapp
       for (const a of (alunosInd ?? [])) {
-        const wpp = wppById[a.indicador_id]
+        const wpp = a.indicador_id ? wppById[a.indicador_id] : undefined
         if (wpp) indicacoesMap[wpp] = (indicacoesMap[wpp] ?? 0) + 1
       }
     }
   }
 
-  const { data: templatesRaw } = await (adminClient.from('artes_templates') as any)
+  const { data: templatesRaw } = await adminClient.from('artes_templates')
     .select('*').order('created_at')
   const artesTemplates = (templatesRaw ?? []).filter((t: any) => !t.gestor_id || t.gestor_id === gestor.id)
 
@@ -96,12 +96,16 @@ export default async function GestorPage() {
     ? `https://${siteConfig.dominioCustomizado}`
     : appUrl
 
-  const { data: capaCfg } = await (adminClient.from('configuracoes') as any)
+  const { data: capaCfg } = await adminClient.from('configuracoes')
     .select('valor').eq('chave', 'modulo_capa_padrao').maybeSingle()
   const capaDefault = capaCfg?.valor ? String(capaCfg.valor).replace(/"/g, '') : null
 
+  const { data: proCfgLink } = await adminClient.from('configuracoes')
+    .select('valor').eq('chave', 'pro_pode_configurar_link').maybeSingle()
+  const podeCfgLink = String(proCfgLink?.valor ?? '') === 'true'
+
   // Documentos para download disponíveis no painel PRO
-  const { data: documentosPro } = await (adminClient.from('documentos_painel') as any)
+  const { data: documentosPro } = await adminClient.from('documentos_painel')
     .select('id, titulo, descricao, pdf_url')
     .eq('ativo', true)
     .in('painel', ['pro', 'ambos'])
@@ -109,7 +113,7 @@ export default async function GestorPage() {
 
   // PROs ativos indicados por este gestor (para o benefício de PRO gratuito)
   const [{ count: prosIndicados }, limiteProGratuito] = await Promise.all([
-    (adminClient.from('gestores') as any)
+    adminClient.from('gestores')
       .select('id', { count: 'exact', head: true })
       .eq('indicado_por_gestor_id', gestor.id)
       .eq('ativo', true)
@@ -130,6 +134,7 @@ export default async function GestorPage() {
       limiteProGratuito={limiteProGratuito}
       cncpvHabilitado={siteConfig.cncpvHabilitado}
       documentos={documentosPro ?? []}
+      podeCfgLink={podeCfgLink}
     />
   )
 }

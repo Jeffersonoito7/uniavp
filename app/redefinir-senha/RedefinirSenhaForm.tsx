@@ -11,6 +11,7 @@ export default function RedefinirSenhaForm({ logoUrl, siteNome }: { logoUrl: str
   const [msgErro, setMsgErro] = useState('')
 
   useEffect(() => {
+    // Lê hash da URL apenas uma vez na montagem — não deve re-executar
     const hash = window.location.hash
     if (hash.includes('error=')) {
       const params = new URLSearchParams(hash.slice(1))
@@ -21,8 +22,7 @@ export default function RedefinirSenhaForm({ logoUrl, siteNome }: { logoUrl: str
       setMsgErro(tipo)
       setEstado('erro')
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, []) // deps vazia é intencional — hash só existe no primeiro render
   const [senha, setSenha] = useState('')
   const [confirmar, setConfirmar] = useState('')
   const [loading, setLoading] = useState(false)

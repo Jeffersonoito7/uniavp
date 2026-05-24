@@ -7,13 +7,13 @@ type Premio = {
   descricao: string | null
   custo_pontos: number
   quantidade_disponivel: number | null
-  ativo: boolean
+  ativo: boolean | null
 }
 
 type Resgate = {
   id: string
-  status: string
-  created_at: string
+  status: string | null
+  created_at: string | null
   aluno: { nome: string }
   premio: { nome: string }
 }
@@ -127,7 +127,7 @@ export default function PremiosCliente({ premiosIniciais, resgatesIniciais }: { 
               <div>
                 <p style={{ fontWeight: 600, fontSize: 15 }}>{r.aluno?.nome}</p>
                 <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Prêmio: {r.premio?.nome}</p>
-                <p style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>{new Date(r.created_at).toLocaleDateString('pt-BR')}</p>
+                <p style={{ color: 'var(--avp-text-dim)', fontSize: 12 }}>{r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '—'}</p>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={() => atualizarResgate(r.id, 'aprovado')} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Aprovar</button>

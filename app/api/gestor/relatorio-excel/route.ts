@@ -10,24 +10,24 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id, nome, whatsapp').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!gestor) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
-  const { data: consultores } = await (adminClient.from('alunos') as any)
+  const { data: consultores } = await adminClient.from('alunos')
     .select('id, nome, whatsapp, email, status, created_at, streak_atual, maior_streak, ultimo_estudo_em')
     .eq('gestor_whatsapp', gestor.whatsapp)
     .order('nome')
 
-  const { count: totalAulas } = await (adminClient.from('aulas') as any)
+  const { count: totalAulas } = await adminClient.from('aulas')
     .select('*', { count: 'exact', head: true }).eq('publicado', true)
 
-  const { data: progresso } = await (adminClient.from('progresso') as any)
+  const { data: progresso } = await adminClient.from('progresso')
     .select('aluno_id, aula_id')
     .in('aluno_id', (consultores ?? []).map((c: any) => c.id))
     .eq('aprovado', true)
 
-  const { data: pontos } = await (adminClient.from('aluno_pontos') as any)
+  const { data: pontos } = await adminClient.from('aluno_pontos')
     .select('aluno_id, quantidade')
     .in('aluno_id', (consultores ?? []).map((c: any) => c.id))
 

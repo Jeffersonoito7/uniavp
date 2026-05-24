@@ -157,9 +157,8 @@ export default function AulaInterativa({
       {!!linkExterno && videoTerminou && (!temQuiz || jaAprovado) && (
         <div style={{ padding: '0 24px 8px' }}>
           {!linkClicado ? (
-            <div style={{ background: exigeLink ? 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08))' : 'var(--avp-card)', border: `2px solid ${exigeLink ? 'rgba(99,102,241,0.4)' : 'var(--avp-border)'}`, borderRadius: 14, padding: '20px 24px', textAlign: 'center' }}>
-              <div style={{ fontSize: 36, marginBottom: 8 }}>🔗</div>
-              <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 6, color: 'var(--avp-text)' }}>
+            <div style={{ background: exigeLink ? 'rgba(79,70,229,0.06)' : 'var(--avp-card)', border: `${exigeLink ? '2px solid rgba(79,70,229,0.3)' : '1px solid var(--avp-border)'}`, borderRadius: 14, padding: '20px 24px', textAlign: 'center' }}>
+              <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 6, color: 'var(--avp-text)' }}>
                 {exigeLink ? 'Próximo passo obrigatório' : 'Plataforma parceira'}
               </p>
               {exigeLink && (
@@ -168,8 +167,8 @@ export default function AulaInterativa({
                 </p>
               )}
               <button onClick={handleLinkClick}
-                style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 32px', fontWeight: 800, fontSize: 15, cursor: 'pointer', boxShadow: '0 4px 20px rgba(99,102,241,0.4)', width: '100%' }}>
-                👉 {linkExternoTitulo || 'Cadastre-se na plataforma parceira'}
+                style={{ background: '#4f46e5', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 32px', fontWeight: 700, fontSize: 15, cursor: 'pointer', width: '100%' }}>
+                {linkExternoTitulo || 'Cadastre-se na plataforma parceira'}
               </button>
             </div>
           ) : (
@@ -184,7 +183,7 @@ export default function AulaInterativa({
       {/* Botões de download do app — aparecem após o vídeo */}
       {(appIosUrl || appAndroidUrl) && videoTerminou && (
         <div style={{ padding: '0 24px 8px' }}>
-          <div style={{ background: exigeApp && !appClicado ? 'linear-gradient(135deg, rgba(251,191,36,0.08), rgba(245,158,11,0.05))' : 'var(--avp-card)', border: `${exigeApp && !appClicado ? '2px solid rgba(251,191,36,0.4)' : '1px solid var(--avp-border)'}`, borderRadius: 14, padding: '20px 24px', textAlign: 'center' }}>
+          <div style={{ background: exigeApp && !appClicado ? 'rgba(251,191,36,0.05)' : 'var(--avp-card)', border: `${exigeApp && !appClicado ? '2px solid rgba(251,191,36,0.35)' : '1px solid var(--avp-border)'}`, borderRadius: 14, padding: '20px 24px', textAlign: 'center' }}>
             {appClicado ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
                 <span style={{ fontSize: 20 }}>✅</span>

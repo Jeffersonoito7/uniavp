@@ -10,7 +10,7 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
   if (!user) redirect('/entrar?p=free')
 
   const adminClient = createServiceRoleClient()
-  const { data: aluno } = await (adminClient.from('alunos') as any)
+  const { data: aluno } = await adminClient.from('alunos')
     .select('id, nome, whatsapp, status, numero_registro, foto_perfil, data_formacao')
     .eq('user_id', user.id)
     .maybeSingle()
@@ -19,7 +19,7 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}/carteira`)
 
   // Carga horária total dos cursos publicados
-  const { data: aulas } = await (adminClient.from('aulas') as any)
+  const { data: aulas } = await adminClient.from('aulas')
     .select('duracao_minutos').eq('publicado', true)
   const totalMin = (aulas ?? []).reduce((s: number, a: { duracao_minutos: number | null }) => s + (a.duracao_minutos ?? 0), 0)
   const horas = Math.floor(totalMin / 60)
@@ -42,11 +42,11 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
   const siteConfig = await getSiteConfig(host)
   const baseUrl = siteConfig.dominioCustomizado ? `https://${siteConfig.dominioCustomizado}` : `https://${host}`
 
-  const { data: cfgRows } = await (adminClient.from('configuracoes') as any)
+  const { data: cfgRows } = await adminClient.from('configuracoes')
     .select('chave, valor')
     .in('chave', ['site_nome', 'site_logo_url', 'site_cor_primaria', 'site_cor_secundaria', 'carteira_assinatura_nome', 'carteira_assinatura_cargo', 'carteira_assinatura_empresa', 'carteira_url_verificacao', 'carteira_tagline', 'carteira_logo_esquerda', 'carteira_logo_direita', 'carteira_assinatura_url'])
   const cfg: Record<string, string> = {}
-  for (const r of cfgRows ?? []) { try { cfg[r.chave] = JSON.parse(r.valor) } catch { cfg[r.chave] = r.valor } }
+  for (const r of cfgRows ?? []) { try { cfg[r.chave] = JSON.parse(String(r.valor)) } catch { cfg[r.chave] = String(r.valor) } }
 
   return (
     <CarteiraDisplay

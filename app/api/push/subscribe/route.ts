@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   }
 
   const admin = createServiceRoleClient()
-  await (admin.from('push_subscriptions') as any)
+  await admin.from('push_subscriptions')
     .upsert(
       { user_id: user.id, endpoint, p256dh: keys.p256dh, auth_key: keys.auth },
       { onConflict: 'endpoint' }
@@ -34,7 +34,7 @@ export async function DELETE(req: NextRequest) {
 
   const { endpoint } = await req.json()
   const admin = createServiceRoleClient()
-  await (admin.from('push_subscriptions') as any)
+  await admin.from('push_subscriptions')
     .delete().eq('user_id', user.id).eq('endpoint', endpoint)
 
   return NextResponse.json({ ok: true })

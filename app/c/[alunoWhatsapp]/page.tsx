@@ -28,17 +28,17 @@ export default async function FreeCaptacaoPage({
   const adminClient = createServiceRoleClient()
   const config = await getSiteConfig(host)
 
-  const { data: aluno } = await (adminClient.from('alunos') as any)
+  const { data: aluno } = await adminClient.from('alunos')
     .select('nome, whatsapp, link_externo')
     .eq('whatsapp', params.alunoWhatsapp)
     .maybeSingle()
 
   if (!aluno) redirect('/captacao')
 
-  const { data: videoConfig } = await (adminClient.from('configuracoes') as any)
+  const { data: videoConfig } = await adminClient.from('configuracoes')
     .select('valor').eq('chave', 'captacao_video_id').maybeSingle()
 
-  const { data: bloquearConfig } = await (adminClient.from('configuracoes') as any)
+  const { data: bloquearConfig } = await adminClient.from('configuracoes')
     .select('valor').eq('chave', 'free_bloquear_video').maybeSingle()
   const bloquearVideo = bloquearConfig?.valor !== 'false'
 

@@ -4,7 +4,7 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 export const dynamic = 'force-dynamic'
 
 async function verificarAdmin(user: { id: string }, adminClient: ReturnType<typeof createServiceRoleClient>) {
-  const { data } = await (adminClient.from('admins') as any)
+  const { data } = await adminClient.from('admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   return !!data
 }
@@ -15,7 +15,7 @@ export async function GET() {
   if (!user) return NextResponse.json([], { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data } = await (adminClient.from('artes_templates') as any)
+  const { data } = await adminClient.from('artes_templates')
     .select('*').order('created_at')
 
   return NextResponse.json(data ?? [])
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   const criados = []
 
   for (const item of itens) {
-    const { data, error } = await (adminClient.from('artes_templates') as any)
+    const { data, error } = await adminClient.from('artes_templates')
       .insert({
         tipo: item.tipo || 'custom',
         titulo: item.titulo || 'Novo Template',
@@ -69,7 +69,7 @@ export async function PUT(req: NextRequest) {
 
   for (const t of body) {
     if (!t.id) continue
-    await (adminClient.from('artes_templates') as any)
+    await adminClient.from('artes_templates')
       .update({
         titulo: t.titulo, tipo: t.tipo, arte_url: t.arte_url,
         foto_x: t.foto_x, foto_y: t.foto_y, foto_largura: t.foto_largura, foto_altura: t.foto_altura,
@@ -95,7 +95,7 @@ export async function DELETE(req: NextRequest) {
   if (!await verificarAdmin(user, adminClient)) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const { id } = await req.json()
-  await (adminClient.from('artes_templates') as any).delete().eq('id', id)
+  await adminClient.from('artes_templates').delete().eq('id', id)
 
   return NextResponse.json({ ok: true })
 }

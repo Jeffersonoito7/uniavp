@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import SuperDashboard from './SuperDashboard'
 
-const DOMINIO_MASTER = 'universidade.oito7digital.com.br'
+import { DOMINIO_MASTER } from '@/lib/constants'
 
 export default async function SuperPage() {
   const host = headers().get('host')?.replace(/:\d+$/, '') ?? ''
@@ -14,7 +14,7 @@ export default async function SuperPage() {
   if (!user) redirect('/super/login')
 
   const adminClient = createServiceRoleClient()
-  const { data: sa } = await (adminClient.from('super_admins') as any)
+  const { data: sa } = await adminClient.from('super_admins')
     .select('id, nome').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!sa) redirect('/super/login')
 
@@ -28,14 +28,14 @@ export default async function SuperPage() {
     { data: recentesAlunos },
     { data: configs },
   ] = await Promise.all([
-    (adminClient.from('clientes') as any).select('*').order('created_at'),
-    (adminClient.from('alunos') as any).select('*', { count: 'exact', head: true }),
-    (adminClient.from('gestores') as any).select('*', { count: 'exact', head: true }),
-    (adminClient.from('admins') as any).select('*', { count: 'exact', head: true }),
-    (adminClient.from('modulos') as any).select('*', { count: 'exact', head: true }),
-    (adminClient.from('aulas') as any).select('*', { count: 'exact', head: true }),
-    (adminClient.from('alunos') as any).select('nome, created_at, status').order('created_at', { ascending: false }).limit(5),
-    (adminClient.from('configuracoes') as any).select('chave, valor, descricao').order('chave'),
+    adminClient.from('clientes').select('*').order('created_at'),
+    adminClient.from('alunos').select('*', { count: 'exact', head: true }),
+    adminClient.from('gestores').select('*', { count: 'exact', head: true }),
+    adminClient.from('admins').select('*', { count: 'exact', head: true }),
+    adminClient.from('modulos').select('*', { count: 'exact', head: true }),
+    adminClient.from('aulas').select('*', { count: 'exact', head: true }),
+    adminClient.from('alunos').select('nome, created_at, status').order('created_at', { ascending: false }).limit(5),
+    adminClient.from('configuracoes').select('chave, valor, descricao').order('chave'),
   ])
 
   return (
@@ -44,7 +44,7 @@ export default async function SuperPage() {
       clientes={clientes ?? []}
       stats={{ totalAlunos: totalAlunos ?? 0, totalGestores: totalGestores ?? 0, totalAdmins: totalAdmins ?? 0, totalModulos: totalModulos ?? 0, totalAulas: totalAulas ?? 0 }}
       recentesAlunos={recentesAlunos ?? []}
-      configs={configs ?? []}
+      configs={(configs ?? []) as any}
     />
   )
 }

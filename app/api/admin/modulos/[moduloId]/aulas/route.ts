@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
+import type { Database } from '@/lib/database.types'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest, { params }: { params: { moduloId: s
 
   const body = await req.json()
 
-  let ultimaQuery = (adminClient.from('aulas') as any)
+  let ultimaQuery = adminClient.from('aulas')
     .select('ordem')
     .eq('modulo_id', params.moduloId)
   if (ctx.tenantId) ultimaQuery = ultimaQuery.eq('tenant_id', ctx.tenantId)
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest, { params }: { params: { moduloId: s
 
   const ordem = (ultima?.ordem ?? 0) + 1
 
-  const { data: aula, error } = await (adminClient.from('aulas') as any)
+  const { data: aula, error } = await adminClient.from('aulas')
     .insert({
       modulo_id: params.moduloId,
       ordem,
@@ -77,12 +78,11 @@ export async function PUT(req: NextRequest, { params }: { params: { moduloId: st
     'quiz_tipo', 'bloquear_avancar', 'mostrar_link_externo', 'link_externo_titulo', 'bloquear_link_externo', 'mostrar_links_app', 'bloquear_links_app',
     'quiz_sim_nao_pergunta', 'quiz_sim_nao_nao_mensagem', 'quiz_sim_nao_perguntas']
 
-  const atualizacoes: Record<string, unknown> = {}
-  for (const campo of camposPermitidos) {
-    if (campo in updates) atualizacoes[campo] = updates[campo]
-  }
+  const atualizacoes = Object.fromEntries(
+    camposPermitidos.filter(c => c in updates).map(c => [c, updates[c]])
+  ) as Database['public']['Tables']['aulas']['Update']
 
-  let putQuery = (adminClient.from('aulas') as any)
+  let putQuery = adminClient.from('aulas')
     .update(atualizacoes)
     .eq('id', id)
     .eq('modulo_id', params.moduloId)

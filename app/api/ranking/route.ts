@@ -9,7 +9,7 @@ export async function GET() {
   const admin = createServiceRoleClient()
 
   // Busca os top 10 por pontos totais entre consultores ativos
-  const { data: pontos } = await (admin.from('aluno_pontos') as any)
+  const { data: pontos } = await admin.from('aluno_pontos')
     .select('aluno_id, quantidade')
     .order('quantidade', { ascending: false })
 
@@ -30,7 +30,7 @@ export async function GET() {
   if (!top10ids.length) return NextResponse.json({ top: [] })
 
   // Busca dados dos alunos
-  const { data: alunos } = await (admin.from('alunos') as any)
+  const { data: alunos } = await admin.from('alunos')
     .select('id, nome, status')
     .in('id', top10ids)
     .neq('status', 'desligado')

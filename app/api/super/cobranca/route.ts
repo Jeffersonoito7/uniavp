@@ -7,7 +7,7 @@ import { randomUUID } from 'crypto'
 export const dynamic = 'force-dynamic'
 
 async function isSuperAdmin(userId: string, adminClient: ReturnType<typeof createServiceRoleClient>) {
-  const { data } = await (adminClient.from('super_admins') as any).select('id').eq('user_id', userId).eq('ativo', true).maybeSingle()
+  const { data } = await adminClient.from('super_admins').select('id').eq('user_id', userId).eq('ativo', true).maybeSingle()
   return !!data
 }
 
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
   const { cliente_id } = await req.json()
 
-  const { data: cliente } = await (adminClient.from('clientes') as any)
+  const { data: cliente } = await adminClient.from('clientes')
     .select('id, nome, mensalidade, contato_whatsapp, contato_nome, vencimento_dia')
     .eq('id', cliente_id).maybeSingle()
 
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       descricao: `Mensalidade ${cliente.nome}`,
     })
 
-    const { data: cobranca } = await (adminClient.from('cobrancas') as any).insert({
+    const { data: cobranca } = await adminClient.from('cobrancas').insert({
       cliente_id,
       txid,
       valor: cliente.mensalidade,
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       vencimento,
     }).select().single()
 
-    await (adminClient.from('clientes') as any).update({ status_pagamento: 'pendente', pix_txid: txid }).eq('id', cliente_id)
+    await adminClient.from('clientes').update({ status_pagamento: 'pendente', pix_txid: txid }).eq('id', cliente_id)
 
     // Envia PIX via WhatsApp se tiver número
     if (cliente.contato_whatsapp) {
@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
   if (!await isSuperAdmin(user.id, adminClient)) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const clienteId = req.nextUrl.searchParams.get('cliente_id')
-  const query = (adminClient.from('cobrancas') as any).select('*').order('created_at', { ascending: false })
+  const query = adminClient.from('cobrancas').select('*').order('created_at', { ascending: false })
   if (clienteId) query.eq('cliente_id', clienteId)
 
   const { data } = await query

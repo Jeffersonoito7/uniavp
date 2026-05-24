@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
   const vencimento = new Date(Date.now() + dias * 24 * 60 * 60 * 1000).toISOString()
 
-  let q = (adminClient.from('gestores') as any)
+  let q = adminClient.from('gestores')
     .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
     .eq('id', gestor_id)
   if (ctx.tenantId) q = q.eq('tenant_id', ctx.tenantId)
@@ -34,9 +34,9 @@ export async function POST(req: NextRequest) {
     // Busca nome da plataforma do tenant
     let nomePlataforma = 'Plataforma PRO'
     if (ctx.tenantId) {
-      const { data: cfg } = await (adminClient.from('configuracoes') as any)
+      const { data: cfg } = await adminClient.from('configuracoes')
         .select('valor').eq('chave', 'site_nome').eq('tenant_id', ctx.tenantId).maybeSingle()
-      try { nomePlataforma = JSON.parse(cfg?.valor ?? '') || nomePlataforma } catch { /**/ }
+      try { nomePlataforma = JSON.parse(String(cfg?.valor ?? '')) || nomePlataforma } catch { /**/ }
     }
     enviarWhatsApp(gestor.whatsapp,
       `✅ *Acesso PRO ativado!*\n\nOlá, ${gestor.nome}!\n\nSeu acesso ${nomePlataforma} PRO foi ativado por *${dias} dias*.\n\n👉 ${appUrl}/pro`

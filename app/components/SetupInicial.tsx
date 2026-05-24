@@ -49,7 +49,7 @@ export default function SetupInicial({
     }
   }
 
-  const bg = 'linear-gradient(135deg, #020d1a 0%, #03183a 60%, #021a0e 100%)'
+  const bg = '#0a0a0f'
 
   // ── PASSO PARCEIRO ───────────────────────────────────────────────
   if (passo === 'parceiro') {
@@ -72,8 +72,8 @@ export default function SetupInicial({
             {linkParceiro ? (
               <a href={linkParceiro} target="_blank" rel="noopener noreferrer"
                 onClick={() => { if (!bloquearParceiro) setTimeout(avancarParaApp, 1000) }}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'linear-gradient(135deg, #02A153, #059669)', color: '#fff', borderRadius: 14, padding: '18px 32px', fontWeight: 900, fontSize: 18, textDecoration: 'none', boxShadow: '0 8px 32px rgba(2,161,83,0.4)', marginBottom: 14 }}>
-                🔗 {parceiroTitulo || 'Cadastrar no sistema parceiro'} →
+                className="btn btn-green btn-full btn-lg" style={{ textDecoration: 'none', marginBottom: 14, fontSize: 18, borderRadius: 14, padding: '18px 32px' }}>
+                {parceiroTitulo || 'Cadastrar no sistema parceiro'} →
               </a>
             ) : (
               <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', marginBottom: 14, lineHeight: 1.6 }}>
@@ -83,14 +83,12 @@ export default function SetupInicial({
           </div>
 
           {(!bloquearParceiro || !linkParceiro) && (
-            <button onClick={avancarParaApp}
-              style={{ background: 'linear-gradient(135deg, #02A153, #059669)', border: 'none', color: '#fff', borderRadius: 12, padding: '14px 28px', fontWeight: 700, fontSize: 15, cursor: 'pointer', width: '100%', boxShadow: '0 4px 16px rgba(2,161,83,0.3)' }}>
+            <button onClick={avancarParaApp} className="btn btn-green btn-full" style={{ fontSize: 15 }}>
               {linkParceiro ? 'Já me cadastrei → Continuar' : 'Continuar →'}
             </button>
           )}
           {bloquearParceiro && linkParceiro && (
-            <button onClick={avancarParaApp}
-              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: '14px 28px', fontWeight: 700, fontSize: 15, cursor: 'pointer', width: '100%' }}>
+            <button onClick={avancarParaApp} className="btn btn-ghost btn-full" style={{ fontSize: 15 }}>
               Já me cadastrei → Continuar
             </button>
           )}
@@ -136,9 +134,8 @@ export default function SetupInicial({
         </div>
 
         {bloquearApp && (
-          <button onClick={concluir} disabled={concluindo}
-            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: '14px 28px', fontWeight: 700, fontSize: 15, cursor: 'pointer', width: '100%', opacity: concluindo ? 0.7 : 1 }}>
-            {concluindo ? '⏳ Liberando...' : 'Já baixei o app → Acessar as aulas'}
+          <button onClick={concluir} disabled={concluindo} className="btn btn-ghost btn-full" style={{ fontSize: 15 }}>
+            {concluindo ? 'Liberando...' : 'Já baixei o app → Acessar as aulas'}
           </button>
         )}
       </div>

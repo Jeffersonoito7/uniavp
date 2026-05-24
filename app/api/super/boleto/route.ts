@@ -6,7 +6,7 @@ import { enviarWhatsApp } from '@/lib/whatsapp'
 export const dynamic = 'force-dynamic'
 
 async function isSuperAdmin(userId: string, adminClient: ReturnType<typeof createServiceRoleClient>) {
-  const { data } = await (adminClient.from('super_admins') as any).select('id').eq('user_id', userId).eq('ativo', true).maybeSingle()
+  const { data } = await adminClient.from('super_admins').select('id').eq('user_id', userId).eq('ativo', true).maybeSingle()
   return !!data
 }
 
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
   const { cliente_id } = await req.json()
 
-  const { data: cliente } = await (adminClient.from('clientes') as any)
+  const { data: cliente } = await adminClient.from('clientes')
     .select('id, nome, mensalidade, contato_whatsapp, contato_nome, contato_email, cpf_cnpj, vencimento_dia')
     .eq('id', cliente_id).maybeSingle()
 
@@ -29,11 +29,11 @@ export async function POST(req: NextRequest) {
   if (!cliente.cpf_cnpj) return NextResponse.json({ error: 'CPF/CNPJ do cliente não cadastrado' }, { status: 400 })
 
   // Busca configurações do boleto
-  const { data: cfgRows } = await (adminClient.from('configuracoes') as any)
+  const { data: cfgRows } = await adminClient.from('configuracoes')
     .select('chave, valor')
     .in('chave', ['boleto_mensagem', 'boleto_instrucoes', 'boleto_multa', 'boleto_juros', 'site_nome'])
   const cfg: Record<string, string> = {}
-  for (const r of cfgRows ?? []) { try { cfg[r.chave] = JSON.parse(r.valor) } catch { cfg[r.chave] = r.valor } }
+  for (const r of cfgRows ?? []) { try { cfg[r.chave] = JSON.parse(String(r.valor)) } catch { cfg[r.chave] = String(r.valor) } }
 
   const hoje = new Date()
   const dia = cliente.vencimento_dia || 10
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     })
 
     // Salva no banco
-    const { data: cobranca } = await (adminClient.from('cobrancas') as any).insert({
+    const { data: cobranca } = await adminClient.from('cobrancas').insert({
       cliente_id,
       txid: String(boleto.chargeId),
       valor: cliente.mensalidade,
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       vencimento,
     }).select().single()
 
-    await (adminClient.from('clientes') as any)
+    await adminClient.from('clientes')
       .update({ status_pagamento: 'pendente' })
       .eq('id', cliente_id)
 

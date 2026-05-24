@@ -11,9 +11,9 @@ export async function PUT(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any)
+  const { data: adminRecord } = await adminClient.from('admins')
     .select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  const { data: superRecord } = await (adminClient.from('super_admins') as any)
+  const { data: superRecord } = await adminClient.from('super_admins')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord && !superRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
@@ -27,17 +27,17 @@ export async function PUT(req: NextRequest) {
     if (!chave) continue
     if (tenantId) {
       // Tenta atualizar primeiro; se não existir, insere
-      const { data: updated } = await (adminClient.from('configuracoes') as any)
+      const { data: updated } = await adminClient.from('configuracoes')
         .update({ valor })
         .eq('chave', chave)
         .eq('tenant_id', tenantId)
         .select('id')
       if (!updated || updated.length === 0) {
-        await (adminClient.from('configuracoes') as any)
+        await adminClient.from('configuracoes')
           .insert({ chave, valor, tenant_id: tenantId })
       }
     } else {
-      await (adminClient.from('configuracoes') as any)
+      await adminClient.from('configuracoes')
         .upsert({ chave, valor }, { onConflict: 'chave' })
     }
   }

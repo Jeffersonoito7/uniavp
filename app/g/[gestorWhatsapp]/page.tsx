@@ -25,7 +25,7 @@ export default async function GestorCaptacaoPage({ params, searchParams }: { par
   const adminClient = createServiceRoleClient()
   const config = await getSiteConfig(host)
 
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('nome, whatsapp, link_externo')
     .eq('whatsapp', params.gestorWhatsapp)
     .eq('ativo', true)
@@ -33,14 +33,14 @@ export default async function GestorCaptacaoPage({ params, searchParams }: { par
 
   if (!gestor) notFound()
 
-  const { data: tenantRow } = await (adminClient.from('tenant_domains') as any)
+  const { data: tenantRow } = await adminClient.from('tenant_domains')
     .select('tenant_id').eq('domain', host.replace(/:\d+$/, '')).maybeSingle()
   const tenantId = tenantRow?.tenant_id as string | null
 
-  const cfgBase = (adminClient.from('configuracoes') as any).select('valor').eq('chave', 'captacao_video_id')
+  const cfgBase = adminClient.from('configuracoes').select('valor').eq('chave', 'captacao_video_id')
   const { data: videoConfig } = await (tenantId ? cfgBase.eq('tenant_id', tenantId) : cfgBase).maybeSingle()
 
-  const cfgExtra = (adminClient.from('configuracoes') as any)
+  const cfgExtra = adminClient.from('configuracoes')
     .select('chave, valor')
     .in('chave', [
       'free_bloquear_video',

@@ -26,7 +26,7 @@ export async function enviarWhatsApp(numero: string, mensagem: string, instancia
 }
 
 export async function getInstanciaGestorPorNome(gestorNome: string, adminClient: any): Promise<string | null> {
-  const { data } = await (adminClient.from('gestores') as any)
+  const { data } = await adminClient.from('gestores')
     .select('whatsapp_instancia').eq('nome', gestorNome).maybeSingle()
   return data?.whatsapp_instancia || null
 }

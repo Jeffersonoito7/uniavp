@@ -9,18 +9,17 @@ export async function PUT(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: gestor } = await (adminClient.from('gestores') as any)
+  const { data: gestor } = await adminClient.from('gestores')
     .select('id').eq('user_id', user.id).maybeSingle()
   if (!gestor) return NextResponse.json({ error: 'Não encontrado' }, { status: 404 })
 
-  const { nome, bio, link_externo } = await req.json()
+  const { nome, link_externo } = await req.json()
 
-  const updates: Record<string, unknown> = {}
+  const updates: { nome?: string; link_externo?: string | null } = {}
   if (nome !== undefined) updates.nome = nome
-  if (bio !== undefined) updates.bio = bio
   if (link_externo !== undefined) updates.link_externo = link_externo || null
 
-  const { error } = await (adminClient.from('gestores') as any).update(updates).eq('id', gestor.id)
+  const { error } = await adminClient.from('gestores').update(updates).eq('id', gestor.id)
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
   return NextResponse.json({ ok: true })

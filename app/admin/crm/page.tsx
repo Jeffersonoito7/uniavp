@@ -8,7 +8,7 @@ export default async function CRMPage() {
   if (!user) redirect('/entrar?p=adm')
 
   const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await (adminClient.from('admins') as any).select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  const { data: adminRecord } = await adminClient.from('admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
 
   const [
@@ -18,11 +18,11 @@ export default async function CRMPage() {
     { data: modulos },
     { data: pontosRows },
   ] = await Promise.all([
-    (adminClient.from('alunos') as any).select('id, nome, whatsapp, status, created_at, gestor_nome').order('created_at', { ascending: false }),
-    (adminClient.from('progresso') as any).select('aluno_id, aula_id, aprovado').eq('aprovado', true),
-    (adminClient.from('aulas') as any).select('id, modulo_id').eq('publicado', true),
-    (adminClient.from('modulos') as any).select('id, titulo, ordem').eq('publicado', true).order('ordem'),
-    (adminClient.from('aluno_pontos') as any).select('aluno_id, quantidade'),
+    adminClient.from('alunos').select('id, nome, whatsapp, status, created_at, gestor_nome').order('created_at', { ascending: false }),
+    adminClient.from('progresso').select('aluno_id, aula_id, aprovado').eq('aprovado', true),
+    adminClient.from('aulas').select('id, modulo_id').eq('publicado', true),
+    adminClient.from('modulos').select('id, titulo, ordem').eq('publicado', true).order('ordem'),
+    adminClient.from('aluno_pontos').select('aluno_id, quantidade'),
   ])
 
   const allAlunos = alunos ?? []
@@ -84,6 +84,7 @@ export default async function CRMPage() {
     meses[key] = 0
   }
   for (const a of allAlunos) {
+    if (!a.created_at) continue
     const d = new Date(a.created_at)
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
     if (key in meses) meses[key]++

@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   const agora = new Date().toISOString()
 
   // Busca lembretes que já passaram do horário e ainda não foram enviados
-  const { data: lembretes } = await (admin.from('pro_lembretes') as any)
+  const { data: lembretes } = await admin.from('pro_lembretes')
     .select('id, mensagem, gestor_id, gestores(nome, whatsapp)')
     .eq('enviado', false)
     .lte('lembrar_em', agora)
@@ -22,14 +22,14 @@ export async function GET(req: NextRequest) {
   let enviados = 0
 
   for (const lembrete of lembretes ?? []) {
-    const gestor = (lembrete as any).gestores
+    const gestor = Array.isArray(lembrete.gestores) ? lembrete.gestores[0] : lembrete.gestores
     if (!gestor?.whatsapp) continue
 
     const msg = `⏰ *Lembrete!*\n\n${lembrete.mensagem}`
     const ok = await enviarWhatsApp(gestor.whatsapp, msg)
 
     if (ok) {
-      await (admin.from('pro_lembretes') as any)
+      await admin.from('pro_lembretes')
         .update({ enviado: true })
         .eq('id', lembrete.id)
       enviados++

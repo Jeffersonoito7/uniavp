@@ -40,9 +40,9 @@ export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, n
   const [etapa, setEtapa] = useState<Etapa>('fechado')
 
   useEffect(() => {
+    // Verifica localStorage apenas na montagem — chave não muda entre renders
     if (!jaViu(chave)) setEtapa('certificado')
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [chave])
 
   useEffect(() => {
     if (etapa !== 'certificado') return
