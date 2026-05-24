@@ -74,16 +74,26 @@ export async function POST(req: NextRequest) {
   const tenantId = await getTenantId(host)
 
   // Se o e-mail já existe no auth mas não tem aluno vinculado (registro órfão), limpa antes de recriar
-  const { data: existingAuthUser } = await adminClient.auth.admin.getUserByEmail(emailLimpo).catch(() => ({ data: null }))
-  if (existingAuthUser?.user) {
-    const { data: alunoExistente } = await adminClient.from('alunos')
-      .select('id').eq('user_id', existingAuthUser.user.id).maybeSingle()
-    if (alunoExistente) {
-      return NextResponse.json({ erro: 'Este e-mail já possui uma conta. Faça login ou use outro e-mail.' }, { status: 400 })
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    const usersRes = await fetch(`${supabaseUrl}/auth/v1/admin/users?email=${encodeURIComponent(emailLimpo)}`, {
+      headers: { 'Authorization': `Bearer ${serviceKey}`, 'apikey': serviceKey },
+    })
+    if (usersRes.ok) {
+      const usersData = await usersRes.json()
+      const existingUser = usersData.users?.[0]
+      if (existingUser?.id) {
+        const { data: alunoExistente } = await adminClient.from('alunos')
+          .select('id').eq('user_id', existingUser.id).maybeSingle()
+        if (alunoExistente) {
+          return NextResponse.json({ erro: 'Este e-mail já possui uma conta. Faça login ou use outro e-mail.' }, { status: 400 })
+        }
+        // Auth user órfão — remove para permitir novo cadastro
+        await adminClient.auth.admin.deleteUser(existingUser.id).catch(() => {})
+      }
     }
-    // Auth user órfão — remove para permitir novo cadastro
-    await adminClient.auth.admin.deleteUser(existingAuthUser.user.id).catch(() => {})
-  }
+  } catch { /* ignora e deixa o createUser falhar normalmente */ }
 
   const { data: authUser, error: authErr } = await adminClient.auth.admin.createUser({
     email: emailLimpo,
