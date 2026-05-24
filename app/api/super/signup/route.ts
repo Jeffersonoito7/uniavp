@@ -4,11 +4,7 @@ import { criarCobrancaPix } from '@/lib/efi'
 import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
-
-function gerarSenha() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#!'
-  return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
-}
+export const maxDuration = 30
 
 // POST público — associação se cadastra e gera PIX para ativar o acesso
 export async function POST(req: NextRequest) {
@@ -57,8 +53,6 @@ export async function POST(req: NextRequest) {
   if (!plano) return NextResponse.json({ error: 'Plano não encontrado.' }, { status: 404 })
   if (!plano.preco || plano.preco <= 0) return NextResponse.json({ error: 'Este plano requer contato direto para cotação. Entre em contato pelo WhatsApp.' }, { status: 400 })
 
-  const admin_senha = gerarSenha()
-
   // Cria o cliente com status pendente
   const { data: cliente, error: clienteErr } = await adminClient.from('clientes').insert({
     nome: nome_empresa,
@@ -75,7 +69,6 @@ export async function POST(req: NextRequest) {
       _signup: {
         admin_email: emailLimpo,
         admin_nome: contato_nome,
-        admin_senha,
         plano_id,
         plano_nome: plano.nome,
       }

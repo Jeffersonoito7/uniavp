@@ -24,9 +24,12 @@ export async function GET(req: NextRequest) {
 
   let geradas = 0
   let suspensas = 0
+  let falhas = 0
 
   for (const c of clientes ?? []) {
-    const dia = c.vencimento_dia || 10
+    const diaRaw = c.vencimento_dia || 10
+    const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate()
+    const dia = Math.min(diaRaw, ultimoDiaMes)
     const vencimento = new Date(hoje.getFullYear(), hoje.getMonth(), dia)
     const vencStr = vencimento.toISOString().split('T')[0]
 
@@ -65,7 +68,10 @@ export async function GET(req: NextRequest) {
           )
         }
         geradas++
-      } catch { /* ignora erros individuais */ }
+      } catch (e) {
+        console.error(`[cron/cobranca] Erro ao gerar cobrança para cliente ${c.id}:`, e)
+        falhas++
+      }
     }
 
     // Suspende se estiver mais de 3 dias em atraso
@@ -87,5 +93,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, geradas, suspensas })
+  return NextResponse.json({ ok: true, geradas, suspensas, falhas })
 }

@@ -57,32 +57,53 @@ export async function POST(req: NextRequest) {
           try {
             const obs = JSON.parse(cliente.observacoes)
             const signup = obs._signup
-            if (signup?.admin_email && signup?.admin_senha) {
-              // Cria auth user
+            if (signup?.admin_email) {
+              // Cria auth user sem senha — acesso via link de definição de senha
               const { data: authUser, error: authErr } = await adminClient.auth.admin.createUser({
-                email: signup.admin_email, password: signup.admin_senha, email_confirm: true,
+                email: signup.admin_email, email_confirm: true,
               })
               if (!authErr && authUser?.user) {
-                // Cria admin vinculado ao tenant (cliente_id)
-                await adminClient.from('admins').insert({
+                // Cria admin vinculado ao tenant — se falhar, desfaz o auth user (evita usuário órfão)
+                const { error: insertErr } = await adminClient.from('admins').insert({
                   user_id: authUser.user.id, nome: signup.admin_nome || cliente.contato_nome,
                   email: signup.admin_email, ativo: true, role: 'admin', tenant_id: cliente.id,
                 })
+                if (insertErr) {
+                  await adminClient.auth.admin.deleteUser(authUser.user.id)
+                  throw new Error(`Falha ao criar admin (auth revertido): ${insertErr.message}`)
+                }
 
-                // Registra domínios se informados
+                const base = cliente.dominio ? `https://${cliente.dominio}` : process.env.NEXT_PUBLIC_APP_URL || ''
+                const linkAdmin = cliente.dominio ? `https://adm.${cliente.dominio}/admin` : `${base}/admin`
+                const linkFree = cliente.dominio ? `https://free.${cliente.dominio}/captacao` : `${base}/captacao`
+
+                // Gera link de definição de senha (expira em 24h) — nunca envia senha em texto plano
+                const { data: linkData } = await adminClient.auth.admin.generateLink({
+                  type: 'recovery',
+                  email: signup.admin_email,
+                  options: { redirectTo: linkAdmin },
+                })
+                const linkSenha = linkData?.properties?.action_link ?? `${base}/recuperar-senha`
+
+                // Registra domínios — captura erros para não deixar cliente sem aviso
+                let dominiosOk = true
                 if (cliente.dominio) {
                   const { registrarDominiosTenant } = await import('@/lib/tenant')
                   const dominios = [cliente.dominio, `adm.${cliente.dominio}`, `free.${cliente.dominio}`, `pro.${cliente.dominio}`]
-                  await registrarDominiosTenant(cliente.id, dominios).catch(() => {})
+                  await registrarDominiosTenant(cliente.id, dominios).catch((e) => {
+                    console.error('[onboarding] Falha ao registrar domínios no banco:', e)
+                    dominiosOk = false
+                  })
 
                   // Vercel
                   if (process.env.VERCEL_TOKEN && process.env.VERCEL_PROJECT_ID) {
                     for (const sub of [`free.${cliente.dominio}`, `pro.${cliente.dominio}`, `adm.${cliente.dominio}`]) {
-                      await fetch(`https://api.vercel.com/v10/projects/${process.env.VERCEL_PROJECT_ID}/domains`, {
+                      const res = await fetch(`https://api.vercel.com/v10/projects/${process.env.VERCEL_PROJECT_ID}/domains`, {
                         method: 'POST',
                         headers: { Authorization: `Bearer ${process.env.VERCEL_TOKEN}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name: sub }),
-                      }).catch(() => {})
+                      }).catch((e) => { console.error(`[onboarding] Falha Vercel domain ${sub}:`, e); return null })
+                      if (res && !res.ok) console.error(`[onboarding] Vercel rejeitou domínio ${sub}: ${res.status}`)
                     }
                   }
 
@@ -90,11 +111,12 @@ export async function POST(req: NextRequest) {
                   if (process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ZONE_ID) {
                     for (const prefix of ['free', 'pro', 'adm']) {
                       const name = `${prefix}.${cliente.dominio.split('.').slice(1).join('.')}`
-                      await fetch(`https://api.cloudflare.com/client/v4/zones/${process.env.CLOUDFLARE_ZONE_ID}/dns_records`, {
+                      const res = await fetch(`https://api.cloudflare.com/client/v4/zones/${process.env.CLOUDFLARE_ZONE_ID}/dns_records`, {
                         method: 'POST',
                         headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({ type: 'CNAME', name, content: cliente.dominio, proxied: true, ttl: 1 }),
-                      }).catch(() => {})
+                      }).catch((e) => { console.error(`[onboarding] Falha Cloudflare DNS ${name}:`, e); return null })
+                      if (res && !res.ok) { console.error(`[onboarding] Cloudflare rejeitou DNS ${name}: ${res.status}`); dominiosOk = false }
                     }
                   }
                 }
@@ -102,20 +124,16 @@ export async function POST(req: NextRequest) {
                 // Limpa dados sensíveis após onboarding
                 await adminClient.from('clientes').update({ observacoes: null }).eq('id', cliente.id)
 
-                // Envia credenciais e links por WhatsApp
+                // Envia acesso por WhatsApp — link de definição de senha, sem expor credenciais
                 if (cliente.contato_whatsapp) {
-                  const base = cliente.dominio ? `https://${cliente.dominio}` : process.env.NEXT_PUBLIC_APP_URL || ''
-                  const linkAdmin = cliente.dominio ? `https://adm.${cliente.dominio}/admin` : `${base}/admin`
-                  const linkFree = cliente.dominio ? `https://free.${cliente.dominio}/captacao` : `${base}/captacao`
+                  const avisodominio = !dominiosOk ? `\n\n⚠️ _Configuração de domínio personalizado pendente — entre em contato com o suporte._` : ''
                   await enviarWhatsApp(cliente.contato_whatsapp,
                     `🎉 *Bem-vindo à plataforma, ${cliente.contato_nome || cliente.nome}!*\n\n` +
-                    `Sua plataforma está pronta. Aqui estão seus acessos:\n\n` +
-                    `🛡 *Painel Admin:*\n${linkAdmin}\n` +
-                    `📧 Login: ${signup.admin_email}\n` +
-                    `🔑 Senha: ${signup.admin_senha}\n\n` +
-                    `🔗 *Link de cadastro dos consultores:*\n${linkFree}\n\n` +
-                    `_Acesse o painel Admin para configurar logo, cores e conteúdo._\n` +
-                    `_Recomendamos trocar a senha no primeiro acesso._`)
+                    `Sua plataforma está pronta.\n\n` +
+                    `🔐 *Clique para definir sua senha e acessar o painel:*\n${linkSenha}\n\n` +
+                    `_(Link válido por 24 horas)_\n\n` +
+                    `🔗 *Link de cadastro dos consultores:*\n${linkFree}` +
+                    avisodominio)
                 }
               }
             }
