@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 
 async function enviarEmailRelatorio(para: string, nomeGestor: string, stats: {
   total: number; ativos: number; concluidos: number; parados: string[]
-}) {
+}, appUrl: string) {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) return
 
@@ -61,7 +61,7 @@ async function enviarEmailRelatorio(para: string, nomeGestor: string, stats: {
 
     <!-- CTA -->
     <div style="padding:0 32px 32px;text-align:center">
-      <a href="${await getAppUrl()}/pro"
+      <a href="${appUrl}/pro"
         style="display:inline-block;background:linear-gradient(135deg,#333687,#02A153);color:#fff;text-decoration:none;border-radius:10px;padding:14px 32px;font-weight:700;font-size:15px">
         Ver painel completo →
       </a>
@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
 
   // ── Relatório por gestor ──────────────────────────────────────
   const { data: gestores } = await admin.from('gestores')
-    .select('id, nome, email, whatsapp').eq('ativo', true)
+    .select('id, nome, email, whatsapp, tenant_id').eq('ativo', true)
 
   for (const g of gestores ?? []) {
     const { data: consultores } = await admin.from('alunos')
@@ -125,6 +125,7 @@ export async function GET(req: NextRequest) {
     const stats = { total: consultores.length, ativos: ativos.length, concluidos: concluidos.length, parados }
 
     // WhatsApp
+    const appUrlGestor = await getAppUrl(g.tenant_id)
     const instancia = await getInstanciaGestorPorNome(g.nome, admin)
     const msg = `📊 *Relatório Semanal — ${g.nome}*\n\n` +
       `👥 Total: *${stats.total}* consultores\n` +
@@ -132,11 +133,11 @@ export async function GET(req: NextRequest) {
       `🏆 Formados: *${stats.concluidos}*\n` +
       `😴 Parados (+7 dias): *${parados.length}*\n` +
       (parados.length > 0 ? `\n⚠️ Entre em contato:\n${parados.map(n => `• ${n}`).join('\n')}\n` : '') +
-      `\n👉 Ver detalhes: ${await getAppUrl()}/pro`
+      `\n👉 Ver detalhes: ${appUrlGestor}/pro`
     await enviarWhatsApp(g.whatsapp, msg, instancia)
 
     // E-mail
-    if (g.email) await enviarEmailRelatorio(g.email, g.nome, stats)
+    if (g.email) await enviarEmailRelatorio(g.email, g.nome, stats, appUrlGestor)
 
     relatorios++
   }
@@ -156,11 +157,10 @@ export async function GET(req: NextRequest) {
     if (configWpp?.valor) {
       const wppAdmin = JSON.parse(String(configWpp.valor))
       await enviarWhatsApp(wppAdmin,
-        `📈 *Relatório Semanal — Plataforma AVP*\n\n` +
+        `📈 *Relatório Semanal — Plataforma*\n\n` +
         `🆕 Novos esta semana: *${novosEstaSemana ?? 0}*\n` +
         `👥 Consultores ativos: *${totalAtivos ?? 0}*\n` +
-        `🏆 Formados: *${totalConcluidos ?? 0}*\n` +
-        `\n👉 ${await getAppUrl()}/admin`)
+        `🏆 Formados: *${totalConcluidos ?? 0}*`)
     }
   }
 

@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
         // Ativa plano por 30 dias (e ativa conta se era upgrade de free)
         const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
         const { data: gestor } = await adminClient.from('gestores')
-          .select('id, nome, whatsapp, ativo, status_assinatura')
+          .select('id, nome, whatsapp, ativo, status_assinatura, tenant_id')
           .eq('id', pagGestor.gestor_id)
           .maybeSingle()
 
@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
             .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
             .eq('id', gestor.id)
 
-          const appUrl = await getAppUrl()
+          const appUrl = await getAppUrl(gestor.tenant_id)
           const valor = Number(pagGestor.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
           if (gestor.whatsapp) {

@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
   // Notifica o gestor via WhatsApp (fire-and-forget)
   if (gestor?.whatsapp) {
-    const appUrl = await getAppUrl()
+    const appUrl = await getAppUrl(ctx.tenantId)
     // Busca nome da plataforma do tenant
     let nomePlataforma = 'Plataforma PRO'
     if (ctx.tenantId) {

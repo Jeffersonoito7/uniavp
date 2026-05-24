@@ -11,20 +11,21 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const admin = createServiceRoleClient()
-  const appUrl = await getAppUrl()
   const agora = new Date()
   let enviados = 0
 
   const { data: alunos } = await admin.from('alunos')
-    .select('id, nome, whatsapp, gestor_nome, created_at')
+    .select('id, nome, whatsapp, gestor_nome, created_at, tenant_id')
     .eq('status', 'ativo')
 
   for (const a of alunos ?? []) {
     const dias = Math.floor((agora.getTime() - new Date(a.created_at!).getTime()) / 86400000)
 
+    const appUrl = await getAppUrl(a.tenant_id)
+
     if (dias === 1) {
       await enviarWhatsApp(a.whatsapp,
-        `🎓 *Bem-vindo ao UNIAVP FREE, ${a.nome}!*\n\nSua jornada começa agora. Acesse e assista sua primeira aula:\n👉 ${appUrl}/aluno/${a.whatsapp}\n\nQualquer dúvida, seu PRO *${a.gestor_nome}* está aqui para te ajudar! 💪\n\n✨ _Quer acesso completo? Faça upgrade para o UNIAVP PRO dentro da plataforma._`)
+        `🎓 *Bem-vindo, ${a.nome}!*\n\nSua jornada começa agora. Acesse e assista sua primeira aula:\n👉 ${appUrl}/aluno/${a.whatsapp}\n\nQualquer dúvida, seu PRO *${a.gestor_nome}* está aqui para te ajudar! 💪`)
       enviados++
     }
 
@@ -41,7 +42,7 @@ export async function GET(req: NextRequest) {
       const { count } = await admin.from('progresso').select('id', { count: 'exact', head: true }).eq('aluno_id', a.id).eq('aprovado', true)
       if ((count ?? 0) === 0) {
         await enviarWhatsApp(a.whatsapp,
-          `🔔 *${a.nome}*, já faz 1 semana desde o seu cadastro no UNIAVP FREE!\n\nSeus colegas já estão avançando. Não fique para trás — cada aula te aproxima do certificado!\n\n👉 ${appUrl}/aluno/${a.whatsapp}\n\nPrecisando de ajuda? Fale com seu PRO *${a.gestor_nome}* agora mesmo! 📞`)
+          `🔔 *${a.nome}*, já faz 1 semana desde o seu cadastro!\n\nSeus colegas já estão avançando. Não fique para trás — cada aula te aproxima do certificado!\n\n👉 ${appUrl}/aluno/${a.whatsapp}\n\nPrecisando de ajuda? Fale com seu PRO *${a.gestor_nome}* agora mesmo! 📞`)
         enviados++
       }
     }

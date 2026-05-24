@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { data: aluno } = await adminClient.from('alunos').select('id').eq('user_id', user.id).maybeSingle()
+  const { data: aluno } = await adminClient.from('alunos').select('id, tenant_id').eq('user_id', user.id).maybeSingle()
   if (!aluno) return NextResponse.json({ error: 'Aluno não encontrado' }, { status: 404 })
 
   const body = await req.json()
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
     if (modo === 'manual_gestor' && alunoInfo?.gestor_whatsapp) {
       const { enviarWhatsApp, getInstanciaGestorPorNome } = await import('@/lib/whatsapp')
       const inst = await getInstanciaGestorPorNome(alunoInfo.gestor_nome ?? '', adminClient)
-      const appUrl = await getAppUrl()
+      const appUrl = await getAppUrl(aluno.tenant_id)
       await enviarWhatsApp(
         alunoInfo.gestor_whatsapp,
         `📋 *${alunoInfo.nome}* foi aprovado na aula *${aulaInfo?.titulo}* e está aguardando sua liberação para continuar.\n\nAcesse o painel: ${appUrl}/pro`,
@@ -257,7 +257,7 @@ export async function POST(req: NextRequest) {
               `📚 *${alunoAtualizado.gestor_nome || 'UNIAVP PRO'}!* Seu membro FREE *${alunoAtualizado.nome}* concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🎉`,
               instanciaGestor
             )
-            const appUrl = await getAppUrl()
+            const appUrl = await getAppUrl(aluno.tenant_id)
             await enviarWhatsApp(
               alunoAtualizado.whatsapp,
               `🎉 Parabéns, *${alunoAtualizado.nome}*!\n\nVocê concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🏆\n\nContinue acessando a plataforma:\n👉 ${appUrl}/aluno/${alunoAtualizado.whatsapp}`
@@ -269,7 +269,7 @@ export async function POST(req: NextRequest) {
 
     // Notificação de formação 100% concluída
     if (formacaoConcluida) {
-      const appUrl = await getAppUrl()
+      const appUrl = await getAppUrl(aluno.tenant_id)
       const instanciaGestor = alunoAtualizado.gestor_nome
         ? await getInstanciaGestorPorNome(alunoAtualizado.gestor_nome, adminClient)
         : null

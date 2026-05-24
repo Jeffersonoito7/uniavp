@@ -73,12 +73,12 @@ export async function POST(req: NextRequest) {
 
   if (!lista.length) return NextResponse.json({ enviados: 0, erros: 0 })
 
-  const appUrl = await getAppUrl()
+  const appUrl = await getAppUrl(ctx.tenantId)
   const linkContrato = `${appUrl}/contrato`
 
-  // Busca nome da plataforma
+  // Busca nome da plataforma do tenant
   const { data: nomeCfg } = await adminClient.from('configuracoes')
-    .select('valor').eq('chave', 'site_nome').maybeSingle()
+    .select('valor').eq('chave', 'site_nome').eq('tenant_id', ctx.tenantId ?? '').maybeSingle()
   let nomePlataforma = 'Plataforma'
   try { nomePlataforma = JSON.parse(String(nomeCfg?.valor ?? '')) || nomePlataforma } catch { /**/ }
 
