@@ -140,7 +140,7 @@ export async function POST() {
     gestorId = novoGestor.id
   }
 
-  // ── Modo incluso: ativa sem cobrar ────────────────────────────────
+  // ── Modo incluso / ganho ──────────────────────────────────────────
   const modoCobranca = await getModoCobranca(adminClient, tenantId)
   if (modoCobranca === 'incluso') {
     const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
@@ -148,6 +148,28 @@ export async function POST() {
       .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
       .eq('id', gestorId)
     return NextResponse.json({ ok: true, gratuito: true, incluso: true, vencimento })
+  }
+
+  if (modoCobranca === 'ganho') {
+    const [totalIndicados, limiteGratuito] = await Promise.all([
+      contarPROsAtivosIndicados(gestorId, adminClient),
+      getLimitePROGratuito(adminClient, tenantId),
+    ])
+    if (totalIndicados >= limiteGratuito) {
+      const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      await adminClient.from('gestores')
+        .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
+        .eq('id', gestorId)
+      return NextResponse.json({ ok: true, gratuito: true, vencimento })
+    }
+    const faltam = limiteGratuito - totalIndicados
+    return NextResponse.json({
+      error: `Indique mais ${faltam} PRO${faltam > 1 ? 's' : ''} para liberar seu acesso gratuitamente.`,
+      ganho: true,
+      totalIndicados,
+      limiteGratuito,
+      faltam,
+    }, { status: 403 })
   }
 
   // Gera PIX

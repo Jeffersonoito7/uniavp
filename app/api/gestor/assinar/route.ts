@@ -32,27 +32,44 @@ export async function POST() {
   }
 
   // ── Modo de cobrança do tenant ────────────────────────────────────
-  if (gestor.tenant_id) {
-    const { data: modoCfg } = await adminClient.from('configuracoes')
-      .select('valor').eq('chave', 'pro_cobranca_modo').eq('tenant_id', gestor.tenant_id).maybeSingle()
-    const modo = modoCfg?.valor ? String(modoCfg.valor).replace(/"/g, '') : 'individual'
-    if (modo === 'incluso') {
-      const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      await adminClient.from('gestores')
-        .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
-        .eq('id', gestor.id)
-      return NextResponse.json({ ok: true, gratuito: true, incluso: true, vencimento })
-    }
+  const modoCfg = gestor.tenant_id
+    ? await adminClient.from('configuracoes').select('valor').eq('chave', 'pro_cobranca_modo').eq('tenant_id', gestor.tenant_id).maybeSingle()
+    : { data: null }
+  const modo = modoCfg.data?.valor ? String(modoCfg.data.valor).replace(/"/g, '') : 'individual'
+
+  if (modo === 'incluso') {
+    const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    await adminClient.from('gestores')
+      .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
+      .eq('id', gestor.id)
+    return NextResponse.json({ ok: true, gratuito: true, incluso: true, vencimento })
   }
 
-  // ── Verifica se o PRO tem 20+ PROs ativos na rede → renovação gratuita ──
-  const ehGratuito = await verificarPROGratuito(gestor.id, adminClient, gestor.tenant_id)
+  // ── Verifica se o PRO atingiu o limite de indicações → gratuito ──
+  const [ehGratuito, totalIndicados, limiteGratuito] = await Promise.all([
+    verificarPROGratuito(gestor.id, adminClient, gestor.tenant_id),
+    contarPROsAtivosIndicados(gestor.id, adminClient),
+    getLimitePROGratuito(adminClient, gestor.tenant_id),
+  ])
+
   if (ehGratuito) {
     const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
     await adminClient.from('gestores')
       .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento })
       .eq('id', gestor.id)
     return NextResponse.json({ ok: true, gratuito: true, vencimento })
+  }
+
+  // No modo ganho, PRO só acessa via indicações — não gera PIX
+  if (modo === 'ganho') {
+    const faltam = limiteGratuito - totalIndicados
+    return NextResponse.json({
+      error: `Indique mais ${faltam} PRO${faltam > 1 ? 's' : ''} para liberar seu acesso gratuitamente.`,
+      ganho: true,
+      totalIndicados,
+      limiteGratuito,
+      faltam,
+    }, { status: 403 })
   }
 
   // Lê valor configurado para o tenant (padrão 97)
