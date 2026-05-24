@@ -65,22 +65,29 @@ export async function POST(req: NextRequest) {
 
   const client = new Anthropic({ apiKey })
 
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 4096,
-    messages: [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'document',
-            source: { type: 'base64', media_type: mimeType, data: pdfBase64 },
-          } as any,
-          { type: 'text', text: PROMPT },
-        ],
-      },
-    ],
-  })
+  let message: Awaited<ReturnType<typeof client.messages.create>>
+  try {
+    message = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4096,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'document',
+              source: { type: 'base64', media_type: mimeType, data: pdfBase64 },
+            } as any,
+            { type: 'text', text: PROMPT },
+          ],
+        },
+      ],
+    })
+  } catch (e: any) {
+    const msg = e?.message ?? String(e)
+    console.error('[processar-pdf] Erro Anthropic:', msg)
+    return NextResponse.json({ error: `Erro na IA: ${msg.slice(0, 200)}` }, { status: 500 })
+  }
 
   const textoResposta = message.content[0]?.type === 'text' ? message.content[0].text : ''
 
