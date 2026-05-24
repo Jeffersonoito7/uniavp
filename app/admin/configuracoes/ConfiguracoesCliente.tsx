@@ -402,7 +402,9 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      setMsg(res.ok ? '✅ Configurações salvas com sucesso!' : '❌ Erro ao salvar.')
+      let resData: any = {}
+      try { resData = await res.json() } catch { /* não-JSON */ }
+      setMsg(res.ok ? '✅ Configurações salvas com sucesso!' : `❌ Erro ao salvar: ${resData.error ?? `HTTP ${res.status}`}`)
     } catch (e: any) {
       setMsg(`❌ Erro: ${e.message}`)
     }
