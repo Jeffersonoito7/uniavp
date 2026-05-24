@@ -1393,6 +1393,10 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
               const file = e.target.files?.[0]
               e.target.value = ''
               if (!file) return
+              if (file.size > 18 * 1024 * 1024) {
+                setMsgIA('❌ Arquivo muito grande. Use um PDF com menos de 18MB.')
+                return
+              }
               setProcessandoPDF(true)
               setMsgIA('')
               try {
