@@ -38,7 +38,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
   const [clientes, setClientes] = useState<Cliente[]>(inicial)
   const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca' | 'boleto_avulso' | 'configuracoes' | 'planos'>('dashboard')
   const [onboardingId, setOnboardingId] = useState<string | null>(null)
-  const [onboardingForm, setOnboardingForm] = useState({ admin_email: '', admin_nome: '', admin_senha: '', dominio: '' })
+  const [onboardingForm, setOnboardingForm] = useState({ admin_email: '', admin_nome: '', dominio: '' })
   const [onboardingMsg, setOnboardingMsg] = useState<string[]>([])
   const [onboardingLoading, setOnboardingLoading] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -468,7 +468,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                       <p style={{ fontSize: 11, color: `${C.dim}80`, marginTop: 4 }}>Desde {c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '—'}</p>
                     </div>
                     <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap' }}>
-                      <button onClick={() => { setOnboardingId(c.id); setOnboardingForm({ admin_email: c.contato_email || '', admin_nome: c.contato_nome || '', admin_senha: '', dominio: c.dominio || '' }); setOnboardingMsg([]) }}
+                      <button onClick={() => { setOnboardingId(c.id); setOnboardingForm({ admin_email: c.contato_email || '', admin_nome: c.contato_nome || '', dominio: c.dominio || '' }); setOnboardingMsg([]) }}
                         style={{ ...btn, display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', fontSize: 12 }}>
                         {Icons.rocket} Onboarding
                       </button>
@@ -984,12 +984,11 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
               <h2 style={{ fontSize: 16, fontWeight: 700, color: C.text }}>Onboarding Automático</h2>
               <button onClick={() => setOnboardingId(null)} style={{ background: 'none', border: 'none', color: C.dim, cursor: 'pointer', display: 'flex' }}>{Icons.close}</button>
             </div>
-            <p style={{ color: C.dim, fontSize: 13, marginBottom: 20, lineHeight: 1.5 }}>O sistema vai criar o admin, configurar os subdomínios e enviar as credenciais por WhatsApp.</p>
+            <p style={{ color: C.dim, fontSize: 13, marginBottom: 20, lineHeight: 1.5 }}>O sistema vai criar o admin, configurar os subdomínios e enviar um link de definição de senha por WhatsApp.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
                 { label: 'Nome do Admin *', key: 'admin_nome', type: 'text', placeholder: 'Nome do responsável' },
                 { label: 'E-mail do Admin *', key: 'admin_email', type: 'email', placeholder: 'admin@empresa.com.br' },
-                { label: 'Senha inicial *', key: 'admin_senha', type: 'password', placeholder: 'Mín. 8 caracteres' },
                 { label: 'Domínio (opcional)', key: 'dominio', type: 'text', placeholder: 'uni.empresa.com.br' },
               ].map(f => (
                 <div key={f.key}>
@@ -1009,7 +1008,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
             )}
             <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
               <button onClick={() => setOnboardingId(null)} style={btnGhost}>Cancelar</button>
-              <button onClick={() => rodarOnboarding(onboardingId)} disabled={onboardingLoading || !onboardingForm.admin_email || !onboardingForm.admin_senha}
+              <button onClick={() => rodarOnboarding(onboardingId)} disabled={onboardingLoading || !onboardingForm.admin_email || !onboardingForm.admin_nome}
                 style={{ ...btn, opacity: onboardingLoading ? 0.6 : 1, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {onboardingLoading ? 'Executando...' : <>{Icons.rocket} Executar Onboarding</>}
               </button>
