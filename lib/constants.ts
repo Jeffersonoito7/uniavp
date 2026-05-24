@@ -6,7 +6,7 @@ export const DOMINIO_MASTER =
 // Email padrão para envio transacional (Resend, notificações de cron, VAPID).
 // Defina EMAIL_FROM no .env para customizar sem tocar no código.
 export const EMAIL_FROM =
-  process.env.EMAIL_FROM ?? 'Universidade <noreply@autovaleprevencoes.org.br>'
+  process.env.EMAIL_FROM ?? 'Universidade <noreply@oito7digital.com.br>'
 
 // Assunto VAPID para Web Push (deve ser mailto: ou URL).
 export const VAPID_SUBJECT =
