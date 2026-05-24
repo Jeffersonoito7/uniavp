@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
-import { enviarWhatsApp } from '@/lib/whatsapp'
+import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
 import { gerarPDFContrato, DadosContratoAVP } from '@/lib/contrato-pdf'
 import { getSiteConfig } from '@/lib/site-config'
+import { getTenantId } from '@/lib/tenant'
 import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic'
@@ -58,6 +59,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Nome, WhatsApp, CNPJ MEI e sede são obrigatórios.' }, { status: 400 })
 
   const adminClient = createServiceRoleClient()
+  const host = req.headers.get('host')?.replace(/:\d+$/, '') ?? ''
+  const tenantId = await getTenantId(host)
   const wppLimpo = whatsapp.replace(/\D/g,'')
 
   // Já assinou?
@@ -134,7 +137,8 @@ export async function POST(req: NextRequest) {
     ``,
     `🔐 Hash: ${hash_contrato.slice(0,16)}...`,
   ].join('\n')
-  await enviarWhatsApp(wppLimpo, msg)
+  const instancia = await getInstanciaTenant(tenantId, adminClient)
+  await enviarWhatsApp(wppLimpo, msg, instancia)
 
   // Gera PDF em background
   gerarEEnviar(dadosGeracao, numero_registro, adminClient).catch(console.error)

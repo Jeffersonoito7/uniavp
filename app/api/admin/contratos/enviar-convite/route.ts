@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
-import { enviarWhatsApp } from '@/lib/whatsapp'
+import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
 
 export const dynamic = 'force-dynamic'
@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
   let nomePlataforma = 'Plataforma'
   try { nomePlataforma = JSON.parse(String(nomeCfg?.valor ?? '')) || nomePlataforma } catch { /**/ }
 
+  const instancia = await getInstanciaTenant(ctx.tenantId, adminClient)
   let enviados = 0
   let erros = 0
 
@@ -99,7 +100,7 @@ export async function POST(req: NextRequest) {
       `_Após assinar, você receberá o PDF aqui no WhatsApp._`,
     ].join('\n')
 
-    const ok = await enviarWhatsApp(consultor.whatsapp, msg)
+    const ok = await enviarWhatsApp(consultor.whatsapp, msg, instancia)
     if (ok) enviados++
     else erros++
 

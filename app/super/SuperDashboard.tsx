@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import ConfiguracoesCliente from '@/app/admin/configuracoes/ConfiguracoesCliente'
 
-type Cliente = { id: string; nome: string; dominio: string | null; ativo: boolean | null; contato_nome: string | null; contato_whatsapp: string | null; contato_email: string | null; observacoes: string | null; created_at: string | null; gestor_ativo: boolean | null; limite_consultores: number | null; cpf_cnpj?: string | null; sede_mei?: string | null; cnpj_mei?: string | null; mensalidade?: number | null; status_pagamento?: string | null; vencimento_dia?: number | null; pix_txid?: string | null; ultimo_pagamento?: string | null; whatsapp_instancia?: string | null }
+type Cliente = { id: string; nome: string; dominio: string | null; ativo: boolean | null; contato_nome: string | null; contato_whatsapp: string | null; contato_email: string | null; observacoes: string | null; created_at: string | null; gestor_ativo: boolean | null; limite_consultores: number | null; cpf_cnpj?: string | null; sede_mei?: string | null; cnpj_mei?: string | null; mensalidade?: number | null; status_pagamento?: string | null; vencimento_dia?: number | null; pix_txid?: string | null; ultimo_pagamento?: string | null; whatsapp_instancia?: string | null; pro_modo?: string | null; pro_valor?: number | null }
 type Stats = { totalAlunos: number; totalGestores: number; totalAdmins: number; totalModulos: number; totalAulas: number }
 type Config = { chave: string; valor: string | null; descricao?: string | null }
 type PlanoSaaS = { id: string; nome: string; descricao: string; preco: number; preco_label?: string; gestor_ativo: boolean; limite_consultores: number; destaque: boolean; ativo: boolean; recursos: string[] }
@@ -30,15 +30,17 @@ const Icons = {
   copy: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>,
   pix: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
   menu: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
+  monitor: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>,
+  alert: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
 }
 
 export default function SuperDashboard({ nome, clientes: inicial, stats, recentesAlunos, configs }: {
   nome: string; clientes: Cliente[]; stats: Stats; recentesAlunos: { nome: string; created_at: string | null; status: string }[]; configs: Config[]
 }) {
   const [clientes, setClientes] = useState<Cliente[]>(inicial)
-  const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca' | 'boleto_avulso' | 'configuracoes' | 'planos'>('dashboard')
+  const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca' | 'boleto_avulso' | 'configuracoes' | 'planos' | 'implantacao' | 'contratos' | 'monitoramento'>('dashboard')
   const [onboardingId, setOnboardingId] = useState<string | null>(null)
-  const [onboardingForm, setOnboardingForm] = useState({ admin_email: '', admin_nome: '', dominio: '' })
+  const [onboardingForm, setOnboardingForm] = useState({ admin_email: '', admin_nome: '', dominio: '', whatsapp_instancia: '' })
   const [onboardingMsg, setOnboardingMsg] = useState<string[]>([])
   const [onboardingLoading, setOnboardingLoading] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -65,6 +67,8 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
     { id: 'enterprise', nome: 'Enterprise', descricao: 'Solução completa para grandes associações', preco: 0, gestor_ativo: true, limite_consultores: 9999, destaque: false, ativo: true, recursos: ['Tudo do Profissional', 'Painel exclusivo para usuários PRO', 'Consultores ilimitados', 'Domínio próprio incluso', 'Suporte prioritário', 'Treinamento da equipe'] },
   ]
   const [planos, setPlanos] = useState<PlanoSaaS[]>(PLANOS_DEFAULT)
+  const [healthData, setHealthData] = useState<any>(null)
+  const [healthLoading, setHealthLoading] = useState(false)
   const [planosCarregados, setPlanosCarregados] = useState(false)
   const [salvandoPlanos, setSalvandoPlanos] = useState(false)
   const [msgPlanos, setMsgPlanos] = useState('')
@@ -189,6 +193,34 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
     try { const o = JSON.parse(c.observacoes || '{}'); return o.obs || '' } catch { return c.observacoes || '' }
   }
 
+  function valorPorExtenso(v: number): string {
+    if (!v || isNaN(v)) return 'valor a definir'
+    const partes = v.toFixed(2).split('.')
+    const reais = parseInt(partes[0])
+    const centavos = parseInt(partes[1])
+    const unidades = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove']
+    const dezenas = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa']
+    const centenas = ['', 'cem', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos']
+    function num(n: number): string {
+      if (n === 0) return ''
+      if (n < 20) return unidades[n]
+      if (n < 100) return dezenas[Math.floor(n / 10)] + (n % 10 ? ' e ' + unidades[n % 10] : '')
+      if (n === 100) return 'cem'
+      return centenas[Math.floor(n / 100)] + (n % 100 ? ' e ' + num(n % 100) : '')
+    }
+    let texto = ''
+    if (reais >= 1000) texto = num(Math.floor(reais / 1000)) + ' mil' + (reais % 1000 ? ' e ' + num(reais % 1000) : '')
+    else texto = num(reais)
+    texto = texto ? texto + (reais === 1 ? ' real' : ' reais') : ''
+    if (centavos > 0) texto += (texto ? ' e ' : '') + num(centavos) + (centavos === 1 ? ' centavo' : ' centavos')
+    return texto || 'zero reais'
+  }
+
+  function porExtensoMeses(m: number): string {
+    const meses = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze']
+    return meses[m] || String(m)
+  }
+
   // Shared styles
   const C = {
     bg: '#0a0a0f', card: '#0f0f17', border: '#1e1f2e', accent: '#4f46e5',
@@ -200,10 +232,24 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
   const btn: React.CSSProperties = { background: C.accent, color: '#fff', border: 'none', borderRadius: 8, padding: '10px 18px', fontWeight: 600, fontSize: 13, cursor: 'pointer', letterSpacing: '0.01em' }
   const btnGhost: React.CSSProperties = { background: 'none', border: `1px solid ${C.border}`, color: C.dim, borderRadius: 8, padding: '9px 16px', fontWeight: 500, fontSize: 13, cursor: 'pointer' }
 
+  // ── Estado para contratos ──────────────────────────────────────────
+  const contratoDefault = {
+    empresa_nome: 'Oito7 Digital Ltda', empresa_cnpj: '', empresa_endereco: '', empresa_responsavel: 'Jefferson Soares',
+    cliente_nome: '', cliente_cnpj: '', cliente_endereco: '', cliente_responsavel: '',
+    valor_implantacao: '', valor_mensalidade: '', data: new Date().toLocaleDateString('pt-BR'),
+    servicos: 'Plataforma EAD white-label com módulos, aulas, quiz, certificados, contratos digitais, ranking e gamificação, painel admin, área FREE e área PRO.',
+    prazo_meses: '12', cidade: 'Fortaleza – CE',
+  }
+  const [contratoForm, setContratoForm] = useState(contratoDefault)
+  const [contratoVer, setContratoVer] = useState(false)
+
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Icons.dashboard },
+    { id: 'monitoramento', label: 'Monitoramento', icon: Icons.monitor },
     { id: 'clientes', label: 'Clientes', icon: Icons.clients },
     { id: 'novo', label: 'Novo Cliente', icon: Icons.plus },
+    { id: 'implantacao', label: 'Guia de Implantação', icon: Icons.rocket },
+    { id: 'contratos', label: 'Contratos', icon: Icons.invoice },
     { id: 'planos', label: 'Planos / Vendas', icon: Icons.plans },
     { id: 'testar', label: 'Testar', icon: Icons.test },
     { id: 'boleto_avulso', label: 'Boleto Avulso', icon: Icons.invoice },
@@ -468,7 +514,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                       <p style={{ fontSize: 11, color: `${C.dim}80`, marginTop: 4 }}>Desde {c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '—'}</p>
                     </div>
                     <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap' }}>
-                      <button onClick={() => { setOnboardingId(c.id); setOnboardingForm({ admin_email: c.contato_email || '', admin_nome: c.contato_nome || '', dominio: c.dominio || '' }); setOnboardingMsg([]) }}
+                      <button onClick={() => { setOnboardingId(c.id); setOnboardingForm({ admin_email: c.contato_email || '', admin_nome: c.contato_nome || '', dominio: c.dominio || '', whatsapp_instancia: c.whatsapp_instancia || '' }); setOnboardingMsg([]) }}
                         style={{ ...btn, display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', fontSize: 12 }}>
                         {Icons.rocket} Onboarding
                       </button>
@@ -834,6 +880,30 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <select
+                        defaultValue={c.pro_modo || 'individual'}
+                        onChange={async e => {
+                          const modo = e.target.value
+                          await fetch('/api/super/tenant-config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: c.id, chave: 'pro_cobranca_modo', valor: modo }) })
+                          setClientes(prev => prev.map(x => x.id === c.id ? { ...x, pro_modo: modo } : x))
+                        }}
+                        style={{ background: '#080810', border: `1px solid ${C.border}`, borderRadius: 6, padding: '7px 10px', color: C.text, fontSize: 12, outline: 'none', cursor: 'pointer' }}>
+                        <option value="individual">PRO paga individual</option>
+                        <option value="incluso">PRO incluso no plano</option>
+                        <option value="ganho">PRO por rede (gratuito)</option>
+                      </select>
+                      <input
+                        type="number" placeholder="Valor PRO (R$)" min={0} step={0.01}
+                        defaultValue={c.pro_valor || ''}
+                        onBlur={async e => {
+                          const val = parseFloat(e.target.value)
+                          if (!isNaN(val) && val >= 0) {
+                            await fetch('/api/super/tenant-config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: c.id, chave: 'plano_pro_valor', valor: val }) })
+                            setClientes(prev => prev.map(x => x.id === c.id ? { ...x, pro_valor: val } : x))
+                          }
+                        }}
+                        style={{ width: 120, background: '#080810', border: `1px solid ${C.border}`, borderRadius: 6, padding: '7px 10px', color: C.text, fontSize: 13, outline: 'none' }}
+                      />
                       <input
                         type="number" placeholder="Mensalidade" min={0} step={0.01}
                         defaultValue={c.mensalidade || ''}
@@ -877,7 +947,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
             </div>
             <div style={{ marginTop: 20, ...card, padding: 16, fontSize: 12, color: C.dim }}>
               <p style={{ fontWeight: 600, color: C.text, marginBottom: 8 }}>Como funciona</p>
-              <p>Defina a mensalidade e clique fora para salvar · Clique em Gerar PIX para criar cobrança e enviar por WhatsApp</p>
+              <p>Defina a mensalidade da associação e o valor PRO e clique fora para salvar · Clique em Gerar PIX para criar cobrança e enviar por WhatsApp</p>
               <p>O sistema gera cobranças automaticamente 5 dias antes do vencimento e suspende após 3 dias de atraso</p>
               <p style={{ marginTop: 6, color: '#818cf8' }}>Endpoint do webhook: <span style={{ fontFamily: 'monospace' }}>{BASE_URL}/api/webhooks/pix</span></p>
             </div>
@@ -963,6 +1033,165 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
           </div>
         )}
 
+        {/* ── Monitoramento ── */}
+        {aba === 'monitoramento' && (
+          <div style={{ maxWidth: 860 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+              <div>
+                <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, letterSpacing: '-0.02em' }}>Monitoramento</h1>
+                <p style={{ color: C.dim, fontSize: 13 }}>Saúde da plataforma, consumo e previsões de risco</p>
+              </div>
+              <button
+                onClick={async () => {
+                  setHealthLoading(true)
+                  const res = await fetch('/api/super/health')
+                  if (res.ok) setHealthData(await res.json())
+                  setHealthLoading(false)
+                }}
+                style={{ background: `${C.accent}18`, border: `1px solid ${C.accent}30`, color: '#818cf8', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                {healthLoading ? 'Analisando...' : '↻ Atualizar'}
+              </button>
+            </div>
+
+            {!healthData && !healthLoading && (
+              <div style={{ ...card, padding: 40, textAlign: 'center' }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
+                <p style={{ color: C.text, fontWeight: 600, marginBottom: 6 }}>Análise sob demanda</p>
+                <p style={{ color: C.dim, fontSize: 13, marginBottom: 20 }}>Clique em Atualizar para rodar a análise completa da plataforma</p>
+                <button
+                  onClick={async () => {
+                    setHealthLoading(true)
+                    const res = await fetch('/api/super/health')
+                    if (res.ok) setHealthData(await res.json())
+                    setHealthLoading(false)
+                  }}
+                  style={{ background: C.accent, border: 'none', color: '#fff', borderRadius: 8, padding: '10px 24px', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>
+                  Analisar agora
+                </button>
+              </div>
+            )}
+
+            {healthLoading && (
+              <div style={{ ...card, padding: 40, textAlign: 'center', color: C.dim }}>
+                <p style={{ fontSize: 14 }}>Consultando banco de dados...</p>
+              </div>
+            )}
+
+            {healthData && !healthLoading && (() => {
+              const { metricas: m, previsao: p, alertas } = healthData
+              const nivelCor: Record<string, string> = { critico: '#f87171', aviso: '#fbbf24', info: '#818cf8' }
+              const nivelBg: Record<string, string>  = { critico: '#1a0a0a', aviso: '#3d1c00', info: '#0d0f1e' }
+              const nivelBorder: Record<string, string> = { critico: '#3f1515', aviso: '#78350f', info: '#2d3270' }
+              const nivelEmoji: Record<string, string> = { critico: '🔴', aviso: '🟡', info: '🔵' }
+
+              return (
+                <>
+                  {/* Alertas */}
+                  {alertas.length > 0 && (
+                    <div style={{ marginBottom: 24 }}>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: C.dim, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Alertas</p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {alertas.map((a: any, i: number) => (
+                          <div key={i} style={{ ...card, padding: '14px 18px', borderColor: nivelBorder[a.nivel], background: nivelBg[a.nivel] }}>
+                            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                              <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>{nivelEmoji[a.nivel]}</span>
+                              <div style={{ flex: 1 }}>
+                                <p style={{ fontWeight: 700, fontSize: 13, color: nivelCor[a.nivel], marginBottom: 3 }}>{a.titulo}</p>
+                                <p style={{ fontSize: 12, color: C.muted, marginBottom: 6 }}>{a.descricao}</p>
+                                <p style={{ fontSize: 12, color: C.dim, fontStyle: 'italic' }}>→ {a.acao}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {alertas.length === 0 && (
+                    <div style={{ ...card, padding: '14px 18px', borderColor: '#166534', background: '#052e1610', marginBottom: 24 }}>
+                      <p style={{ color: '#4ade80', fontWeight: 600, fontSize: 13 }}>✅ Nenhum alerta — plataforma saudável</p>
+                    </div>
+                  )}
+
+                  {/* Consumo dos Crons */}
+                  <div style={{ marginBottom: 24 }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: C.dim, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Consumo dos Crons (Vercel — limite 60s)</p>
+                    <div style={{ ...card, padding: '18px 20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                        <span style={{ fontSize: 13, color: C.text, fontWeight: 600 }}>Cron de Inatividade</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: p.cronRisco === 'critico' ? '#f87171' : p.cronRisco === 'aviso' ? '#fbbf24' : '#4ade80' }}>
+                          ~{Math.round(p.cronInativMs / 1000)}s / 60s ({p.cronInativPerc}%)
+                        </span>
+                      </div>
+                      <div style={{ background: '#0a0a12', borderRadius: 6, height: 10, overflow: 'hidden' }}>
+                        <div style={{
+                          height: '100%', borderRadius: 6,
+                          width: `${p.cronInativPerc}%`,
+                          background: p.cronRisco === 'critico' ? '#f87171' : p.cronRisco === 'aviso' ? '#fbbf24' : '#4ade80',
+                          transition: 'width 0.6s ease',
+                        }} />
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 12, color: C.dim }}>
+                        <span>Base: {m.totalAlunos} alunos × 50ms/aluno</span>
+                        {p.diasAteRisco != null && <span>{p.diasAteRisco > 0 ? `Risco em ~${p.diasAteRisco} dias` : 'Em risco agora'}</span>}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Métricas em cards */}
+                  <div style={{ marginBottom: 24 }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: C.dim, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Métricas Atuais</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 }}>
+                      {[
+                        { label: 'Alunos total', valor: m.totalAlunos, sub: `+${m.alunosNovosHoje} hoje`, cor: '#818cf8' },
+                        { label: 'Novos (30 dias)', valor: m.alunosUltimos30, sub: m.crescimento30 != null ? `${m.crescimento30 >= 0 ? '+' : ''}${m.crescimento30}% vs anterior` : 'Sem histórico', cor: m.crescimento30 != null && m.crescimento30 > 0 ? '#4ade80' : '#f87171' },
+                        { label: 'Crescimento/dia', valor: `${m.crescDiario}`, sub: 'média últimos 30d', cor: '#a78bfa' },
+                        { label: 'Gestores PRO ativos', valor: m.totalGestoresAtivos, sub: `${m.gestoresSuspensos} suspensos`, cor: '#22c55e' },
+                        { label: 'Vencem em 7 dias', valor: m.gestoresExpirando7dias, sub: 'painéis PRO', cor: m.gestoresExpirando7dias > 5 ? '#fbbf24' : C.dim },
+                        { label: 'Clientes ativos', valor: m.totalTenantsAtivos, sub: `${m.tenantsSemInstancia} sem WhatsApp`, cor: m.tenantsSemInstancia > 0 ? '#fbbf24' : '#22c55e' },
+                        { label: 'PIX parados +4d', valor: m.pagsPendentesAntigos, sub: 'gestores sem confirmação', cor: m.pagsPendentesAntigos > 0 ? '#f87171' : C.dim },
+                        { label: 'Cobranças SaaS', valor: m.cobrancasPendentes, sub: 'pendentes de pagamento', cor: m.cobrancasPendentes > 2 ? '#fbbf24' : C.dim },
+                      ].map((item, i) => (
+                        <div key={i} style={{ ...card, padding: '14px 16px' }}>
+                          <p style={{ fontSize: 26, fontWeight: 800, color: item.cor, marginBottom: 2 }}>{item.valor}</p>
+                          <p style={{ fontSize: 12, color: C.text, fontWeight: 600, marginBottom: 2 }}>{item.label}</p>
+                          <p style={{ fontSize: 11, color: C.dim }}>{item.sub}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Previsão de crescimento */}
+                  <div style={{ ...card, padding: '16px 20px' }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 12 }}>Previsão de crescimento</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, fontSize: 13 }}>
+                      {[
+                        { label: 'Em 30 dias', val: Math.round(m.totalAlunos + m.crescDiario * 30) },
+                        { label: 'Em 60 dias', val: Math.round(m.totalAlunos + m.crescDiario * 60) },
+                        { label: 'Em 90 dias', val: Math.round(m.totalAlunos + m.crescDiario * 90) },
+                      ].map((item, i) => {
+                        const percCron = Math.min(100, Math.round(item.val * 50 / 60000 * 100))
+                        const risco = percCron >= 85 ? '#f87171' : percCron >= 60 ? '#fbbf24' : '#4ade80'
+                        return (
+                          <div key={i} style={{ background: '#080810', borderRadius: 8, padding: '12px 14px' }}>
+                            <p style={{ fontSize: 11, color: C.dim, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{item.label}</p>
+                            <p style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 4 }}>{item.val.toLocaleString('pt-BR')}</p>
+                            <p style={{ fontSize: 11, color: risco }}>Cron: ~{percCron}% do limite</p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <p style={{ fontSize: 11, color: C.dim, marginTop: 10 }}>
+                      * Previsão linear baseada na média dos últimos 30 dias ({m.crescDiario} alunos/dia).
+                      Cron entra em risco quando ultrapassa 85% do limite de 60s da Vercel.
+                    </p>
+                  </div>
+                </>
+              )
+            })()}
+          </div>
+        )}
+
         {/* ── Configurações ── */}
         {aba === 'configuracoes' && (
           <div>
@@ -973,7 +1202,383 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
             <ConfiguracoesCliente configs={configs} isMaster={true} />
           </div>
         )}
+
+        {/* ── Guia de Implantação ── */}
+        {aba === 'implantacao' && (
+          <div style={{ maxWidth: 800 }}>
+            <div style={{ marginBottom: 28 }}>
+              <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, letterSpacing: '-0.02em' }}>Guia de Implantação</h1>
+              <p style={{ color: C.dim, fontSize: 13 }}>Passo a passo para ativar um novo cliente na plataforma</p>
+            </div>
+
+            {[
+              {
+                num: '1', titulo: 'Assinar o Contrato (antes de tudo)', cor: '#818cf8',
+                steps: [
+                  'Acesse a aba Contratos e preencha os dados do cliente',
+                  'Clique em Visualizar Contrato → Imprimir / Baixar PDF',
+                  'Envie o PDF para o cliente assinar (digital ou físico)',
+                  'Valor de implantação: emita pelo Boleto Avulso para receber no ato',
+                  'Só prossiga para o próximo passo após confirmar o contrato',
+                ],
+              },
+              {
+                num: '2', titulo: 'Criar a Instância WhatsApp (Evolution API)', cor: '#f59e0b',
+                steps: [
+                  'Acesse o painel da Evolution API (URL configurada no servidor)',
+                  'Clique em Create Instance → dê um nome curto e único (ex: assoc-xyz)',
+                  'Clique em Connect e escaneie o QR Code com o WhatsApp DO CLIENTE',
+                  'Aguarde o status Connected — agora o número do cliente está conectado',
+                  'ANOTE o nome da instância — você vai precisar nos próximos passos',
+                  '⚠️ O WhatsApp precisa estar ativo (não pode ser conta Business com restrições de API)',
+                ],
+              },
+              {
+                num: '3', titulo: 'Configurar Webhook da Instância (Evolution API)', cor: '#f59e0b',
+                steps: [
+                  'Na Evolution API, abra a instância criada e vá em Webhook',
+                  'Ative o webhook e coloque a URL:',
+                  '• URL: [URL_DA_PLATAFORMA]/api/webhooks/whatsapp',
+                  '• Ex: https://[dominio-do-cliente]/api/webhooks/whatsapp',
+                  'Ative os eventos: MESSAGES_UPSERT e CONNECTION_UPDATE',
+                  'Salve — agora mensagens recebidas chegam para a plataforma',
+                ],
+              },
+              {
+                num: '4', titulo: 'Cadastrar o Cliente no Painel', cor: '#22c55e',
+                steps: [
+                  'Acesse Clientes → Novo Cliente → Associação',
+                  'Preencha: Nome da empresa, Domínio (ex: uni.assoc.com.br), WhatsApp e E-mail do responsável',
+                  'Clique em Cadastrar — o cliente fica salvo mas ainda INATIVO',
+                  '⚠️ O domínio deve ser o domínio RAIZ do cliente (sem subdomínio)',
+                ],
+              },
+              {
+                num: '5', titulo: 'Executar o Onboarding', cor: '#818cf8',
+                steps: [
+                  'Na lista de Clientes, clique em Onboarding no card do cliente',
+                  'Preencha: Nome do Admin, E-mail do Admin, Domínio e Instância WhatsApp (ex: assoc-xyz)',
+                  'Clique em Executar Onboarding — o sistema faz TUDO automaticamente:',
+                  '• Ativa o cliente (sem PIX — pagou a implantação no contrato)',
+                  '• Cria usuário admin sem senha (acesso por link)',
+                  '• Registra os subdomínios free., pro., adm. no Vercel',
+                  '• Configura DNS no Cloudflare (se token configurado no servidor)',
+                  '• Envia link de primeiro acesso por WhatsApp para o responsável',
+                ],
+              },
+              {
+                num: '6', titulo: 'Configurar DNS (se Cloudflare não for automático)', cor: '#06b6d4',
+                steps: [
+                  'Se o cliente tem o domínio em outro provedor (Registro.br, GoDaddy, etc.):',
+                  'O cliente acessa o painel DNS e cria 3 registros CNAME:',
+                ],
+                tabela: [
+                  { nome: 'adm.dominio.com.br', tipo: 'CNAME', destino: 'cname.vercel-dns.com' },
+                  { nome: 'free.dominio.com.br', tipo: 'CNAME', destino: 'cname.vercel-dns.com' },
+                  { nome: 'pro.dominio.com.br', tipo: 'CNAME', destino: 'cname.vercel-dns.com' },
+                ],
+                stepsPos: [
+                  'Se o domínio está no Cloudflare com token configurado no servidor → DNS já foi criado automaticamente no passo 5',
+                  'Propagação DNS: normalmente minutos, pode levar até 48h',
+                  'Teste: acesse adm.dominiodocliente.com.br — deve abrir a plataforma',
+                ],
+              },
+              {
+                num: '7', titulo: 'Configurar Cobrança no Painel Oito7', cor: '#a78bfa',
+                steps: [
+                  'Acesse a aba Cobranças neste painel',
+                  'No card do cliente, configure o Modo PRO:',
+                  '• PRO paga individual → cada PRO paga direto para você (Oito7)',
+                  '• PRO incluso no plano → associação paga tudo, PROs são gratuitos',
+                  '• PRO por rede (gratuito) → PRO ganha acesso ao acumular 20+ indicações',
+                  'Se modo individual: defina o Valor PRO (R$) — preço mensal por painel PRO',
+                  'Defina a Mensalidade da associação (mensalidade que a associação paga para você)',
+                  'Clique fora dos campos para salvar — aparece automaticamente',
+                ],
+              },
+              {
+                num: '8', titulo: 'Registrar Webhook do PIX (EFI Bank)', cor: '#22c55e',
+                steps: [
+                  'Acesse a aba Cobranças neste painel',
+                  'Clique em Registrar Webhook Efí — configura notificações automáticas de PIX',
+                  'Só precisa fazer isso UMA VEZ — vale para todos os clientes',
+                  'A partir daí o sistema confirma PIX automaticamente e ativa/renova planos',
+                ],
+              },
+              {
+                num: '9', titulo: 'Configurar a Plataforma (o cliente faz)', cor: '#f472b6',
+                steps: [
+                  'O cliente recebeu o link de primeiro acesso por WhatsApp',
+                  'Ele acessa adm.[domínio]/admin e define a senha pelo link',
+                  'No painel Admin, ele configura: Logo, Cores, Nome da plataforma',
+                  'Cria os Módulos e Aulas do treinamento',
+                  'Você pode ajudar durante a implantação se o plano incluir suporte',
+                ],
+              },
+              {
+                num: '10', titulo: 'Testar Tudo Antes de Entregar', cor: '#f87171',
+                steps: [
+                  'Acesse a aba Testar neste painel → verifique os links do cliente',
+                  'Abra free.[domínio]/captacao e faça um cadastro teste',
+                  '→ Deve chegar WhatsApp de boas-vindas pelo número do CLIENTE (não pela Oito7)',
+                  'Acesse pro.[domínio] e tente ativar um painel PRO',
+                  '→ Deve gerar PIX com o valor configurado e ativar após pagamento',
+                  'Confirme que o admin consegue acessar adm.[domínio]/admin',
+                  '✅ Só entregue ao cliente depois de passar por todos esses testes',
+                ],
+              },
+            ].map(passo => (
+              <div key={passo.num} style={{ ...card, padding: '20px 24px', marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                  <span style={{ width: 28, height: 28, background: `${passo.cor}20`, border: `1px solid ${passo.cor}40`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: passo.cor, flexShrink: 0 }}>{passo.num}</span>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: C.text, margin: 0 }}>{passo.titulo}</h2>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: 40 }}>
+                  {passo.steps.map((s, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 8, fontSize: 13, color: C.muted, lineHeight: 1.6 }}>
+                      {!s.startsWith('•') && <span style={{ color: passo.cor, flexShrink: 0, marginTop: 2 }}>›</span>}
+                      <span style={{ color: s.startsWith('•') ? C.dim : C.muted }}>{s.replace(/\*\*(.*?)\*\*/g, '$1').replace(/`(.*?)`/g, '$1')}</span>
+                    </div>
+                  ))}
+                  {(passo as any).tabela && (
+                    <div style={{ background: '#080810', borderRadius: 8, padding: '10px 14px', marginTop: 6, fontFamily: 'monospace', fontSize: 12 }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 1fr', gap: '4px 16px', color: C.dim, fontWeight: 700, marginBottom: 6, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        <span>Subdomínio</span><span>Tipo</span><span>Destino</span>
+                      </div>
+                      {(passo as any).tabela.map((r: any) => (
+                        <div key={r.nome} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 1fr', gap: '4px 16px', color: C.text, padding: '4px 0', borderTop: `1px solid ${C.border}` }}>
+                          <span style={{ color: '#22c55e' }}>{r.nome}</span>
+                          <span style={{ color: C.dim }}>{r.tipo}</span>
+                          <span style={{ color: '#818cf8' }}>{r.destino}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {(passo as any).stepsPos?.map((s: string, i: number) => (
+                    <div key={`pos${i}`} style={{ display: 'flex', gap: 8, fontSize: 13, color: C.muted, lineHeight: 1.6 }}>
+                      <span style={{ color: passo.cor, flexShrink: 0, marginTop: 2 }}>›</span>
+                      <span>{s.replace(/`(.*?)`/g, '$1')}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <div style={{ ...card, padding: '16px 20px', borderColor: '#166534', background: '#052e1610', marginTop: 8 }}>
+              <p style={{ fontWeight: 600, fontSize: 13, color: '#4ade80', marginBottom: 8 }}>Checklist rápido</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, fontSize: 12, color: C.dim }}>
+                {['Contrato assinado', 'Instância WhatsApp criada e conectada', 'Webhook da instância configurado', 'Cliente cadastrado no painel', 'Onboarding executado (cliente ativado)', 'DNS CNAME configurado (3 registros)', 'Modo de cobrança PRO definido', 'Mensalidade e valor PRO configurados', 'Webhook EFI Bank registrado', 'Teste de cadastro FREE realizado', 'Teste de ativação PRO realizado', 'Admin do cliente acessou o painel'].map(item => (
+                  <div key={item} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <span style={{ color: '#4ade80' }}>{Icons.check}</span>
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Contratos ── */}
+        {aba === 'contratos' && (
+          <div>
+            <div style={{ marginBottom: 24 }}>
+              <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, letterSpacing: '-0.02em' }}>Contratos</h1>
+              <p style={{ color: C.dim, fontSize: 13 }}>Gere contratos de prestação de serviços com o cabeçalho da Oito7 Digital</p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
+
+              {/* Formulário */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ ...card, padding: '20px 24px' }}>
+                  <p style={{ fontWeight: 600, fontSize: 11, color: C.muted, marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Empresa Contratante (Oito7 Digital)</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div><label style={lbl}>Razão Social *</label><input style={inp} value={contratoForm.empresa_nome} onChange={e => setContratoForm(p => ({ ...p, empresa_nome: e.target.value }))} /></div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                      <div><label style={lbl}>CNPJ</label><input style={inp} value={contratoForm.empresa_cnpj} onChange={e => setContratoForm(p => ({ ...p, empresa_cnpj: e.target.value }))} placeholder="00.000.000/0001-00" /></div>
+                      <div><label style={lbl}>Responsável</label><input style={inp} value={contratoForm.empresa_responsavel} onChange={e => setContratoForm(p => ({ ...p, empresa_responsavel: e.target.value }))} /></div>
+                    </div>
+                    <div><label style={lbl}>Endereço</label><input style={inp} value={contratoForm.empresa_endereco} onChange={e => setContratoForm(p => ({ ...p, empresa_endereco: e.target.value }))} placeholder="Rua, nº, Bairro, Cidade – UF" /></div>
+                  </div>
+                </div>
+
+                <div style={{ ...card, padding: '20px 24px' }}>
+                  <p style={{ fontWeight: 600, fontSize: 11, color: C.muted, marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Empresa Contratada (Cliente)</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div><label style={lbl}>Selecionar cliente existente</label>
+                      <select style={{ ...inp, cursor: 'pointer' }}
+                        onChange={e => {
+                          const c = clientes.find(x => x.id === e.target.value)
+                          if (c) setContratoForm(p => ({ ...p, cliente_nome: c.nome, cliente_responsavel: c.contato_nome || '' }))
+                        }}>
+                        <option value="">— selecione ou preencha abaixo —</option>
+                        {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                      </select>
+                    </div>
+                    <div><label style={lbl}>Razão Social / Nome *</label><input style={inp} value={contratoForm.cliente_nome} onChange={e => setContratoForm(p => ({ ...p, cliente_nome: e.target.value }))} placeholder="Nome da associação ou empresa" /></div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                      <div><label style={lbl}>CNPJ / CPF</label><input style={inp} value={contratoForm.cliente_cnpj} onChange={e => setContratoForm(p => ({ ...p, cliente_cnpj: e.target.value }))} /></div>
+                      <div><label style={lbl}>Responsável</label><input style={inp} value={contratoForm.cliente_responsavel} onChange={e => setContratoForm(p => ({ ...p, cliente_responsavel: e.target.value }))} /></div>
+                    </div>
+                    <div><label style={lbl}>Endereço</label><input style={inp} value={contratoForm.cliente_endereco} onChange={e => setContratoForm(p => ({ ...p, cliente_endereco: e.target.value }))} placeholder="Rua, nº, Bairro, Cidade – UF" /></div>
+                  </div>
+                </div>
+
+                <div style={{ ...card, padding: '20px 24px' }}>
+                  <p style={{ fontWeight: 600, fontSize: 11, color: C.muted, marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Objeto e Valores</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div><label style={lbl}>Serviços contratados</label><textarea style={{ ...inp, minHeight: 80, resize: 'vertical' } as React.CSSProperties} value={contratoForm.servicos} onChange={e => setContratoForm(p => ({ ...p, servicos: e.target.value }))} /></div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                      <div><label style={lbl}>Valor de implantação (R$)</label><input style={inp} type="number" min="0" value={contratoForm.valor_implantacao} onChange={e => setContratoForm(p => ({ ...p, valor_implantacao: e.target.value }))} placeholder="0,00" /></div>
+                      <div><label style={lbl}>Mensalidade (R$)</label><input style={inp} type="number" min="0" value={contratoForm.valor_mensalidade} onChange={e => setContratoForm(p => ({ ...p, valor_mensalidade: e.target.value }))} placeholder="0,00" /></div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                      <div><label style={lbl}>Prazo (meses)</label><input style={inp} type="number" min="1" value={contratoForm.prazo_meses} onChange={e => setContratoForm(p => ({ ...p, prazo_meses: e.target.value }))} /></div>
+                      <div><label style={lbl}>Data do contrato</label><input style={inp} value={contratoForm.data} onChange={e => setContratoForm(p => ({ ...p, data: e.target.value }))} /></div>
+                      <div><label style={lbl}>Cidade/UF</label><input style={inp} value={contratoForm.cidade} onChange={e => setContratoForm(p => ({ ...p, cidade: e.target.value }))} /></div>
+                    </div>
+                  </div>
+                </div>
+
+                <button onClick={() => setContratoVer(true)} disabled={!contratoForm.empresa_nome || !contratoForm.cliente_nome}
+                  style={{ ...btn, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', opacity: !contratoForm.empresa_nome || !contratoForm.cliente_nome ? 0.5 : 1 }}>
+                  {Icons.invoice} Visualizar Contrato
+                </button>
+              </div>
+
+              {/* Preview resumido */}
+              <div style={{ ...card, padding: '24px' }}>
+                <p style={{ fontWeight: 600, fontSize: 13, color: C.text, marginBottom: 12 }}>Pré-visualização</p>
+                <div style={{ background: '#080810', borderRadius: 8, padding: '20px', fontFamily: 'Georgia, serif', fontSize: 13, color: C.muted, lineHeight: 1.8 }}>
+                  <p style={{ textAlign: 'center', fontWeight: 700, fontSize: 14, color: C.text, marginBottom: 4 }}>CONTRATO DE PRESTAÇÃO DE SERVIÇOS</p>
+                  <p style={{ textAlign: 'center', fontSize: 12, color: C.dim, marginBottom: 16 }}>{contratoForm.cidade}, {contratoForm.data}</p>
+                  <p><strong style={{ color: C.text }}>CONTRATANTE:</strong> {contratoForm.empresa_nome || '—'}</p>
+                  {contratoForm.empresa_cnpj && <p style={{ fontSize: 12, color: C.dim }}>CNPJ: {contratoForm.empresa_cnpj}</p>}
+                  <p style={{ marginTop: 8 }}><strong style={{ color: C.text }}>CONTRATADA:</strong> {contratoForm.cliente_nome || '—'}</p>
+                  {contratoForm.cliente_cnpj && <p style={{ fontSize: 12, color: C.dim }}>CNPJ/CPF: {contratoForm.cliente_cnpj}</p>}
+                  <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12 }}>
+                    <p><strong style={{ color: C.text }}>Objeto:</strong> {contratoForm.servicos.substring(0, 100)}...</p>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12, background: `${C.border}40`, borderRadius: 6, padding: '10px' }}>
+                    <div>
+                      <p style={{ fontSize: 11, color: C.dim, marginBottom: 2 }}>Implantação</p>
+                      <p style={{ fontWeight: 700, color: C.text }}>R$ {Number(contratoForm.valor_implantacao || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 11, color: C.dim, marginBottom: 2 }}>Mensalidade</p>
+                      <p style={{ fontWeight: 700, color: C.text }}>R$ {Number(contratoForm.valor_mensalidade || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês</p>
+                    </div>
+                  </div>
+                  <p style={{ marginTop: 12, fontSize: 12, color: C.dim }}>Prazo: {contratoForm.prazo_meses} meses</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
+
+      {/* ── Modal Contrato ── */}
+      {contratoVer && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 1000, padding: '24px 16px', overflowY: 'auto' }}>
+          <div style={{ background: '#fff', color: '#111', borderRadius: 8, width: '100%', maxWidth: 740, padding: '48px 56px', fontFamily: 'Georgia, Times, serif', lineHeight: 1.8, fontSize: 13 }}>
+            {/* Header */}
+            <div style={{ textAlign: 'center', marginBottom: 32, borderBottom: '2px solid #111', paddingBottom: 16 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#555', marginBottom: 6 }}>CONTRATO DE PRESTAÇÃO DE SERVIÇOS</p>
+              <p style={{ fontSize: 18, fontWeight: 700 }}>{contratoForm.empresa_nome}</p>
+              {contratoForm.empresa_cnpj && <p style={{ fontSize: 12, color: '#555' }}>CNPJ: {contratoForm.empresa_cnpj}</p>}
+              {contratoForm.empresa_endereco && <p style={{ fontSize: 12, color: '#555' }}>{contratoForm.empresa_endereco}</p>}
+            </div>
+
+            {/* Partes */}
+            <p style={{ marginBottom: 16 }}>
+              <strong>CONTRATANTE:</strong> {contratoForm.empresa_nome}{contratoForm.empresa_cnpj ? `, inscrita no CNPJ sob nº ${contratoForm.empresa_cnpj}` : ''}{contratoForm.empresa_endereco ? `, com sede em ${contratoForm.empresa_endereco}` : ''}{contratoForm.empresa_responsavel ? `, neste ato representada por ${contratoForm.empresa_responsavel}` : ''}, doravante denominada <strong>CONTRATANTE</strong>.
+            </p>
+            <p style={{ marginBottom: 24 }}>
+              <strong>CONTRATADA:</strong> {contratoForm.cliente_nome}{contratoForm.cliente_cnpj ? `, inscrita no CNPJ/CPF sob nº ${contratoForm.cliente_cnpj}` : ''}{contratoForm.cliente_endereco ? `, com sede em ${contratoForm.cliente_endereco}` : ''}{contratoForm.cliente_responsavel ? `, neste ato representada por ${contratoForm.cliente_responsavel}` : ''}, doravante denominada <strong>CONTRATADA</strong>.
+            </p>
+
+            {/* Cláusulas */}
+            {[
+              {
+                titulo: 'CLÁUSULA 1ª – DO OBJETO',
+                texto: `A CONTRATANTE obriga-se a disponibilizar à CONTRATADA acesso à plataforma EAD white-label, compreendendo os seguintes serviços: ${contratoForm.servicos}`,
+              },
+              {
+                titulo: 'CLÁUSULA 2ª – DA REMUNERAÇÃO',
+                texto: (() => {
+                  const temImpl = contratoForm.valor_implantacao && Number(contratoForm.valor_implantacao) > 0
+                  const temMens = contratoForm.valor_mensalidade && Number(contratoForm.valor_mensalidade) > 0
+                  const valImpl = Number(contratoForm.valor_implantacao).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+                  const valMens = Number(contratoForm.valor_mensalidade).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+                  const linhas: string[] = []
+                  if (temImpl) linhas.push(`2.1 A CONTRATADA pagará à CONTRATANTE a título de implantação o valor único de R$ ${valImpl} (${valorPorExtenso(Number(contratoForm.valor_implantacao))}), a ser quitado no ato da assinatura deste contrato.`)
+                  if (temMens) linhas.push(`${temImpl ? '2.2' : '2.1'} A partir do início da operação, a CONTRATADA pagará mensalidade no valor de R$ ${valMens} (${valorPorExtenso(Number(contratoForm.valor_mensalidade))} mensais), com vencimento todo dia 10 do mês subsequente.`)
+                  return linhas.join('\n\n') || 'Valores a serem definidos conforme proposta comercial.'
+                })(),
+              },
+              {
+                titulo: 'CLÁUSULA 3ª – DO PRAZO',
+                texto: `O presente contrato tem vigência de ${contratoForm.prazo_meses} (${porExtensoMeses(Number(contratoForm.prazo_meses))}) meses, a contar da data de assinatura, podendo ser renovado automaticamente por igual período, salvo manifestação contrária de qualquer das partes com 30 dias de antecedência.`,
+              },
+              {
+                titulo: 'CLÁUSULA 4ª – DAS OBRIGAÇÕES DA CONTRATANTE',
+                texto: '4.1 Disponibilizar a plataforma em funcionamento contínuo, com disponibilidade mínima de 99% mensal.\n4.2 Prestar suporte técnico para o painel administrativo.\n4.3 Realizar atualizações e melhorias na plataforma sem custo adicional.',
+              },
+              {
+                titulo: 'CLÁUSULA 5ª – DAS OBRIGAÇÕES DA CONTRATADA',
+                texto: '5.1 Efetuar os pagamentos nos prazos estabelecidos.\n5.2 Configurar os registros DNS do domínio próprio, conforme orientação técnica fornecida.\n5.3 Responsabilizar-se pelo conteúdo publicado na plataforma (módulos, aulas, materiais).\n5.4 Não utilizar a plataforma para fins ilegais ou em desacordo com a legislação brasileira.',
+              },
+              {
+                titulo: 'CLÁUSULA 6ª – DA RESCISÃO',
+                texto: 'O presente contrato poderá ser rescindido por qualquer das partes mediante aviso prévio de 30 dias. Em caso de inadimplência superior a 30 dias, a CONTRATANTE poderá suspender o acesso imediatamente, sem prejuízo da cobrança dos valores devidos.',
+              },
+              {
+                titulo: 'CLÁUSULA 7ª – DO FORO',
+                texto: `Fica eleito o foro da Comarca de ${contratoForm.cidade.split('–')[0].trim()}, para dirimir quaisquer litígios oriundos deste instrumento, com renúncia a qualquer outro, por mais privilegiado que seja.`,
+              },
+            ].map(c => (
+              <div key={c.titulo} style={{ marginBottom: 20 }}>
+                <p style={{ fontWeight: 700, marginBottom: 6 }}>{c.titulo}</p>
+                <p style={{ whiteSpace: 'pre-line' }}>{c.texto}</p>
+              </div>
+            ))}
+
+            {/* Local e Data */}
+            <p style={{ marginTop: 32, textAlign: 'center' }}>{contratoForm.cidade}, {contratoForm.data}.</p>
+
+            {/* Assinaturas */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, marginTop: 48 }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ borderTop: '1px solid #333', paddingTop: 8 }}>
+                  <p style={{ fontWeight: 700 }}>{contratoForm.empresa_nome}</p>
+                  {contratoForm.empresa_responsavel && <p style={{ fontSize: 12, color: '#555' }}>{contratoForm.empresa_responsavel}</p>}
+                  <p style={{ fontSize: 12, color: '#555' }}>CONTRATANTE</p>
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ borderTop: '1px solid #333', paddingTop: 8 }}>
+                  <p style={{ fontWeight: 700 }}>{contratoForm.cliente_nome || 'CONTRATADA'}</p>
+                  {contratoForm.cliente_responsavel && <p style={{ fontSize: 12, color: '#555' }}>{contratoForm.cliente_responsavel}</p>}
+                  <p style={{ fontSize: 12, color: '#555' }}>CONTRATADA</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Botões (não imprimem) */}
+            <div className="no-print" style={{ display: 'flex', gap: 10, marginTop: 32, justifyContent: 'flex-end' }}>
+              <button onClick={() => setContratoVer(false)}
+                style={{ background: '#f1f5f9', border: 'none', borderRadius: 8, padding: '10px 18px', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 13, cursor: 'pointer', color: '#333' }}>
+                Fechar
+              </button>
+              <button onClick={() => window.print()}
+                style={{ background: '#4f46e5', border: 'none', borderRadius: 8, padding: '10px 18px', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 13, cursor: 'pointer', color: '#fff' }}>
+                Imprimir / Baixar PDF
+              </button>
+            </div>
+          </div>
+          <style>{`@media print { .no-print { display: none !important; } body { background: white; } }`}</style>
+        </div>
+      )}
 
       {/* ── Modal Onboarding ── */}
       {onboardingId && (
@@ -984,12 +1589,13 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
               <h2 style={{ fontSize: 16, fontWeight: 700, color: C.text }}>Onboarding Automático</h2>
               <button onClick={() => setOnboardingId(null)} style={{ background: 'none', border: 'none', color: C.dim, cursor: 'pointer', display: 'flex' }}>{Icons.close}</button>
             </div>
-            <p style={{ color: C.dim, fontSize: 13, marginBottom: 20, lineHeight: 1.5 }}>O sistema vai criar o admin, configurar os subdomínios e enviar um link de definição de senha por WhatsApp.</p>
+            <p style={{ color: C.dim, fontSize: 13, marginBottom: 20, lineHeight: 1.5 }}>Ativa o cliente, cria o admin, registra subdomínios no Vercel e envia link de senha por WhatsApp.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
                 { label: 'Nome do Admin *', key: 'admin_nome', type: 'text', placeholder: 'Nome do responsável' },
                 { label: 'E-mail do Admin *', key: 'admin_email', type: 'email', placeholder: 'admin@empresa.com.br' },
                 { label: 'Domínio (opcional)', key: 'dominio', type: 'text', placeholder: 'uni.empresa.com.br' },
+                { label: 'Instância WhatsApp (Evolution API)', key: 'whatsapp_instancia', type: 'text', placeholder: 'ex: assoc-xyz' },
               ].map(f => (
                 <div key={f.key}>
                   <label style={lbl}>{f.label}</label>
@@ -998,6 +1604,10 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                     style={inp} />
                 </div>
               ))}
+              <div style={{ background: '#080810', borderRadius: 8, padding: '10px 12px', fontSize: 11, color: C.dim, lineHeight: 1.7 }}>
+                <p style={{ color: C.muted, fontWeight: 600, marginBottom: 4 }}>Instância WhatsApp</p>
+                <p>Crie a instância em <span style={{ color: '#818cf8' }}>evolution.oito7digital.com.br</span>, conecte pelo QR Code e informe o nome aqui. As notificações do cliente sairão pelo número dele.</p>
+              </div>
             </div>
             {onboardingMsg.length > 0 && (
               <div style={{ marginTop: 16, background: '#080810', borderRadius: 8, padding: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>

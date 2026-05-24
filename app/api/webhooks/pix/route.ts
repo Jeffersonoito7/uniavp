@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
-import { enviarWhatsApp } from '@/lib/whatsapp'
+import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
 import { consultarPagamento } from '@/lib/efi'
 
@@ -183,7 +183,8 @@ export async function POST(req: NextRequest) {
             const msg = eraUpgrade
               ? `🚀 *Bem-vindo ao Plano PRO!*\n\nOlá, ${gestor.nome}!\n\n✅ Pagamento de *${valor}* confirmado!\n\nSua conta PRO está ativa por 30 dias. Acesse agora seu painel:\n👉 ${appUrl}/pro\n\n_Use o mesmo e-mail e senha que você usava no plano FREE._`
               : `✅ *Pagamento confirmado!*\n\nOlá, ${gestor.nome}!\nValor: *${valor}*\n\nSeu acesso PRO está ativo por mais 30 dias. 🎉\n👉 ${appUrl}/pro`
-            await enviarWhatsApp(gestor.whatsapp, msg)
+            const instancia = await getInstanciaTenant(gestor.tenant_id, adminClient)
+            await enviarWhatsApp(gestor.whatsapp, msg, instancia)
           }
         }
       }

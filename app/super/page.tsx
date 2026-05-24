@@ -19,7 +19,7 @@ export default async function SuperPage() {
   if (!sa) redirect('/super/login')
 
   const [
-    { data: clientes },
+    { data: clientesRaw },
     { count: totalAlunos },
     { count: totalGestores },
     { count: totalAdmins },
@@ -27,6 +27,7 @@ export default async function SuperPage() {
     { count: totalAulas },
     { data: recentesAlunos },
     { data: configs },
+    { data: tenantCfgs },
   ] = await Promise.all([
     adminClient.from('clientes').select('*').order('created_at'),
     adminClient.from('alunos').select('*', { count: 'exact', head: true }),
@@ -36,12 +37,26 @@ export default async function SuperPage() {
     adminClient.from('aulas').select('*', { count: 'exact', head: true }),
     adminClient.from('alunos').select('nome, created_at, status').order('created_at', { ascending: false }).limit(5),
     adminClient.from('configuracoes').select('chave, valor, descricao').order('chave'),
+    adminClient.from('configuracoes').select('tenant_id, chave, valor').in('chave', ['pro_cobranca_modo', 'plano_pro_valor']),
   ])
+
+  // Mescla configs por tenant nos clientes
+  const cfgMap: Record<string, Record<string, string>> = {}
+  for (const row of (tenantCfgs ?? [])) {
+    if (!row.tenant_id) continue
+    if (!cfgMap[row.tenant_id]) cfgMap[row.tenant_id] = {}
+    cfgMap[row.tenant_id][row.chave] = String(row.valor ?? '').replace(/"/g, '')
+  }
+  const clientes = (clientesRaw ?? []).map(c => ({
+    ...c,
+    pro_modo: cfgMap[c.id]?.['pro_cobranca_modo'] ?? null,
+    pro_valor: cfgMap[c.id]?.['plano_pro_valor'] ? parseFloat(cfgMap[c.id]['plano_pro_valor']) : null,
+  }))
 
   return (
     <SuperDashboard
       nome={sa.nome}
-      clientes={clientes ?? []}
+      clientes={clientes}
       stats={{ totalAlunos: totalAlunos ?? 0, totalGestores: totalGestores ?? 0, totalAdmins: totalAdmins ?? 0, totalModulos: totalModulos ?? 0, totalAulas: totalAulas ?? 0 }}
       recentesAlunos={recentesAlunos ?? []}
       configs={(configs ?? []) as any}

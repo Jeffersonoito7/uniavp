@@ -14,11 +14,17 @@ export async function POST(req: NextRequest) {
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!sa) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
-  const { cliente_id, admin_email, admin_nome, dominio } = await req.json()
+  const { cliente_id, admin_email, admin_nome, dominio, whatsapp_instancia } = await req.json()
   if (!cliente_id || !admin_email || !admin_nome)
     return NextResponse.json({ error: 'cliente_id, admin_email e admin_nome são obrigatórios' }, { status: 400 })
 
   const resultados: string[] = []
+
+  // ── 0. Ativar o cliente (implantação manual = cliente ativo sem PIX) ──
+  await adminClient.from('clientes')
+    .update({ ativo: true, status_pagamento: 'em_dia', ultimo_pagamento: new Date().toISOString().split('T')[0] })
+    .eq('id', cliente_id)
+  resultados.push('✅ Cliente ativado na plataforma')
 
   // ── 1. Criar admin sem senha — acesso via magic link ─────────────
   const { data: authUser, error: authErr } = await adminClient.auth.admin.createUser({
@@ -28,13 +34,14 @@ export async function POST(req: NextRequest) {
   resultados.push(`✅ Auth criado: ${admin_email}`)
 
   // ── 2. Inserir admin na tabela admins (com rollback se falhar) ───
+  const instanciaValida = whatsapp_instancia?.trim() || null
   const { error: adminErr } = await adminClient.from('admins')
-    .insert({ user_id: authUser.user!.id, nome: admin_nome, email: admin_email, ativo: true, role: 'admin', tenant_id: cliente_id })
+    .insert({ user_id: authUser.user!.id, nome: admin_nome, email: admin_email, ativo: true, role: 'admin', tenant_id: cliente_id, whatsapp_instancia: instanciaValida })
   if (adminErr) {
     await adminClient.auth.admin.deleteUser(authUser.user!.id)
     return NextResponse.json({ error: `Falha ao criar admin (auth revertido): ${adminErr.message}` }, { status: 500 })
   }
-  resultados.push('✅ Admin registrado no banco')
+  resultados.push(`✅ Admin registrado${instanciaValida ? ` — instância WhatsApp: ${instanciaValida}` : ''}`)
 
   // ── 2b. Registrar domínios do tenant ─────────────────────────
   if (dominio) {

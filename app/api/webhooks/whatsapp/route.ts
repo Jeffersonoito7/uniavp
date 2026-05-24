@@ -40,8 +40,9 @@ export async function POST(req: NextRequest) {
     // Se retornou null, não é PRO — ignora
     if (!resposta) return NextResponse.json({ ok: true })
 
-    // Envia resposta
-    await enviarWhatsApp(numero, resposta)
+    // Envia resposta pela mesma instância que recebeu a mensagem
+    const instancia: string | null = body?.instance ?? null
+    await enviarWhatsApp(numero, resposta, instancia)
 
     return NextResponse.json({ ok: true })
   } catch {

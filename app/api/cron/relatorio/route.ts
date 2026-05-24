@@ -126,7 +126,7 @@ export async function GET(req: NextRequest) {
 
     // WhatsApp
     const appUrlGestor = await getAppUrl(g.tenant_id)
-    const instancia = await getInstanciaGestorPorNome(g.nome, admin)
+    const instancia = await getInstanciaGestorPorNome(g.nome, admin, g.tenant_id)
     const msg = `📊 *Relatório Semanal — ${g.nome}*\n\n` +
       `👥 Total: *${stats.total}* consultores\n` +
       `✅ Ativos: *${stats.ativos}*\n` +

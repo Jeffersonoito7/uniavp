@@ -14,7 +14,7 @@ export default async function GestorPage() {
   const adminClient = createServiceRoleClient()
 
   const { data: gestor } = await adminClient.from('gestores')
-    .select('id, nome, email, whatsapp, foto_perfil, status_assinatura, trial_expira_em, plano_vencimento')
+    .select('id, nome, email, whatsapp, foto_perfil, status_assinatura, trial_expira_em, plano_vencimento, tenant_id')
     .eq('user_id', user.id)
     .eq('ativo', true)
     .maybeSingle()
@@ -118,7 +118,7 @@ export default async function GestorPage() {
       .eq('indicado_por_gestor_id', gestor.id)
       .eq('ativo', true)
       .eq('status_assinatura', 'ativo'),
-    getLimitePROGratuito(adminClient),
+    getLimitePROGratuito(adminClient, gestor.tenant_id),
   ])
 
   return (

@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import { enviarWhatsApp, getInstanciaGestorPorNome } from '@/lib/whatsapp'
+import { enviarWhatsApp, getInstanciaGestorPorNome, getInstanciaTenant } from '@/lib/whatsapp'
 import { getSiteConfig } from '@/lib/site-config'
+import { getTenantId } from '@/lib/tenant'
 import { z } from 'zod'
 
 export const dynamic = 'force-dynamic'
 
-async function buscarInstanciaAdmin(adminClient: ReturnType<typeof createServiceRoleClient>) {
-  const { data } = await adminClient.from('admins')
-    .select('whatsapp_instancia').eq('ativo', true).not('whatsapp_instancia', 'is', null).limit(1).maybeSingle()
+async function buscarInstanciaAdmin(adminClient: ReturnType<typeof createServiceRoleClient>, tenantId: string | null) {
+  let q = adminClient.from('admins')
+    .select('whatsapp_instancia').eq('ativo', true).not('whatsapp_instancia', 'is', null).limit(1)
+  if (tenantId) q = q.eq('tenant_id', tenantId)
+  const { data } = await q.maybeSingle()
   return data?.whatsapp_instancia ?? null
 }
 
@@ -65,6 +68,10 @@ export async function POST(req: NextRequest) {
       .select('nome').eq('whatsapp', wppIndicador).eq('ativo', true).maybeSingle()
     if (gestorEncontrado) gestor_nome = gestorEncontrado.nome
   }
+
+  // Resolve tenant antes de criar o aluno
+  const host = req.headers.get('host') || ''
+  const tenantId = await getTenantId(host)
 
   const { data: authUser, error: authErr } = await adminClient.auth.admin.createUser({
     email: emailLimpo,
@@ -124,6 +131,7 @@ export async function POST(req: NextRequest) {
       indicador_id: indicadorId,
       gestor_nome: gestor_nome.trim(),
       gestor_whatsapp: gestor_whatsapp.replace(/\D/g, ''),
+      tenant_id: tenantId,
     })
     .select('*')
     .single()
@@ -139,13 +147,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ erro }, { status: 400 })
   }
 
-  const siteConfig = await getSiteConfig(req.headers.get('host') ?? '')
+  const siteConfig = await getSiteConfig(host)
   const nomePlataforma = siteConfig.nome || 'Universidade'
 
-  const host = req.headers.get('host') || ''
   const proto = 'https'
   // Nunca usar domínio admin (adm.) como URL da plataforma do aluno
-  const hostLimpo = host.startsWith('adm.') ? host.replace(/^adm\./, 'uniavp.') : host
+  const hostLimpo = host.startsWith('adm.') ? host.replace(/^adm\./, 'free.') : host
   const appUrl = siteConfig.dominioCustomizado
     ? `${proto}://${siteConfig.dominioCustomizado}`
     : `${proto}://${hostLimpo}`
@@ -160,8 +167,11 @@ export async function POST(req: NextRequest) {
   const ddi = whatsappLimpo.startsWith('55') ? whatsappLimpo : `55${whatsappLimpo}`
   const wppLink = `https://wa.me/${ddi}`
 
+  // Instância WhatsApp do tenant (usada para mensagens sem remetente específico)
+  const instanciaTenant = await getInstanciaTenant(tenantId, adminClient)
+
   // Notifica o gestor (PRO) com link clicável
-  const instanciaGestor = await getInstanciaGestorPorNome(gestor_nome, adminClient)
+  const instanciaGestor = await getInstanciaGestorPorNome(gestor_nome, adminClient, tenantId)
   if (gestor_whatsapp.replace(/\D/g, '')) {
     await enviarWhatsApp(
       gestor_whatsapp,
@@ -175,7 +185,7 @@ export async function POST(req: NextRequest) {
     const indicadorWpp = indicador_whatsapp.replace(/\D/g, '')
     const gestorWpp = gestor_whatsapp.replace(/\D/g, '')
     if (indicadorWpp && indicadorWpp !== gestorWpp) {
-      const instanciaIndicador = await buscarInstanciaAdmin(adminClient)
+      const instanciaIndicador = await buscarInstanciaAdmin(adminClient, tenantId)
       if (instanciaIndicador) {
         await enviarWhatsApp(
           indicadorWpp,
@@ -197,7 +207,7 @@ export async function POST(req: NextRequest) {
 
   msgCandidato += `_Bons estudos!_`
 
-  await enviarWhatsApp(whatsappLimpo, msgCandidato)
+  await enviarWhatsApp(whatsappLimpo, msgCandidato, instanciaTenant)
 
   return NextResponse.json({ aluno })
 }

@@ -31,8 +31,22 @@ export async function POST() {
     return NextResponse.json({ ok: true, pagamento: pagPendente, jaExiste: true })
   }
 
+  // ── Modo de cobrança do tenant ────────────────────────────────────
+  if (gestor.tenant_id) {
+    const { data: modoCfg } = await adminClient.from('configuracoes')
+      .select('valor').eq('chave', 'pro_cobranca_modo').eq('tenant_id', gestor.tenant_id).maybeSingle()
+    const modo = modoCfg?.valor ? String(modoCfg.valor).replace(/"/g, '') : 'individual'
+    if (modo === 'incluso') {
+      const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      await adminClient.from('gestores')
+        .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
+        .eq('id', gestor.id)
+      return NextResponse.json({ ok: true, gratuito: true, incluso: true, vencimento })
+    }
+  }
+
   // ── Verifica se o PRO tem 20+ PROs ativos na rede → renovação gratuita ──
-  const ehGratuito = await verificarPROGratuito(gestor.id, adminClient)
+  const ehGratuito = await verificarPROGratuito(gestor.id, adminClient, gestor.tenant_id)
   if (ehGratuito) {
     const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
     await adminClient.from('gestores')
@@ -41,9 +55,11 @@ export async function POST() {
     return NextResponse.json({ ok: true, gratuito: true, vencimento })
   }
 
-  // Lê valor configurado no painel admin (padrão 97)
+  // Lê valor configurado para o tenant (padrão 97)
   const { data: valorCfg } = await adminClient.from('configuracoes')
-    .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
+    .select('valor').eq('chave', 'plano_pro_valor')
+    .eq('tenant_id', gestor.tenant_id ?? '')
+    .maybeSingle()
   const valorStr = valorCfg?.valor ? String(valorCfg.valor).replace(/"/g, '') : ''
   const valorParsed = parseFloat(valorStr)
   const valorPlano = isNaN(valorParsed) ? 97 : Math.max(1, valorParsed)
@@ -100,7 +116,7 @@ export async function GET() {
 
   const adminClient = createServiceRoleClient()
   const { data: gestor } = await adminClient.from('gestores')
-    .select('id, status_assinatura, trial_expira_em, plano_vencimento')
+    .select('id, status_assinatura, trial_expira_em, plano_vencimento, tenant_id')
     .eq('user_id', user.id).maybeSingle()
 
   if (!gestor) return NextResponse.json({ error: 'Não encontrado' }, { status: 404 })
@@ -117,13 +133,18 @@ export async function GET() {
     .maybeSingle()
 
   const { data: valorCfgGet } = await adminClient.from('configuracoes')
-    .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
+    .select('valor').eq('chave', 'plano_pro_valor').eq('tenant_id', gestor.tenant_id ?? '').maybeSingle()
   const valorParsedGet = parseFloat(String(valorCfgGet?.valor ?? '').replace(/"/g, ''))
   const valorPlanoGet = isNaN(valorParsedGet) ? 97 : Math.max(1, valorParsedGet)
 
+  const { data: modoCfgGet } = gestor.tenant_id
+    ? await adminClient.from('configuracoes').select('valor').eq('chave', 'pro_cobranca_modo').eq('tenant_id', gestor.tenant_id).maybeSingle()
+    : { data: null }
+  const modoCobranca = modoCfgGet?.valor ? String(modoCfgGet.valor).replace(/"/g, '') : 'individual'
+
   const [prosIndicados, limiteGratuito] = await Promise.all([
     contarPROsAtivosIndicados(gestor.id, adminClient),
-    getLimitePROGratuito(adminClient),
+    getLimitePROGratuito(adminClient, gestor.tenant_id),
   ])
   const ehGratuito = prosIndicados >= limiteGratuito
 
@@ -137,5 +158,6 @@ export async function GET() {
     prosIndicados,
     limiteGratuito,
     ehGratuito,
+    modoCobranca,
   })
 }

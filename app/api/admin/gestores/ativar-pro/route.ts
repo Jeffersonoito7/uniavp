@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
-import { enviarWhatsApp } from '@/lib/whatsapp'
+import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
 
 export const dynamic = 'force-dynamic'
@@ -38,8 +38,10 @@ export async function POST(req: NextRequest) {
         .select('valor').eq('chave', 'site_nome').eq('tenant_id', ctx.tenantId).maybeSingle()
       try { nomePlataforma = JSON.parse(String(cfg?.valor ?? '')) || nomePlataforma } catch { /**/ }
     }
+    const instancia = await getInstanciaTenant(ctx.tenantId, adminClient)
     enviarWhatsApp(gestor.whatsapp,
-      `✅ *Acesso PRO ativado!*\n\nOlá, ${gestor.nome}!\n\nSeu acesso ${nomePlataforma} PRO foi ativado por *${dias} dias*.\n\n👉 ${appUrl}/pro`
+      `✅ *Acesso PRO ativado!*\n\nOlá, ${gestor.nome}!\n\nSeu acesso ${nomePlataforma} PRO foi ativado por *${dias} dias*.\n\n👉 ${appUrl}/pro`,
+      instancia
     ).catch(() => {})
   }
 

@@ -18,11 +18,19 @@ async function getAluno() {
   return aluno ? { aluno, user, adminClient } : null
 }
 
-async function getValorPlano(adminClient: any): Promise<number> {
+async function getValorPlano(adminClient: any, tenantId: string | null): Promise<number> {
+  if (!tenantId) return 97
   const { data } = await adminClient.from('configuracoes')
-    .select('valor').eq('chave', 'plano_pro_valor').maybeSingle()
+    .select('valor').eq('chave', 'plano_pro_valor').eq('tenant_id', tenantId).maybeSingle()
   const parsed = parseFloat(String(data?.valor ?? '').replace(/"/g, ''))
   return isNaN(parsed) ? 97 : Math.max(1, parsed)
+}
+
+async function getModoCobranca(adminClient: any, tenantId: string | null): Promise<string> {
+  if (!tenantId) return 'individual'
+  const { data } = await adminClient.from('configuracoes')
+    .select('valor').eq('chave', 'pro_cobranca_modo').eq('tenant_id', tenantId).maybeSingle()
+  return data?.valor ? String(data.valor).replace(/"/g, '') : 'individual'
 }
 
 export async function GET() {
@@ -30,7 +38,12 @@ export async function GET() {
   if (!ctx) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
   const { aluno, user, adminClient } = ctx
 
-  const valorPlano = await getValorPlano(adminClient)
+  // Resolve tenant do aluno para contexto de cobrança
+  const { data: alunoCtxGet } = await adminClient.from('alunos')
+    .select('tenant_id').eq('user_id', user.id).maybeSingle()
+  const tenantIdGet: string | null = alunoCtxGet?.tenant_id ?? null
+
+  const valorPlano = await getValorPlano(adminClient, tenantIdGet)
 
   // Verifica se já tem gestor ativo (já é PRO)
   const { data: gestorAtivo } = await adminClient.from('gestores')
@@ -41,9 +54,10 @@ export async function GET() {
   if (gestorAtivo) {
     const [prosIndicados, limiteGratuito] = await Promise.all([
       contarPROsAtivosIndicados(gestorAtivo.id, adminClient),
-      getLimitePROGratuito(adminClient),
+      getLimitePROGratuito(adminClient, tenantIdGet),
     ])
-    return NextResponse.json({ jaEhPro: true, valorPlano, prosIndicados, limiteGratuito })
+    const modoCobranca = await getModoCobranca(adminClient, tenantIdGet)
+    return NextResponse.json({ jaEhPro: true, valorPlano, prosIndicados, limiteGratuito, modoCobranca })
   }
 
   // Verifica pagamento pendente
@@ -75,17 +89,19 @@ export async function POST() {
   if (!ctx) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
   const { aluno, user, adminClient } = ctx
 
-  const valorPlano = await getValorPlano(adminClient)
+  // Busca tenant do aluno para contexto de cobrança
+  const { data: alunoCtx } = await adminClient.from('alunos')
+    .select('gestor_whatsapp, tenant_id').eq('user_id', user.id).maybeSingle()
+  const tenantIdCtx: string | null = alunoCtx?.tenant_id ?? null
+
+  const valorPlano = await getValorPlano(adminClient, tenantIdCtx)
 
   // Verifica se já é PRO
   const { data: gestorAtivo } = await adminClient.from('gestores')
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (gestorAtivo) return NextResponse.json({ error: 'Já possui conta PRO' }, { status: 400 })
 
-  // Busca tenant_id e gestor de origem do aluno (necessário para multi-tenancy)
-  const { data: alunoCompleto } = await adminClient.from('alunos')
-    .select('gestor_whatsapp, tenant_id').eq('user_id', user.id).maybeSingle()
-  const tenantId: string | null = alunoCompleto?.tenant_id ?? null
+  const tenantId = tenantIdCtx
 
   // Cria ou reutiliza gestor pendente
   let gestorId: string
@@ -101,9 +117,9 @@ export async function POST() {
       .eq('status', 'pendente')
   } else {
     let indicadoPorGestorId: string | null = null
-    if (alunoCompleto?.gestor_whatsapp) {
+    if (alunoCtx?.gestor_whatsapp) {
       const { data: gestorOrigem } = await adminClient.from('gestores')
-        .select('id').eq('whatsapp', alunoCompleto.gestor_whatsapp).eq('ativo', true).maybeSingle()
+        .select('id').eq('whatsapp', alunoCtx.gestor_whatsapp).eq('ativo', true).maybeSingle()
       indicadoPorGestorId = gestorOrigem?.id ?? null
     }
 
@@ -122,6 +138,16 @@ export async function POST() {
       .single()
     if (!novoGestor) return NextResponse.json({ error: 'Erro ao criar conta PRO' }, { status: 500 })
     gestorId = novoGestor.id
+  }
+
+  // ── Modo incluso: ativa sem cobrar ────────────────────────────────
+  const modoCobranca = await getModoCobranca(adminClient, tenantId)
+  if (modoCobranca === 'incluso') {
+    const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    await adminClient.from('gestores')
+      .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
+      .eq('id', gestorId)
+    return NextResponse.json({ ok: true, gratuito: true, incluso: true, vencimento })
   }
 
   // Gera PIX

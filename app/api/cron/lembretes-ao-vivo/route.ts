@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
-import { enviarWhatsApp } from '@/lib/whatsapp'
+import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
+import { alertarDiscord } from '@/lib/discord'
 
 const aulasTable = (client: ReturnType<typeof createServiceRoleClient>) => client.from('aulas_ao_vivo')
 
@@ -14,6 +15,13 @@ export async function GET(req: NextRequest) {
   const agora = new Date()
   const em1h = new Date(agora.getTime() + 60 * 60 * 1000)
   const em90min = new Date(agora.getTime() + 90 * 60 * 1000)
+
+  const instanciaCache = new Map<string, string | null>()
+  async function instanciaDo(tenantId: string | null) {
+    const key = tenantId ?? ''
+    if (!instanciaCache.has(key)) instanciaCache.set(key, await getInstanciaTenant(tenantId, adminClient))
+    return instanciaCache.get(key) ?? null
+  }
 
   // Aulas que começam entre 1h e 1h30 a partir de agora e ainda não enviaram lembrete
   const { data: aulas } = await aulasTable(adminClient)
@@ -51,16 +59,14 @@ export async function GET(req: NextRequest) {
       `${aula.obrigatoria ? '⚠️ Presença *obrigatória*.' : 'Sua participação é muito bem-vinda!'}`,
     ].filter(Boolean).join('\n')
 
-    // Admin: envia para todos os alunos ativos
+    // Admin: envia para todos os alunos ativos (aula global, sem tenant isolado)
     if (!aula.gestor_id) {
-      const { data: alunos } = await adminClient
-        .from('alunos')
-        .select('whatsapp')
-        .eq('status', 'ativo')
+      const instancia = await instanciaDo(null)
+      const { data: alunos } = await adminClient.from('alunos').select('whatsapp').eq('status', 'ativo')
 
       for (const aluno of alunos ?? []) {
         try {
-          await enviarWhatsApp(aluno.whatsapp, msg)
+          await enviarWhatsApp(aluno.whatsapp, msg, instancia)
           totalEnviados++
         } catch (e) {
           totalErros++
@@ -72,11 +78,12 @@ export async function GET(req: NextRequest) {
       // Gestor: envia só para os consultores deste gestor
       const { data: gestor } = await adminClient
         .from('gestores')
-        .select('whatsapp')
+        .select('whatsapp, whatsapp_instancia, tenant_id')
         .eq('id', aula.gestor_id)
         .maybeSingle()
 
       if (gestor?.whatsapp) {
+        const instancia = gestor.whatsapp_instancia ?? await instanciaDo(gestor.tenant_id ?? null)
         const { data: alunos } = await adminClient
           .from('alunos')
           .select('whatsapp')
@@ -85,7 +92,7 @@ export async function GET(req: NextRequest) {
 
         for (const aluno of alunos ?? []) {
           try {
-            await enviarWhatsApp(aluno.whatsapp, msg)
+            await enviarWhatsApp(aluno.whatsapp, msg, instancia)
             totalEnviados++
           } catch (e) {
             totalErros++
@@ -97,6 +104,10 @@ export async function GET(req: NextRequest) {
     }
 
     await aulasTable(adminClient).update({ lembrete_enviado: true }).eq('id', aula.id)
+  }
+
+  if (totalErros > 0) {
+    await alertarDiscord('aviso', `${totalErros} erro(s) ao enviar lembretes de aula ao vivo`, `${totalEnviados} enviados com sucesso, ${totalErros} falharam.`)
   }
 
   return NextResponse.json({ ok: true, enviados: totalEnviados, erros: totalErros, aulas: aulas.length })

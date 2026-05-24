@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { consultarPagamento } from '@/lib/efi'
-import { enviarWhatsApp } from '@/lib/whatsapp'
+import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
+import { alertarDiscord } from '@/lib/discord'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60 // segundos — máximo permitido no plano Pro
@@ -63,13 +64,18 @@ export async function GET(req: NextRequest) {
           const msg = eraUpgrade
             ? `🚀 *Bem-vindo ao ${nomePlataforma} PRO!*\n\nOlá, ${gestor.nome}!\n\n✅ Pagamento de *${valor}* confirmado!\n\nSua conta PRO está ativa por 30 dias. Acesse agora:\n👉 ${appUrl}/pro\n\n_Use o mesmo e-mail e senha do plano FREE._`
             : `✅ *Pagamento confirmado!*\n\nOlá, ${gestor.nome}!\nValor: *${valor}*\n\nSeu acesso ${nomePlataforma} PRO está ativo por mais 30 dias. 🎉\n👉 ${appUrl}/pro`
-          await enviarWhatsApp(gestor.whatsapp, msg)
+          const instancia = await getInstanciaTenant(gestor.tenant_id, admin)
+          await enviarWhatsApp(gestor.whatsapp, msg, instancia)
         }
       }
 
       ativados++
     } catch (e: any) {
       console.error(`[cron/pagamentos] Erro ao processar gestor_pagamento ${pag.id}:`, e.message)
+      await alertarDiscord('aviso', 'Falha ao processar PIX de gestor', e?.message ?? String(e), [
+        { nome: 'Pagamento ID', valor: pag.id },
+        { nome: 'TXID', valor: pag.txid ?? '—' },
+      ])
     }
   }
 
@@ -108,6 +114,10 @@ export async function GET(req: NextRequest) {
       ativados++
     } catch (e: any) {
       console.error(`[cron/pagamentos] Erro ao processar cobranca ${cob.id}:`, e.message)
+      await alertarDiscord('aviso', 'Falha ao processar cobrança SaaS', e?.message ?? String(e), [
+        { nome: 'Cobrança ID', valor: cob.id },
+        { nome: 'TXID', valor: cob.txid ?? '—' },
+      ])
     }
   }
 

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 async function getGestor(user: { id: string }, adminClient: ReturnType<typeof createServiceRoleClient>) {
   const { data } = await adminClient.from('gestores')
-    .select('id, nome, whatsapp').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+    .select('id, nome, whatsapp, whatsapp_instancia, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   return data
 }
 
@@ -45,8 +45,9 @@ export async function POST(req: NextRequest) {
       hour: '2-digit', minute: '2-digit', timeZone: 'America/Fortaleza'
     })
     const msg = `🗓️ *Novo Evento!*\n\n*${titulo}*\n📍 ${cidade || 'A definir'}\n📅 ${dataFormatada}${descricao ? `\n\n${descricao}` : ''}\n\n_Mensagem do seu gestor ${gestor.nome}_`
+    const instancia = gestor.whatsapp_instancia ?? null
     for (const c of consultores ?? []) {
-      if (c.whatsapp) await enviarWhatsApp(c.whatsapp, msg)
+      if (c.whatsapp) await enviarWhatsApp(c.whatsapp, msg, instancia)
     }
     // Push notification para consultores que ativaram
     const dataFormatadaShort = new Date(data_hora).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })

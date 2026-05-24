@@ -25,8 +25,23 @@ export async function enviarWhatsApp(numero: string, mensagem: string, instancia
   }
 }
 
-export async function getInstanciaGestorPorNome(gestorNome: string, adminClient: any): Promise<string | null> {
-  const { data } = await adminClient.from('gestores')
-    .select('whatsapp_instancia').eq('nome', gestorNome).maybeSingle()
+export async function getInstanciaTenant(tenantId: string | null | undefined, adminClient: any): Promise<string | null> {
+  if (!tenantId) return null
+  const { data } = await adminClient.from('admins')
+    .select('whatsapp_instancia')
+    .eq('tenant_id', tenantId)
+    .eq('ativo', true)
+    .not('whatsapp_instancia', 'is', null)
+    .limit(1)
+    .maybeSingle()
+  return data?.whatsapp_instancia ?? null
+}
+
+export async function getInstanciaGestorPorNome(gestorNome: string, adminClient: any, tenantId?: string | null): Promise<string | null> {
+  let q = adminClient.from('gestores')
+    .select('whatsapp_instancia')
+    .eq('nome', gestorNome)
+  if (tenantId) q = q.eq('tenant_id', tenantId)
+  const { data } = await q.maybeSingle()
   return data?.whatsapp_instancia || null
 }

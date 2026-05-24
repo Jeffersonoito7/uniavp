@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
-import { enviarWhatsApp } from '@/lib/whatsapp'
+import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
+import { getTenantId } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,6 +20,8 @@ export async function POST(req: NextRequest) {
   if (wpp.length < 10) return NextResponse.json({ error: 'Número inválido' }, { status: 400 })
 
   const admin = createServiceRoleClient()
+  const host = req.headers.get('host')?.replace(/:\d+$/, '') ?? ''
+  const tenantId = await getTenantId(host)
 
   // ── CONFIRMAÇÃO DO CÓDIGO ────────────────────────────────────────
   if (codigo) {
@@ -60,9 +63,11 @@ export async function POST(req: NextRequest) {
   })
 
   try {
+    const instancia = await getInstanciaTenant(tenantId, admin)
     await enviarWhatsApp(
       wpp,
-      `🔐 *Verificação de WhatsApp*\n\nSeu código de confirmação é:\n\n*${novoCodigo}*\n\n_Válido por 10 minutos. Não compartilhe com ninguém._`
+      `🔐 *Verificação de WhatsApp*\n\nSeu código de confirmação é:\n\n*${novoCodigo}*\n\n_Válido por 10 minutos. Não compartilhe com ninguém._`,
+      instancia
     )
     return NextResponse.json({ ok: true })
   } catch {

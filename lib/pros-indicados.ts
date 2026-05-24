@@ -1,9 +1,11 @@
 export const LIMITE_PRO_GRATUITO = 20 // fallback padrão
 
-export async function getLimitePROGratuito(admin: any): Promise<number> {
+export async function getLimitePROGratuito(admin: any, tenantId?: string | null): Promise<number> {
   try {
-    const { data } = await admin.from('configuracoes')
-      .select('valor').eq('chave', 'pros_gratuito_limite').maybeSingle()
+    let q = admin.from('configuracoes').select('valor').eq('chave', 'pros_gratuito_limite')
+    if (tenantId) q = q.eq('tenant_id', tenantId)
+    else q = q.is('tenant_id', null)
+    const { data } = await q.maybeSingle()
     const v = parseInt(data?.valor ?? '')
     return isNaN(v) || v < 1 ? LIMITE_PRO_GRATUITO : v
   } catch { return LIMITE_PRO_GRATUITO }
@@ -20,10 +22,10 @@ export async function contarPROsAtivosIndicados(gestorId: string, admin: any): P
   return count ?? 0
 }
 
-export async function verificarPROGratuito(gestorId: string, admin: any): Promise<boolean> {
+export async function verificarPROGratuito(gestorId: string, admin: any, tenantId?: string | null): Promise<boolean> {
   const [total, limite] = await Promise.all([
     contarPROsAtivosIndicados(gestorId, admin),
-    getLimitePROGratuito(admin),
+    getLimitePROGratuito(admin, tenantId),
   ])
   return total >= limite
 }

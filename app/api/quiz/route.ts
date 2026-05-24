@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
       .select('titulo').eq('id', aula_id).maybeSingle()
     if (modo === 'manual_gestor' && alunoInfo?.gestor_whatsapp) {
       const { enviarWhatsApp, getInstanciaGestorPorNome } = await import('@/lib/whatsapp')
-      const inst = await getInstanciaGestorPorNome(alunoInfo.gestor_nome ?? '', adminClient)
+      const inst = await getInstanciaGestorPorNome(alunoInfo.gestor_nome ?? '', adminClient, aluno.tenant_id)
       const appUrl = await getAppUrl(aluno.tenant_id)
       await enviarWhatsApp(
         alunoInfo.gestor_whatsapp,
@@ -251,7 +251,7 @@ export async function POST(req: NextRequest) {
           const moduloConcluido = idsConcluidosModulo.length === todasAulasModulo.length
 
           if (moduloConcluido) {
-            const instanciaGestor = await getInstanciaGestorPorNome(alunoAtualizado.gestor_nome ?? '', adminClient)
+            const instanciaGestor = await getInstanciaGestorPorNome(alunoAtualizado.gestor_nome ?? '', adminClient, aluno.tenant_id)
             await enviarWhatsApp(
               alunoAtualizado.gestor_whatsapp!,
               `📚 *${alunoAtualizado.gestor_nome || 'UNIAVP PRO'}!* Seu membro FREE *${alunoAtualizado.nome}* concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🎉`,
@@ -271,7 +271,7 @@ export async function POST(req: NextRequest) {
     if (formacaoConcluida) {
       const appUrl = await getAppUrl(aluno.tenant_id)
       const instanciaGestor = alunoAtualizado.gestor_nome
-        ? await getInstanciaGestorPorNome(alunoAtualizado.gestor_nome, adminClient)
+        ? await getInstanciaGestorPorNome(alunoAtualizado.gestor_nome, adminClient, aluno.tenant_id)
         : null
       if (alunoAtualizado.gestor_whatsapp) {
         await enviarWhatsApp(

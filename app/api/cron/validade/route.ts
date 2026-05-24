@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
-import { enviarWhatsApp } from '@/lib/whatsapp'
+import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
+import { alertarDiscord } from '@/lib/discord'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,13 +11,21 @@ export async function GET(req: NextRequest) {
   if (req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`)
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
+  try {
   const admin = createServiceRoleClient()
   const appUrl = await getAppUrl()
   const agora = new Date()
   let avisos = 0
 
+  const instanciaCache = new Map<string, string | null>()
+  async function instanciaDo(tenantId: string | null) {
+    const key = tenantId ?? ''
+    if (!instanciaCache.has(key)) instanciaCache.set(key, await getInstanciaTenant(tenantId, admin))
+    return instanciaCache.get(key) ?? null
+  }
+
   const { data: progressos } = await admin.from('progresso')
-    .select('id, aluno_id, aula_id, created_at, aluno:alunos(nome, whatsapp), aula:aulas(titulo, validade_meses)')
+    .select('id, aluno_id, aula_id, created_at, aluno:alunos(nome, whatsapp, tenant_id), aula:aulas(titulo, validade_meses)')
     .eq('aprovado', true)
     .not('aula.validade_meses', 'is', null)
 
@@ -25,18 +34,25 @@ export async function GET(req: NextRequest) {
     const expira = new Date(p.created_at!)
     expira.setMonth(expira.getMonth() + p.aula.validade_meses)
     const diasParaExpirar = Math.ceil((expira.getTime() - agora.getTime()) / 86400000)
+    const instancia = await instanciaDo((p.aluno as any).tenant_id ?? null)
 
     if (diasParaExpirar === 7) {
       await enviarWhatsApp(p.aluno.whatsapp,
-        `⚠️ *${p.aluno.nome}*, sua certificação na aula *"${p.aula.titulo}"* expira em *7 dias*!\n\nPara manter seu certificado válido, você precisará refazer o quiz desta aula.\n\n👉 ${appUrl}/login`)
+        `⚠️ *${p.aluno.nome}*, sua certificação na aula *"${p.aula.titulo}"* expira em *7 dias*!\n\nPara manter seu certificado válido, você precisará refazer o quiz desta aula.\n\n👉 ${appUrl}/login`,
+        instancia)
       avisos++
     }
     if (diasParaExpirar === 1) {
       await enviarWhatsApp(p.aluno.whatsapp,
-        `🚨 *${p.aluno.nome}*, sua certificação em *"${p.aula.titulo}"* expira *AMANHÃ*!\n\nAcesse agora e refaça o quiz para não perder:\n👉 ${appUrl}/login`)
+        `🚨 *${p.aluno.nome}*, sua certificação em *"${p.aula.titulo}"* expira *AMANHÃ*!\n\nAcesse agora e refaça o quiz para não perder:\n👉 ${appUrl}/login`,
+        instancia)
       avisos++
     }
   }
 
   return NextResponse.json({ ok: true, avisos })
+  } catch (e: any) {
+    await alertarDiscord('critico', 'Cron validade falhou', e?.message ?? String(e))
+    return NextResponse.json({ ok: false, error: e?.message }, { status: 500 })
+  }
 }

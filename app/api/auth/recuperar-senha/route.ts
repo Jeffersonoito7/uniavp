@@ -6,41 +6,43 @@ export const dynamic = 'force-dynamic'
 const EVO_URL = process.env.EVOLUTION_API_URL
 const EVO_KEY = process.env.EVOLUTION_API_KEY
 
-async function buscarWhatsAppPorEmail(email: string, adminClient: ReturnType<typeof createServiceRoleClient>): Promise<{ whatsapp: string; instancia: string | null } | null> {
+async function buscarWhatsAppPorEmail(email: string, adminClient: ReturnType<typeof createServiceRoleClient>): Promise<{ whatsapp: string; instancia: string | null; tenantId: string | null } | null> {
   // Busca em alunos
   const { data: aluno } = await adminClient.from('alunos')
-    .select('whatsapp, gestor_nome').eq('email', email).maybeSingle()
+    .select('whatsapp, gestor_nome, tenant_id').eq('email', email).maybeSingle()
   if (aluno?.whatsapp) {
-    // Tenta pegar instância do gestor do aluno
+    // Tenta pegar instância do gestor do aluno (filtrado pelo tenant)
     let instancia: string | null = null
     if (aluno.gestor_nome) {
-      const { data: g } = await adminClient.from('gestores')
-        .select('whatsapp_instancia').eq('nome', aluno.gestor_nome).eq('ativo', true).maybeSingle()
+      let q = adminClient.from('gestores').select('whatsapp_instancia').eq('nome', aluno.gestor_nome).eq('ativo', true)
+      if (aluno.tenant_id) q = q.eq('tenant_id', aluno.tenant_id)
+      const { data: g } = await q.maybeSingle()
       instancia = g?.whatsapp_instancia ?? null
     }
-    // Fallback: instância do admin
+    // Fallback: instância do admin do mesmo tenant
     if (!instancia) {
-      const { data: adm } = await adminClient.from('admins')
-        .select('whatsapp_instancia').eq('ativo', true).not('whatsapp_instancia', 'is', null).limit(1).maybeSingle()
+      let q = adminClient.from('admins').select('whatsapp_instancia').eq('ativo', true).not('whatsapp_instancia', 'is', null).limit(1)
+      if (aluno.tenant_id) q = q.eq('tenant_id', aluno.tenant_id)
+      const { data: adm } = await q.maybeSingle()
       instancia = adm?.whatsapp_instancia ?? null
     }
-    return { whatsapp: aluno.whatsapp, instancia }
+    return { whatsapp: aluno.whatsapp, instancia, tenantId: aluno.tenant_id ?? null }
   }
 
   // Busca em gestores
   const { data: gestor } = await adminClient.from('gestores')
-    .select('whatsapp, whatsapp_instancia').eq('email', email).maybeSingle()
+    .select('whatsapp, whatsapp_instancia, tenant_id').eq('email', email).maybeSingle()
   if (gestor?.whatsapp) {
     const instancia = gestor.whatsapp_instancia ?? null
-    return { whatsapp: gestor.whatsapp, instancia }
+    return { whatsapp: gestor.whatsapp, instancia, tenantId: gestor.tenant_id ?? null }
   }
 
   // Busca em admins — usa instância do próprio admin
   const { data: admin } = await adminClient.from('admins')
-    .select('whatsapp, whatsapp_instancia').eq('email', email).maybeSingle()
+    .select('whatsapp, whatsapp_instancia, tenant_id').eq('email', email).maybeSingle()
   if (admin?.whatsapp) {
     const instancia = admin.whatsapp_instancia ?? null
-    return { whatsapp: admin.whatsapp, instancia }
+    return { whatsapp: admin.whatsapp, instancia, tenantId: admin.tenant_id ?? null }
   }
 
   return null
@@ -86,11 +88,13 @@ export async function POST(req: NextRequest) {
   let enviadoWpp = false
 
   if (ctx?.whatsapp && ctx?.instancia) {
-    // Pega nome do site
-    const { data: siteNomeCfg } = await adminClient.from('configuracoes')
-      .select('valor').eq('chave', 'site_nome').maybeSingle()
+    // Pega nome do site do tenant correto
     let siteNome = 'Plataforma'
-    try { siteNome = JSON.parse(String(siteNomeCfg?.valor ?? '')) || siteNome } catch { /* */ }
+    if (ctx.tenantId) {
+      const { data: siteNomeCfg } = await adminClient.from('configuracoes')
+        .select('valor').eq('chave', 'site_nome').eq('tenant_id', ctx.tenantId).maybeSingle()
+      try { siteNome = JSON.parse(String(siteNomeCfg?.valor ?? '')) || siteNome } catch { /* */ }
+    }
 
     enviadoWpp = await enviarLinkWhatsApp(ctx.whatsapp, link, ctx.instancia, siteNome)
   }
