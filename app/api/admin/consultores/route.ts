@@ -54,8 +54,8 @@ export async function DELETE(req: NextRequest) {
   const { id } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  // Busca o user_id do aluno
-  let deleteSelectQuery = adminClient.from('alunos').select('user_id').eq('id', id)
+  // Busca o user_id e email do aluno
+  let deleteSelectQuery = adminClient.from('alunos').select('user_id, email').eq('id', id)
   if (ctx.tenantId) deleteSelectQuery = deleteSelectQuery.eq('tenant_id', ctx.tenantId)
   const { data: aluno } = await deleteSelectQuery.maybeSingle()
 
@@ -65,9 +65,13 @@ export async function DELETE(req: NextRequest) {
   const { error } = await deleteQuery
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Remove da autenticação
+  // Remove da autenticação — tenta por user_id, fallback por email
   if (aluno?.user_id) {
     await adminClient.auth.admin.deleteUser(aluno.user_id).catch(() => {})
+  } else if (aluno?.email) {
+    const { data: lista } = await adminClient.auth.admin.listUsers({ perPage: 1000 })
+    const authUser = lista?.users?.find(u => u.email === aluno.email)
+    if (authUser) await adminClient.auth.admin.deleteUser(authUser.id).catch(() => {})
   }
 
   return NextResponse.json({ ok: true })
