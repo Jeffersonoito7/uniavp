@@ -9,6 +9,9 @@ export type DadosContratoAVP = {
   sedeMei: string
   whatsapp: string
   email: string
+  dataNascimento?: string | null
+  estadoCivil?: string | null
+  nacionalidade?: string | null
   // Contratante (admin config)
   contratanteNome: string
   contratanteCnpj: string
@@ -276,7 +279,13 @@ export async function gerarPDFContrato(dados: DadosContratoAVP): Promise<Uint8Ar
   pw.page.drawRectangle({ x: pw.M, y: pw.y - 20, width: pw.width - pw.M * 2, height: 20, color: rgb(0.2,0.2,0.6) })
   pw.page.drawText('CONTRATADO / PRESTADOR DE SERVIÇOS', { x: pw.M + 10, y: pw.y - 14, size: 8.5, font: bold, color: branco })
   pw.y -= 28
-  pw.text(`${dados.nome.toUpperCase()}, na condição de Microempreendedor Individual – MEI, inscrito sob o CNPJ nº ${formatCNPJ(dados.cnpjMei)}, com sede em ${dados.sedeMei}. CPF: ${formatCPF(dados.cpf)}.`, 8.5, regular, preto, 8)
+  const qualDadosPessoais = [
+    dados.nacionalidade ? safe(dados.nacionalidade) : null,
+    dados.estadoCivil ? safe(dados.estadoCivil) : null,
+    dados.dataNascimento ? `nascido(a) em ${new Date(dados.dataNascimento + 'T12:00:00').toLocaleDateString('pt-BR')}` : null,
+  ].filter(Boolean).join(', ')
+  const qualSufixo = qualDadosPessoais ? `, ${qualDadosPessoais}` : ''
+  pw.text(`${dados.nome.toUpperCase()}${qualSufixo}, na condição de Microempreendedor Individual – MEI, inscrito sob o CNPJ nº ${formatCNPJ(dados.cnpjMei)}, com sede em ${dados.sedeMei}. CPF: ${formatCPF(dados.cpf)}.`, 8.5, regular, preto, 8)
   if (dados.nfDados && !dados.nfDados.emite_proprio && dados.nfDados.empresa_nome) {
     pw.y += 4
     pw.text(`EMISSÃO DE NOTA FISCAL: Autorizado expressamente por ${dados.nome.toUpperCase()} para que a empresa ${dados.nfDados.empresa_nome.toUpperCase()}${dados.nfDados.empresa_cnpj ? ` (CNPJ ${formatCNPJ(dados.nfDados.empresa_cnpj)})` : ''} emita notas fiscais e receba pagamentos em seu nome, por meio de ${dados.nfDados.responsavel_nome?.toUpperCase() || ''}${dados.nfDados.responsavel_cpf ? ` (CPF ${formatCPF(dados.nfDados.responsavel_cpf)})` : ''}.`, 8, oblique, cinzaE, 8)

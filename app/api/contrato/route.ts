@@ -53,7 +53,7 @@ async function gerarEEnviar(dados: DadosContratoAVP, registro: string, adminClie
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { nome, cpf, cnpj_mei, sede_mei, whatsapp, email, aluno_id, clausulas_aceitas, nf_dados, assinatura_base64 } = body
+  const { nome, cpf, cnpj_mei, sede_mei, whatsapp, email, aluno_id, clausulas_aceitas, nf_dados, assinatura_base64, data_nascimento, estado_civil, nacionalidade } = body
 
   if (!nome || !whatsapp || !cnpj_mei || !sede_mei)
     return NextResponse.json({ error: 'Nome, WhatsApp, CNPJ MEI e sede são obrigatórios.' }, { status: 400 })
@@ -84,9 +84,11 @@ export async function POST(req: NextRequest) {
     numero_registro, assinado_em, ip,
   }), 'utf8').digest('hex')
 
+  const dadosPessoais = { data_nascimento: data_nascimento || null, estado_civil: estado_civil || null, nacionalidade: nacionalidade || null }
+
   const clausulasPayload = nf_dados
-    ? { clausulas: Array.isArray(clausulas_aceitas) ? clausulas_aceitas : [], nf: nf_dados }
-    : clausulas_aceitas
+    ? { clausulas: Array.isArray(clausulas_aceitas) ? clausulas_aceitas : [], nf: nf_dados, dados_pessoais: dadosPessoais }
+    : { clausulas: Array.isArray(clausulas_aceitas) ? clausulas_aceitas : [], dados_pessoais: dadosPessoais }
 
   const { error } = await adminClient.from('contratos').insert({
     aluno_id: aluno_id ?? null, nome: nome.trim(),
@@ -124,6 +126,9 @@ export async function POST(req: NextRequest) {
     nome: nome.trim(), cpf: cpf?.replace(/\D/g,'') || null,
     cnpjMei: cnpj_mei.replace(/\D/g,''), sedeMei: sede_mei,
     whatsapp: wppLimpo, email: email?.trim().toLowerCase() || '',
+    dataNascimento: data_nascimento || null,
+    estadoCivil: estado_civil || null,
+    nacionalidade: nacionalidade || null,
     contratanteNome: cfgMap['contrato_contratante_nome'] || siteConfig.nome,
     contratanteCnpj: cfgMap['contrato_contratante_cnpj'] || '',
     contratanteEndereco: cfgMap['contrato_contratante_endereco'] || '',

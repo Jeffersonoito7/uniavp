@@ -125,6 +125,9 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
   const [clausulaAtual, setClausulaAtual] = useState(0)
   const [aceitas, setAceitas] = useState<boolean[]>(new Array(CLAUSULAS_ATIVAS.length).fill(false))
   const [form, setForm] = useState({ nome: nomeInicial, whatsapp: whatsappInicial, email: emailInicial, cpf: cpfInicial, cnpj_mei: '', sede_mei: '', rua: '', numero: '', bairro: '', cidade: '', estado: '', cep: '' })
+  const [dataNascimento, setDataNascimento] = useState('')
+  const [estadoCivil, setEstadoCivil] = useState('')
+  const [nacionalidade, setNacionalidade] = useState('Brasileiro(a)')
   // Nota Fiscal
   const [nfEmiteProprio, setNfEmiteProprio] = useState<boolean | null>(null)
   const [nfEmpresaNome, setNfEmpresaNome] = useState('')
@@ -217,6 +220,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
       body: JSON.stringify({
         nome: form.nome, cpf: form.cpf, cnpj_mei: form.cnpj_mei,
         sede_mei: sedeMei, whatsapp: form.whatsapp, email: form.email,
+        data_nascimento: dataNascimento, estado_civil: estadoCivil, nacionalidade,
         aluno_id: alunoId ?? null,
         clausulas_aceitas: CLAUSULAS_ATIVAS.map(c => c.titulo),
         nf_dados: nfDados,
@@ -231,6 +235,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
 
   // ── ETAPA 1: DADOS ────────────────────────────────────────────────────────
   if (etapa === 'dados') {
+    const dataNascOk = dataNascimento.length === 10
     const cnpjValido = validarCNPJ(form.cnpj_mei)
     const cnpjLen = form.cnpj_mei.replace(/\D/g,'').length
     const cpfLen = form.cpf.replace(/\D/g,'').length
@@ -243,7 +248,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
     const nfCpfLen = nfResponsavelCpf.replace(/\D/g,'').length
     const nfCpfValido = nfCpfLen === 0 || validarCPF(nfResponsavelCpf)
     const nfOk = nfEmiteProprio === true || (nfEmiteProprio === false && nfEmpresaNome && nfEmpresaCnpj && validarCNPJ(nfEmpresaCnpj) && nfResponsavelNome)
-    const podeAvancar = form.nome && wppValido && form.cnpj_mei && cnpjValido && emailOk && cpfValido && form.rua && form.numero && form.bairro && form.cidade && form.estado && form.cep && nfEmiteProprio !== null && nfOk
+    const podeAvancar = form.nome && wppValido && form.cnpj_mei && cnpjValido && emailOk && cpfValido && dataNascOk && estadoCivil && nacionalidade && form.rua && form.numero && form.bairro && form.cidade && form.estado && form.cep && nfEmiteProprio !== null && nfOk
     return (
       <div style={{ minHeight:'100vh', background:bg, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Inter,sans-serif', padding:'32px 20px' }}>
         <div style={{ width:'100%', maxWidth:580 }}>
@@ -309,6 +314,48 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
                   value={form.email}
                   onChange={e => setForm(p=>({...p,email:e.target.value}))}
                   placeholder="seu@email.com" />
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12 }}>
+                <div>
+                  <label style={lbl}>
+                    Data de nascimento *
+                    {dataNascimento.length > 0 && dataNascimento.length < 10 && (
+                      <span style={{ marginLeft:6, color:'#f87171', fontWeight:700 }}>✗</span>
+                    )}
+                    {dataNascimento.length === 10 && (
+                      <span style={{ marginLeft:6, color:'#22c55e', fontWeight:700 }}>✓</span>
+                    )}
+                  </label>
+                  <input
+                    style={{...inp, borderColor: dataNascimento.length > 0 && dataNascimento.length < 10 ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.15)'}}
+                    type="date"
+                    value={dataNascimento}
+                    onChange={e => setDataNascimento(e.target.value)}
+                    max={new Date(Date.now() - 18*365*24*60*60*1000).toISOString().split('T')[0]}
+                  />
+                </div>
+                <div>
+                  <label style={lbl}>Estado civil *</label>
+                  <select
+                    style={{...inp, cursor:'pointer'}}
+                    value={estadoCivil}
+                    onChange={e => setEstadoCivil(e.target.value)}>
+                    <option value="">Selecione</option>
+                    <option value="Solteiro(a)">Solteiro(a)</option>
+                    <option value="Casado(a)">Casado(a)</option>
+                    <option value="Divorciado(a)">Divorciado(a)</option>
+                    <option value="Viúvo(a)">Viúvo(a)</option>
+                    <option value="União estável">União estável</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={lbl}>Nacionalidade *</label>
+                  <input
+                    style={inp}
+                    value={nacionalidade}
+                    onChange={e => setNacionalidade(e.target.value)}
+                    placeholder="Brasileiro(a)" />
+                </div>
               </div>
             </div>
 
@@ -530,6 +577,10 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
               {[
                 ['CONTRATANTE',`${contratanteNome} · CNPJ ${contratanteCnpj}`],
                 ['CONTRATADO',form.nome.toUpperCase()],
+                ['NASCIMENTO', dataNascimento ? new Date(dataNascimento + 'T12:00:00').toLocaleDateString('pt-BR') : '—'],
+                ['ESTADO CIVIL', estadoCivil || '—'],
+                ['NACIONALIDADE', nacionalidade || '—'],
+                ['CPF', form.cpf || '—'],
                 ['CNPJ MEI',form.cnpj_mei],
                 ['SEDE MEI',sedeMei],
                 ['WhatsApp',form.whatsapp],
