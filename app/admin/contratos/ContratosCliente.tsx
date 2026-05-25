@@ -122,6 +122,54 @@ Apos assinar, voce recebera o PDF aqui no WhatsApp.`}</pre>
   )
 }
 
+function BotaoPDF({ contrato, onGerado }: { contrato: Contrato; onGerado: (url: string) => void }) {
+  const [pdfUrl, setPdfUrl] = useState(contrato.pdf_url)
+  const [status, setStatus] = useState(contrato.pdf_status)
+  const [gerando, setGerando] = useState(false)
+
+  async function gerar() {
+    setGerando(true)
+    setStatus('gerando')
+    try {
+      const res = await fetch('/api/admin/contratos/regenerar-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ numero_registro: contrato.numero_registro }),
+      })
+      const data = await res.json()
+      if (data.pdf_url) {
+        setPdfUrl(data.pdf_url)
+        setStatus('gerado')
+        onGerado(data.pdf_url)
+      } else {
+        setStatus('erro')
+      }
+    } catch {
+      setStatus('erro')
+    }
+    setGerando(false)
+  }
+
+  if (pdfUrl) {
+    return (
+      <a href={pdfUrl} target="_blank" rel="noreferrer"
+        style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)', color: '#818cf8', borderRadius: 6, padding: '4px 10px', fontSize: 11, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+        PDF
+      </a>
+    )
+  }
+
+  return (
+    <button
+      onClick={gerar}
+      disabled={gerando}
+      style={{ background: gerando ? 'rgba(245,158,11,0.08)' : status === 'erro' ? 'rgba(239,68,68,0.1)' : 'rgba(245,158,11,0.1)', border: `1px solid ${status === 'erro' ? 'rgba(239,68,68,0.3)' : 'rgba(245,158,11,0.3)'}`, color: status === 'erro' ? '#f87171' : '#fbbf24', borderRadius: 6, padding: '4px 10px', fontSize: 11, fontWeight: 700, cursor: gerando ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}
+    >
+      {gerando ? 'Gerando...' : status === 'erro' ? 'Tentar novamente' : 'Gerar PDF'}
+    </button>
+  )
+}
+
 function GeradorLinkPersonalizado() {
   const [wpp, setWpp] = useState('')
   const [regra, setRegra] = useState('')
@@ -339,16 +387,9 @@ export default function ContratosCliente({
                         {c.assinado_em ? new Date(c.assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
                       </td>
                       <td style={{ padding: '12px 14px' }}>
-                        {c.pdf_url ? (
-                          <a href={c.pdf_url} target="_blank" rel="noreferrer"
-                            style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)', color: '#818cf8', borderRadius: 6, padding: '4px 10px', fontSize: 11, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                            PDF
-                          </a>
-                        ) : (
-                          <span style={{ color: 'var(--avp-text-dim)', fontSize: 11 }}>
-                            {c.pdf_status === 'pendente' ? 'Aguardando' : c.pdf_status === 'erro' ? 'Erro' : '—'}
-                          </span>
-                        )}
+                        <BotaoPDF contrato={c} onGerado={(url) => {
+                          c.pdf_url = url; c.pdf_status = 'gerado'
+                        }} />
                       </td>
                       <td style={{ padding: '12px 14px', maxWidth: 130 }}>
                         {c.hash_contrato ? (
