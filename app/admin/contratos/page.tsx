@@ -15,18 +15,18 @@ export default async function ContratosPage() {
     .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
 
-  const [{ data: contratos, count }, { data: formados }] = await Promise.all([
+  const [{ data: contratos, count }, { data: todosAlunos }] = await Promise.all([
     adminClient.from('contratos')
       .select('id, nome, cpf, whatsapp, email, cnpj_mei, sede_mei, numero_registro, assinado_em, hash_contrato, pdf_url, pdf_status', { count: 'exact' })
       .order('assinado_em', { ascending: false }),
     adminClient.from('alunos')
-      .select('whatsapp')
-      .eq('status', 'concluido'),
+      .select('id, nome, whatsapp, email, status')
+      .order('nome', { ascending: true }),
   ])
 
-  // Conta formados que ainda não assinaram
   const wppAssinados = new Set((contratos ?? []).map((c: any) => c.whatsapp))
-  const formadosSemContrato = (formados ?? []).filter((a: any) => !wppAssinados.has(a.whatsapp.replace(/\D/g, ''))).length
+  const naoAssinaram = (todosAlunos ?? []).filter((a: any) => !wppAssinados.has(a.whatsapp.replace(/\D/g, '')))
+  const formadosSemContrato = naoAssinaram.filter((a: any) => a.status === 'concluido').length
 
   return (
     <AdminLayout>
@@ -34,6 +34,8 @@ export default async function ContratosPage() {
         contratosIniciais={contratos ?? []}
         total={count ?? 0}
         formadosSemContrato={formadosSemContrato}
+        naoAssinaram={naoAssinaram}
+        totalAlunos={(todosAlunos ?? []).length}
       />
     </AdminLayout>
   )

@@ -39,6 +39,8 @@ export type DadosContratoAVP = {
   }
   // Imagem da assinatura desenhada (base64 PNG do canvas)
   assinaturaBase64?: string
+  // Regra de bonificação personalizada (substitui a tabela padrão na cláusula 4.2)
+  regraBonificacao?: string | null
 }
 
 function safe(text: string): string {
@@ -324,13 +326,23 @@ export async function gerarPDFContrato(dados: DadosContratoAVP): Promise<Uint8Ar
   // ── SEÇÃO 4 ──────────────────────────────────────────────────────────────
   pw.sectionTitle(4, 'DO PREÇO E DAS CONDIÇÕES DE PAGAMENTO')
   pw.subClause('4.1.', 'Em retribuição pela execução dos serviços, o CONTRATADO fará jus ao recebimento de remuneração variável, conforme regras especificadas neste contrato.')
-  pw.subClause('4.2.', 'O CONTRATADO fará jus ao bônus de incentivo a cada nova filiação. Caso o filiado não realize o pagamento da 1ª contribuição, será descontada 1 placa da meta no mês subsequente. Tabela de bonificação:')
-  pw.gap(6)
-  const colW = [(pw.width - pw.M*2) / 2, (pw.width - pw.M*2) / 2]
-  pw.tableRow(['Nº de Filiações', 'Valor da Bonificação'], colW, true)
-  const bonif = [['10','R$ 500,00'],['15','R$ 800,00'],['20','R$ 1.500,00'],['30','R$ 2.000,00'],['40','R$ 2.700,00'],['50','R$ 3.200,00'],['60','R$ 4.000,00'],['70','R$ 4.600,00'],['80','R$ 5.200,00'],['100','R$ 6.400,00'],['150','R$ 9.400,00'],['200','R$ 10.400,00']]
-  for (const row of bonif) pw.tableRow(row, colW)
-  pw.gap(10)
+  if (dados.regraBonificacao?.trim()) {
+    pw.subClause('4.2.', 'O CONTRATADO fara jus ao bonus de incentivo a cada nova filiacao obtida por este, conforme regra abaixo. Caso o filiado deixe de realizar o pagamento da primeira contribuicao mensal, sera descontado 1 (um) credito/placa da meta do CONTRATADO no mes subsequente.')
+    pw.gap(4)
+    const linhasRegra = dados.regraBonificacao.trim().split('\n')
+    for (const linha of linhasRegra) {
+      if (linha.trim()) pw.text(safe(linha.trim()), 9, regular, preto)
+    }
+    pw.gap(10)
+  } else {
+    pw.subClause('4.2.', 'O CONTRATADO fará jus ao bônus de incentivo a cada nova filiação. Caso o filiado não realize o pagamento da 1ª contribuição, será descontada 1 placa da meta no mês subsequente. Tabela de bonificação:')
+    pw.gap(6)
+    const colW = [(pw.width - pw.M*2) / 2, (pw.width - pw.M*2) / 2]
+    pw.tableRow(['Nº de Filiações', 'Valor da Bonificação'], colW, true)
+    const bonif = [['10','R$ 500,00'],['15','R$ 800,00'],['20','R$ 1.500,00'],['30','R$ 2.000,00'],['40','R$ 2.700,00'],['50','R$ 3.200,00'],['60','R$ 4.000,00'],['70','R$ 4.600,00'],['80','R$ 5.200,00'],['100','R$ 6.400,00'],['150','R$ 9.400,00'],['200','R$ 10.400,00']]
+    for (const row of bonif) pw.tableRow(row, colW)
+    pw.gap(10)
+  }
   pw.subClause('4.3.', 'O CONTRATADO passará a ser Gestor/TOP Consultor com 300 veículos ativos na base (consultores, excluindo gestores), fazendo jus a recorrência de 5% a 10% do faturamento da equipe.')
   pw.subClause('4.4.', 'O CONTRATADO poderá receber bônus de liderança de 3% dos gestores indicados diretamente e seus consultores.')
   pw.subClause('4.5.', 'Bônus Carro (Plotagem): Com 100 novas filiações e carro plotado: R$ 2.000,00 adicional. Com 50 novas filiações e carro plotado: R$ 1.000,00 adicional. A plotagem deve permanecer por mínimo 6 meses sob pena de devolução integral do valor recebido.')

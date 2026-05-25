@@ -53,7 +53,7 @@ async function gerarEEnviar(dados: DadosContratoAVP, registro: string, adminClie
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { nome, cpf, cnpj_mei, sede_mei, whatsapp, email, aluno_id, clausulas_aceitas, nf_dados, assinatura_base64, data_nascimento, estado_civil, nacionalidade } = body
+  const { nome, cpf, cnpj_mei, sede_mei, whatsapp, email, aluno_id, clausulas_aceitas, nf_dados, assinatura_base64, data_nascimento, estado_civil, nacionalidade, regra_bonificacao } = body
 
   if (!nome || !whatsapp || !cnpj_mei || !sede_mei)
     return NextResponse.json({ error: 'Nome, WhatsApp, CNPJ MEI e sede são obrigatórios.' }, { status: 400 })
@@ -87,8 +87,8 @@ export async function POST(req: NextRequest) {
   const dadosPessoais = { data_nascimento: data_nascimento || null, estado_civil: estado_civil || null, nacionalidade: nacionalidade || null }
 
   const clausulasPayload = nf_dados
-    ? { clausulas: Array.isArray(clausulas_aceitas) ? clausulas_aceitas : [], nf: nf_dados, dados_pessoais: dadosPessoais }
-    : { clausulas: Array.isArray(clausulas_aceitas) ? clausulas_aceitas : [], dados_pessoais: dadosPessoais }
+    ? { clausulas: Array.isArray(clausulas_aceitas) ? clausulas_aceitas : [], nf: nf_dados, dados_pessoais: dadosPessoais, regra_bonificacao: regra_bonificacao || null }
+    : { clausulas: Array.isArray(clausulas_aceitas) ? clausulas_aceitas : [], dados_pessoais: dadosPessoais, regra_bonificacao: regra_bonificacao || null }
 
   const { error } = await adminClient.from('contratos').insert({
     aluno_id: aluno_id ?? null, nome: nome.trim(),
@@ -139,6 +139,7 @@ export async function POST(req: NextRequest) {
     clausulasPersonalizadas: cfgMap['contrato_corpo'] || undefined,
     nfDados: nf_dados ?? undefined,
     assinaturaBase64: assinatura_base64 ?? undefined,
+    regraBonificacao: regra_bonificacao || null,
     hash_contrato, ip, assinado_em, numero_registro,
     appUrl: process.env.NEXT_PUBLIC_APP_URL || '',
   }

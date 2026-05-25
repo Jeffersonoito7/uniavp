@@ -5,10 +5,16 @@ import ContratoForm from './ContratoForm'
 
 export const dynamic = 'force-dynamic'
 
-export default async function ContratoPage({ searchParams }: { searchParams?: { nome?: string; whatsapp?: string; email?: string; cpf?: string; aluno_id?: string } }) {
+export default async function ContratoPage({ searchParams }: { searchParams?: { nome?: string; whatsapp?: string; email?: string; cpf?: string; aluno_id?: string; regra?: string } }) {
   const host = (await headers()).get('host') ?? ''
   const adminClient = createServiceRoleClient()
   const siteConfig = await getSiteConfig(host)
+
+  // Decodifica regra personalizada passada na URL (base64)
+  let regraBonificacaoInicial: string | undefined
+  if (searchParams?.regra) {
+    try { regraBonificacaoInicial = Buffer.from(searchParams.regra, 'base64').toString('utf-8') } catch { /* ignora */ }
+  }
 
   const { data: cfgs } = await adminClient.from('configuracoes')
     .select('chave, valor')
@@ -36,6 +42,7 @@ export default async function ContratoPage({ searchParams }: { searchParams?: { 
       contratanteEndereco={cfgMap['contrato_contratante_endereco'] || ''}
       foro={cfgMap['contrato_foro'] || 'Petrolina/PE'}
       clausulasCustom={clausulasCustom}
+      regraBonificacao={regraBonificacaoInicial}
     />
   )
 }

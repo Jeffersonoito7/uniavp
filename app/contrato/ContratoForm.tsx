@@ -7,6 +7,7 @@ type Props = {
   nomeInicial?: string; whatsappInicial?: string; emailInicial?: string; cpfInicial?: string; alunoId?: string
   contratanteNome: string; contratanteCnpj: string; contratanteEndereco: string; foro?: string
   clausulasCustom?: ClausulaType[]
+  regraBonificacao?: string
 }
 
 type Etapa = 'dados' | 'clausulas' | 'confirmar' | 'assinatura' | 'sucesso'
@@ -119,7 +120,7 @@ function formatarWhatsApp(v: string): string {
   return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`
 }
 
-export default function ContratoForm({ nomeInicial='', whatsappInicial='', emailInicial='', cpfInicial='', alunoId, contratanteNome, contratanteCnpj, contratanteEndereco, foro, clausulasCustom }: Props) {
+export default function ContratoForm({ nomeInicial='', whatsappInicial='', emailInicial='', cpfInicial='', alunoId, contratanteNome, contratanteCnpj, contratanteEndereco, foro, clausulasCustom, regraBonificacao }: Props) {
   const CLAUSULAS_ATIVAS: ClausulaType[] = clausulasCustom?.length ? clausulasCustom : CLAUSULAS
   const [etapa, setEtapa] = useState<Etapa>('dados')
   const [clausulaAtual, setClausulaAtual] = useState(0)
@@ -225,6 +226,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
         clausulas_aceitas: CLAUSULAS_ATIVAS.map(c => c.titulo),
         nf_dados: nfDados,
         assinatura_base64,
+        regra_bonificacao: regraBonificacao ?? null,
       }),
     })
     const data = await res.json()
