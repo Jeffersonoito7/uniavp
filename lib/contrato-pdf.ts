@@ -39,6 +39,8 @@ export type DadosContratoAVP = {
   }
   // Imagem da assinatura desenhada (base64 PNG do canvas)
   assinaturaBase64?: string
+  // Assinatura pré-configurada do representante da CONTRATANTE (URL do storage)
+  assinaturaContratanteUrl?: string | null
   // Regra de bonificação personalizada (substitui a tabela padrão na cláusula 4.2)
   regraBonificacao?: string | null
 }
@@ -384,6 +386,67 @@ export async function gerarPDFContrato(dados: DadosContratoAVP): Promise<Uint8Ar
   pw.gap(6)
   pw.text(`Para dirimir qualquer controvérsia oriunda do presente instrumento, as partes elegem o foro da comarca de ${dados.foro || 'Petrolina/PE'}, com exclusão de qualquer outro por mais privilegiado que seja.`, 8.5, oblique, cinzaE)
   } // fim do else (cláusulas padrão)
+
+  // ── BLOCO DE ASSINATURAS ─────────────────────────────────────────────────
+  pw.ensureSpace(140)
+  pw.gap(18)
+  const assinDataFmt = new Date(dados.assinado_em).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: 'long', year: 'numeric' })
+  pw.text(`${dados.foro?.split('/')[0]?.trim() || 'Petrolina'}, ${assinDataFmt}`, 8.5, oblique, cinzaE)
+  pw.gap(24)
+
+  const { M, width, page: sigPage } = pw
+  const colW2 = (width - M * 2 - 20) / 2
+  const xLeft = M
+  const xRight = M + colW2 + 20
+  const yBase = pw.y
+
+  // Linha de assinatura esquerda (CONTRATANTE)
+  sigPage.drawRectangle({ x: xLeft, y: yBase - 1, width: colW2, height: 0.5, color: preto })
+  // Linha de assinatura direita (CONTRATADO)
+  sigPage.drawRectangle({ x: xRight, y: yBase - 1, width: colW2, height: 0.5, color: preto })
+
+  // Assinatura imagem CONTRATANTE (carregada do storage)
+  if (dados.assinaturaContratanteUrl) {
+    try {
+      const r = await fetch(dados.assinaturaContratanteUrl)
+      const buf = await r.arrayBuffer()
+      const ct = r.headers.get('content-type') || ''
+      const sigImg = ct.includes('png') ? await doc.embedPng(new Uint8Array(buf)) : await doc.embedJpg(new Uint8Array(buf))
+      const dim = sigImg.scaleToFit(colW2 - 10, 38)
+      sigPage.drawImage(sigImg, { x: xLeft + (colW2 - dim.width) / 2, y: yBase + 6, ...dim })
+    } catch { /* sem imagem */ }
+  }
+
+  // Assinatura imagem CONTRATADO (canvas)
+  if (dados.assinaturaBase64) {
+    try {
+      const base64 = dados.assinaturaBase64.replace(/^data:image\/\w+;base64,/, '')
+      const sigImg = await doc.embedPng(Buffer.from(base64, 'base64'))
+      const dim = sigImg.scaleToFit(colW2 - 10, 38)
+      sigPage.drawImage(sigImg, { x: xRight + (colW2 - dim.width) / 2, y: yBase + 6, ...dim })
+    } catch { /* sem imagem */ }
+  }
+
+  pw.gap(6)
+  const yTexto = pw.y
+
+  // Textos CONTRATANTE
+  sigPage.drawText(safe(dados.contratanteNome.toUpperCase().slice(0, 38)), { x: xLeft, y: yTexto, size: 8, font: bold, color: preto })
+  sigPage.drawText(safe(`CNPJ: ${dados.contratanteCnpj}`), { x: xLeft, y: yTexto - 12, size: 7.5, font: regular, color: cinzaE })
+  if (dados.representanteNome) {
+    sigPage.drawText(safe(dados.representanteNome.toUpperCase()), { x: xLeft, y: yTexto - 24, size: 7.5, font: bold, color: preto })
+    if (dados.representanteCargo) sigPage.drawText(safe(dados.representanteCargo), { x: xLeft, y: yTexto - 34, size: 7, font: regular, color: cinzaE })
+  }
+  sigPage.drawText(safe('CONTRATANTE'), { x: xLeft, y: yTexto - 46, size: 7, font: regular, color: rgb(0.5, 0.5, 0.5) })
+
+  // Textos CONTRATADO
+  sigPage.drawText(safe(dados.nome.toUpperCase().slice(0, 38)), { x: xRight, y: yTexto, size: 8, font: bold, color: preto })
+  sigPage.drawText(safe(`CPF: ${dados.cpf ? dados.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : '—'}`), { x: xRight, y: yTexto - 12, size: 7.5, font: regular, color: cinzaE })
+  sigPage.drawText(safe(`MEI: ${dados.cnpjMei.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')}`), { x: xRight, y: yTexto - 24, size: 7.5, font: regular, color: cinzaE })
+  sigPage.drawText(safe(`Assinado em: ${assinDataFmt}`), { x: xRight, y: yTexto - 34, size: 7, font: regular, color: cinzaE })
+  sigPage.drawText(safe('CONTRATADO'), { x: xRight, y: yTexto - 46, size: 7, font: regular, color: rgb(0.5, 0.5, 0.5) })
+
+  pw.gap(60)
 
   // ── PÁGINA DE CERTIFICADO (padrão NovoSign) ───────────────────────────────
   const certPage = doc.addPage([pw.width, pw.height])

@@ -170,6 +170,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [contratoForo, setContratoForo] = useState(get('contrato_foro') || 'Petrolina/PE')
   const [contratoCorpo, setContratoCorpo] = useState(get('contrato_corpo'))
   const [contratoClausulas, setContratoClausulas] = useState(get('contrato_clausulas'))
+  const [contratoAssinaturaUrl, setContratoAssinaturaUrl] = useState(get('contrato_assinatura_contratante_url'))
   const [linkCopiadoCNCPV, setLinkCopiadoCNCPV] = useState(false)
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
@@ -188,6 +189,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const carteiraLogoDireitaRef = useRef<HTMLInputElement>(null)
   const carteiraAssinaturaUrlRef = useRef<HTMLInputElement>(null)
   const contratoArquivoRef = useRef<HTMLInputElement>(null)
+  const contratoAssinaturaRef = useRef<HTMLInputElement>(null)
 
   const setters: Record<string, (v: string) => void> = {
     logoUrl: setLogoUrl,
@@ -203,6 +205,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
     carteiraLogoDireita: setCarteiraLogoDireita,
     carteiraAssinaturaUrl: setCarteiraAssinaturaUrl,
     moduloCapaPadrao: setModuloCapaPadrao,
+    contratoAssinaturaUrl: setContratoAssinaturaUrl,
   }
 
   const campoToChave: Record<string, string> = {
@@ -219,6 +222,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
     carteiraLogoDireita: 'carteira_logo_direita',
     carteiraAssinaturaUrl: 'carteira_assinatura_url',
     moduloCapaPadrao: 'modulo_capa_padrao',
+    contratoAssinaturaUrl: 'contrato_assinatura_contratante_url',
   }
 
   async function uploadImagem(campo: string, file: File) {
@@ -373,6 +377,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         { chave: 'contrato_foro', valor: contratoForo },
         { chave: 'contrato_corpo', valor: contratoCorpo },
         { chave: 'contrato_clausulas', valor: contratoClausulas },
+        { chave: 'contrato_assinatura_contratante_url', valor: contratoAssinaturaUrl },
         { chave: 'free_quiz_obrigatorio', valor: String(freeQuizObrigatorio) },
         { chave: 'free_bloquear_video', valor: String(freeBloquearVideo) },
         { chave: 'pro_quiz_obrigatorio', valor: String(proQuizObrigatorio) },
@@ -1386,6 +1391,40 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
                 <label style={lbl}>Foro (comarca)</label>
                 <input style={inp} value={contratoForo} onChange={e => setContratoForo(e.target.value)} placeholder="Ex: Petrolina/PE" />
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Assinatura do representante da CONTRATANTE */}
+        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+          <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>Assinatura do Representante (CONTRATANTE)</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.6 }}>
+            Imagem PNG da assinatura do presidente ou responsavel legal da associacao. Aparece no bloco de assinaturas do contrato PDF, ao lado da assinatura do consultor.
+            Fundo transparente (PNG) fica melhor.
+          </p>
+          <input ref={contratoAssinaturaRef} type="file" accept="image/*" style={{ display: 'none' }}
+            onChange={e => { const f = e.target.files?.[0]; if (f) { uploadImagem('contratoAssinaturaUrl', f); e.target.value = '' } }}
+          />
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            {contratoAssinaturaUrl && (
+              <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 140 }}>
+                <img src={contratoAssinaturaUrl} alt="Assinatura contratante" style={{ maxHeight: 60, maxWidth: 180, objectFit: 'contain' }} />
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button
+                onClick={() => contratoAssinaturaRef.current?.click()}
+                disabled={uploading === 'contratoAssinaturaUrl'}
+                style={{ background: uploading === 'contratoAssinaturaUrl' ? 'var(--avp-border)' : contratoAssinaturaUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+                {uploading === 'contratoAssinaturaUrl' ? 'Enviando...' : contratoAssinaturaUrl ? 'Trocar assinatura' : 'Subir assinatura (PNG)'}
+              </button>
+              {contratoAssinaturaUrl && (
+                <button
+                  onClick={() => { if (confirm('Remover assinatura do representante?')) setContratoAssinaturaUrl('') }}
+                  style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '9px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+                  Remover
+                </button>
+              )}
             </div>
           </div>
         </div>

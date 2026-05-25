@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const [siteConfig, { data: cfgs }] = await Promise.all([
     getSiteConfig(req.headers.get('host') ?? ''),
     adminClient.from('configuracoes').select('chave, valor')
-      .in('chave', ['contrato_contratante_nome','contrato_contratante_cnpj','contrato_contratante_endereco','contrato_representante_nome','contrato_representante_cargo','contrato_foro','site_logo_url','contrato_corpo']),
+      .in('chave', ['contrato_contratante_nome','contrato_contratante_cnpj','contrato_contratante_endereco','contrato_representante_nome','contrato_representante_cargo','contrato_foro','site_logo_url','contrato_corpo','contrato_assinatura_contratante_url']),
   ])
   const cfgMap: Record<string, string> = {}
   for (const c of cfgs ?? []) cfgMap[c.chave] = typeof c.valor === 'string' ? c.valor : JSON.stringify(c.valor ?? '').replace(/"/g, '')
@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
     clausulasPersonalizadas: cfgMap['contrato_corpo'] || undefined,
     nfDados: (clausulasAceitas?.nf as DadosContratoAVP['nfDados']) ?? undefined,
     assinaturaBase64,
+    assinaturaContratanteUrl: cfgMap['contrato_assinatura_contratante_url'] || undefined,
     regraBonificacao,
     hash_contrato: contrato.hash_contrato ?? 'regenerado',
     ip: contrato.ip ?? 'regenerado',
