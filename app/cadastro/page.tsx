@@ -153,14 +153,25 @@ export default function CadastroPage() {
               )}
             </div>
             <div>
-              <label style={labelStyle}>E-mail *</label>
+              <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 8 }}>
+                E-mail *
+                {form.email.length > 4 && (
+                  <span style={{ fontSize: 12, color: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()) ? '#22c55e' : '#f87171', fontWeight: 700 }}>
+                    {/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()) ? '✓ válido' : '✗ inválido'}
+                  </span>
+                )}
+              </label>
               <input
                 type="email"
                 placeholder="seu@email.com"
                 value={form.email}
                 onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
                 required
-                style={inputStyle}
+                style={{
+                  ...inputStyle,
+                  borderColor: form.email.length > 4 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())
+                    ? 'rgba(248,113,113,0.6)' : 'var(--avp-border)',
+                }}
               />
             </div>
             <div>

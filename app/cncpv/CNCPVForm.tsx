@@ -27,6 +27,31 @@ function validarCPF(cpf: string): boolean {
   return r === parseInt(d[10])
 }
 
+function formatarCPF(v: string): string {
+  const d = v.replace(/\D/g, '').slice(0, 11)
+  if (d.length <= 3) return d
+  if (d.length <= 6) return `${d.slice(0,3)}.${d.slice(3)}`
+  if (d.length <= 9) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`
+  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`
+}
+
+function formatarWhatsApp(v: string): string {
+  const d = v.replace(/\D/g, '').slice(0, 11)
+  if (d.length <= 2) return d
+  if (d.length <= 6) return `(${d.slice(0,2)}) ${d.slice(2)}`
+  if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`
+  return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`
+}
+
+function validarWhatsApp(w: string): boolean {
+  const d = w.replace(/\D/g, '')
+  return d.length >= 10 && d.length <= 13
+}
+
+function validarEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+}
+
 type Props = {
   nomeInicial?: string
   whatsappInicial?: string
@@ -439,32 +464,71 @@ export default function CNCPVForm({ nomeInicial = '', whatsappInicial = '', emai
                 <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>Nome completo *</label>
                 <input style={inp} value={form.nome} onChange={e => setForm(p => ({ ...p, nome: e.target.value }))} placeholder="Seu nome completo" />
               </div>
-              <div>
-                <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
-                  CPF *
-                  {form.cpf.replace(/\D/g,'').length === 11 && (
-                    <span style={{ marginLeft: 8, color: validarCPF(form.cpf) ? '#22c55e' : '#f87171', fontWeight: 700 }}>
-                      {validarCPF(form.cpf) ? '✓ válido' : '✗ inválido'}
-                    </span>
-                  )}
-                </label>
-                <input style={{ ...inp, borderColor: form.cpf.replace(/\D/g,'').length === 11 && !validarCPF(form.cpf) ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.15)' }}
-                  value={form.cpf} onChange={e => setForm(p => ({ ...p, cpf: e.target.value }))} placeholder="000.000.000-00" />
-              </div>
-              <div>
-                <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>WhatsApp *</label>
-                <input style={inp} value={form.whatsapp} onChange={e => setForm(p => ({ ...p, whatsapp: e.target.value }))} placeholder="(11) 99999-9999" />
-              </div>
-              <div>
-                <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>E-mail *</label>
-                <input style={inp} type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="seu@email.com" />
-              </div>
-              <button
-                onClick={() => setEtapa('termos')}
-                disabled={!form.nome || !form.whatsapp || !form.email || !form.cpf || !validarCPF(form.cpf)}
-                className="btn btn-green btn-full btn-lg" style={{ marginTop: 8 }}>
-                Avançar para os Termos
-              </button>
+              {(() => {
+                const cpfLen = form.cpf.replace(/\D/g,'').length
+                const cpfOk = validarCPF(form.cpf)
+                const wppLen = form.whatsapp.replace(/\D/g,'').length
+                const wppOk = validarWhatsApp(form.whatsapp)
+                const emailOk = !form.email || validarEmail(form.email)
+                const podeAvancar = form.nome && wppOk && form.email && validarEmail(form.email) && form.cpf && cpfOk
+                const lbl2: React.CSSProperties = { display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }
+                return (
+                  <>
+                    <div>
+                      <label style={lbl2}>
+                        CPF *
+                        {cpfLen === 11 && (
+                          <span style={{ marginLeft: 8, color: cpfOk ? '#22c55e' : '#f87171', fontWeight: 700 }}>
+                            {cpfOk ? '✓ válido' : '✗ inválido'}
+                          </span>
+                        )}
+                      </label>
+                      <input
+                        style={{ ...inp, borderColor: cpfLen === 11 && !cpfOk ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.15)' }}
+                        value={form.cpf}
+                        onChange={e => setForm(p => ({ ...p, cpf: formatarCPF(e.target.value) }))}
+                        placeholder="000.000.000-00" />
+                    </div>
+                    <div>
+                      <label style={lbl2}>
+                        WhatsApp *
+                        {wppLen >= 10 && (
+                          <span style={{ marginLeft: 8, color: wppOk ? '#22c55e' : '#f87171', fontWeight: 700 }}>
+                            {wppOk ? '✓ válido' : '✗ inválido'}
+                          </span>
+                        )}
+                      </label>
+                      <input
+                        style={{ ...inp, borderColor: wppLen >= 10 && !wppOk ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.15)' }}
+                        value={form.whatsapp}
+                        onChange={e => setForm(p => ({ ...p, whatsapp: formatarWhatsApp(e.target.value) }))}
+                        placeholder="(87) 99999-9999" />
+                    </div>
+                    <div>
+                      <label style={lbl2}>
+                        E-mail *
+                        {form.email.length > 4 && (
+                          <span style={{ marginLeft: 8, color: emailOk ? '#22c55e' : '#f87171', fontWeight: 700 }}>
+                            {emailOk ? '✓ válido' : '✗ inválido'}
+                          </span>
+                        )}
+                      </label>
+                      <input
+                        style={{ ...inp, borderColor: form.email.length > 4 && !emailOk ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.15)' }}
+                        type="email"
+                        value={form.email}
+                        onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
+                        placeholder="seu@email.com" />
+                    </div>
+                    <button
+                      onClick={() => setEtapa('termos')}
+                      disabled={!podeAvancar}
+                      className="btn btn-green btn-full btn-lg" style={{ marginTop: 8 }}>
+                      Avançar para os Termos
+                    </button>
+                  </>
+                )
+              })()}
             </div>
           </div>
         </div>
