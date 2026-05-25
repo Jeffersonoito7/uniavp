@@ -73,33 +73,51 @@ export async function POST(req: NextRequest) {
   const host = req.headers.get('host') || ''
   const tenantId = await getTenantId(host)
 
-  // Se o e-mail já existe no auth, verifica se há aluno vinculado
-  try {
-    const { data: lista } = await adminClient.auth.admin.listUsers({ perPage: 1000 })
-    const existingUser = lista?.users?.find(u => u.email === emailLimpo)
-    if (existingUser?.id) {
-      const { data: alunoExistente } = await adminClient.from('alunos')
-        .select('id').eq('user_id', existingUser.id).maybeSingle()
-      if (alunoExistente) {
-        return NextResponse.json({ erro: 'Este e-mail já possui uma conta. Faça login ou use outro e-mail.' }, { status: 400 })
-      }
-      // Auth user órfão (aluno foi deletado) — remove para permitir novo cadastro
-      await adminClient.auth.admin.deleteUser(existingUser.id)
-    }
-  } catch { /* ignora e deixa o createUser falhar normalmente */ }
-
-  const { data: authUser, error: authErr } = await adminClient.auth.admin.createUser({
+  // Tenta criar o usuário no auth
+  let { data: authUser, error: authErr } = await adminClient.auth.admin.createUser({
     email: emailLimpo,
     password: senha,
     email_confirm: true,
   })
 
+  // Se o e-mail já existe no auth, verifica se é órfão (aluno foi deletado)
+  if (authErr && (authErr.message.includes('already registered') || authErr.message.includes('already been registered') || authErr.message.includes('email address'))) {
+    // Busca o auth user pelo email via paginação completa
+    let authExistente = null
+    let page = 1
+    while (!authExistente) {
+      const { data: lista } = await adminClient.auth.admin.listUsers({ page, perPage: 1000 })
+      if (!lista?.users?.length) break
+      authExistente = lista.users.find(u => u.email === emailLimpo) ?? null
+      if (authExistente || lista.users.length < 1000) break
+      page++
+    }
+
+    if (!authExistente) {
+      return NextResponse.json({ erro: 'Não foi possível criar sua conta. Tente novamente.' }, { status: 400 })
+    }
+
+    // Verifica se ainda existe aluno vinculado
+    const { data: alunoExistente } = await adminClient.from('alunos')
+      .select('id').eq('user_id', authExistente.id).maybeSingle()
+
+    if (alunoExistente) {
+      return NextResponse.json({ erro: 'Este e-mail já possui uma conta. Faça login ou use outro e-mail.' }, { status: 400 })
+    }
+
+    // Órfão confirmado — deleta e recria
+    await adminClient.auth.admin.deleteUser(authExistente.id)
+    const retentativa = await adminClient.auth.admin.createUser({
+      email: emailLimpo,
+      password: senha,
+      email_confirm: true,
+    })
+    authUser = retentativa.data
+    authErr = retentativa.error
+  }
+
   if (authErr || !authUser?.user) {
-    const msg = authErr?.message ?? ''
-    const erro = msg.includes('already registered') || msg.includes('already been registered') || msg.includes('email address')
-      ? 'Este e-mail já possui uma conta. Faça login ou use outro e-mail.'
-      : 'Não foi possível criar sua conta. Tente novamente.'
-    return NextResponse.json({ erro }, { status: 400 })
+    return NextResponse.json({ erro: 'Não foi possível criar sua conta. Tente novamente.' }, { status: 400 })
   }
 
   // Resolve indicador: consultor free que indicou via link /captacao?ref=whatsapp
