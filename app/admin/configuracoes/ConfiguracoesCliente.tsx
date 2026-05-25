@@ -171,6 +171,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [contratoCorpo, setContratoCorpo] = useState(get('contrato_corpo'))
   const [contratoClausulas, setContratoClausulas] = useState(get('contrato_clausulas'))
   const [contratoAssinaturaUrl, setContratoAssinaturaUrl] = useState(get('contrato_assinatura_contratante_url'))
+  const [contratoLogoUrl, setContratoLogoUrl] = useState(get('contrato_logo_url'))
   const [linkCopiadoCNCPV, setLinkCopiadoCNCPV] = useState(false)
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState('')
@@ -190,6 +191,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const carteiraAssinaturaUrlRef = useRef<HTMLInputElement>(null)
   const contratoArquivoRef = useRef<HTMLInputElement>(null)
   const contratoAssinaturaRef = useRef<HTMLInputElement>(null)
+  const contratoLogoRef = useRef<HTMLInputElement>(null)
 
   const setters: Record<string, (v: string) => void> = {
     logoUrl: setLogoUrl,
@@ -206,6 +208,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
     carteiraAssinaturaUrl: setCarteiraAssinaturaUrl,
     moduloCapaPadrao: setModuloCapaPadrao,
     contratoAssinaturaUrl: setContratoAssinaturaUrl,
+    contratoLogoUrl: setContratoLogoUrl,
   }
 
   const campoToChave: Record<string, string> = {
@@ -223,6 +226,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
     carteiraAssinaturaUrl: 'carteira_assinatura_url',
     moduloCapaPadrao: 'modulo_capa_padrao',
     contratoAssinaturaUrl: 'contrato_assinatura_contratante_url',
+    contratoLogoUrl: 'contrato_logo_url',
   }
 
   async function uploadImagem(campo: string, file: File) {
@@ -378,6 +382,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         { chave: 'contrato_corpo', valor: contratoCorpo },
         { chave: 'contrato_clausulas', valor: contratoClausulas },
         { chave: 'contrato_assinatura_contratante_url', valor: contratoAssinaturaUrl },
+        { chave: 'contrato_logo_url', valor: contratoLogoUrl },
         { chave: 'free_quiz_obrigatorio', valor: String(freeQuizObrigatorio) },
         { chave: 'free_bloquear_video', valor: String(freeBloquearVideo) },
         { chave: 'pro_quiz_obrigatorio', valor: String(proQuizObrigatorio) },
@@ -1391,6 +1396,43 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
                 <label style={lbl}>Foro (comarca)</label>
                 <input style={inp} value={contratoForo} onChange={e => setContratoForo(e.target.value)} placeholder="Ex: Petrolina/PE" />
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Logo do contrato (cabeçalho verde) */}
+        <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+          <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>Logo do contrato (cabecalho)</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.6 }}>
+            Aparece no canto superior direito do cabecalho verde do contrato PDF. Use uma versao branca ou clara do logo da associacao (PNG com fundo transparente). Se nao subir nenhuma, o cabecalho fica so com o texto.
+          </p>
+          <input ref={contratoLogoRef} type="file" accept="image/*" style={{ display: 'none' }}
+            onChange={e => { const f = e.target.files?.[0]; if (f) { uploadImagem('contratoLogoUrl', f); e.target.value = '' } }}
+          />
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            {contratoLogoUrl ? (
+              <div style={{ background: '#02a153', borderRadius: 8, padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 140 }}>
+                <img src={contratoLogoUrl} alt="Logo contrato" style={{ maxHeight: 44, maxWidth: 180, objectFit: 'contain' }} />
+              </div>
+            ) : (
+              <div style={{ background: '#02a153', borderRadius: 8, padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 140, minHeight: 64 }}>
+                <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>Nenhum logo</span>
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button
+                onClick={() => contratoLogoRef.current?.click()}
+                disabled={uploading === 'contratoLogoUrl'}
+                style={{ background: uploading === 'contratoLogoUrl' ? 'var(--avp-border)' : contratoLogoUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+                {uploading === 'contratoLogoUrl' ? 'Enviando...' : contratoLogoUrl ? 'Trocar logo' : 'Subir logo (PNG branco)'}
+              </button>
+              {contratoLogoUrl && (
+                <button
+                  onClick={() => { if (confirm('Remover logo do contrato?')) setContratoLogoUrl('') }}
+                  style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '9px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+                  Remover
+                </button>
+              )}
             </div>
           </div>
         </div>

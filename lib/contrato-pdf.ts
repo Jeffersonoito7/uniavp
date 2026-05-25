@@ -25,6 +25,8 @@ export type DadosContratoAVP = {
   assinado_em: string
   numero_registro: string
   logoUrl?: string
+  // Logo dedicado para o cabeçalho do contrato (branco sobre verde)
+  contratoLogoUrl?: string | null
   // Cláusulas personalizadas (opcional — se ausente, usa texto padrão)
   clausulasPersonalizadas?: string
   // URL base da aplicação (para QR code de verificação)
@@ -241,10 +243,11 @@ export async function gerarPDFContrato(dados: DadosContratoAVP): Promise<Uint8Ar
   const regular = await doc.embedFont(StandardFonts.Helvetica)
   const oblique = await doc.embedFont(StandardFonts.HelveticaOblique)
 
+  // Usa logo dedicado do contrato; se não configurado, não exibe nada (evita logo da plataforma)
   let logoImage = null
-  if (dados.logoUrl) {
+  if (dados.contratoLogoUrl) {
     try {
-      const r = await fetch(dados.logoUrl)
+      const r = await fetch(dados.contratoLogoUrl)
       const b = await r.arrayBuffer()
       const ct = r.headers.get('content-type') || ''
       logoImage = ct.includes('png') ? await doc.embedPng(new Uint8Array(b)) : await doc.embedJpg(new Uint8Array(b))
