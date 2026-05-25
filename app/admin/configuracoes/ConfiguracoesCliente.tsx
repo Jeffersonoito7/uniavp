@@ -161,6 +161,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const [cncpvTestemunhaEmpresa, setCncpvTestemunhaEmpresa] = useState(get('cncpv_testemunha_empresa'))
   // Contrato de Representação
   const [contratoHabilitado, setContratoHabilitado] = useState(get('contrato_habilitado') === 'true')
+  const [contratoMomento, setContratoMomento] = useState(get('contrato_momento') || 'desativado')
   const [contratoContratanteNome, setContratoContratanteNome] = useState(get('contrato_contratante_nome'))
   const [contratoContratanteCnpj, setContratoContratanteCnpj] = useState(get('contrato_contratante_cnpj'))
   const [contratoContratanteEndereco, setContratoContratanteEndereco] = useState(get('contrato_contratante_endereco'))
@@ -186,6 +187,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
   const carteiraLogoEsquerdaRef = useRef<HTMLInputElement>(null)
   const carteiraLogoDireitaRef = useRef<HTMLInputElement>(null)
   const carteiraAssinaturaUrlRef = useRef<HTMLInputElement>(null)
+  const contratoArquivoRef = useRef<HTMLInputElement>(null)
 
   const setters: Record<string, (v: string) => void> = {
     logoUrl: setLogoUrl,
@@ -361,7 +363,8 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         { chave: 'cncpv_testemunha_nome', valor: cncpvTestemunhaNome },
         { chave: 'cncpv_testemunha_cargo', valor: cncpvTestemunhaCargo },
         { chave: 'cncpv_testemunha_empresa', valor: cncpvTestemunhaEmpresa },
-        { chave: 'contrato_habilitado', valor: String(contratoHabilitado) },
+        { chave: 'contrato_habilitado', valor: String(contratoMomento !== 'desativado') },
+        { chave: 'contrato_momento', valor: contratoMomento },
         { chave: 'contrato_contratante_nome', valor: contratoContratanteNome },
         { chave: 'contrato_contratante_cnpj', valor: contratoContratanteCnpj },
         { chave: 'contrato_contratante_endereco', valor: contratoContratanteEndereco },
@@ -1326,19 +1329,29 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
           </a>
         </div>
 
-        {/* Toggle habilitar */}
+        {/* Quando exigir o contrato */}
         <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <div>
-              <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>Exibir botão de contrato no painel do aluno</p>
-              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0' }}>
-                Quando ativado, consultores que concluíram 100% do curso verão o botão para assinar o contrato.
-              </p>
-            </div>
-            <button onClick={() => setContratoHabilitado(v => !v)}
-              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: contratoHabilitado ? '#6366f1' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
-              <span style={{ position: 'absolute', top: 3, left: contratoHabilitado ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
-            </button>
+          <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>Quando exigir a assinatura do contrato</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.5 }}>
+            Controla em que momento o aluno precisa assinar o contrato. Aplica-se a todos os alunos (FREE e PRO).
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[
+              { valor: 'desativado', label: 'Desativado', desc: 'Nenhum aluno precisa assinar contrato' },
+              { valor: 'no_cadastro', label: 'No cadastro', desc: 'O aluno assina antes de acessar qualquer aula' },
+              { valor: 'ao_concluir', label: 'Ao concluir o curso', desc: 'O aluno assina somente quando concluir 100% do curso' },
+            ].map(op => (
+              <label key={op.valor} onClick={() => setContratoMomento(op.valor)}
+                style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 14px', background: contratoMomento === op.valor ? 'rgba(99,102,241,0.08)' : 'rgba(255,255,255,0.02)', border: `1px solid ${contratoMomento === op.valor ? 'rgba(99,102,241,0.4)' : 'var(--avp-border)'}`, borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s' }}>
+                <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${contratoMomento === op.valor ? '#818cf8' : 'var(--avp-border)'}`, background: contratoMomento === op.valor ? '#818cf8' : 'transparent', flexShrink: 0, marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {contratoMomento === op.valor && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#fff' }} />}
+                </div>
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: 13, margin: 0, color: contratoMomento === op.valor ? '#c4b5fd' : 'var(--avp-text)' }}>{op.label}</p>
+                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>{op.desc}</p>
+                </div>
+              </label>
+            ))}
           </div>
         </div>
 
@@ -1381,10 +1394,36 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
         <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
           <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>📝 Corpo do contrato</p>
           <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.6 }}>
-            Cole aqui o texto completo do contrato — todas as cláusulas. Se deixar em branco, o sistema usa o texto padrão.<br />
+            Cole aqui o texto completo do contrato ou importe de um arquivo <strong>.txt</strong>. Se deixar em branco, o sistema usa o texto padrão.<br />
             <strong style={{ color: 'var(--avp-text)' }}>Formato:</strong> use <code style={{ background: 'var(--avp-card)', padding: '1px 5px', borderRadius: 4, fontSize: 11 }}>## 1. TÍTULO DA SEÇÃO</code> para seções
             e <code style={{ background: 'var(--avp-card)', padding: '1px 5px', borderRadius: 4, fontSize: 11 }}>1.1. Texto da cláusula</code> para subcláusulas.
           </p>
+          <input
+            ref={contratoArquivoRef}
+            type="file"
+            accept=".txt,text/plain"
+            style={{ display: 'none' }}
+            onChange={e => {
+              const file = e.target.files?.[0]
+              if (!file) return
+              const reader = new FileReader()
+              reader.onload = ev => {
+                const texto = ev.target?.result as string
+                if (texto) setContratoCorpo(texto)
+              }
+              reader.readAsText(file, 'UTF-8')
+              e.target.value = ''
+            }}
+          />
+          <div style={{ marginBottom: 8 }}>
+            <button
+              type="button"
+              onClick={() => contratoArquivoRef.current?.click()}
+              style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '8px 16px', color: 'var(--avp-text-dim)', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
+              Importar arquivo .txt
+            </button>
+            <span style={{ marginLeft: 10, fontSize: 11, color: 'var(--avp-text-dim)' }}>O conteúdo do arquivo substitui o texto abaixo</span>
+          </div>
           <textarea
             value={contratoCorpo}
             onChange={e => setContratoCorpo(e.target.value)}

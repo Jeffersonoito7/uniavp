@@ -51,7 +51,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
       'cert_assinatura_y', 'cert_assinatura_ativa', 'cert_assinatura_url', 'cert_assinatura_nome', 'cert_assinatura_cargo',
       'carteira_logo_esquerda', 'carteira_logo_direita',
       'carteira_assinatura_url', 'carteira_assinatura_nome', 'carteira_assinatura_cargo',
-      'contrato_habilitado', 'carteira_quando', 'carteira_percentual_minimo',
+      'contrato_habilitado', 'contrato_momento', 'carteira_quando', 'carteira_percentual_minimo',
       'passos_painel_habilitado',
       'captacao_mostrar_parceiro', 'captacao_bloquear_parceiro', 'captacao_parceiro_titulo',
       'captacao_link_externo',
@@ -61,6 +61,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
   const certMap: Record<string, string> = {}
   for (const r of certConfigs ?? []) { try { certMap[r.chave] = JSON.parse(r.valor) } catch { certMap[r.chave] = r.valor } }
   const contratoHabilitado = certMap['contrato_habilitado'] === 'true'
+  const contratoMomento = certMap['contrato_momento'] || 'desativado'
   const carteiraQuando = certMap['carteira_quando'] || 'concluido'
   const carteiraPercentualMinimo = parseInt(certMap['carteira_percentual_minimo'] || '50') || 50
   const passosPainelHabilitado = certMap['passos_painel_habilitado'] === 'true'
@@ -74,6 +75,23 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
 
   if (!aluno) redirect('/entrar?p=free')
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
+
+  // Verifica se o aluno já assinou o contrato (necessário para lógica de bloqueio)
+  const { data: contratoAssinado } = contratoMomento !== 'desativado'
+    ? await adminClient.from('contratos').select('numero_registro').eq('whatsapp', aluno.whatsapp).maybeSingle()
+    : { data: null }
+
+  // Bloqueia acesso se contrato_momento = 'no_cadastro' e ainda não assinou
+  if (contratoMomento === 'no_cadastro' && !contratoAssinado) {
+    const qs = new URLSearchParams({
+      nome: aluno.nome,
+      whatsapp: aluno.whatsapp,
+      email: aluno.email ?? '',
+      cpf: aluno.cpf ?? '',
+      aluno_id: aluno.id,
+    })
+    redirect(`/contrato?${qs.toString()}`)
+  }
 
   // Resolve link parceiro: PRO do aluno → FREE que indicou → global admin
   const { data: gestorLink } = aluno.gestor_whatsapp
@@ -199,6 +217,18 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
 
   const precisaSetup = passosPainelHabilitado && !aluno.setup_concluido &&
     (setupMostrarParceiro || (setupMostrarApp && (setupAppIos || setupAppAndroid)))
+
+  // Bloqueia acesso se contrato_momento = 'ao_concluir' e curso concluído mas contrato não assinado
+  if (contratoMomento === 'ao_concluir' && progressoGeral === 100 && !contratoAssinado) {
+    const qs = new URLSearchParams({
+      nome: aluno.nome,
+      whatsapp: aluno.whatsapp,
+      email: aluno.email ?? '',
+      cpf: aluno.cpf ?? '',
+      aluno_id: aluno.id,
+    })
+    redirect(`/contrato?${qs.toString()}`)
+  }
 
   // Aulas ao vivo: admin (gestor_id null) + gestor do aluno
   let gestorIdAluno: string | null = null

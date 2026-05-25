@@ -545,9 +545,15 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
             </div>
             <button onClick={() => navigator.clipboard.writeText(resultado.numero_registro).then(() => alert('Registro copiado!'))}
               style={{ background:'rgba(99,102,241,0.15)', border:'1px solid rgba(79,70,229,0.3)', color:'#818cf8', borderRadius:10, padding:'12px 24px', fontWeight:700, fontSize:14, cursor:'pointer' }}>
-              📋 Copiar número do registro
+              Copiar número do registro
             </button>
           </>
+        )}
+        {whatsappInicial && (
+          <a href={`/aluno/${whatsappInicial.replace(/\D/g, '')}`}
+            style={{ display:'inline-block', marginTop:24, background:'#22c55e', color:'#fff', borderRadius:10, padding:'13px 28px', fontWeight:700, fontSize:15, textDecoration:'none' }}>
+            Ir para o painel
+          </a>
         )}
       </div>
     </div>
