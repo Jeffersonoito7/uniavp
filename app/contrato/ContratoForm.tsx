@@ -72,6 +72,28 @@ function validarCNPJ(cnpj: string): boolean {
   return r === parseInt(d[len])
 }
 
+function validarCPF(cpf: string): boolean {
+  const d = cpf.replace(/\D/g,'')
+  if (d.length !== 11 || /^(\d)\1+$/.test(d)) return false
+  let sum = 0
+  for (let i = 0; i < 9; i++) sum += parseInt(d[i]) * (10 - i)
+  let r = (sum * 10) % 11; if (r === 10 || r === 11) r = 0
+  if (r !== parseInt(d[9])) return false
+  sum = 0
+  for (let i = 0; i < 10; i++) sum += parseInt(d[i]) * (11 - i)
+  r = (sum * 10) % 11; if (r === 10 || r === 11) r = 0
+  return r === parseInt(d[10])
+}
+
+function validarEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+}
+
+function validarWhatsApp(wpp: string): boolean {
+  const d = wpp.replace(/\D/g,'')
+  return d.length >= 10 && d.length <= 13
+}
+
 function formatarCNPJ(v: string): string {
   const d = v.replace(/\D/g,'').slice(0,14)
   if (d.length <= 2) return d
@@ -79,6 +101,22 @@ function formatarCNPJ(v: string): string {
   if (d.length <= 8) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5)}`
   if (d.length <= 12) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8)}`
   return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8,12)}-${d.slice(12)}`
+}
+
+function formatarCPF(v: string): string {
+  const d = v.replace(/\D/g,'').slice(0,11)
+  if (d.length <= 3) return d
+  if (d.length <= 6) return `${d.slice(0,3)}.${d.slice(3)}`
+  if (d.length <= 9) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`
+  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`
+}
+
+function formatarWhatsApp(v: string): string {
+  const d = v.replace(/\D/g,'').slice(0,11)
+  if (d.length <= 2) return d
+  if (d.length <= 6) return `(${d.slice(0,2)}) ${d.slice(2)}`
+  if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`
+  return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`
 }
 
 export default function ContratoForm({ nomeInicial='', whatsappInicial='', emailInicial='', cpfInicial='', alunoId, contratanteNome, contratanteCnpj, contratanteEndereco, foro, clausulasCustom }: Props) {
@@ -195,8 +233,17 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
   if (etapa === 'dados') {
     const cnpjValido = validarCNPJ(form.cnpj_mei)
     const cnpjLen = form.cnpj_mei.replace(/\D/g,'').length
-    const nfOk = nfEmiteProprio === true || (nfEmiteProprio === false && nfEmpresaNome && nfEmpresaCnpj && nfResponsavelNome)
-    const podeAvancar = form.nome && form.whatsapp && form.cnpj_mei && cnpjValido && form.rua && form.numero && form.bairro && form.cidade && form.estado && form.cep && nfEmiteProprio !== null && nfOk
+    const cpfLen = form.cpf.replace(/\D/g,'').length
+    const cpfValido = cpfLen === 0 || validarCPF(form.cpf)
+    const wppLen = form.whatsapp.replace(/\D/g,'').length
+    const wppValido = validarWhatsApp(form.whatsapp)
+    const emailOk = !form.email || validarEmail(form.email)
+    const nfCnpjLen = nfEmpresaCnpj.replace(/\D/g,'').length
+    const nfCnpjValido = nfCnpjLen === 0 || validarCNPJ(nfEmpresaCnpj)
+    const nfCpfLen = nfResponsavelCpf.replace(/\D/g,'').length
+    const nfCpfValido = nfCpfLen === 0 || validarCPF(nfResponsavelCpf)
+    const nfOk = nfEmiteProprio === true || (nfEmiteProprio === false && nfEmpresaNome && nfEmpresaCnpj && validarCNPJ(nfEmpresaCnpj) && nfResponsavelNome)
+    const podeAvancar = form.nome && wppValido && form.cnpj_mei && cnpjValido && emailOk && cpfValido && form.rua && form.numero && form.bairro && form.cidade && form.estado && form.cep && nfEmiteProprio !== null && nfOk
     return (
       <div style={{ minHeight:'100vh', background:bg, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Inter,sans-serif', padding:'32px 20px' }}>
         <div style={{ width:'100%', maxWidth:580 }}>
@@ -217,17 +264,51 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
               </div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
                 <div>
-                  <label style={lbl}>WhatsApp *</label>
-                  <input style={inp} value={form.whatsapp} onChange={e => setForm(p=>({...p,whatsapp:e.target.value}))} placeholder="(11) 99999-9999" />
+                  <label style={lbl}>
+                    WhatsApp *
+                    {wppLen >= 10 && (
+                      <span style={{ marginLeft:8, color: wppValido ? '#22c55e' : '#f87171', fontWeight:700 }}>
+                        {wppValido ? '✓ válido' : '✗ inválido'}
+                      </span>
+                    )}
+                  </label>
+                  <input
+                    style={{...inp, borderColor: wppLen >= 10 && !wppValido ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.15)'}}
+                    value={form.whatsapp}
+                    onChange={e => setForm(p=>({...p,whatsapp:formatarWhatsApp(e.target.value)}))}
+                    placeholder="(87) 99999-9999" />
                 </div>
                 <div>
-                  <label style={lbl}>CPF</label>
-                  <input style={inp} value={form.cpf} onChange={e => setForm(p=>({...p,cpf:e.target.value}))} placeholder="000.000.000-00" />
+                  <label style={lbl}>
+                    CPF
+                    {cpfLen === 11 && (
+                      <span style={{ marginLeft:8, color: cpfValido ? '#22c55e' : '#f87171', fontWeight:700 }}>
+                        {cpfValido ? '✓ válido' : '✗ inválido'}
+                      </span>
+                    )}
+                  </label>
+                  <input
+                    style={{...inp, borderColor: cpfLen === 11 && !cpfValido ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.15)'}}
+                    value={form.cpf}
+                    onChange={e => setForm(p=>({...p,cpf:formatarCPF(e.target.value)}))}
+                    placeholder="000.000.000-00" />
                 </div>
               </div>
               <div>
-                <label style={lbl}>E-mail</label>
-                <input style={{...inp}} type="email" value={form.email} onChange={e => setForm(p=>({...p,email:e.target.value}))} placeholder="seu@email.com" />
+                <label style={lbl}>
+                  E-mail
+                  {form.email.length > 4 && (
+                    <span style={{ marginLeft:8, color: emailOk ? '#22c55e' : '#f87171', fontWeight:700 }}>
+                      {emailOk ? '✓ válido' : '✗ inválido'}
+                    </span>
+                  )}
+                </label>
+                <input
+                  style={{...inp, borderColor: form.email.length > 4 && !emailOk ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.15)'}}
+                  type="email"
+                  value={form.email}
+                  onChange={e => setForm(p=>({...p,email:e.target.value}))}
+                  placeholder="seu@email.com" />
               </div>
             </div>
 
@@ -310,16 +391,38 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
                     <input style={inp} value={nfEmpresaNome} onChange={e => setNfEmpresaNome(e.target.value)} placeholder="Ex: ABC Serviços Ltda" />
                   </div>
                   <div>
-                    <label style={lbl}>CNPJ da empresa emissora *</label>
-                    <input style={inp} value={nfEmpresaCnpj} onChange={e => setNfEmpresaCnpj(formatarCNPJ(e.target.value))} placeholder="00.000.000/0001-00" />
+                    <label style={lbl}>
+                      CNPJ da empresa emissora *
+                      {nfCnpjLen === 14 && (
+                        <span style={{ marginLeft:8, color: nfCnpjValido ? '#22c55e' : '#f87171', fontWeight:700 }}>
+                          {nfCnpjValido ? '✓ válido' : '✗ inválido'}
+                        </span>
+                      )}
+                    </label>
+                    <input
+                      style={{...inp, borderColor: nfCnpjLen === 14 && !nfCnpjValido ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.15)'}}
+                      value={nfEmpresaCnpj}
+                      onChange={e => setNfEmpresaCnpj(formatarCNPJ(e.target.value))}
+                      placeholder="00.000.000/0001-00" />
                   </div>
                   <div>
                     <label style={lbl}>Nome do responsável que receberá em seu nome *</label>
                     <input style={inp} value={nfResponsavelNome} onChange={e => setNfResponsavelNome(e.target.value)} placeholder="Nome completo" />
                   </div>
                   <div>
-                    <label style={lbl}>CPF do responsável</label>
-                    <input style={inp} value={nfResponsavelCpf} onChange={e => setNfResponsavelCpf(e.target.value)} placeholder="000.000.000-00" />
+                    <label style={lbl}>
+                      CPF do responsável
+                      {nfCpfLen === 11 && (
+                        <span style={{ marginLeft:8, color: nfCpfValido ? '#22c55e' : '#f87171', fontWeight:700 }}>
+                          {nfCpfValido ? '✓ válido' : '✗ inválido'}
+                        </span>
+                      )}
+                    </label>
+                    <input
+                      style={{...inp, borderColor: nfCpfLen === 11 && !nfCpfValido ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.15)'}}
+                      value={nfResponsavelCpf}
+                      onChange={e => setNfResponsavelCpf(formatarCPF(e.target.value))}
+                      placeholder="000.000.000-00" />
                   </div>
                   <p style={{ fontSize:11, color:'rgba(255,255,255,0.35)', margin:0, lineHeight:1.6 }}>
                     Ao assinar este contrato, você autoriza expressamente a empresa e o responsável acima a emitir notas fiscais e receber pagamentos em seu nome, conforme pactuado neste instrumento.
