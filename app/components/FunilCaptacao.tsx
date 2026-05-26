@@ -11,6 +11,7 @@ type Props = {
   gestorWhatsapp?: string
   siteNome?: string
   logoUrl?: string
+  corFundo?: string
   videoId?: string | null
   direto?: boolean
   indicadorWhatsapp?: string
@@ -29,7 +30,7 @@ type Props = {
 }
 
 export default function FunilCaptacao({
-  gestorNome, gestorWhatsapp, siteNome, logoUrl, videoId, direto, indicadorWhatsapp, plano,
+  gestorNome, gestorWhatsapp, siteNome, logoUrl, corFundo, videoId, direto, indicadorWhatsapp, plano,
   linkExterno, bloquearVideo = true,
   captacaoMostrarParceiro = false, captacaoBloquearParceiro = false, captacaoParceiroTitulo,
   captacaoMostrarApp = false, captacaoBloquearApp = false,
@@ -86,7 +87,7 @@ export default function FunilCaptacao({
     setLoading(false)
   }
 
-  const bg = '#0a0a0f'
+  const bg = corFundo || '#0a0a0f'
   const inp: React.CSSProperties = { width: '100%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, padding: '13px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box', fontFamily: 'Inter, sans-serif' }
 
   // ── 1. PERGUNTA INICIAL ─────────────────────────────────────────

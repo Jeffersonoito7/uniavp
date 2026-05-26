@@ -63,6 +63,7 @@ export default async function CaptacaoPage({ searchParams }: { searchParams?: { 
     <FunilCaptacao
       siteNome={config.nome}
       logoUrl={config.logoPaginaUrl || config.logoUrl}
+      corFundo={config.corFundo}
       videoId={videoId}
       direto={direto}
       indicadorWhatsapp={ref}
