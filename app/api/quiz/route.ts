@@ -181,9 +181,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const { data: todasAulas } = await adminClient.from('aulas')
-      .select('id')
-      .eq('publicado', true)
+    let todasAulasQ = adminClient.from('aulas').select('id').eq('publicado', true)
+    if (aluno.tenant_id) todasAulasQ = todasAulasQ.eq('tenant_id', aluno.tenant_id)
+    const { data: todasAulas } = await todasAulasQ
     if (todasAulas) {
       const todosIds = todasAulas.map((a: { id: string }) => a.id)
       const { data: todasAprovRows } = await adminClient.from('progresso')

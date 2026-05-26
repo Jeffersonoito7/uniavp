@@ -10,17 +10,21 @@ export async function GET() {
 
   const admin = createServiceRoleClient()
   const { data: gestor } = await admin.from('gestores')
-    .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+    .select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!gestor) return NextResponse.json({ error: 'Não autorizado' }, { status: 403 })
 
-  const { data: modulos } = await admin.from('modulos')
+  let modulosQ = admin.from('modulos')
     .select('id, titulo, ordem, descricao, capa_url')
     .contains('perfis_permitidos', ['gestor'])
     .order('ordem')
+  if (gestor.tenant_id) modulosQ = modulosQ.eq('tenant_id', gestor.tenant_id)
+  const { data: modulos } = await modulosQ
 
-  const { data: aulas } = await admin.from('aulas')
+  let aulasQ = admin.from('aulas')
     .select('id, titulo, descricao, youtube_video_id, video_url, duracao_minutos, capa_url, ordem, modulo_id, publicado, quiz_aprovacao_minima, quiz_qtd_questoes, quiz_tipo, espera_horas, liberacao_modo')
     .order('ordem')
+  if (gestor.tenant_id) aulasQ = aulasQ.eq('tenant_id', gestor.tenant_id)
+  const { data: aulas } = await aulasQ
 
   return NextResponse.json({ modulos: modulos ?? [], aulas: aulas ?? [] })
 }

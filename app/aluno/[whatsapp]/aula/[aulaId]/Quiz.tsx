@@ -188,7 +188,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
         <span style={{ fontSize: 32 }}>🙏</span>
         <div>
           <p style={{ fontWeight: 700, color: 'var(--avp-green)', fontSize: 16, marginBottom: 4 }}>Tudo bem!</p>
-          <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Você pode continuar para a próxima aula. O quiz ficou registrado como não realizado.</p>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Quiz registrado como visto. Você pode continuar para a próxima aula.</p>
         </div>
       </div>
     )

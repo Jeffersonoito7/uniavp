@@ -73,6 +73,7 @@ export default async function GestorCaptacaoPage({ params, searchParams }: { par
       gestorWhatsapp={gestor.whatsapp}
       siteNome={config.nome}
       logoUrl={config.logoPaginaUrl || config.logoUrl}
+      corFundo={config.corFundo}
       videoId={videoId}
       direto={direto}
       indicadorWhatsapp={ref}

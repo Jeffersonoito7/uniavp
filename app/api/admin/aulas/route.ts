@@ -19,9 +19,11 @@ export async function PUT(req: NextRequest) {
 
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  const camposPermitidos = ['titulo', 'descricao', 'capa_url', 'youtube_video_id', 'duracao_minutos', 'quiz_qtd_questoes',
-    'quiz_aprovacao_minima', 'espera_horas', 'publicado', 'ao_vivo_link', 'ao_vivo_data',
-    'ao_vivo_plataforma', 'validade_meses', 'ordem']
+  const camposPermitidos = ['titulo', 'descricao', 'capa_url', 'youtube_video_id', 'video_url', 'duracao_minutos',
+    'quiz_qtd_questoes', 'quiz_aprovacao_minima', 'quiz_tipo', 'espera_horas', 'publicado',
+    'ao_vivo_link', 'ao_vivo_data', 'ao_vivo_plataforma', 'validade_meses', 'ordem',
+    'bloquear_avancar', 'mostrar_link_externo', 'link_externo_titulo', 'bloquear_link_externo',
+    'mostrar_links_app', 'bloquear_links_app']
 
   const atualizacoes = Object.fromEntries(
     camposPermitidos.filter(c => c in updates).map(c => [c, updates[c]])

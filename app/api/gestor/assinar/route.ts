@@ -73,10 +73,9 @@ export async function POST() {
   }
 
   // Lê valor configurado para o tenant (padrão 97)
-  const { data: valorCfg } = await adminClient.from('configuracoes')
-    .select('valor').eq('chave', 'plano_pro_valor')
-    .eq('tenant_id', gestor.tenant_id ?? '')
-    .maybeSingle()
+  const { data: valorCfg } = gestor.tenant_id
+    ? await adminClient.from('configuracoes').select('valor').eq('chave', 'plano_pro_valor').eq('tenant_id', gestor.tenant_id).maybeSingle()
+    : { data: null }
   const valorStr = valorCfg?.valor ? String(valorCfg.valor).replace(/"/g, '') : ''
   const valorParsed = parseFloat(valorStr)
   const valorPlano = isNaN(valorParsed) ? 97 : Math.max(1, valorParsed)
@@ -149,8 +148,9 @@ export async function GET() {
     .limit(1)
     .maybeSingle()
 
-  const { data: valorCfgGet } = await adminClient.from('configuracoes')
-    .select('valor').eq('chave', 'plano_pro_valor').eq('tenant_id', gestor.tenant_id ?? '').maybeSingle()
+  const { data: valorCfgGet } = gestor.tenant_id
+    ? await adminClient.from('configuracoes').select('valor').eq('chave', 'plano_pro_valor').eq('tenant_id', gestor.tenant_id).maybeSingle()
+    : { data: null }
   const valorParsedGet = parseFloat(String(valorCfgGet?.valor ?? '').replace(/"/g, ''))
   const valorPlanoGet = isNaN(valorParsedGet) ? 97 : Math.max(1, valorParsedGet)
 

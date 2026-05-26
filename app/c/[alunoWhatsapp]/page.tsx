@@ -28,6 +28,12 @@ export default async function FreeCaptacaoPage({
   const adminClient = createServiceRoleClient()
   const config = await getSiteConfig(host)
 
+  const { data: tenantRow } = await adminClient.from('tenant_domains')
+    .select('tenant_id').eq('domain', host.replace(/:\d+$/, '')).maybeSingle()
+  const tenantId = tenantRow?.tenant_id as string | null
+
+  const tq = (q: any) => tenantId ? q.eq('tenant_id', tenantId) : q
+
   const { data: aluno } = await adminClient.from('alunos')
     .select('nome, whatsapp, link_externo')
     .eq('whatsapp', params.alunoWhatsapp)
@@ -35,11 +41,11 @@ export default async function FreeCaptacaoPage({
 
   if (!aluno) redirect('/captacao')
 
-  const { data: videoConfig } = await adminClient.from('configuracoes')
-    .select('valor').eq('chave', 'captacao_video_id').maybeSingle()
+  const { data: videoConfig } = await tq(adminClient.from('configuracoes')
+    .select('valor').eq('chave', 'captacao_video_id')).maybeSingle()
 
-  const { data: bloquearConfig } = await adminClient.from('configuracoes')
-    .select('valor').eq('chave', 'free_bloquear_video').maybeSingle()
+  const { data: bloquearConfig } = await tq(adminClient.from('configuracoes')
+    .select('valor').eq('chave', 'free_bloquear_video')).maybeSingle()
   const bloquearVideo = bloquearConfig?.valor !== 'false'
 
   const valorRaw = videoConfig?.valor
@@ -53,6 +59,7 @@ export default async function FreeCaptacaoPage({
       gestorNome={aluno.nome}
       siteNome={config.nome}
       logoUrl={config.logoPaginaUrl || config.logoUrl}
+      corFundo={config.corFundo}
       videoId={videoId}
       direto={direto}
       indicadorWhatsapp={aluno.whatsapp}

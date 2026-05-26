@@ -38,13 +38,13 @@ export async function GET(req: NextRequest) {
 
     if (diasParaExpirar === 7) {
       await enviarWhatsApp(p.aluno.whatsapp,
-        `⚠️ *${p.aluno.nome}*, sua certificação na aula *"${p.aula.titulo}"* expira em *7 dias*!\n\nPara manter seu certificado válido, você precisará refazer o quiz desta aula.\n\n👉 ${appUrl}/login`,
+        `⚠️ *${p.aluno.nome}*, sua certificação na aula *"${p.aula.titulo}"* expira em *7 dias*!\n\nPara manter seu certificado válido, você precisará refazer o quiz desta aula.\n\n👉 ${appUrl}/entrar`,
         instancia)
       avisos++
     }
     if (diasParaExpirar === 1) {
       await enviarWhatsApp(p.aluno.whatsapp,
-        `🚨 *${p.aluno.nome}*, sua certificação em *"${p.aula.titulo}"* expira *AMANHÃ*!\n\nAcesse agora e refaça o quiz para não perder:\n👉 ${appUrl}/login`,
+        `🚨 *${p.aluno.nome}*, sua certificação em *"${p.aula.titulo}"* expira *AMANHÃ*!\n\nAcesse agora e refaça o quiz para não perder:\n👉 ${appUrl}/entrar`,
         instancia)
       avisos++
     }

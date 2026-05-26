@@ -258,7 +258,7 @@ export default function AssinarProPage() {
         )}
 
         <div style={{ textAlign: 'center', marginTop: 20 }}>
-          <a href="/upgrade" style={{ color: '#8a8fa3', fontSize: 13, textDecoration: 'none' }}>← Voltar</a>
+          <a href="/consultor/upgrade" style={{ color: '#8a8fa3', fontSize: 13, textDecoration: 'none' }}>← Voltar</a>
         </div>
       </div>
     </div>
