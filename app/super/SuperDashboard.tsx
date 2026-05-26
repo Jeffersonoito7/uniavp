@@ -32,13 +32,14 @@ const Icons = {
   menu: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
   monitor: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>,
   alert: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+  bot: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>,
 }
 
 export default function SuperDashboard({ nome, clientes: inicial, stats, recentesAlunos, configs }: {
   nome: string; clientes: Cliente[]; stats: Stats; recentesAlunos: { nome: string; created_at: string | null; status: string }[]; configs: Config[]
 }) {
   const [clientes, setClientes] = useState<Cliente[]>(inicial)
-  const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca' | 'boleto_avulso' | 'configuracoes' | 'planos' | 'implantacao' | 'contratos' | 'monitoramento'>('dashboard')
+  const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca' | 'boleto_avulso' | 'configuracoes' | 'planos' | 'implantacao' | 'contratos' | 'monitoramento' | 'agente'>('dashboard')
   const [onboardingId, setOnboardingId] = useState<string | null>(null)
   const [onboardingForm, setOnboardingForm] = useState({ admin_email: '', admin_nome: '', dominio: '', whatsapp_instancia: '' })
   const [onboardingMsg, setOnboardingMsg] = useState<string[]>([])
@@ -74,6 +75,16 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
   const [planos, setPlanos] = useState<PlanoSaaS[]>(PLANOS_DEFAULT)
   const [healthData, setHealthData] = useState<any>(null)
   const [healthLoading, setHealthLoading] = useState(false)
+
+  // Agente IA
+  type AgenteConfigGlobal = { nome_assistente: string; prompt_base: string | null; modelo_padrao: string; creditos_boas_vindas_padrao: number; ativo: boolean }
+  type AgenteTenantRow = { id: string; nome: string; dominio: string | null; config: { nome_assistente: string; instancia_whatsapp: string | null; modelo: string; ativo: boolean } | null; stats: { creditos_total: number; creditos_consumidos: number; receita_total: number; gestores_com_saldo: number } }
+  const [agenteData, setAgenteData] = useState<{ configGlobal: AgenteConfigGlobal | null; tenants: AgenteTenantRow[] } | null>(null)
+  const [agenteLoading, setAgenteLoading] = useState(false)
+  const [agenteForm, setAgenteForm] = useState<AgenteConfigGlobal>({ nome_assistente: 'Assistente AutoVale', prompt_base: null, modelo_padrao: 'haiku', creditos_boas_vindas_padrao: 50, ativo: true })
+  const [agenteSalvando, setAgenteSalvando] = useState(false)
+  const [agenteMsg, setAgenteMsg] = useState('')
+  const [agenteTenantSel, setAgenteTenantSel] = useState<string | null>(null)
   const [planosCarregados, setPlanosCarregados] = useState(false)
   const [salvandoPlanos, setSalvandoPlanos] = useState(false)
   const [msgPlanos, setMsgPlanos] = useState('')
@@ -85,6 +96,27 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
       fetch('/api/super/planos').then(r => r.json()).then(data => { setPlanos(data); setPlanosCarregados(true) }).catch(() => {})
     }
   }, [aba, planosCarregados])
+
+  useEffect(() => {
+    if (aba === 'agente' && !agenteData) {
+      setAgenteLoading(true)
+      fetch('/api/super/agente').then(r => r.json()).then(data => {
+        setAgenteData(data)
+        if (data.configGlobal) setAgenteForm(data.configGlobal)
+        setAgenteLoading(false)
+      }).catch(() => setAgenteLoading(false))
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aba])
+
+  async function salvarAgenteConfig() {
+    setAgenteSalvando(true); setAgenteMsg('')
+    const res = await fetch('/api/super/agente', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(agenteForm) })
+    setAgenteSalvando(false)
+    setAgenteMsg(res.ok ? 'Configuracao salva com sucesso.' : 'Erro ao salvar configuracao.')
+    if (res.ok) setAgenteData(prev => prev ? { ...prev, configGlobal: { ...agenteForm } } : prev)
+    setTimeout(() => setAgenteMsg(''), 3000)
+  }
 
   async function salvarPlanos() {
     setSalvandoPlanos(true); setMsgPlanos('')
@@ -263,6 +295,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
     { id: 'planos', label: 'Planos / Vendas', icon: Icons.plans },
     { id: 'testar', label: 'Testar', icon: Icons.test },
     { id: 'boleto_avulso', label: 'Boleto Avulso', icon: Icons.invoice },
+    { id: 'agente', label: 'Agente IA', icon: Icons.bot },
     { id: 'configuracoes', label: 'Configurações', icon: Icons.settings },
     { id: 'cobranca', label: 'Cobranças', icon: Icons.billing },
   ] as const
@@ -1394,6 +1427,173 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ── Agente IA ── */}
+        {aba === 'agente' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div>
+              <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, letterSpacing: '-0.02em' }}>Agente IA</h1>
+              <p style={{ color: C.dim, fontSize: 13 }}>Configuracao global do assistente e visao de uso por tenant</p>
+            </div>
+
+            {agenteLoading && <p style={{ color: C.dim, fontSize: 13 }}>Carregando...</p>}
+
+            {!agenteLoading && (
+              <>
+                {/* Config Global */}
+                <div style={{ ...card, padding: 24 }}>
+                  <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 18, color: C.text }}>Configuracao Global (Oito7)</p>
+                  <p style={{ color: C.dim, fontSize: 12, marginBottom: 20, lineHeight: 1.6 }}>
+                    Valores padrao herdados por todos os tenants que nao tiverem config propria.
+                  </p>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+                    <div>
+                      <label style={lbl}>Nome do Assistente</label>
+                      <input style={inp} value={agenteForm.nome_assistente}
+                        onChange={e => setAgenteForm(f => ({ ...f, nome_assistente: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label style={lbl}>Modelo Padrao</label>
+                      <select style={{ ...inp, cursor: 'pointer' }} value={agenteForm.modelo_padrao}
+                        onChange={e => setAgenteForm(f => ({ ...f, modelo_padrao: e.target.value }))}>
+                        <option value="haiku">Haiku (rapido, economico)</option>
+                        <option value="sonnet">Sonnet (avancado)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={lbl}>Creditos Boas-Vindas Padrao</label>
+                      <input style={inp} type="number" min={0} value={agenteForm.creditos_boas_vindas_padrao}
+                        onChange={e => setAgenteForm(f => ({ ...f, creditos_boas_vindas_padrao: Number(e.target.value) }))} />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 20 }}>
+                      <input type="checkbox" id="agente_ativo" checked={agenteForm.ativo}
+                        onChange={e => setAgenteForm(f => ({ ...f, ativo: e.target.checked }))} />
+                      <label htmlFor="agente_ativo" style={{ color: C.text, fontSize: 13 }}>Agente ativo globalmente</label>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: 20 }}>
+                    <label style={lbl}>Prompt Base (instrucoes do assistente)</label>
+                    <textarea style={{ ...inp, minHeight: 120, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.6 }}
+                      value={agenteForm.prompt_base ?? ''}
+                      placeholder="Voce e um assistente especialista em protecao veicular..."
+                      onChange={e => setAgenteForm(f => ({ ...f, prompt_base: e.target.value || null }))} />
+                    <p style={{ fontSize: 11, color: C.dim, marginTop: 4 }}>
+                      Este prompt e a base do assistente. Os tenants podem adicionar instrucoes extras pelo painel admin deles.
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <button onClick={salvarAgenteConfig} disabled={agenteSalvando} style={{ ...btn, opacity: agenteSalvando ? 0.6 : 1 }}>
+                      {agenteSalvando ? 'Salvando...' : 'Salvar Configuracao'}
+                    </button>
+                    {agenteMsg && <p style={{ fontSize: 13, color: agenteMsg.includes('Erro') ? '#f87171' : '#4ade80' }}>{agenteMsg}</p>}
+                  </div>
+                </div>
+
+                {/* Tabela de Consumo por Tenant */}
+                <div style={{ ...card, padding: 24 }}>
+                  <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 18, color: C.text }}>Uso do Agente por Tenant</p>
+
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                      <thead>
+                        <tr>
+                          {['Tenant', 'Agente', 'Instancia WA', 'Modelo', 'Credits vendidos', 'Consumidos', 'Receita', 'PROs ativos'].map(h => (
+                            <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: 11, fontWeight: 700, color: C.dim, borderBottom: `1px solid ${C.border}`, whiteSpace: 'nowrap', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(agenteData?.tenants ?? []).map(t => (
+                          <tr key={t.id} style={{ borderBottom: `1px solid ${C.border}`, cursor: 'pointer', transition: 'background 0.15s' }}
+                            onClick={() => setAgenteTenantSel(agenteTenantSel === t.id ? null : t.id)}
+                            onMouseEnter={e => (e.currentTarget.style.background = darkMode ? '#ffffff08' : '#f8fafc')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                            <td style={{ padding: '10px 12px', fontWeight: 600, color: C.text }}>
+                              <div>{t.nome}</div>
+                              {t.dominio && <div style={{ fontSize: 11, color: C.dim, fontWeight: 400 }}>{t.dominio}</div>}
+                            </td>
+                            <td style={{ padding: '10px 12px' }}>
+                              {t.config ? (
+                                <span style={{ background: t.config.ativo ? '#052e16' : `${C.border}80`, color: t.config.ativo ? '#4ade80' : C.dim, borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 600 }}>
+                                  {t.config.ativo ? 'Ativo' : 'Inativo'}
+                                </span>
+                              ) : (
+                                <span style={{ background: `${C.border}80`, color: C.dim, borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 600 }}>Sem config</span>
+                              )}
+                            </td>
+                            <td style={{ padding: '10px 12px', color: t.config?.instancia_whatsapp ? C.text : C.dim, fontSize: 12 }}>
+                              {t.config?.instancia_whatsapp ?? '—'}
+                            </td>
+                            <td style={{ padding: '10px 12px', color: C.muted, fontSize: 12 }}>
+                              {t.config?.modelo ?? agenteData?.configGlobal?.modelo_padrao ?? 'haiku'}
+                            </td>
+                            <td style={{ padding: '10px 12px', color: C.text, fontWeight: 600 }}>{t.stats.creditos_total.toLocaleString('pt-BR')}</td>
+                            <td style={{ padding: '10px 12px', color: t.stats.creditos_consumidos > 0 ? '#f59e0b' : C.dim }}>
+                              {t.stats.creditos_consumidos.toLocaleString('pt-BR')}
+                            </td>
+                            <td style={{ padding: '10px 12px', color: '#4ade80', fontWeight: 600 }}>
+                              {t.stats.receita_total > 0 ? `R$ ${t.stats.receita_total.toFixed(2).replace('.', ',')}` : '—'}
+                            </td>
+                            <td style={{ padding: '10px 12px', color: C.muted }}>{t.stats.gestores_com_saldo}</td>
+                          </tr>
+                        ))}
+                        {(agenteData?.tenants ?? []).length === 0 && (
+                          <tr><td colSpan={8} style={{ padding: '20px 12px', color: C.dim, textAlign: 'center' }}>Nenhum tenant com dados de agente ainda.</td></tr>
+                        )}
+                      </tbody>
+                      {(agenteData?.tenants ?? []).length > 0 && (
+                        <tfoot>
+                          <tr style={{ borderTop: `2px solid ${C.border}` }}>
+                            <td colSpan={4} style={{ padding: '10px 12px', fontWeight: 700, color: C.text, fontSize: 12 }}>Total</td>
+                            <td style={{ padding: '10px 12px', fontWeight: 700, color: C.text }}>
+                              {(agenteData?.tenants ?? []).reduce((s, t) => s + t.stats.creditos_total, 0).toLocaleString('pt-BR')}
+                            </td>
+                            <td style={{ padding: '10px 12px', fontWeight: 700, color: '#f59e0b' }}>
+                              {(agenteData?.tenants ?? []).reduce((s, t) => s + t.stats.creditos_consumidos, 0).toLocaleString('pt-BR')}
+                            </td>
+                            <td style={{ padding: '10px 12px', fontWeight: 700, color: '#4ade80' }}>
+                              {(() => {
+                                const total = (agenteData?.tenants ?? []).reduce((s, t) => s + t.stats.receita_total, 0)
+                                return total > 0 ? `R$ ${total.toFixed(2).replace('.', ',')}` : '—'
+                              })()}
+                            </td>
+                            <td style={{ padding: '10px 12px', fontWeight: 700, color: C.text }}>
+                              {(agenteData?.tenants ?? []).reduce((s, t) => s + t.stats.gestores_com_saldo, 0)}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      )}
+                    </table>
+                  </div>
+                </div>
+
+                {/* Tabela de Custos de Credito */}
+                <div style={{ ...card, padding: 24 }}>
+                  <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 6, color: C.text }}>Tabela de Custos por Acao</p>
+                  <p style={{ color: C.dim, fontSize: 12, marginBottom: 16 }}>Quantos creditos cada acao consome. Valores fixos no sistema.</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                    {[
+                      { acao: 'Mensagem / pergunta', custo: 1, cor: '#4ade80' },
+                      { acao: 'Resumo do consultor', custo: 1, cor: '#4ade80' },
+                      { acao: 'Equipe (dados da equipe)', custo: 1, cor: '#4ade80' },
+                      { acao: 'Lembrete / tarefa', custo: 1, cor: '#4ade80' },
+                      { acao: 'Script de abordagem', custo: 3, cor: '#f59e0b' },
+                      { acao: 'Comparar com concorrente', custo: 5, cor: '#f87171' },
+                    ].map(r => (
+                      <div key={r.acao} style={{ background: darkMode ? '#080810' : '#f8fafc', borderRadius: 8, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 12, color: C.text }}>{r.acao}</span>
+                        <span style={{ fontWeight: 700, fontSize: 14, color: r.cor }}>{r.custo} cr.</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 

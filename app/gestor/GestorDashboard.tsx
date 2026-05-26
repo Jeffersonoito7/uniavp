@@ -9,6 +9,7 @@ import EventosWidget from '@/app/components/EventosWidget'
 import MuralNoticias from '@/app/components/MuralNoticias'
 import ImageCropModal from '@/app/components/ImageCropModal'
 import GestorArtesTemplates from './artes/GestorArtesTemplates'
+import AgenteCard from './AgenteCard'
 
 // ── Componente de Perfil do Gestor ──────────────────────────────────────────
 function PerfilGestor({ gestor, onNomeAtualizado, onFotoAtualizada, cncpvHabilitado, podeCfgLink }: { gestor: Gestor; onNomeAtualizado: (n: string) => void; onFotoAtualizada?: (url: string | null) => void; cncpvHabilitado?: boolean; podeCfgLink?: boolean }) {
@@ -659,6 +660,9 @@ export default function GestorDashboard({
               </div>
             ))}
           </div>
+
+          {/* Card do Assistente IA */}
+          <AgenteCard />
 
           {/* Documentos para download */}
           {documentos && documentos.length > 0 && (

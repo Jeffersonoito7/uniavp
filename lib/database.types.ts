@@ -1860,6 +1860,192 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log: {
+        Row: {
+          id: string
+          acao: string
+          entidade: string
+          entidade_id: string | null
+          tenant_id: string | null
+          usuario_id: string | null
+          usuario_tipo: string | null
+          dados_anteriores: Json | null
+          dados_novos: Json | null
+          ip: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          acao: string
+          entidade: string
+          entidade_id?: string | null
+          tenant_id?: string | null
+          usuario_id?: string | null
+          usuario_tipo?: string | null
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          ip?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          acao?: string
+          entidade?: string
+          entidade_id?: string | null
+          tenant_id?: string | null
+          usuario_id?: string | null
+          usuario_tipo?: string | null
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          ip?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      pdf_jobs: {
+        Row: {
+          id: string
+          contrato_id: string | null
+          tenant_id: string | null
+          status: string
+          tentativas: number
+          erro: string | null
+          created_at: string
+          processado_em: string | null
+        }
+        Insert: {
+          id?: string
+          contrato_id?: string | null
+          tenant_id?: string | null
+          status?: string
+          tentativas?: number
+          erro?: string | null
+          created_at?: string
+          processado_em?: string | null
+        }
+        Update: {
+          id?: string
+          contrato_id?: string | null
+          tenant_id?: string | null
+          status?: string
+          tentativas?: number
+          erro?: string | null
+          created_at?: string
+          processado_em?: string | null
+        }
+        Relationships: []
+      }
+      mensagens_template: {
+        Row: {
+          id: string
+          tenant_id: string | null
+          chave: string
+          texto: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id?: string | null
+          chave: string
+          texto: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string | null
+          chave?: string
+          texto?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      webhook_events: {
+        Row: {
+          id: string
+          fonte: string
+          txid: string
+          payload: Json
+          status: string
+          tentativas: number
+          erro: string | null
+          created_at: string
+          processado_em: string | null
+        }
+        Insert: {
+          id?: string
+          fonte?: string
+          txid: string
+          payload: Json
+          status?: string
+          tentativas?: number
+          erro?: string | null
+          created_at?: string
+          processado_em?: string | null
+        }
+        Update: {
+          id?: string
+          fonte?: string
+          txid?: string
+          payload?: Json
+          status?: string
+          tentativas?: number
+          erro?: string | null
+          created_at?: string
+          processado_em?: string | null
+        }
+        Relationships: []
+      }
+      agente_config: {
+        Row: { id: string; tenant_id: string | null; nome_assistente: string; instancia_whatsapp: string | null; prompt_extra: string | null; modelo: string; creditos_boas_vindas: number; ativo: boolean; created_at: string; updated_at: string }
+        Insert: { id?: string; tenant_id?: string | null; nome_assistente?: string; instancia_whatsapp?: string | null; prompt_extra?: string | null; modelo?: string; creditos_boas_vindas?: number; ativo?: boolean; created_at?: string; updated_at?: string }
+        Update: { id?: string; tenant_id?: string | null; nome_assistente?: string; instancia_whatsapp?: string | null; prompt_extra?: string | null; modelo?: string; creditos_boas_vindas?: number; ativo?: boolean; updated_at?: string }
+        Relationships: []
+      }
+      agente_argumentos: {
+        Row: { id: string; tenant_id: string | null; categoria: string; argumento: string; ordem: number; ativo: boolean; created_at: string }
+        Insert: { id?: string; tenant_id?: string | null; categoria: string; argumento: string; ordem?: number; ativo?: boolean; created_at?: string }
+        Update: { id?: string; tenant_id?: string | null; categoria?: string; argumento?: string; ordem?: number; ativo?: boolean }
+        Relationships: []
+      }
+      agente_pacotes: {
+        Row: { id: string; tenant_id: string | null; nome: string; creditos: number; valor: number; ordem: number; ativo: boolean; created_at: string }
+        Insert: { id?: string; tenant_id?: string | null; nome: string; creditos: number; valor: number; ordem?: number; ativo?: boolean; created_at?: string }
+        Update: { id?: string; tenant_id?: string | null; nome?: string; creditos?: number; valor?: number; ordem?: number; ativo?: boolean }
+        Relationships: []
+      }
+      agente_creditos: {
+        Row: { id: string; gestor_id: string; tenant_id: string | null; saldo: number; updated_at: string }
+        Insert: { id?: string; gestor_id: string; tenant_id?: string | null; saldo?: number; updated_at?: string }
+        Update: { id?: string; gestor_id?: string; tenant_id?: string | null; saldo?: number; updated_at?: string }
+        Relationships: []
+      }
+      agente_transacoes: {
+        Row: { id: string; gestor_id: string; tenant_id: string | null; tipo: string; creditos: number; valor_pago: number | null; cobranca_id: string | null; descricao: string; created_at: string }
+        Insert: { id?: string; gestor_id: string; tenant_id?: string | null; tipo: string; creditos: number; valor_pago?: number | null; cobranca_id?: string | null; descricao: string; created_at?: string }
+        Update: { id?: string; tipo?: string; creditos?: number; valor_pago?: number | null; cobranca_id?: string | null; descricao?: string }
+        Relationships: []
+      }
+      agente_recargas: {
+        Row: { id: string; gestor_id: string; tenant_id: string | null; pacote_id: string | null; creditos: number; valor: number; txid: string; status: string; created_at: string; pago_em: string | null }
+        Insert: { id?: string; gestor_id: string; tenant_id?: string | null; pacote_id?: string | null; creditos: number; valor: number; txid: string; status?: string; created_at?: string; pago_em?: string | null }
+        Update: { id?: string; status?: string; pago_em?: string | null }
+        Relationships: []
+      }
+      agente_sessoes: {
+        Row: { id: string; gestor_id: string; estado: string; dados: Json; expires_at: string; created_at: string }
+        Insert: { id?: string; gestor_id: string; estado: string; dados?: Json; expires_at: string; created_at?: string }
+        Update: { id?: string; gestor_id?: string; estado?: string; dados?: Json; expires_at?: string }
+        Relationships: []
+      }
+      agente_config_global: {
+        Row: { id: string; nome_assistente: string; prompt_base: string | null; modelo_padrao: string; creditos_boas_vindas_padrao: number; ativo: boolean; criado_por: string | null; updated_at: string }
+        Insert: { id?: string; nome_assistente?: string; prompt_base?: string | null; modelo_padrao?: string; creditos_boas_vindas_padrao?: number; ativo?: boolean; criado_por?: string | null; updated_at?: string }
+        Update: { nome_assistente?: string; prompt_base?: string | null; modelo_padrao?: string; creditos_boas_vindas_padrao?: number; ativo?: boolean; criado_por?: string | null; updated_at?: string }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

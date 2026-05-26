@@ -386,6 +386,70 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
           </table>
         </div>
       </div>
+
+      <LiberarEmailCard />
     </>
+  )
+}
+
+function LiberarEmailCard() {
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [msg, setMsg] = useState<{ tipo: 'ok' | 'erro'; texto: string } | null>(null)
+
+  async function liberar() {
+    if (!email.trim()) return
+    setLoading(true)
+    setMsg(null)
+    try {
+      const res = await fetch('/api/admin/consultores/limpar-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      })
+      const json = await res.json()
+      if (res.ok && json.ok) {
+        setMsg({ tipo: 'ok', texto: json.msg ?? 'E-mail liberado com sucesso.' })
+        setEmail('')
+      } else {
+        setMsg({ tipo: 'erro', texto: json.error ?? 'Erro ao liberar e-mail.' })
+      }
+    } catch {
+      setMsg({ tipo: 'erro', texto: 'Erro de conexão. Tente novamente.' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, marginTop: 28 }}>
+      <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>Liberar e-mail bloqueado</p>
+      <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 14 }}>
+        Use quando um e-mail continua aparecendo como "já cadastrado" mesmo após o aluno ter sido excluído.
+        Isso remove o registro de autenticacao residual para que o e-mail possa ser reutilizado.
+      </p>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <input
+          type="email"
+          placeholder="email@exemplo.com"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && liberar()}
+          style={{ flex: 1, minWidth: 220, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '9px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none' }}
+        />
+        <button
+          onClick={liberar}
+          disabled={loading || !email.trim()}
+          style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', cursor: loading || !email.trim() ? 'not-allowed' : 'pointer', fontSize: 14, fontWeight: 700, opacity: loading || !email.trim() ? 0.6 : 1 }}
+        >
+          {loading ? 'Aguarde...' : 'Liberar'}
+        </button>
+      </div>
+      {msg && (
+        <p style={{ marginTop: 10, fontSize: 13, color: msg.tipo === 'ok' ? 'var(--avp-green)' : 'var(--avp-danger)', fontWeight: 600 }}>
+          {msg.texto}
+        </p>
+      )}
+    </div>
   )
 }
