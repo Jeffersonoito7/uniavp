@@ -11,7 +11,7 @@ import ImageCropModal from '@/app/components/ImageCropModal'
 import GestorArtesTemplates from './artes/GestorArtesTemplates'
 
 // ── Componente de Perfil do Gestor ──────────────────────────────────────────
-function PerfilGestor({ gestor, onNomeAtualizado, cncpvHabilitado, podeCfgLink }: { gestor: Gestor; onNomeAtualizado: (n: string) => void; cncpvHabilitado?: boolean; podeCfgLink?: boolean }) {
+function PerfilGestor({ gestor, onNomeAtualizado, onFotoAtualizada, cncpvHabilitado, podeCfgLink }: { gestor: Gestor; onNomeAtualizado: (n: string) => void; onFotoAtualizada?: (url: string | null) => void; cncpvHabilitado?: boolean; podeCfgLink?: boolean }) {
   const [nome, setNome]         = useState(gestor.nome)
   const [linkExterno, setLinkExterno] = useState(gestor.link_externo ?? '')
   const [fotoUrl, setFotoUrl]   = useState<string | null>(gestor.foto_perfil ?? null)
@@ -36,7 +36,10 @@ function PerfilGestor({ gestor, onNomeAtualizado, cncpvHabilitado, podeCfgLink }
     fd.append('foto', blob, 'foto.jpg')
     const res = await fetch('/api/gestor/foto-perfil', { method: 'POST', body: fd })
     const data = await res.json()
-    if (data.url) setFotoUrl(data.url)
+    if (data.url) {
+      setFotoUrl(data.url)
+      onFotoAtualizada?.(data.url)
+    }
     setMsg({ tipo: data.url ? 'ok' : 'err', texto: data.url ? 'Foto atualizada!' : 'Erro ao salvar foto.' })
     setTimeout(() => setMsg(null), 3000)
   }
@@ -277,6 +280,7 @@ export default function GestorDashboard({
   gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; indicacoesMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string; capaDefault?: string | null; prosIndicados?: number; limiteProGratuito?: number; cncpvHabilitado?: boolean; documentos?: { id: string; titulo: string; descricao: string | null; pdf_url: string }[]; podeCfgLink?: boolean
 }) {
   const [aba, setAba] = useState('dashboard')
+  const [fotoPerfilAtual, setFotoPerfilAtual] = useState<string | null>(gestor.foto_perfil ?? null)
   const [listaConsultores, setListaConsultores] = useState(consultores)
   const [consultorSelecionado, setConsultorSelecionado] = useState<Consultor | null>(null)
   const [modulos, setModulos] = useState<Modulo[]>([])
@@ -395,8 +399,13 @@ export default function GestorDashboard({
 
   async function carregarEventos() {
     if (eventosCarregados) return
-    const res = await fetch('/api/gestor/eventos')
-    setEventos(await res.json())
+    try {
+      const res = await fetch('/api/gestor/eventos')
+      if (res.ok) {
+        const data = await res.json()
+        setEventos(Array.isArray(data) ? data : [])
+      }
+    } catch { /* silently ignore */ }
     setEventosCarregados(true)
   }
 
@@ -618,7 +627,7 @@ export default function GestorDashboard({
       </div>
     )}
 
-    <GestorLayout aba={aba} setAba={handleSetAba} nomeGestor={gestor.nome} fotoPerfilInicial={gestor.foto_perfil}>
+    <GestorLayout aba={aba} setAba={handleSetAba} nomeGestor={gestor.nome} fotoPerfil={fotoPerfilAtual}>
 
       {/* ── DASHBOARD ── */}
       {aba === 'dashboard' && (
@@ -1371,7 +1380,7 @@ export default function GestorDashboard({
 
       {/* ── PERFIL DO GESTOR ── */}
       {aba === 'perfil' && (
-        <PerfilGestor gestor={gestor} onNomeAtualizado={(_nome) => { /* update handled internally */ }} cncpvHabilitado={cncpvHabilitado} podeCfgLink={podeCfgLink} />
+        <PerfilGestor gestor={gestor} onNomeAtualizado={() => {}} onFotoAtualizada={setFotoPerfilAtual} cncpvHabilitado={cncpvHabilitado} podeCfgLink={podeCfgLink} />
       )}
 
     </GestorLayout>

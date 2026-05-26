@@ -40,25 +40,24 @@ export async function GET(request: NextRequest) {
 
   const aulasConcluidas = new Set((progresso ?? []).map((p: any) => p.aula_id))
 
-  const result = []
-  for (const modulo of (modulos ?? [])) {
-    const { data: aulas } = await adminClient.from('aulas')
-      .select('id')
-      .eq('modulo_id', modulo.id)
-      .eq('publicado', true)
+  const moduloIds = (modulos ?? []).map((m: any) => m.id)
+  const { data: todasAulas } = moduloIds.length > 0
+    ? await adminClient.from('aulas').select('id, modulo_id').in('modulo_id', moduloIds).eq('publicado', true)
+    : { data: [] as { id: string; modulo_id: string }[] }
 
-    const aulasTotal = (aulas ?? []).length
-    const aulasConcluidasModulo = (aulas ?? []).filter((a: any) => aulasConcluidas.has(a.id)).length
-    const percentual = aulasTotal > 0 ? Math.round((aulasConcluidasModulo / aulasTotal) * 100) : 0
-
-    result.push({
-      titulo: modulo.titulo,
-      ordem: modulo.ordem,
-      aulas_total: aulasTotal,
-      aulas_concluidas: aulasConcluidasModulo,
-      percentual,
-    })
+  const aulasPorModulo = new Map<string, string[]>()
+  for (const a of (todasAulas ?? [])) {
+    const lista = aulasPorModulo.get(a.modulo_id) ?? []
+    lista.push(a.id)
+    aulasPorModulo.set(a.modulo_id, lista)
   }
+
+  const result = (modulos ?? []).map((modulo: any) => {
+    const ids = aulasPorModulo.get(modulo.id) ?? []
+    const aulasConcluidasModulo = ids.filter(id => aulasConcluidas.has(id)).length
+    const percentual = ids.length > 0 ? Math.round((aulasConcluidasModulo / ids.length) * 100) : 0
+    return { titulo: modulo.titulo, ordem: modulo.ordem, aulas_total: ids.length, aulas_concluidas: aulasConcluidasModulo, percentual }
+  })
 
   return NextResponse.json({ modulos: result })
 }

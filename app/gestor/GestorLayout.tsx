@@ -20,17 +20,16 @@ export default function GestorLayout({
   aba,
   setAba,
   nomeGestor,
-  fotoPerfilInicial,
+  fotoPerfil,
 }: {
   children: React.ReactNode
   aba: string
   setAba: (a: string) => void
   nomeGestor: string
-  fotoPerfilInicial?: string | null
+  fotoPerfil?: string | null
 }) {
   const [siteNome, setSiteNome] = useState('')
   const [siteLogoUrl, setSiteLogoUrl] = useState('')
-  const [fotoPerfil] = useState<string | null>(fotoPerfilInicial ?? null)
   const [logoError, setLogoError] = useState(false)
   const [isMobile, setIsMobile] = useState<boolean | null>(null)
   const [menuAberto, setMenuAberto] = useState(false)

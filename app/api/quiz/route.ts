@@ -89,7 +89,6 @@ export async function POST(req: NextRequest) {
     const { data: aulaInfo } = await adminClient.from('aulas')
       .select('titulo').eq('id', aula_id).maybeSingle()
     if (modo === 'manual_gestor' && alunoInfo?.gestor_whatsapp) {
-      const { enviarWhatsApp, getInstanciaGestorPorNome } = await import('@/lib/whatsapp')
       const inst = await getInstanciaGestorPorNome(alunoInfo.gestor_nome ?? '', adminClient, aluno.tenant_id)
       const appUrl = await getAppUrl(aluno.tenant_id)
       await enviarWhatsApp(

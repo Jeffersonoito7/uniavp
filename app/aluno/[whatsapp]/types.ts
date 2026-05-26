@@ -8,7 +8,7 @@ export type TrilhaItem = {
   aula_descricao: string | null
   duracao_minutos: number | null
   capa_url: string | null
-  youtube_video_id: string
+  youtube_video_id: string | null
   status: string
   melhor_percentual: number | null
   liberada_em: string | null
