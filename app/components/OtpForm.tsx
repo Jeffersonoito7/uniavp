@@ -23,8 +23,10 @@ export default function OtpForm() {
   async function enviarOtp() {
     setEnviando(true)
     setErro('')
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 15000)
     try {
-      const res = await fetch('/api/auth/enviar-otp', { method: 'POST' })
+      const res = await fetch('/api/auth/enviar-otp', { method: 'POST', signal: controller.signal })
       const data = await res.json()
       if (data.ok) {
         setInfo(data)
@@ -33,8 +35,9 @@ export default function OtpForm() {
         setErro(data.error || 'Erro ao enviar código. Tente novamente.')
       }
     } catch {
-      setErro('Erro de conexão. Tente novamente.')
+      setErro('Tempo esgotado. Clique em Reenviar código.')
     } finally {
+      clearTimeout(timeout)
       setEnviando(false)
       setTimeout(() => refs.current[0]?.focus(), 100)
     }

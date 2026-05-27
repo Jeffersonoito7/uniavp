@@ -48,7 +48,8 @@ export async function POST(req: NextRequest) {
 
   if (resend) {
     try {
-      await resend.emails.send({
+      await Promise.race([
+        resend.emails.send({
         from: EMAIL_FROM,
         to: user.email,
         subject: `${codigo} — seu código de acesso`,
@@ -88,7 +89,9 @@ export async function POST(req: NextRequest) {
   </table>
 </body>
 </html>`,
-      })
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
+      ])
       enviado = true
     } catch (e) {
       log.error('falha ao enviar email OTP', { err: String(e) })
