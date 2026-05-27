@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Treinamento da Plataforma — AutoVale Proteção Veicular</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --indigo: #4f46e5;
+    --indigo-light: #818cf8;
+    --indigo-dark: #3730a3;
+    --green: #16a34a;
+    --green-light: #4ade80;
+    --amber: #d97706;
+    --amber-light: #fbbf24;
+    --red: #dc2626;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --dim: #64748b;
+    --muted: #94a3b8;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* CAPA */
+  .capa {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 40px;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .capa::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(79,70,229,0.3) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    border-radius: 50%;
+  }
+
+  .capa::after {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(129,140,248,0.2) 0%, transparent 70%);
+    bottom: -50px; left: -50px;
+    border-radius: 50%;
+  }
+
+  .capa-logo {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, var(--indigo), var(--indigo-light));
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 32px;
+    position: relative; z-index: 1;
+    box-shadow: 0 20px 60px rgba(79,70,229,0.5);
+  }
+
+  .capa-logo svg { width: 36px; height: 36px; }
+
+  .capa h1 {
+    font-size: 42px; font-weight: 800;
+    color: #fff; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 16px;
+    position: relative; z-index: 1;
+  }
+
+  .capa h1 span { color: var(--indigo-light); }
+
+  .capa p {
+    font-size: 16px; color: #94a3b8;
+    margin-bottom: 48px; max-width: 480px;
+    position: relative; z-index: 1;
+  }
+
+  .capa-badges {
+    display: flex; gap: 12px; justify-content: center;
+    position: relative; z-index: 1;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #e2e8f0; border-radius: 100px;
+    padding: 8px 20px; font-size: 12px; font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .badge.green { background: rgba(22,163,74,0.2); border-color: rgba(74,222,128,0.3); color: #4ade80; }
+  .badge.indigo { background: rgba(79,70,229,0.2); border-color: rgba(129,140,248,0.3); color: #818cf8; }
+  .badge.amber { background: rgba(217,119,6,0.2); border-color: rgba(251,191,36,0.3); color: #fbbf24; }
+
+  .capa-footer {
+    position: absolute; bottom: 32px; left: 0; right: 0;
+    text-align: center; color: #475569; font-size: 11px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    z-index: 1;
+  }
+
+  /* CONTEUDO */
+  .content {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 32px;
+  }
+
+  /* SUMARIO */
+  .sumario {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 40px;
+    margin-bottom: 48px;
+    page-break-after: always;
+  }
+
+  .sumario h2 {
+    font-size: 18px; font-weight: 700;
+    margin-bottom: 28px; color: var(--text);
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .sumario-section { margin-bottom: 24px; }
+
+  .sumario-section-title {
+    font-size: 11px; font-weight: 700; color: var(--indigo);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .sumario-item {
+    display: flex; justify-content: space-between;
+    padding: 6px 0; border-bottom: 1px dotted var(--border);
+    font-size: 13px; color: var(--dim);
+  }
+
+  .sumario-item:last-child { border-bottom: none; }
+  .sumario-item span:last-child { color: var(--muted); font-weight: 600; }
+
+  /* CAPITULOS */
+  .capitulo {
+    margin-bottom: 56px;
+    page-break-inside: avoid;
+  }
+
+  .capitulo-header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .capitulo-numero {
+    width: 48px; height: 48px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 800; flex-shrink: 0;
+  }
+
+  .capitulo-numero.free { background: #f0fdf4; color: var(--green); border: 2px solid #bbf7d0; }
+  .capitulo-numero.pro { background: #eef2ff; color: var(--indigo); border: 2px solid #c7d2fe; }
+  .capitulo-numero.agente { background: #fffbeb; color: var(--amber); border: 2px solid #fde68a; }
+
+  .capitulo h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .capitulo-sub { font-size: 13px; color: var(--dim); margin-top: 2px; }
+
+  /* SECOES */
+  .secao {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  .secao-titulo {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .secao-icone {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .secao-icone.verde { background: #dcfce7; color: var(--green); }
+  .secao-icone.azul { background: #e0e7ff; color: var(--indigo-dark); }
+  .secao-icone.laranja { background: #fef3c7; color: var(--amber); }
+
+  .secao-titulo h3 { font-size: 14px; font-weight: 700; }
+  .secao-titulo p { font-size: 11px; color: var(--dim); margin-top: 1px; }
+
+  .secao-body { padding: 20px; }
+
+  /* PASSOS */
+  .passos { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+
+  .passo {
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+
+  .passo-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--indigo); color: #fff;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+
+  .passo-num.verde { background: var(--green); }
+  .passo-num.laranja { background: var(--amber); }
+
+  .passo-texto { font-size: 13px; color: var(--text); line-height: 1.6; }
+  .passo-texto strong { color: var(--indigo-dark); }
+  .passo-texto.verde strong { color: var(--green); }
+  .passo-texto.laranja strong { color: var(--amber); }
+
+  /* DICAS */
+  .dica {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: #eff6ff; border: 1px solid #bfdbfe;
+    border-radius: 10px; padding: 14px 16px;
+    margin-top: 16px;
+  }
+
+  .dica.verde { background: #f0fdf4; border-color: #bbf7d0; }
+  .dica.amarelo { background: #fffbeb; border-color: #fde68a; }
+  .dica.vermelho { background: #fff1f2; border-color: #fecdd3; }
+
+  .dica-icone { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .dica-texto { font-size: 12px; line-height: 1.6; color: #1e40af; }
+  .dica.verde .dica-texto { color: #166534; }
+  .dica.amarelo .dica-texto { color: #92400e; }
+  .dica.vermelho .dica-texto { color: #9f1239; }
+  .dica-texto strong { font-weight: 700; }
+
+  /* TABELAS */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+  th {
+    background: var(--bg); text-align: left;
+    padding: 10px 12px; font-size: 10px; font-weight: 700;
+    color: var(--dim); letter-spacing: 0.06em; text-transform: uppercase;
+    border-bottom: 2px solid var(--border);
+  }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+
+  /* TAGS */
+  .tag {
+    display: inline-block; border-radius: 100px;
+    padding: 2px 10px; font-size: 11px; font-weight: 600;
+  }
+  .tag.verde { background: #dcfce7; color: #166534; }
+  .tag.azul { background: #e0e7ff; color: #3730a3; }
+  .tag.laranja { background: #fef3c7; color: #92400e; }
+  .tag.vermelho { background: #fee2e2; color: #991b1b; }
+
+  /* COMANDOS AGENTE */
+  .comando {
+    background: #0f172a;
+    border-radius: 10px; padding: 20px;
+    margin-bottom: 12px;
+  }
+
+  .comando-titulo {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .comando-nome {
+    font-size: 14px; font-weight: 700; color: #818cf8;
+    font-family: 'Courier New', monospace;
+  }
+
+  .comando-custo {
+    font-size: 11px; font-weight: 700; padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .comando-custo.verde { background: #052e16; color: #4ade80; }
+  .comando-custo.laranja { background: #451a03; color: #fbbf24; }
+  .comando-custo.vermelho { background: #450a0a; color: #f87171; }
+
+  .comando-desc { font-size: 12px; color: #94a3b8; margin-bottom: 10px; }
+
+  .comando-exemplo {
+    background: #1e293b; border-radius: 6px;
+    padding: 10px 14px; font-size: 12px; color: #e2e8f0;
+    border-left: 3px solid #4f46e5;
+    font-style: italic;
+  }
+
+  .comando-resposta {
+    background: #0a2a1a; border-radius: 6px;
+    padding: 10px 14px; font-size: 12px; color: #4ade80;
+    margin-top: 6px;
+    border-left: 3px solid #16a34a;
+  }
+
+  /* GRID DE PLANOS */
+  .planos-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 16px; margin-top: 8px;
+  }
+
+  .plano-card {
+    border-radius: 12px; padding: 20px;
+    border: 2px solid;
+  }
+
+  .plano-card.free { border-color: #bbf7d0; background: #f0fdf4; }
+  .plano-card.pro { border-color: #c7d2fe; background: #eef2ff; }
+
+  .plano-titulo { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+  .plano-card.free .plano-titulo { color: var(--green); }
+  .plano-card.pro .plano-titulo { color: var(--indigo); }
+
+  .plano-sub { font-size: 11px; color: var(--dim); margin-bottom: 16px; }
+
+  .plano-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 12px; color: var(--text); margin-bottom: 8px;
+  }
+
+  .plano-check { font-size: 12px; flex-shrink: 0; margin-top: 1px; }
+
+  /* DIVISOR */
+  .divisor {
+    height: 1px; background: var(--border);
+    margin: 40px 0;
+  }
+
+  /* RODAPE */
+  .rodape {
+    text-align: center; padding: 32px;
+    color: var(--muted); font-size: 11px;
+    border-top: 1px solid var(--border);
+    margin-top: 48px;
+  }
+
+  /* PAGINA DE SEPARACAO */
+  .sep {
+    page-break-before: always;
+    padding-top: 32px;
+  }
+
+  /* HIGHLIGHT BOX */
+  .highlight {
+    background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+    border: 2px solid #c7d2fe;
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin: 24px 0;
+  }
+
+  .highlight h3 { font-size: 16px; font-weight: 700; color: var(--indigo-dark); margin-bottom: 8px; }
+  .highlight p { font-size: 13px; color: #3730a3; line-height: 1.7; }
+
+  /* PRINT */
+  @media print {
+    body { background: white; }
+    .capa { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .capitulo-numero, .secao-icone, .plano-card, .comando, .dica {
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .capitulo { page-break-inside: avoid; }
+    .sep { page-break-before: always; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════ CAPA -->
+<div class="capa">
+  <div class="capa-logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+      <path d="M2 17l10 5 10-5"/>
+      <path d="M2 12l10 5 10-5"/>
+    </svg>
+  </div>
+
+  <h1>Guia Completo<br/><span>da Plataforma</span></h1>
+  <p>Tudo que voce precisa saber para usar a plataforma do jeito certo — do primeiro acesso ao Agente IA</p>
+
+  <div class="capa-badges">
+    <span class="badge green">Consultor FREE</span>
+    <span class="badge indigo">Gestor PRO</span>
+    <span class="badge amber">Agente IA</span>
+  </div>
+
+  <div class="capa-footer">AutoVale Proteção Veicular &nbsp;·&nbsp; Plataforma de Treinamento &nbsp;·&nbsp; 2026</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ CONTEUDO -->
+<div class="content">
+
+  <!-- SUMARIO -->
+  <div class="sumario">
+    <h2>Sumario</h2>
+
+    <div class="sumario-section">
+      <div class="sumario-section-title">Parte 1 — Consultor FREE</div>
+      <div class="sumario-item"><span>1.1 O que e o perfil FREE e como acessar</span><span>3</span></div>
+      <div class="sumario-item"><span>1.2 Modulos e aulas — como estudar na plataforma</span><span>3</span></div>
+      <div class="sumario-item"><span>1.3 Quiz e certificados</span><span>4</span></div>
+      <div class="sumario-item"><span>1.4 Contratos digitais</span><span>4</span></div>
+      <div class="sumario-item"><span>1.5 Perfil e dados pessoais</span><span>5</span></div>
+    </div>
+
+    <div class="sumario-section">
+      <div class="sumario-section-title">Parte 2 — Gestor PRO</div>
+      <div class="sumario-item"><span>2.1 O que muda no PRO e como ativar</span><span>6</span></div>
+      <div class="sumario-item"><span>2.2 Dashboard — visao geral da sua operacao</span><span>6</span></div>
+      <div class="sumario-item"><span>2.3 Registrar cotacoes e adesoes</span><span>7</span></div>
+      <div class="sumario-item"><span>2.4 Gestao de despesas</span><span>7</span></div>
+      <div class="sumario-item"><span>2.5 Lembretes e tarefas</span><span>8</span></div>
+      <div class="sumario-item"><span>2.6 Equipe — visualizar seus consultores</span><span>8</span></div>
+    </div>
+
+    <div class="sumario-section">
+      <div class="sumario-section-title">Parte 3 — Agente IA (exclusivo PRO)</div>
+      <div class="sumario-item"><span>3.1 O que e o Agente IA e para que serve</span><span>9</span></div>
+      <div class="sumario-item"><span>3.2 Creditos — como funcionam e quanto custam</span><span>9</span></div>
+      <div class="sumario-item"><span>3.3 Como acessar o agente pelo WhatsApp</span><span>10</span></div>
+      <div class="sumario-item"><span>3.4 Todos os comandos disponiveis</span><span>10</span></div>
+      <div class="sumario-item"><span>3.5 Comparador com concorrente — o recurso mais poderoso</span><span>11</span></div>
+      <div class="sumario-item"><span>3.6 Como recarregar creditos</span><span>12</span></div>
+      <div class="sumario-item"><span>3.7 Perguntas frequentes</span><span>12</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ PARTE 1 — FREE -->
+  <div class="sep"></div>
+
+  <div class="capitulo">
+    <div class="capitulo-header">
+      <div class="capitulo-numero free">1</div>
+      <div>
+        <h2>Consultor FREE</h2>
+        <p class="capitulo-sub">Acesso, treinamento e documentos da plataforma</p>
+      </div>
+    </div>
+
+    <!-- 1.1 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone verde">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div>
+          <h3>1.1 O que e o perfil FREE e como acessar</h3>
+          <p>Primeiro acesso e navegacao basica</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <div class="planos-grid">
+          <div class="plano-card free">
+            <div class="plano-titulo">FREE</div>
+            <div class="plano-sub">Consultor da equipe</div>
+            <div class="plano-item"><span class="plano-check">✓</span> Acesso aos modulos e aulas</div>
+            <div class="plano-item"><span class="plano-check">✓</span> Quiz e certificados</div>
+            <div class="plano-item"><span class="plano-check">✓</span> Contratos digitais</div>
+            <div class="plano-item"><span class="plano-check">✓</span> Indicacoes e captacao</div>
+          </div>
+          <div class="plano-card pro">
+            <div class="plano-titulo">PRO</div>
+            <div class="plano-sub">Lider / Gestor</div>
+            <div class="plano-item"><span class="plano-check">✓</span> Tudo do FREE</div>
+            <div class="plano-item"><span class="plano-check">✓</span> Dashboard com metricas</div>
+            <div class="plano-item"><span class="plano-check">✓</span> Gestao de equipe</div>
+            <div class="plano-item"><span class="plano-check">✓</span> Agente IA no WhatsApp</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px;">
+          <p style="font-weight:700; margin-bottom:12px;">Como fazer o primeiro acesso:</p>
+          <ul class="passos">
+            <li class="passo">
+              <span class="passo-num verde">1</span>
+              <span class="passo-texto verde">Abra o link da plataforma no navegador do celular ou computador. O link e enviado pelo seu lider pelo WhatsApp.</span>
+            </li>
+            <li class="passo">
+              <span class="passo-num verde">2</span>
+              <span class="passo-texto verde">Na tela de login, clique em <strong>"Entrar com WhatsApp"</strong>. Nao precisa criar senha — o codigo chega direto no seu WhatsApp.</span>
+            </li>
+            <li class="passo">
+              <span class="passo-num verde">3</span>
+              <span class="passo-texto verde">Digite o codigo de 6 digitos recebido. Pronto — voce esta dentro.</span>
+            </li>
+            <li class="passo">
+              <span class="passo-num verde">4</span>
+              <span class="passo-texto verde">Na primeira vez, complete seu perfil com nome e foto. Isso e importante para seus certificados e contratos.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="dica verde">
+          <span class="dica-icone">💡</span>
+          <span class="dica-texto">Salve o link da plataforma como favorito no navegador do celular. Assim voce acessa rapido sempre que precisar.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1.2 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone verde">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <div>
+          <h3>1.2 Modulos e aulas — como estudar</h3>
+          <p>Treinamento completo em video com progresso salvo</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num verde">1</span>
+            <span class="passo-texto verde">No menu, clique em <strong>"Modulos"</strong> ou acesse pela tela inicial. Voce vera todos os modulos de treinamento liberados para voce.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num verde">2</span>
+            <span class="passo-texto verde">Clique em um modulo para ver as aulas disponveis. Aulas com <strong>cadeado</strong> ainda nao foram liberadas — elas abrem conforme voce avanca.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num verde">3</span>
+            <span class="passo-texto verde">Clique na aula para abrir. O video carrega direto na tela. Assista ate o final — o sistema marca automaticamente como concluida.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num verde">4</span>
+            <span class="passo-texto verde">Seu progresso fica salvo mesmo se fechar o celular. Na proxima vez que entrar, continue de onde parou.</span>
+          </li>
+        </ul>
+
+        <div class="dica">
+          <span class="dica-icone">📱</span>
+          <span class="dica-texto"><strong>Funciona no celular:</strong> Os videos sao otimizados para mobile. Voce pode assistir no caminho para o trabalho ou em qualquer lugar.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1.3 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone verde">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+        </div>
+        <div>
+          <h3>1.3 Quiz e Certificados</h3>
+          <p>Prove seu conhecimento e receba seu certificado oficial</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num verde">1</span>
+            <span class="passo-texto verde">Ao concluir todas as aulas de um modulo, o <strong>Quiz</strong> e liberado automaticamente.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num verde">2</span>
+            <span class="passo-texto verde">Clique em <strong>"Fazer Quiz"</strong> e responda as perguntas. Voce precisa acertar pelo menos <strong>70%</strong> para passar.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num verde">3</span>
+            <span class="passo-texto verde">Se nao passar, pode refazer quantas vezes quiser. Cada tentativa mostra onde voce errou.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num verde">4</span>
+            <span class="passo-texto verde">Ao passar, o <strong>certificado e gerado automaticamente</strong> com seu nome e a data. Baixe em PDF e compartilhe.</span>
+          </li>
+        </ul>
+
+        <div class="dica verde">
+          <span class="dica-icone">🏆</span>
+          <span class="dica-texto"><strong>Use seu certificado:</strong> Compartilhe no LinkedIn e nas redes sociais. Mostra profissionalismo e credibilidade para seus clientes.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1.4 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone verde">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div>
+          <h3>1.4 Contratos Digitais</h3>
+          <p>Formalize vendas com assinatura digital com validade juridica</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num verde">1</span>
+            <span class="passo-texto verde">No menu, clique em <strong>"Contratos"</strong>. Aqui ficam todos os contratos que voce gerou para seus clientes.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num verde">2</span>
+            <span class="passo-texto verde">Para criar um novo, clique em <strong>"+ Novo Contrato"</strong> e preencha os dados do cliente: nome, CPF, placa do veiculo e plano escolhido.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num verde">3</span>
+            <span class="passo-texto verde">O sistema gera o contrato em PDF automaticamente. Envie o link para o cliente assinar pelo proprio celular — sem precisar imprimir nada.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num verde">4</span>
+            <span class="passo-texto verde">Voce recebe uma notificacao quando o cliente assinar. O contrato assinado fica salvo na plataforma com validade juridica.</span>
+          </li>
+        </ul>
+
+        <div class="dica amarelo">
+          <span class="dica-icone">⚠️</span>
+          <span class="dica-texto"><strong>Atencao:</strong> Sempre confira o nome e CPF antes de gerar o contrato. Depois de assinado, nao e possivel alterar os dados.</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- fim capitulo 1 -->
+
+  <!-- ══════════════════════ PARTE 2 — PRO -->
+  <div class="sep"></div>
+
+  <div class="capitulo">
+    <div class="capitulo-header">
+      <div class="capitulo-numero pro">2</div>
+      <div>
+        <h2>Gestor PRO</h2>
+        <p class="capitulo-sub">Dashboard, equipe, cotacoes e gestao completa da operacao</p>
+      </div>
+    </div>
+
+    <!-- 2.1 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone azul">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div>
+          <h3>2.1 O que muda no PRO e como ativar</h3>
+          <p>Recursos exclusivos para lideres e gestores de equipe</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <p style="margin-bottom:16px; color: var(--dim);">O plano PRO desbloqueia um painel completo de gestao da sua operacao. Para ativar:</p>
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num">1</span>
+            <span class="passo-texto">Fale com seu administrador ou gestor responsavel. Ele faz a ativacao do seu perfil PRO diretamente no sistema.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num">2</span>
+            <span class="passo-texto">Voce recebera uma notificacao por WhatsApp informando que o PRO foi ativado e quantos creditos de boas-vindas foram creditados na sua conta.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num">3</span>
+            <span class="passo-texto">Na proxima vez que entrar na plataforma, voce vai ver o <strong>painel PRO</strong> com todas as funcionalidades de gestor.</span>
+          </li>
+        </ul>
+
+        <div class="dica verde">
+          <span class="dica-icone">🎁</span>
+          <span class="dica-texto"><strong>Creditos de boas-vindas:</strong> Ao ativar o PRO, voce recebe creditos gratuitos para comecar a usar o Agente IA sem pagar nada.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.2 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone azul">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <div>
+          <h3>2.2 Dashboard — visao geral da sua operacao</h3>
+          <p>Numeros em tempo real da sua equipe</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <p style="margin-bottom:16px; color: var(--dim);">A primeira tela ao entrar no painel PRO e o Dashboard. Aqui voce ve:</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Card</th>
+              <th>O que mostra</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Consultores</strong></td><td>Quantos consultores estao ativos na sua equipe</td></tr>
+            <tr><td><strong>Cotacoes</strong></td><td>Total de cotacoes registradas no mes atual</td></tr>
+            <tr><td><strong>Adesoes</strong></td><td>Quantas adesoes (vendas fechadas) no mes</td></tr>
+            <tr><td><strong>Despesas</strong></td><td>Total de despesas lancadas no mes</td></tr>
+            <tr><td><strong>Agente IA</strong></td><td>Seu saldo de creditos e acesso rapido ao bot</td></tr>
+          </tbody>
+        </table>
+
+        <div class="dica">
+          <span class="dica-icone">📊</span>
+          <span class="dica-texto">O Dashboard e atualizado em tempo real. Se um consultor da sua equipe registrar uma cotacao agora, o numero muda na sua tela imediatamente.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.3 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone azul">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div>
+          <h3>2.3 Registrar cotacoes e adesoes</h3>
+          <p>Acompanhe as vendas da sua equipe</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num">1</span>
+            <span class="passo-texto">No menu, clique em <strong>"Cotacoes"</strong> para registrar uma nova proposta enviada a um cliente. Preencha: nome do cliente, veiculo, plano e valor.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num">2</span>
+            <span class="passo-texto">Quando a cotacao for aprovada e virar uma venda, registre em <strong>"Adesoes"</strong>. Isso gera o historico de conversao da sua equipe.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num">3</span>
+            <span class="passo-texto">Use os filtros por data e por consultor para analisar o desempenho individual de cada membro da equipe.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 2.4 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone azul">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div>
+          <h3>2.4 Gestao de Despesas</h3>
+          <p>Controle os gastos da sua operacao</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num">1</span>
+            <span class="passo-texto">Em <strong>"Despesas"</strong>, registre todos os gastos relacionados ao seu trabalho: combustivel, material de apoio, eventos, etc.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num">2</span>
+            <span class="passo-texto">Preencha: descricao, categoria, valor e data. Voce pode adicionar uma observacao para detalhar o gasto.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num">3</span>
+            <span class="passo-texto">O total de despesas aparece no Dashboard. Use isso para calcular sua margem real de lucro no mes.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 2.5 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone azul">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div>
+          <h3>2.5 Lembretes e Tarefas</h3>
+          <p>Nao perca nenhum follow-up importante</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num">1</span>
+            <span class="passo-texto">Em <strong>"Lembretes"</strong>, crie tarefas com data e hora. Por exemplo: "Ligar para o Joao sobre renovacao — amanha 14h".</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num">2</span>
+            <span class="passo-texto">Na data e hora marcada, voce recebe uma <strong>notificacao no celular</strong> mesmo com o navegador fechado (se permitiu notificacoes).</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num">3</span>
+            <span class="passo-texto">Voce tambem pode pedir ao Agente IA pelo WhatsApp: <em>"cria um lembrete para amanha as 9h para ligar para fulano"</em> — e ele cadastra automaticamente.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </div><!-- fim capitulo 2 -->
+
+  <!-- ══════════════════════ PARTE 3 — AGENTE IA -->
+  <div class="sep"></div>
+
+  <div class="capitulo">
+    <div class="capitulo-header">
+      <div class="capitulo-numero agente">3</div>
+      <div>
+        <h2>Agente IA</h2>
+        <p class="capitulo-sub">Seu assistente inteligente no WhatsApp — exclusivo para PRO</p>
+      </div>
+    </div>
+
+    <!-- 3.1 -->
+    <div class="highlight">
+      <h3>O que e o Agente IA?</h3>
+      <p>
+        O Agente IA e um assistente especializado em protecao veicular que voce acessa diretamente pelo WhatsApp. Ele conhece seus dados, sua equipe e os argumentos da AutoVale. Voce manda uma mensagem, ele responde em segundos com informacoes precisas, scripts de vendas prontos e comparacoes contra concorrentes — tudo para ajudar voce a <strong>vender mais e com mais seguranca</strong>.
+      </p>
+    </div>
+
+    <!-- 3.2 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone laranja">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div>
+          <h3>3.2 Creditos — como funcionam</h3>
+          <p>Sistema de creditos pre-pagos para usar o agente</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <p style="margin-bottom:16px; color: var(--dim);">O Agente IA usa um sistema de creditos. Cada tipo de pergunta ou tarefa consome uma quantidade diferente de creditos:</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Acao</th>
+              <th>Creditos consumidos</th>
+              <th>Exemplo de uso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Mensagem / pergunta geral</td>
+              <td><span class="tag verde">1 credito</span></td>
+              <td>Tirar duvidas sobre o plano</td>
+            </tr>
+            <tr>
+              <td>Resumo do seu desempenho</td>
+              <td><span class="tag verde">1 credito</span></td>
+              <td>Ver quantas cotacoes voce fez</td>
+            </tr>
+            <tr>
+              <td>Dados da equipe</td>
+              <td><span class="tag verde">1 credito</span></td>
+              <td>Ver quem esta ativo na equipe</td>
+            </tr>
+            <tr>
+              <td>Criar lembrete</td>
+              <td><span class="tag verde">1 credito</span></td>
+              <td>Agendar um follow-up</td>
+            </tr>
+            <tr>
+              <td>Script de vendas</td>
+              <td><span class="tag laranja">3 creditos</span></td>
+              <td>Texto pronto para abordar cliente</td>
+            </tr>
+            <tr>
+              <td>Comparar com concorrente</td>
+              <td><span class="tag vermelho">5 creditos</span></td>
+              <td>Argumentos para ganhar a venda</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="dica verde">
+          <span class="dica-icone">🎁</span>
+          <span class="dica-texto"><strong>Creditos de boas-vindas:</strong> Ao ativar o PRO, voce recebe creditos gratuitos para comecar. Aproveite para testar todos os recursos.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.3 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone laranja">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        </div>
+        <div>
+          <h3>3.3 Como acessar o agente pelo WhatsApp</h3>
+          <p>Simples: e so mandar uma mensagem</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num laranja">1</span>
+            <span class="passo-texto laranja">No painel PRO, no card do <strong>Agente IA</strong>, clique em <strong>"Abrir Chat"</strong>. O WhatsApp vai abrir direto na conversa do assistente.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num laranja">2</span>
+            <span class="passo-texto laranja">Mande uma mensagem qualquer para iniciar. O agente responde em poucos segundos.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num laranja">3</span>
+            <span class="passo-texto laranja">Salve o numero do assistente na agenda do seu celular. Assim fica facil encontrar quando precisar.</span>
+          </li>
+        </ul>
+
+        <div class="dica">
+          <span class="dica-icone">📱</span>
+          <span class="dica-texto"><strong>Disponivel 24 horas:</strong> O agente nao tem horario de funcionamento. Voce pode consultar as 6h da manha, antes de uma reuniao, ou as 22h preparando o dia seguinte.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.4 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone laranja">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
+        </div>
+        <div>
+          <h3>3.4 Todos os comandos disponiveis</h3>
+          <p>O que voce pode pedir e exemplos de resposta</p>
+        </div>
+      </div>
+      <div class="secao-body">
+
+        <div class="comando">
+          <div class="comando-titulo">
+            <span class="comando-nome">Perguntas gerais</span>
+            <span class="comando-custo verde">1 credito</span>
+          </div>
+          <div class="comando-desc">Tire qualquer duvida sobre protecao veicular, coberturas, procedimentos e processos da AutoVale.</div>
+          <div class="comando-exemplo">"Quais veiculos a AutoVale cobre?" / "Como funciona o sinistro?" / "Qual a diferenca entre plano basico e completo?"</div>
+          <div class="comando-resposta">O agente responde com informacoes precisas baseadas nos dados da AutoVale.</div>
+        </div>
+
+        <div class="comando">
+          <div class="comando-titulo">
+            <span class="comando-nome">resumo</span>
+            <span class="comando-custo verde">1 credito</span>
+          </div>
+          <div class="comando-desc">Ve um resumo rapido do seu desempenho: cotacoes, adesoes e despesas do mes atual.</div>
+          <div class="comando-exemplo">"me da um resumo" / "como estou esse mes?"</div>
+          <div class="comando-resposta">Agente: "Voce tem 12 cotacoes e 4 adesoes este mes. Taxa de conversao: 33%. Despesas: R$ 280,00."</div>
+        </div>
+
+        <div class="comando">
+          <div class="comando-titulo">
+            <span class="comando-nome">equipe</span>
+            <span class="comando-custo verde">1 credito</span>
+          </div>
+          <div class="comando-desc">Ve quem esta na sua equipe e informacoes rapidas sobre cada consultor.</div>
+          <div class="comando-exemplo">"mostra minha equipe" / "quem tenho na equipe?"</div>
+          <div class="comando-resposta">Agente: Lista os consultores com nome e data de entrada na equipe.</div>
+        </div>
+
+        <div class="comando">
+          <div class="comando-titulo">
+            <span class="comando-nome">lembrete</span>
+            <span class="comando-custo verde">1 credito</span>
+          </div>
+          <div class="comando-desc">Cria um lembrete ou tarefa direto pelo WhatsApp, sem precisar abrir a plataforma.</div>
+          <div class="comando-exemplo">"cria um lembrete para amanha as 10h ligar para Maria sobre renovacao"</div>
+          <div class="comando-resposta">Agente: "Lembrete criado! Vou te avisar amanha as 10h sobre a Maria."</div>
+        </div>
+
+        <div class="comando">
+          <div class="comando-titulo">
+            <span class="comando-nome">script</span>
+            <span class="comando-custo laranja">3 creditos</span>
+          </div>
+          <div class="comando-desc">Gera um script de abordagem personalizado para uma situacao especifica de vendas. O agente cria o texto pronto para voce usar no WhatsApp com o cliente.</div>
+          <div class="comando-exemplo">"faz um script para abordar alguem que nunca teve protecao veicular" / "cria um texto para cliente que ficou na duvida sobre o preco"</div>
+          <div class="comando-resposta">Agente: Entrega um script completo, com abertura, argumento principal e fechamento.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 3.5 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone laranja">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div>
+          <h3>3.5 Comparador com concorrente — o recurso mais poderoso</h3>
+          <p>Argumentos precisos para ganhar a venda quando o cliente compara preco</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <div style="background:#fffbeb; border:2px solid #fde68a; border-radius:12px; padding:20px; margin-bottom:20px;">
+          <p style="font-weight:700; color:#92400e; margin-bottom:8px;">Por que usar esse recurso?</p>
+          <p style="font-size:12px; color:#78350f; line-height:1.7;">Quando um cliente diz <em>"a seguradora X esta mais barata"</em> ou <em>"o concorrente Y oferece mais cobertura"</em>, voce precisa responder na hora, com argumentos solidos, sem hesitar. O comparador analisa as duas propostas e entrega os pontos exatos onde a AutoVale supera — para voce virar a conversa e fechar a venda.</p>
+        </div>
+
+        <p style="font-weight:700; margin-bottom:16px;">Como usar o comparador — passo a passo:</p>
+
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num laranja">1</span>
+            <span class="passo-texto laranja">Digite: <strong>"comparar"</strong> ou <strong>"quero comparar uma cotacao"</strong> no WhatsApp do agente.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num laranja">2</span>
+            <span class="passo-texto laranja">O agente pede: <em>"Me manda os dados da proposta da AutoVale para esse cliente."</em> Voce cola o valor, plano e coberturas da AutoVale.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num laranja">3</span>
+            <span class="passo-texto laranja">O agente pede: <em>"Agora me manda a proposta do concorrente."</em> Voce cola os dados do outro (nome da empresa, valor e coberturas).</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num laranja">4</span>
+            <span class="passo-texto laranja">Em segundos, o agente entrega uma <strong>analise completa</strong>: pontos onde a AutoVale e superior, argumentos para cada objecao e sugestao de resposta para o cliente.</span>
+          </li>
+        </ul>
+
+        <div class="dica amarelo">
+          <span class="dica-icone">🧠</span>
+          <span class="dica-texto"><strong>Dica de uso:</strong> Salve as respostas do comparador que funcionaram bem. Com o tempo, voce vai ter um repertorio completo de respostas para cada situacao.</span>
+        </div>
+
+        <div class="dica vermelho">
+          <span class="dica-icone">⚡</span>
+          <span class="dica-texto"><strong>Lembre-se:</strong> Esse recurso consome <strong>5 creditos</strong> por ser o mais avancado — usa inteligencia artificial de alto nivel (Claude Sonnet). Use quando realmente precisar virar uma venda.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.6 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone laranja">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        </div>
+        <div>
+          <h3>3.6 Como recarregar creditos</h3>
+          <p>PIX instantaneo pelo WhatsApp ou pelo painel</p>
+        </div>
+      </div>
+      <div class="secao-body">
+
+        <p style="font-weight:700; margin-bottom:12px;">Opcao 1 — Pelo WhatsApp (mais rapido):</p>
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num laranja">1</span>
+            <span class="passo-texto laranja">No chat do agente, escreva: <strong>"recarregar"</strong> ou <strong>"comprar creditos"</strong>.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num laranja">2</span>
+            <span class="passo-texto laranja">O agente mostra os pacotes disponiveis com preco e quantidade de creditos. Responda com o <strong>numero do pacote</strong> que quer.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num laranja">3</span>
+            <span class="passo-texto laranja">O agente envia o <strong>codigo PIX</strong>. Copie e pague pelo seu banco. Em poucos segundos, os creditos aparecem na sua conta.</span>
+          </li>
+        </ul>
+
+        <div style="height: 16px;"></div>
+
+        <p style="font-weight:700; margin-bottom:12px;">Opcao 2 — Pelo painel PRO:</p>
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num">1</span>
+            <span class="passo-texto">No painel PRO, no card do <strong>Agente IA</strong>, clique em <strong>"Recarregar"</strong>.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num">2</span>
+            <span class="passo-texto">Escolha o pacote e clique em <strong>"Gerar PIX"</strong>. Um QR Code aparece na tela — aponte a camera do celular para pagar.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num">3</span>
+            <span class="passo-texto">Apos o pagamento ser confirmado, voce recebe uma mensagem no WhatsApp informando que os creditos foram adicionados.</span>
+          </li>
+        </ul>
+
+        <div class="dica verde">
+          <span class="dica-icone">💡</span>
+          <span class="dica-texto"><strong>Confirmacao automatica:</strong> O sistema detecta o pagamento PIX automaticamente. Nao precisa enviar comprovante — os creditos entram em ate 30 segundos apos o pagamento.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.7 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone laranja">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div>
+          <h3>3.7 Perguntas Frequentes</h3>
+          <p>Duvidas mais comuns sobre o Agente IA</p>
+        </div>
+      </div>
+      <div class="secao-body">
+
+        <div style="display:flex; flex-direction:column; gap:16px;">
+
+          <div style="border-bottom:1px solid var(--border); padding-bottom:16px;">
+            <p style="font-weight:700; margin-bottom:6px;">O agente vai responder qualquer coisa?</p>
+            <p style="font-size:12px; color:var(--dim); line-height:1.7;">Nao. Ele e especializado em protecao veicular e gestao de equipe. Se voce perguntar algo fora desse contexto, ele vai dizer que nao pode ajudar com isso e sugerir voltar ao foco do trabalho.</p>
+          </div>
+
+          <div style="border-bottom:1px solid var(--border); padding-bottom:16px;">
+            <p style="font-weight:700; margin-bottom:6px;">Meus creditos expiram?</p>
+            <p style="font-size:12px; color:var(--dim); line-height:1.7;">Nao. Creditos nao tem prazo de validade. Voce compra quando quiser e usa no seu ritmo.</p>
+          </div>
+
+          <div style="border-bottom:1px solid var(--border); padding-bottom:16px;">
+            <p style="font-weight:700; margin-bottom:6px;">O que acontece se meus creditos acabarem?</p>
+            <p style="font-size:12px; color:var(--dim); line-height:1.7;">O agente vai avisar que o saldo esta insuficiente e oferecer a opcao de recarregar direto pelo WhatsApp. Voce nao perde o historico da conversa.</p>
+          </div>
+
+          <div style="border-bottom:1px solid var(--border); padding-bottom:16px;">
+            <p style="font-weight:700; margin-bottom:6px;">Posso usar o agente para varios clientes ao mesmo tempo?</p>
+            <p style="font-size:12px; color:var(--dim); line-height:1.7;">Sim. O agente nao tem limite de consultas por dia — somente o limite de creditos. Voce pode pedir 10 scripts seguidos se tiver creditos suficientes.</p>
+          </div>
+
+          <div>
+            <p style="font-weight:700; margin-bottom:6px;">O agente tem acesso aos meus dados pessoais e da equipe?</p>
+            <p style="font-size:12px; color:var(--dim); line-height:1.7;">Sim, mas apenas para responder suas perguntas. Ele ve seus registros de cotacoes, adesoes, despesas e lembretes. Nao compartilha esses dados com ninguem e nao armazena historico de conversas apos a sessao encerrar.</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- fim capitulo 3 -->
+
+  <!-- DIVISOR FINAL -->
+  <div class="divisor"></div>
+
+  <div style="background: linear-gradient(135deg, #0f172a, #1e1b4b); border-radius:16px; padding:36px 40px; text-align:center;">
+    <p style="font-size:11px; color:#64748b; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:12px;">AutoVale Protecao Veicular</p>
+    <h3 style="font-size:20px; font-weight:700; color:#fff; margin-bottom:8px;">Duvidas? Fale com seu gestor.</h3>
+    <p style="font-size:13px; color:#94a3b8; line-height:1.6;">Este guia cobre as principais funcionalidades da plataforma. Para duvidas especificas sobre sua operacao ou configuracoes, entre em contato com o administrador da sua conta.</p>
+  </div>
+
+</div><!-- fim content -->
+
+<div class="rodape">
+  Plataforma de Treinamento AutoVale &nbsp;·&nbsp; Documento interno &nbsp;·&nbsp; 2026
+</div>
+
+</body>
+</html>

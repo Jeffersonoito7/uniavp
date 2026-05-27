@@ -380,6 +380,14 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
           )}
         </nav>
 
+        <div style={{ padding: colapsada ? '8px 8px' : '8px 12px', borderTop: `1px solid ${C.border}` }}>
+          <a href="/manual.html" target="_blank" rel="noreferrer" title="Manual da Plataforma"
+            style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 8, justifyContent: colapsada ? 'center' : 'flex-start', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', color: '#fbbf24', borderRadius: 7, padding: colapsada ? '8px 0' : '7px 12px', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            {!colapsada && <span>Manual da Plataforma</span>}
+          </a>
+        </div>
+
         <div style={{ padding: colapsada ? '12px 8px' : '12px 16px', borderTop: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 8, alignItems: colapsada ? 'center' : 'stretch' }}>
           {!colapsada && <p style={{ fontSize: 11, color: C.dim, margin: 0 }}>{nome}</p>}
           <button onClick={() => setDarkMode(d => !d)} title={darkMode ? 'Modo claro' : 'Modo escuro'} style={{ ...btnGhost, display: 'flex', alignItems: 'center', gap: 8, justifyContent: colapsada ? 'center' : 'flex-start', padding: '8px 10px' }}>

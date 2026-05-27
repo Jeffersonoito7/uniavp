@@ -158,11 +158,15 @@ export default function AgenteCard() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-            {wppUrl && (
+            {wppUrl ? (
               <a href={wppUrl} target="_blank" rel="noreferrer"
                 style={{ background: '#25d36620', border: '1px solid #25d36640', color: '#25d366', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' as const }}>
                 Abrir Chat
               </a>
+            ) : (
+              <span style={{ fontSize: 12, color: 'var(--avp-text-dim)', padding: '8px 0', whiteSpace: 'nowrap' as const }}>
+                Aguardando configuracao pelo admin
+              </span>
             )}
             {dados.pacotes.length > 0 && (
               <button onClick={() => setShowRecarga(true)}

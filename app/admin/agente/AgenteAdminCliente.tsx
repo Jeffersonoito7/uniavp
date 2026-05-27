@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 type AgenteConfig = {
   nome_assistente: string
@@ -22,6 +22,27 @@ const inp: React.CSSProperties = {
 const lbl: React.CSSProperties = {
   display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)',
   marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8,
+}
+
+function WebhookUrl() {
+  const [url, setUrl] = useState('')
+  const [copiado, setCopiado] = useState(false)
+  useEffect(() => { setUrl(`${window.location.origin}/api/webhooks/whatsapp`) }, [])
+  function copiar() {
+    navigator.clipboard.writeText(url)
+    setCopiado(true)
+    setTimeout(() => setCopiado(false), 2500)
+  }
+  return (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <code style={{ flex: 1, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 6, padding: '8px 12px', fontSize: 12, color: 'var(--avp-text)', fontFamily: 'monospace', wordBreak: 'break-all' as const }}>
+        {url}
+      </code>
+      <button onClick={copiar} style={{ background: copiado ? 'rgba(34,197,94,0.15)' : 'rgba(79,70,229,0.15)', border: `1px solid ${copiado ? 'rgba(34,197,94,0.3)' : 'rgba(79,70,229,0.3)'}`, color: copiado ? 'var(--avp-green)' : '#818cf8', borderRadius: 6, padding: '8px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap' as const, flexShrink: 0 }}>
+        {copiado ? 'Copiado!' : 'Copiar URL'}
+      </button>
+    </div>
+  )
 }
 
 function SectionCard({ title, desc, children }: { title: string; desc?: string; children: React.ReactNode }) {
@@ -235,6 +256,35 @@ export default function AgenteAdminCliente({
             </button>
           </div>
         </form>
+      </SectionCard>
+
+      {/* ── Como o PRO acessa o agente ── */}
+      <SectionCard title="Como o PRO Acessa o Agente" desc="Fluxo completo de uso pelo consultor PRO">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+            {[
+              { num: '1', titulo: 'Admin configura', desc: 'Voce preenche o Numero WhatsApp do Agente acima e salva. Esse e o numero da instancia Evolution API conectada.' },
+              { num: '2', titulo: 'PRO ve o card', desc: 'No painel PRO (Dashboard), aparece o card do Agente IA com saldo de creditos e o botao "Abrir Chat" em verde.' },
+              { num: '3', titulo: 'PRO manda mensagem', desc: 'O PRO clica em "Abrir Chat", o WhatsApp abre e ele manda uma mensagem. O agente responde em segundos.' },
+            ].map(s => (
+              <div key={s.num} style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(79,70,229,0.2)', border: '1px solid rgba(79,70,229,0.4)', color: '#818cf8', fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>{s.num}</div>
+                <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>{s.titulo}</p>
+                <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 10, padding: '14px 16px' }}>
+            <p style={{ fontWeight: 700, fontSize: 13, color: '#fbbf24', marginBottom: 8 }}>Configuracao da Evolution API — URL do Webhook</p>
+            <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 10, lineHeight: 1.6 }}>
+              Na sua instancia Evolution API, configure o webhook para apontar para este endpoint. Habilite apenas o evento <strong style={{ color: 'var(--avp-text)' }}>messages.upsert</strong>.
+            </p>
+            <WebhookUrl />
+          </div>
+
+        </div>
       </SectionCard>
 
       {/* ── Custos por ação ── */}
