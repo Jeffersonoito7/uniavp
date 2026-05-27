@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen, Palette, UserCircle, Video } from 'lucide-react'
 import SupportChat from '@/app/components/SupportChat'
+import ThemeToggle from '@/app/components/ThemeToggle'
 
 const navItems = [
   { id: 'dashboard',   label: 'Dashboard',  icon: LayoutDashboard },
@@ -209,6 +210,8 @@ export default function GestorLayout({
 
         {/* Rodapé */}
         <div style={{ padding: '12px 8px', borderTop: '1px solid var(--avp-border)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+
+          <ThemeToggle collapsed={colapsada && !isMobile} />
 
           <button onClick={sair}
             style={{

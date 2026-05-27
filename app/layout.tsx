@@ -52,6 +52,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         `}</style>
       </head>
       <body>
+        {/* Aplica tema antes da hidratação para evitar flash */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('avp-theme')==='light')document.documentElement.classList.add('light')}catch(e){}})()` }} />
         <RegisterSW />
         {children}
         <InstalarApp />

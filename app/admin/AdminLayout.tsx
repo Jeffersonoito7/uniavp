@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import LogoutButton from '@/app/components/LogoutButton'
 import SupportChat from '@/app/components/SupportChat'
+import ThemeToggle from '@/app/components/ThemeToggle'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -272,7 +273,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         {/* ── Rodapé ── */}
-        <div style={{ padding: colapsada ? '12px 8px' : '12px 14px', borderTop: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', gap: 8, justifyContent: colapsada ? 'center' : 'space-between' }}>
+        <div style={{ padding: colapsada ? '12px 8px' : '12px 14px', borderTop: '1px solid var(--avp-border)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <ThemeToggle collapsed={colapsada} />
           {!colapsada && <LogoutButton style={{ flex: 1 }} />}
           {colapsada && <LogoutButton />}
         </div>

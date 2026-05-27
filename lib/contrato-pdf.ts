@@ -305,7 +305,12 @@ export async function gerarPDFContrato(dados: DadosContratoAVP): Promise<Uint8Ar
 
   // ── CLÁUSULAS: personalizadas ou padrão ──────────────────────────────────
   if (dados.clausulasPersonalizadas?.trim()) {
-    renderizarClausulasCustom(pw, dados.clausulasPersonalizadas)
+    // Substitui {{GANHOS}} pela regra personalizada do consultor (se houver)
+    // ou pela tabela padrão em texto simples
+    const tabelaPadrao = '10 filiações = R$ 500,00\n15 filiações = R$ 800,00\n20 filiações = R$ 1.500,00\n30 filiações = R$ 2.000,00\n40 filiações = R$ 2.700,00\n50 filiações = R$ 3.200,00\n60 filiações = R$ 4.000,00\n70 filiações = R$ 4.600,00\n80 filiações = R$ 5.200,00\n100 filiações = R$ 6.400,00'
+    const ganhos = dados.regraBonificacao?.trim() || tabelaPadrao
+    const textoFinal = dados.clausulasPersonalizadas.replace(/\{\{GANHOS\}\}/g, ganhos)
+    renderizarClausulasCustom(pw, textoFinal)
   } else {
   // ── SEÇÃO 1 ──────────────────────────────────────────────────────────────
   pw.sectionTitle(1, 'DO OBJETO')

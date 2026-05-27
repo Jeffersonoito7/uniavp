@@ -1,9 +1,11 @@
+'use client'
 import Link from 'next/link'
 import EventosWidget from '@/app/components/EventosWidget'
 import MuralNoticias from '@/app/components/MuralNoticias'
 import LogoutButton from '@/app/components/LogoutButton'
 import PushButton from '@/app/components/PushButton'
 import PWAInstallButton from '@/app/components/PWAInstallButton'
+import ThemeToggle from '@/app/components/ThemeToggle'
 
 type Props = {
   whatsapp: string
@@ -51,6 +53,7 @@ export default function AlunoHeader({ whatsapp, aluno, siteConfig }: Props) {
           style={{ flexShrink: 0, textDecoration: 'none', fontSize: 12, padding: '5px 12px', gap: 5 }}>
           UNIAVP PRO
         </a>
+        <ThemeToggle inline />
         <PushButton />
         <PWAInstallButton />
         <MuralNoticias />
