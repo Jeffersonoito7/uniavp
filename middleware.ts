@@ -8,9 +8,6 @@ function hasSession(request: NextRequest): boolean {
   )
 }
 
-function hasOtp(request: NextRequest): boolean {
-  return !!request.cookies.get('otp_ok')?.value
-}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -58,22 +55,6 @@ export function middleware(request: NextRequest) {
     const url = new URL(request.url)
     url.pathname = '/entrar'
     return NextResponse.redirect(url)
-  }
-
-  // ── Verificação OTP obrigatória ─────────────────────────────────
-  // /pro → internamente é /gestor; /free/ → internamente é /aluno/
-  if (!hasOtp(request)) {
-    const url = new URL(request.url)
-    const needsOtp =
-      pathname.startsWith('/aluno') ||
-      pathname.startsWith('/gestor') ||
-      pathname === '/pro' ||
-      pathname.startsWith('/pro/') ||
-      pathname.startsWith('/free/')
-    if (needsOtp) {
-      url.pathname = '/entrar/otp'
-      return NextResponse.redirect(url)
-    }
   }
 
   return NextResponse.next()

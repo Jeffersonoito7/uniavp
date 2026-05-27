@@ -2046,6 +2046,12 @@ export type Database = {
         Update: { nome_assistente?: string; prompt_base?: string | null; modelo_padrao?: string; creditos_boas_vindas_padrao?: number; ativo?: boolean; criado_por?: string | null; updated_at?: string }
         Relationships: []
       }
+      mensagens_log: {
+        Row: { id: string; destinatario: string; chave: string; tenant_id: string | null; enviado_em: string; created_at: string }
+        Insert: { id?: string; destinatario: string; chave: string; tenant_id?: string | null; enviado_em?: string; created_at?: string }
+        Update: { destinatario?: string; chave?: string; tenant_id?: string | null; enviado_em?: string }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

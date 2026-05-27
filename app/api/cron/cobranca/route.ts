@@ -3,7 +3,11 @@ import { createServiceRoleClient } from '@/lib/supabase-server'
 import { criarCobrancaPix } from '@/lib/efi'
 import { enviarWhatsApp } from '@/lib/whatsapp'
 import { getMensagem } from '@/lib/mensagem'
+import { alertarDiscord } from '@/lib/discord'
+import { createLogger } from '@/lib/logger'
 import { randomUUID } from 'crypto'
+
+const log = createLogger('cron/cobranca')
 
 export const dynamic = 'force-dynamic'
 
@@ -72,7 +76,7 @@ export async function GET(req: NextRequest) {
         }
         geradas++
       } catch (e) {
-        console.error(`[cron/cobranca] Erro ao gerar cobrança para cliente ${c.id}:`, e)
+        log.error('erro ao gerar cobrança', { clienteId: c.id, err: String(e) })
         falhas++
       }
     }
@@ -92,6 +96,10 @@ export async function GET(req: NextRequest) {
         suspensas++
       }
     }
+  }
+
+  if (falhas > 0) {
+    await alertarDiscord('aviso', 'Cron cobrança com falhas', `${geradas} geradas, ${suspensas} suspensas, ${falhas} falha(s) ao gerar PIX. Verifique os logs.`)
   }
 
   return NextResponse.json({ ok: true, geradas, suspensas, falhas })

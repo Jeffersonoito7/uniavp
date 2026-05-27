@@ -1,15 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { processarMensagemPRO } from '@/lib/pro-agente'
 import { enviarWhatsApp } from '@/lib/whatsapp'
+import { alertarDiscord } from '@/lib/discord'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-
-    // Evolution API envia eventos de vários tipos — só processa mensagens de texto recebidas
     const evento = body?.event
+    const instancia: string = body?.instance ?? ''
+
+    // Detecta desconexão da instância e alerta imediatamente
+    if (evento === 'connection.update') {
+      const state: string = (body?.data?.state ?? '').toLowerCase()
+      if (state === 'close' || state === 'refused') {
+        await alertarDiscord(
+          'aviso',
+          'WhatsApp desconectado',
+          `A instância \`${instancia}\` foi desconectada (estado: ${state}).\nAcesse o painel admin → Configurações → Conectar WhatsApp para reconectar.`,
+        )
+      }
+      return NextResponse.json({ ok: true })
+    }
+
+    // Só processa mensagens de texto recebidas
     if (evento !== 'messages.upsert') return NextResponse.json({ ok: true })
 
     const msg = body?.data?.messages?.[0] ?? body?.data
@@ -41,8 +56,7 @@ export async function POST(req: NextRequest) {
     if (!resposta) return NextResponse.json({ ok: true })
 
     // Envia resposta pela mesma instância que recebeu a mensagem
-    const instancia: string | null = body?.instance ?? null
-    await enviarWhatsApp(numero, resposta, instancia)
+    await enviarWhatsApp(numero, resposta, instancia || null)
 
     return NextResponse.json({ ok: true })
   } catch {
