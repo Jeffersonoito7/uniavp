@@ -251,20 +251,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {!colapsada && <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>Visualizar como</p>}
           <Link href="/admin/ver-pro"
             title="Ver Painel PRO"
-            style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 8, justifyContent: colapsada ? 'center' : 'flex-start', background: pathname.startsWith('/admin/ver-pro') ? 'var(--avp-accent)' : 'rgba(79,70,229,0.1)', border: `1px solid ${pathname.startsWith('/admin/ver-pro') ? 'var(--avp-accent)' : 'rgba(79,70,229,0.2)'}`, color: pathname.startsWith('/admin/ver-pro') ? '#fff' : 'var(--avp-blue-bright)', borderRadius: 7, padding: colapsada ? '8px 0' : '7px 12px', fontSize: 12, fontWeight: 600, textDecoration: 'none', transition: 'all 0.15s', letterSpacing: '0.01em' }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h.01M7 20v-4"/><path d="M12 20V10"/><path d="M17 20V4"/><path d="M22 20h.01"/></svg>
+            style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 8, justifyContent: colapsada ? 'center' : 'flex-start', background: pathname.startsWith('/admin/ver-pro') ? '#4f46e5' : 'rgba(79,70,229,0.25)', border: '1px solid rgba(99,102,241,0.5)', color: '#c7d2fe', borderRadius: 7, padding: colapsada ? '9px 0' : '8px 12px', fontSize: 12, fontWeight: 700, textDecoration: 'none', transition: 'all 0.15s', letterSpacing: '0.01em' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h.01M7 20v-4"/><path d="M12 20V10"/><path d="M17 20V4"/><path d="M22 20h.01"/></svg>
             {!colapsada && <span>Painel PRO</span>}
           </Link>
           <Link href="/admin/ver-free"
             title="Ver Painel FREE"
-            style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 8, justifyContent: colapsada ? 'center' : 'flex-start', background: pathname.startsWith('/admin/ver-free') ? 'var(--avp-green)' : 'rgba(34,197,94,0.1)', border: `1px solid ${pathname.startsWith('/admin/ver-free') ? 'var(--avp-green)' : 'rgba(34,197,94,0.2)'}`, color: pathname.startsWith('/admin/ver-free') ? '#fff' : 'var(--avp-green-bright)', borderRadius: 7, padding: colapsada ? '8px 0' : '7px 12px', fontSize: 12, fontWeight: 600, textDecoration: 'none', transition: 'all 0.15s', letterSpacing: '0.01em' }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 8, justifyContent: colapsada ? 'center' : 'flex-start', background: pathname.startsWith('/admin/ver-free') ? '#16a34a' : 'rgba(22,163,74,0.25)', border: '1px solid rgba(34,197,94,0.5)', color: '#86efac', borderRadius: 7, padding: colapsada ? '9px 0' : '8px 12px', fontSize: 12, fontWeight: 700, textDecoration: 'none', transition: 'all 0.15s', letterSpacing: '0.01em' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             {!colapsada && <span>Painel FREE</span>}
           </Link>
           <a href="/manual.html" target="_blank" rel="noreferrer" title="Manual da Plataforma"
-            style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 8, justifyContent: colapsada ? 'center' : 'flex-start', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', color: '#fbbf24', borderRadius: 7, padding: colapsada ? '8px 0' : '7px 12px', fontSize: 12, fontWeight: 600, textDecoration: 'none', transition: 'all 0.15s' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 8, justifyContent: colapsada ? 'center' : 'flex-start', background: 'rgba(217,119,6,0.25)', border: '1px solid rgba(251,191,36,0.5)', color: '#fde68a', borderRadius: 7, padding: colapsada ? '9px 0' : '8px 12px', fontSize: 12, fontWeight: 700, textDecoration: 'none', transition: 'all 0.15s' }}>
             <HelpCircle size={13} style={{ flexShrink: 0 }} />
-            {!colapsada && <span>Manual da Plataforma</span>}
+            {!colapsada && <span>Manual</span>}
           </a>
         </div>
 
