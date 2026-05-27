@@ -99,7 +99,7 @@ export async function getSiteConfig(host?: string): Promise<SiteConfig> {
     whatsappSuporte: map['whatsapp_suporte'] || '',
     dominioCustomizado: map['dominio_customizado'] || '',
     planosAtivo: map['planos_ativo'] === 'true',
-    cncpvHabilitado: map['cncpv_habilitado'] !== 'false',
+    cncpvHabilitado: map['cncpv_habilitado'] === 'true',
     isDominioMaster: false,
   }
 
