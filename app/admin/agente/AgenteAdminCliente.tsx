@@ -24,6 +24,18 @@ const lbl: React.CSSProperties = {
   marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8,
 }
 
+function Passo({ num, cor, titulo, children }: { num: string; cor: string; titulo: string; children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '16px 18px' }}>
+      <div style={{ width: 30, height: 30, borderRadius: '50%', background: `${cor}18`, border: `2px solid ${cor}50`, color: cor, fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>{num}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>{titulo}</p>
+        {children}
+      </div>
+    </div>
+  )
+}
+
 function WebhookUrl() {
   const [url, setUrl] = useState('')
   const [copiado, setCopiado] = useState(false)
@@ -258,31 +270,85 @@ export default function AgenteAdminCliente({
         </form>
       </SectionCard>
 
-      {/* ── Como o PRO acessa o agente ── */}
-      <SectionCard title="Como o PRO Acessa o Agente" desc="Fluxo completo de uso pelo consultor PRO">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* ── Setup Evolution API ── */}
+      <SectionCard title="Configuracao do WhatsApp (Evolution API)" desc="Siga estes passos uma unica vez para ligar o agente ao WhatsApp da sua empresa">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-            {[
-              { num: '1', titulo: 'Admin configura', desc: 'Voce preenche o Numero WhatsApp do Agente acima e salva. Esse e o numero da instancia Evolution API conectada.' },
-              { num: '2', titulo: 'PRO ve o card', desc: 'No painel PRO (Dashboard), aparece o card do Agente IA com saldo de creditos e o botao "Abrir Chat" em verde.' },
-              { num: '3', titulo: 'PRO manda mensagem', desc: 'O PRO clica em "Abrir Chat", o WhatsApp abre e ele manda uma mensagem. O agente responde em segundos.' },
-            ].map(s => (
-              <div key={s.num} style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
-                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(79,70,229,0.2)', border: '1px solid rgba(79,70,229,0.4)', color: '#818cf8', fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>{s.num}</div>
-                <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>{s.titulo}</p>
-                <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>{s.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 10, padding: '14px 16px' }}>
-            <p style={{ fontWeight: 700, fontSize: 13, color: '#fbbf24', marginBottom: 8 }}>Configuracao da Evolution API — URL do Webhook</p>
-            <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 10, lineHeight: 1.6 }}>
-              Na sua instancia Evolution API, configure o webhook para apontar para este endpoint. Habilite apenas o evento <strong style={{ color: 'var(--avp-text)' }}>messages.upsert</strong>.
+          {/* Passo 1 */}
+          <Passo num="1" cor="#818cf8" titulo="Acessar o painel da Evolution API">
+            <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 10, lineHeight: 1.6 }}>
+              Abra o painel da Evolution API da plataforma. Voce vai criar uma instancia exclusiva para o agente da sua empresa.
             </p>
-            <WebhookUrl />
-          </div>
+            <a href="https://evolution.oito7digital.com.br" target="_blank" rel="noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(79,70,229,0.12)', border: '1px solid rgba(79,70,229,0.3)', color: '#818cf8', borderRadius: 7, padding: '8px 14px', fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Abrir evolution.oito7digital.com.br
+            </a>
+          </Passo>
+
+          {/* Passo 2 */}
+          <Passo num="2" cor="#818cf8" titulo='Criar uma nova instancia'>
+            <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>
+              No painel da Evolution API, clique em <strong style={{ color: 'var(--avp-text)' }}>Create Instance</strong>. Escolha um nome curto e unico para identificar esta empresa, por exemplo: <code style={{ background: 'var(--avp-black)', padding: '1px 6px', borderRadius: 4, fontSize: 12 }}>assoc-xyz</code> ou <code style={{ background: 'var(--avp-black)', padding: '1px 6px', borderRadius: 4, fontSize: 12 }}>autovale-rj</code>. Confirme a criacao.
+            </p>
+          </Passo>
+
+          {/* Passo 3 */}
+          <Passo num="3" cor="#25d366" titulo="Conectar o numero de WhatsApp via QR Code">
+            <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', lineHeight: 1.6, marginBottom: 8 }}>
+              Com a instancia criada, clique em <strong style={{ color: 'var(--avp-text)' }}>Connect</strong>. Um QR Code vai aparecer. Abra o WhatsApp no celular que sera o numero do agente:
+            </p>
+            <ol style={{ paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {[
+                'No WhatsApp, toque nos tres pontos (menu) e acesse Dispositivos conectados',
+                'Toque em Conectar um dispositivo',
+                'Aponte a camera para o QR Code na tela',
+                'Aguarde aparecer o status Connected — o numero esta ativo',
+              ].map((s, i) => (
+                <li key={i} style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>{s}</li>
+              ))}
+            </ol>
+            <div style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 8, padding: '10px 14px', marginTop: 10 }}>
+              <p style={{ fontSize: 12, color: '#fbbf24', lineHeight: 1.6, margin: 0 }}>
+                Use um numero de celular dedicado ao agente — nao o seu pessoal. O numero precisa estar ativo e com WhatsApp instalado. WhatsApp Business com restricoes de API pode nao funcionar.
+              </p>
+            </div>
+          </Passo>
+
+          {/* Passo 4 */}
+          <Passo num="4" cor="#fbbf24" titulo="Configurar o webhook na instancia">
+            <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', lineHeight: 1.6, marginBottom: 10 }}>
+              Na instancia criada, va em <strong style={{ color: 'var(--avp-text)' }}>Webhook</strong> e configure:
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '12px 14px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>URL do Webhook</p>
+                <WebhookUrl />
+              </div>
+              <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '12px 14px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Evento a habilitar</p>
+                <code style={{ fontSize: 13, color: '#4ade80', fontFamily: 'monospace' }}>messages.upsert</code>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>Somente este evento. Os demais podem ficar desabilitados.</p>
+              </div>
+            </div>
+          </Passo>
+
+          {/* Passo 5 */}
+          <Passo num="5" cor="#4ade80" titulo="Colocar o numero do WhatsApp nesta pagina">
+            <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>
+              Volte ao formulario de <strong style={{ color: 'var(--avp-text)' }}>Configuracao do Assistente</strong> acima. No campo <strong style={{ color: 'var(--avp-text)' }}>Numero WhatsApp do Agente</strong>, informe o numero do celular que voce conectou (somente digitos, com DDI 55). Salve.
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 8 }}>
+              Exemplo: se o numero e <strong>(87) 99999-0000</strong>, informe <code style={{ background: 'var(--avp-black)', padding: '1px 6px', borderRadius: 4 }}>5587999990000</code>
+            </p>
+          </Passo>
+
+          {/* Passo 6 */}
+          <Passo num="6" cor="#4ade80" titulo="Testar — o PRO ja pode usar">
+            <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>
+              Pronto. No painel PRO, o card do Agente IA aparece com o botao <strong style={{ color: '#25d366' }}>Abrir Chat</strong>. O PRO clica, o WhatsApp abre com o numero configurado, ele manda uma mensagem e o agente responde em segundos. Nenhuma outra configuracao e necessaria.
+            </p>
+          </Passo>
 
         </div>
       </SectionCard>
