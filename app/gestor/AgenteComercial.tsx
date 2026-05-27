@@ -12,7 +12,7 @@ const SUGESTOES = [
 ]
 
 const TIPOS_ACEITOS = 'image/jpeg,image/png,image/webp,image/gif,application/pdf'
-const TAMANHO_MAX_MB = 8
+const TAMANHO_MAX_MB = 3
 
 function IconePaperclip() {
   return (

@@ -6,6 +6,18 @@ export const dynamic = 'force-dynamic'
 
 const MODELO_PADRAO = 'claude-haiku-4-5-20251001'
 
+// Mapeia os valores curtos do admin para os IDs reais da Anthropic
+const MODELO_MAP: Record<string, string> = {
+  haiku:  'claude-haiku-4-5-20251001',
+  sonnet: 'claude-sonnet-4-6',
+  opus:   'claude-opus-4-7',
+}
+
+function resolverModelo(valor: string | null | undefined): string {
+  if (!valor) return MODELO_PADRAO
+  return MODELO_MAP[valor] ?? (valor.startsWith('claude-') ? valor : MODELO_PADRAO)
+}
+
 // Modelos que suportam PDF via document block
 const MODELOS_PDF = ['claude-sonnet-4-6', 'claude-opus-4-7', 'claude-haiku-4-5-20251001']
 
@@ -95,7 +107,7 @@ export async function POST(req: NextRequest) {
   if (!apiKey) return NextResponse.json({ error: 'Serviço indisponível' }, { status: 503 })
 
   const nomeAssistente = config?.nome_assistente ?? 'Assistente'
-  const modelo = config?.modelo ?? MODELO_PADRAO
+  const modelo = resolverModelo(config?.modelo)
   const systemPrompt = buildSystemPrompt(nomeAssistente, config?.prompt_extra ?? null, argumentos)
 
   // Monta as mensagens para o Anthropic
