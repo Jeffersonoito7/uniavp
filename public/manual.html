@@ -413,6 +413,7 @@
     <span class="badge green">Consultor FREE</span>
     <span class="badge indigo">Gestor PRO</span>
     <span class="badge amber">Agente IA</span>
+    <span class="badge" style="background:rgba(124,58,237,0.2); border-color:rgba(167,139,250,0.3); color:#c4b5fd;">Painel Admin</span>
   </div>
 
   <div class="capa-footer">AutoVale Proteção Veicular &nbsp;·&nbsp; Plataforma de Treinamento &nbsp;·&nbsp; 2026</div>
@@ -453,6 +454,17 @@
       <div class="sumario-item"><span>3.5 Comparador com concorrente — o recurso mais poderoso</span><span>11</span></div>
       <div class="sumario-item"><span>3.6 Como recarregar creditos</span><span>12</span></div>
       <div class="sumario-item"><span>3.7 Perguntas frequentes</span><span>12</span></div>
+    </div>
+
+    <div class="sumario-section">
+      <div class="sumario-section-title">Parte 4 — Painel Administrativo</div>
+      <div class="sumario-item"><span>4.1 Navegacao geral do painel admin</span><span>13</span></div>
+      <div class="sumario-item"><span>4.2 Modo claro e escuro — como alternar em cada tela</span><span>13</span></div>
+      <div class="sumario-item"><span>4.3 Contrato — texto, dados da empresa e clausulas</span><span>14</span></div>
+      <div class="sumario-item"><span>4.4 Regras de ganhos diferenciadas por consultor</span><span>14</span></div>
+      <div class="sumario-item"><span>4.5 Extracao de clausulas por IA</span><span>15</span></div>
+      <div class="sumario-item"><span>4.6 Conexao WhatsApp no painel</span><span>15</span></div>
+      <div class="sumario-item"><span>4.7 Configurar contato de suporte</span><span>16</span></div>
     </div>
   </div>
 
@@ -1149,6 +1161,348 @@
     </div>
 
   </div><!-- fim capitulo 3 -->
+
+  <!-- ══════════════════════ PARTE 4 — ADMIN -->
+  <div class="sep"></div>
+
+  <div class="capitulo" id="parte4">
+    <div class="capitulo-header">
+      <div class="capitulo-numero" style="background:#faf5ff; color:#7c3aed; border:2px solid #ddd6fe;">4</div>
+      <div>
+        <h2>Painel Administrativo</h2>
+        <p class="capitulo-sub">Configuracoes, contratos, WhatsApp e personalizacoes avancadas</p>
+      </div>
+    </div>
+
+    <!-- 4.1 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone" style="background:#faf5ff; color:#7c3aed;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </div>
+        <div>
+          <h3>4.1 Navegacao geral do painel admin</h3>
+          <p>Onde fica cada configuracao importante</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <p style="margin-bottom:16px; color:var(--dim); font-size:12px;">O painel administrativo e acessado pelo gestor master em <strong>/admin</strong>. O menu lateral organiza tudo em abas. Veja o que esta em cada uma:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Aba do menu</th>
+              <th>O que voce encontra la</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="tag azul">Dashboard</span></td>
+              <td>Resumo geral: total de consultores, adesoes do mes, atividade recente</td>
+            </tr>
+            <tr>
+              <td><span class="tag azul">Minha Equipe</span></td>
+              <td>Lista de todos os consultores cadastrados, status, link de acesso individual</td>
+            </tr>
+            <tr>
+              <td><span class="tag azul">Modulos</span></td>
+              <td>Criar, editar e organizar modulos de treinamento e aulas</td>
+            </tr>
+            <tr>
+              <td><span class="tag azul">Ao Vivo</span></td>
+              <td>Gerenciar transmissoes ao vivo agendadas</td>
+            </tr>
+            <tr>
+              <td><span class="tag azul">Eventos</span></td>
+              <td>Criar eventos que aparecem no widget de eventos dos consultores</td>
+            </tr>
+            <tr>
+              <td><span class="tag azul">WhatsApp</span></td>
+              <td>Conectar o numero da empresa para envio de mensagens automaticas</td>
+            </tr>
+            <tr>
+              <td><span class="tag laranja">Contratos</span></td>
+              <td>Visualizar contratos assinados, gerar links personalizados e usar a IA extratora</td>
+            </tr>
+            <tr>
+              <td><span class="tag laranja">Configuracoes</span></td>
+              <td>Dados da empresa, cores, logotipo, texto do contrato, suporte, e mais</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="dica amarelo" style="margin-top:16px;">
+          <span class="dica-icone">⚠</span>
+          <span class="dica-texto"><strong>Contratos e Configuracoes sao abas diferentes.</strong> O texto do corpo do contrato fica em <strong>Configuracoes</strong>. Os links personalizados e a IA de clausulas ficam em <strong>Contratos</strong>. Nao confunda as duas.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.2 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone" style="background:#faf5ff; color:#7c3aed;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </div>
+        <div>
+          <h3>4.2 Modo claro e escuro</h3>
+          <p>Como alternar o tema em cada tela da plataforma</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <p style="margin-bottom:16px; color:var(--dim); font-size:12px;">A plataforma tem modo escuro (padrao) e modo claro. Cada painel tem o botao de alternancia em um local especifico:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Painel</th>
+              <th>Onde fica o botao</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Admin</strong></td>
+              <td>Menu lateral esquerdo — parte de baixo, acima do botao "Sair"</td>
+            </tr>
+            <tr>
+              <td><strong>PRO / Gestor</strong></td>
+              <td>Menu lateral esquerdo — parte de baixo, acima do botao "Sair"</td>
+            </tr>
+            <tr>
+              <td><strong>Consultor (FREE)</strong></td>
+              <td>Cabecalho superior direito — icone de sol/lua ao lado do botao de notificacoes</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="dica verde" style="margin-top:16px;">
+          <span class="dica-icone">💡</span>
+          <span class="dica-texto"><strong>A preferencia e salva automaticamente.</strong> Ao alternar, o sistema memoriza a escolha no navegador. Na proxima vez que a pessoa abrir a plataforma, o tema correto ja esta aplicado — sem piscar na tela.</span>
+        </div>
+        <p style="margin-top:14px; font-size:12px; color:var(--dim);">Quando o menu lateral esta <strong>recolhido</strong> (icone sem texto), o botao de tema fica visivel apenas como icone. Expanda o menu para ver o texto "Claro" ou "Escuro".</p>
+      </div>
+    </div>
+
+    <!-- 4.3 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone" style="background:#faf5ff; color:#7c3aed;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div>
+          <h3>4.3 Contrato — texto, dados da empresa e clausulas</h3>
+          <p>Como personalizar o contrato PDF que o consultor assina</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <p style="margin-bottom:14px; font-size:12px; color:var(--dim);">Acesse: <strong>Admin &rarr; Configuracoes &rarr; aba "Contrato de Representacao"</strong> (role a pagina ate essa secao).</p>
+
+        <p style="font-weight:700; margin-bottom:12px;">O que voce pode configurar ali:</p>
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num" style="background:#7c3aed;">1</span>
+            <span class="passo-texto"><strong>Dados da empresa no PDF:</strong> nome juridico, CNPJ, endereco. Esses dados aparecem no rodape e no cabecalho do contrato gerado.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num" style="background:#7c3aed;">2</span>
+            <span class="passo-texto"><strong>Corpo personalizado do contrato:</strong> campo de texto livre. Se deixado em branco, o sistema usa o contrato padrao completo com as regras de ganhos pre-definidas.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num" style="background:#7c3aed;">3</span>
+            <span class="passo-texto"><strong>Placeholder {{GANHOS}}:</strong> ao preencher um corpo customizado, voce pode digitar <code style="background:#f1f5f9; padding:1px 6px; border-radius:4px; font-size:11px; color:#7c3aed;">{{GANHOS}}</code> no ponto exato onde a tabela de bonificacao deve aparecer. O sistema substitui automaticamente esse marcador pelo texto correto de cada consultor.</span>
+          </li>
+        </ul>
+
+        <div class="dica amarelo" style="margin-top:16px;">
+          <span class="dica-icone">⚠</span>
+          <span class="dica-texto"><strong>Importante:</strong> Se voce preencher o corpo do contrato <em>sem</em> incluir <code style="background:#fef3c7; padding:1px 6px; border-radius:4px; font-size:11px;">{{GANHOS}}</code>, o consultor que tiver uma regra de ganhos diferente recebera o contrato sem essa informacao. Sempre inclua o marcador no ponto onde a tabela de comissoes deve aparecer.</span>
+        </div>
+
+        <p style="font-weight:700; margin-top:18px; margin-bottom:10px;">Exemplo de corpo com o marcador:</p>
+        <div style="background:#0f172a; border-radius:10px; padding:16px 18px; font-size:12px; color:#94a3b8; font-family:'Courier New', monospace; line-height:1.8;">
+          <span style="color:#94a3b8;">Pelo presente instrumento, a empresa NOME LTDA, CNPJ XX.XXX.XXX/0001-XX,<br/>
+          doravante denominada CONTRATANTE, e o(a) consultor(a) identificado(a) abaixo,<br/>
+          denominado(a) CONTRATADO(A), acordam o seguinte:<br/><br/>
+          <span style="color:#818cf8;">CLAUSULA 3 — DAS BONIFICACOES</span><br/>
+          <span style="color:#4ade80;">{{GANHOS}}</span><br/><br/>
+          <span style="color:#94a3b8;">CLAUSULA 4 — DAS OBRIGACOES DO CONTRATADO<br/>
+          O(a) CONTRATADO(A) se compromete a...</span></span>
+        </div>
+        <p style="font-size:11px; color:var(--dim); margin-top:8px;">O texto em verde sera substituido pela tabela de bonificacao do consultor no momento em que ele clicar em "Assinar contrato".</p>
+      </div>
+    </div>
+
+    <!-- 4.4 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone laranja">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div>
+          <h3>4.4 Regras de ganhos diferenciadas por consultor</h3>
+          <p>Como gerar um link de contrato com bonificacao personalizada</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <p style="margin-bottom:14px; font-size:12px; color:var(--dim);">Acesse: <strong>Admin &rarr; Contratos &rarr; caixa amarela "Gerador de Link Personalizado"</strong>.</p>
+        <p style="margin-bottom:14px; font-size:12px; color:var(--dim);">Esse recurso serve para consultores que tem uma estrutura de ganhos diferente da tabela padrao. Em vez de editar o contrato inteiro, voce gera um link especial que substitui apenas a parte dos ganhos.</p>
+
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num laranja">1</span>
+            <span class="passo-texto laranja">No campo <strong>"WhatsApp do consultor"</strong>, informe o numero com DDD e sem mascara. Ex: <strong>11999990000</strong>.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num laranja">2</span>
+            <span class="passo-texto laranja">No campo <strong>"Regra de ganhos personalizada"</strong>, escreva exatamente o texto que deve aparecer no contrato desse consultor. Pode ser uma tabela, um texto corrido ou uma condicao especifica.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num laranja">3</span>
+            <span class="passo-texto laranja">Clique em <strong>"Gerar Link"</strong>. Um link unico sera criado. Envie esse link diretamente para o consultor pelo WhatsApp.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num laranja">4</span>
+            <span class="passo-texto laranja">Quando o consultor abrir o link e clicar em <strong>"Assinar contrato"</strong>, o PDF gerado tera a regra de ganhos que voce definiu — e nao a tabela padrao.</span>
+          </li>
+        </ul>
+
+        <div class="dica verde" style="margin-top:16px;">
+          <span class="dica-icone">💡</span>
+          <span class="dica-texto"><strong>Funciona com contrato padrao e personalizado.</strong> Se voce usa o corpo padrao do contrato, a regra e substituida automaticamente na secao de bonificacao. Se voce usa um corpo customizado, inclua <code style="background:#f0fdf4; padding:1px 5px; border-radius:4px; font-size:11px;">{{GANHOS}}</code> no texto para que a regra apareca no lugar certo.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.5 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone" style="background:#faf5ff; color:#7c3aed;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div>
+          <h3>4.5 Extracao de clausulas por IA</h3>
+          <p>Como usar a IA para importar clausulas de um contrato existente</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <p style="margin-bottom:14px; font-size:12px; color:var(--dim);">Acesse: <strong>Admin &rarr; Contratos &rarr; caixa roxa "Processar Contrato com IA"</strong>.</p>
+
+        <p style="font-size:12px; color:var(--dim); margin-bottom:16px;">Esse recurso permite que voce envie um PDF de contrato que ja existe (do seu juridico, por exemplo) e a IA extrai automaticamente as clausulas de protecao, formatadas e prontas para uso na plataforma.</p>
+
+        <p style="font-weight:700; margin-bottom:12px;">Como funciona passo a passo:</p>
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num" style="background:#7c3aed;">1</span>
+            <span class="passo-texto">Na caixa roxa, clique em <strong>"Selecionar PDF"</strong> e escolha o arquivo do contrato no seu computador.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num" style="background:#7c3aed;">2</span>
+            <span class="passo-texto">Clique em <strong>"Processar com IA"</strong>. O sistema envia o PDF para a IA (Claude), que le o documento inteiro e identifica as clausulas de protecao, direitos e obrigacoes.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num" style="background:#7c3aed;">3</span>
+            <span class="passo-texto">A IA retorna a lista de clausulas numeradas, com titulo, texto completo e um resumo em primeira pessoa que o consultor vai ler e aceitar. Voce ve o resultado na tela.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num" style="background:#7c3aed;">4</span>
+            <span class="passo-texto">Clique em <strong>"Salvar clausulas"</strong> para que passem a valer nos novos contratos gerados pela plataforma.</span>
+          </li>
+        </ul>
+
+        <div class="dica" style="margin-top:16px; background:#faf5ff; border-color:#ddd6fe;">
+          <span class="dica-icone">🤖</span>
+          <span class="dica-texto" style="color:#5b21b6;"><strong>O que a IA identifica automaticamente:</strong> clausulas de confidencialidade, exclusividade, penalidades, direitos de imagem, prazos de contrato e qualquer clausula que imponha obrigacao ou restricao ao consultor. Ela nao cria clausulas — ela apenas le e organiza o que ja esta no seu PDF.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.6 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone verde">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div>
+          <h3>4.6 Conexao WhatsApp no painel</h3>
+          <p>Como conectar o numero da empresa para envios automaticos</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <p style="margin-bottom:14px; font-size:12px; color:var(--dim);">Acesse: <strong>Admin &rarr; Configuracoes &rarr; role ate o final da pagina &rarr; secao "WhatsApp"</strong>.</p>
+
+        <p style="font-weight:700; margin-bottom:12px;">Como conectar pela primeira vez:</p>
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num verde">1</span>
+            <span class="passo-texto verde">Na secao WhatsApp, clique em <strong>"Conectar WhatsApp"</strong>. Um QR Code aparece na tela.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num verde">2</span>
+            <span class="passo-texto verde">Abra o WhatsApp no celular da empresa. Va em <strong>Configuracoes &rarr; Dispositivos conectados &rarr; Conectar dispositivo</strong>.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num verde">3</span>
+            <span class="passo-texto verde">Aponte a camera do celular para o QR Code na tela. A conexao e estabelecida em segundos. O status muda para <strong>"Conectado"</strong> em verde.</span>
+          </li>
+        </ul>
+
+        <div class="dica amarelo" style="margin-top:16px;">
+          <span class="dica-icone">⚠</span>
+          <span class="dica-texto"><strong>Use um chip dedicado:</strong> nao use o WhatsApp pessoal do gestor. O numero conectado ficara ativo no servidor e pode receber mensagens automaticas a qualquer hora. O ideal e um Android com chip exclusivo para a operacao.</span>
+        </div>
+
+        <p style="font-weight:700; margin-top:18px; margin-bottom:10px;">Como reconectar apos queda:</p>
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num verde">1</span>
+            <span class="passo-texto verde">Se o status aparecer como <strong>"Desconectado"</strong>, clique em <strong>"Desconectar"</strong> primeiro para limpar a sessao anterior.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num verde">2</span>
+            <span class="passo-texto verde">Depois clique em <strong>"Conectar WhatsApp"</strong> novamente e repita o processo de leitura do QR Code.</span>
+          </li>
+        </ul>
+
+        <div class="dica verde" style="margin-top:16px;">
+          <span class="dica-icone">💡</span>
+          <span class="dica-texto"><strong>O que funciona apos conectar:</strong> envio de mensagens de boas-vindas para novos consultores, notificacoes de eventos, alertas de vencimento de acesso, e disparo pelo Agente IA.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.7 -->
+    <div class="secao">
+      <div class="secao-titulo">
+        <div class="secao-icone verde">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.36 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.11 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.1a16 16 0 0 0 6 6l.46-.46a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16z"/></svg>
+        </div>
+        <div>
+          <h3>4.7 Configurar contato de suporte</h3>
+          <p>Definir o numero de WhatsApp que aparece no botao de suporte dos consultores</p>
+        </div>
+      </div>
+      <div class="secao-body">
+        <p style="margin-bottom:14px; font-size:12px; color:var(--dim);">Acesse: <strong>Admin &rarr; Configuracoes &rarr; aba "Outros"</strong>. Nessa aba existe um campo chamado <strong>"WhatsApp suporte"</strong>.</p>
+
+        <ul class="passos">
+          <li class="passo">
+            <span class="passo-num verde">1</span>
+            <span class="passo-texto verde">Preencha o campo com o numero de WhatsApp que vai receber as mensagens de suporte. Use apenas digitos, com codigo do pais. Exemplo: <strong>5511999990000</strong>.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num verde">2</span>
+            <span class="passo-texto verde">Clique em <strong>"Salvar"</strong>. A mudanca e aplicada imediatamente.</span>
+          </li>
+          <li class="passo">
+            <span class="passo-num verde">3</span>
+            <span class="passo-texto verde">Quando um consultor clicar no botao de suporte na plataforma, sera redirecionado para uma conversa do WhatsApp com esse numero.</span>
+          </li>
+        </ul>
+
+        <div class="dica verde" style="margin-top:16px;">
+          <span class="dica-icone">💡</span>
+          <span class="dica-texto"><strong>Esse numero e diferente do WhatsApp conectado:</strong> o numero em "WhatsApp suporte" (aba Outros) e apenas para receber mensagens manuais dos consultores. O numero conectado em "WhatsApp" (no rodape de Configuracoes) e o que a plataforma usa para envios automaticos. Sao dois campos separados com propositos diferentes.</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- fim capitulo 4 -->
 
   <!-- DIVISOR FINAL -->
   <div class="divisor"></div>
