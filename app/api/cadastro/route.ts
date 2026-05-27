@@ -3,6 +3,10 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp, getInstanciaGestorPorNome, getInstanciaTenant } from '@/lib/whatsapp'
 import { getSiteConfig } from '@/lib/site-config'
 import { getTenantId } from '@/lib/tenant'
+import { rateLimit, LIMITS } from '@/lib/rate-limit'
+import { audit, getIp } from '@/lib/audit'
+import { captureException } from '@/lib/monitor'
+import { getMensagem } from '@/lib/mensagem'
 import { z } from 'zod'
 
 export const dynamic = 'force-dynamic'
@@ -27,6 +31,19 @@ const schema = z.object({
 })
 
 export async function POST(req: NextRequest) {
+  const ip = getIp(req) ?? 'unknown'
+
+  // Rate limit: 5 cadastros por minuto por IP (exceto chamadas internas do admin)
+  if (req.headers.get('x-admin-request') !== 'true') {
+    const rl = await rateLimit(`cadastro:${ip}`, LIMITS.cadastro)
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { erro: 'Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) } }
+      )
+    }
+  }
+
   const adminClient = createServiceRoleClient()
 
   const isAdminRoute = req.headers.get('x-admin-request') === 'true'
@@ -73,6 +90,14 @@ export async function POST(req: NextRequest) {
   const host = req.headers.get('host') || ''
   const tenantId = await getTenantId(host)
 
+  // Idempotência: verifica existência antes de criar auth user (evita órfãos por duplo envio)
+  const [{ data: alunoWpp }, { data: alunoEmail }] = await Promise.all([
+    adminClient.from('alunos').select('id').eq('whatsapp', whatsappLimpo).maybeSingle(),
+    adminClient.from('alunos').select('id').eq('email', emailLimpo).maybeSingle(),
+  ])
+  if (alunoWpp) return NextResponse.json({ erro: 'Este WhatsApp já está cadastrado. Faça login ou use outro número.' }, { status: 400 })
+  if (alunoEmail) return NextResponse.json({ erro: 'Este e-mail já está cadastrado. Faça login ou use outro e-mail.' }, { status: 400 })
+
   // Tenta criar o usuário no auth
   let { data: authUser, error: authErr } = await adminClient.auth.admin.createUser({
     email: emailLimpo,
@@ -106,6 +131,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Órfão confirmado — deleta e recria
+    await audit({ acao: 'auth.orfao_deletado', entidade: 'auth.users', entidade_id: authExistente.id, usuario_tipo: 'sistema', dados_anteriores: { email: emailLimpo }, ip })
     await adminClient.auth.admin.deleteUser(authExistente.id)
     const retentativa = await adminClient.auth.admin.createUser({
       email: emailLimpo,
@@ -171,6 +197,7 @@ export async function POST(req: NextRequest) {
 
   if (alunoErr) {
     await adminClient.auth.admin.deleteUser(authUser.user.id)
+    captureException(alunoErr, { endpoint: 'POST /api/cadastro', tenantId: tenantId ?? undefined, extra: { email: emailLimpo } })
     const msg = alunoErr.message ?? ''
     let erro = 'Erro ao finalizar cadastro. Tente novamente.'
     if (msg.includes('alunos_whatsapp_key') || msg.includes('whatsapp'))
@@ -203,12 +230,14 @@ export async function POST(req: NextRequest) {
   // Instância WhatsApp do tenant (usada para mensagens sem remetente específico)
   const instanciaTenant = await getInstanciaTenant(tenantId, adminClient)
 
+  const vars = { gestorNome: gestor_nome, alunoNome: nome.trim(), nomePlataforma, wppLink, appUrl }
+
   // Notifica o gestor (PRO) com link clicável
   const instanciaGestor = await getInstanciaGestorPorNome(gestor_nome, adminClient, tenantId)
   if (gestor_whatsapp.replace(/\D/g, '')) {
     await enviarWhatsApp(
       gestor_whatsapp,
-      `🆓 *Novo FREE cadastrado!*\n\nOlá *${gestor_nome}*! *${nome}* acabou de se cadastrar em *${nomePlataforma}* pelo seu link. 🚀\n\n💬 Clique para chamar no WhatsApp:\n👉 ${wppLink}\n\nVocê receberá atualizações do progresso dele por aqui.`,
+      await getMensagem('cadastro_gestor_novo_free', vars, adminClient, tenantId),
       instanciaGestor
     )
   }
@@ -222,7 +251,7 @@ export async function POST(req: NextRequest) {
       if (instanciaIndicador) {
         await enviarWhatsApp(
           indicadorWpp,
-          `🎉 *Sua indicação deu certo!*\n\n*${nome}* se cadastrou em *${nomePlataforma}* pelo seu link! 🚀\n\n💬 Clique para chamar no WhatsApp:\n👉 ${wppLink}\n\n_Aproveite para dar as boas-vindas e acompanhar o progresso dele!_`,
+          await getMensagem('cadastro_indicador_novo_free', vars, adminClient, tenantId),
           instanciaIndicador
         )
       }
@@ -230,17 +259,20 @@ export async function POST(req: NextRequest) {
   }
 
   // Boas-vindas para o candidato + link da plataforma parceira (se configurado)
-  let msgCandidato = `🎓 *Bem-vindo ao ${nomePlataforma}, ${nome}!* 🚀\n\n` +
-    `Seu cadastro foi confirmado! Acesse a plataforma:\n👉 ${appUrl}/entrar\n\n`
-
-  if (linkExterno) {
-    msgCandidato += `📲 *Próximo passo obrigatório:*\nCadastre-se também na plataforma parceira pelo link abaixo para poder iniciar o treinamento:\n👉 ${linkExterno}\n\n` +
-      `Após se cadastrar lá, volte aqui e assista as aulas. A primeira aula já te ensina a usar a plataforma! 🎯\n\n`
-  }
-
-  msgCandidato += `_Bons estudos!_`
+  const chaveBoasVindas = linkExterno ? 'cadastro_boas_vindas_link_externo' : 'cadastro_boas_vindas'
+  const msgCandidato = await getMensagem(chaveBoasVindas, { ...vars, linkExterno: linkExterno ?? '' }, adminClient, tenantId)
 
   await enviarWhatsApp(whatsappLimpo, msgCandidato, instanciaTenant)
+
+  await audit({
+    acao: 'aluno.criado',
+    entidade: 'alunos',
+    entidade_id: aluno.id,
+    tenant_id: tenantId,
+    usuario_tipo: 'sistema',
+    dados_novos: { nome: aluno.nome, whatsapp: aluno.whatsapp, email: aluno.email },
+    ip,
+  })
 
   return NextResponse.json({ aluno })
 }

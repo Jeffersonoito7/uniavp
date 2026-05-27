@@ -1,6 +1,9 @@
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { getTenantId } from '@/lib/tenant'
 
+const configCache = new Map<string, { config: SiteConfig; ts: number }>()
+const CACHE_TTL = 60_000
+
 export type SiteConfig = {
   nome: string
   slogan: string
@@ -52,14 +55,13 @@ export async function getSiteConfig(host?: string): Promise<SiteConfig> {
 
   const domain = (host ?? '').replace(/:\d+$/, '')
 
-  // Domínio master retorna config própria sem buscar no banco
-  if (domain === DOMINIO_MASTER || domain === 'localhost') {
-    return CONFIG_MASTER
-  }
+  if (domain === DOMINIO_MASTER || domain === 'localhost') return CONFIG_MASTER
+
+  // Cache em memória — evita queries repetidas em rotas de alta frequência
+  const hit = configCache.get(domain)
+  if (hit && Date.now() - hit.ts < CACHE_TTL) return hit.config
 
   const tenantId = domain ? await getTenantId(domain) : null
-
-  // Sem tenant mapeado — retorna config master como fallback seguro
   if (!tenantId) return CONFIG_MASTER
 
   const client = createServiceRoleClient()
@@ -80,7 +82,7 @@ export async function getSiteConfig(host?: string): Promise<SiteConfig> {
     try { map[row.chave] = JSON.parse(s) } catch { map[row.chave] = s }
   }
 
-  return {
+  const config: SiteConfig = {
     nome: map['site_nome'] || 'Universidade',
     slogan: map['site_slogan'] || 'Plataforma de Formação e Treinamento Corporativo',
     logoUrl: map['site_logo_url'] || '',
@@ -100,4 +102,11 @@ export async function getSiteConfig(host?: string): Promise<SiteConfig> {
     cncpvHabilitado: map['cncpv_habilitado'] !== 'false',
     isDominioMaster: false,
   }
+
+  configCache.set(domain, { config, ts: Date.now() })
+  return config
+}
+
+export function invalidateSiteConfigCache(domain: string) {
+  configCache.delete(domain.replace(/:\d+$/, ''))
 }

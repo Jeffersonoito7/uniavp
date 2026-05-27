@@ -24,7 +24,8 @@ export default async function ConfiguracoesPage() {
 
   let q = adminClient.from('configuracoes').select('chave, valor, descricao').order('chave')
   if (tid) q = q.eq('tenant_id', tid)
-  const { data: configs } = await q
+  const { data: rawConfigs } = await q
+  const configs = (rawConfigs ?? []).map(c => ({ ...c, valor: c.valor != null ? String(c.valor) : null }))
 
   return (
     <AdminLayout>
@@ -32,7 +33,7 @@ export default async function ConfiguracoesPage() {
         <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Configurações</h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Configurações da plataforma</p>
       </div>
-      <ConfiguracoesCliente configs={(configs ?? []) as any} isMaster={isMaster} />
+      <ConfiguracoesCliente configs={configs ?? []} isMaster={isMaster} />
       <div style={{ marginTop: 24 }}>
         <WhatsAppConectar />
       </div>

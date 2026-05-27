@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
+import { getMensagem } from '@/lib/mensagem'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,7 +19,6 @@ export async function GET(req: NextRequest) {
     .select('id, nome, whatsapp, gestor_nome, created_at, tenant_id')
     .eq('status', 'ativo')
 
-  // Cache de instância por tenant para evitar N queries desnecessárias no loop
   const instanciaCache = new Map<string, string | null>()
   async function instanciaDo(tid: string | null) {
     const key = tid ?? ''
@@ -31,10 +31,11 @@ export async function GET(req: NextRequest) {
 
     const appUrl = await getAppUrl(a.tenant_id)
     const instancia = await instanciaDo(a.tenant_id)
+    const vars = { alunoNome: a.nome, gestorNome: a.gestor_nome ?? '', whatsapp: a.whatsapp, appUrl }
 
     if (dias === 1) {
       await enviarWhatsApp(a.whatsapp,
-        `🎓 *Bem-vindo, ${a.nome}!*\n\nSua jornada começa agora. Acesse e assista sua primeira aula:\n👉 ${appUrl}/aluno/${a.whatsapp}\n\nQualquer dúvida, seu PRO *${a.gestor_nome}* está aqui para te ajudar! 💪`,
+        await getMensagem('sequencia_dia1', vars, admin, a.tenant_id),
         instancia)
       enviados++
     }
@@ -43,7 +44,7 @@ export async function GET(req: NextRequest) {
       const { data: prog } = await admin.from('progresso').select('id').eq('aluno_id', a.id).limit(1).maybeSingle()
       if (!prog) {
         await enviarWhatsApp(a.whatsapp,
-          `⏰ *${a.nome}*, você se cadastrou há 3 dias mas ainda não assistiu nenhuma aula!\n\nSua formação está te esperando. São apenas alguns minutos por dia que vão mudar seu resultado:\n👉 ${appUrl}/entrar\n\nVamos lá? 🚀`,
+          await getMensagem('sequencia_dia3_sem_aula', vars, admin, a.tenant_id),
           instancia)
         enviados++
       }
@@ -53,7 +54,7 @@ export async function GET(req: NextRequest) {
       const { count } = await admin.from('progresso').select('id', { count: 'exact', head: true }).eq('aluno_id', a.id).eq('aprovado', true)
       if ((count ?? 0) === 0) {
         await enviarWhatsApp(a.whatsapp,
-          `🔔 *${a.nome}*, já faz 1 semana desde o seu cadastro!\n\nSeus colegas já estão avançando. Não fique para trás — cada aula te aproxima do certificado!\n\n👉 ${appUrl}/aluno/${a.whatsapp}\n\nPrecisando de ajuda? Fale com seu PRO *${a.gestor_nome}* agora mesmo! 📞`,
+          await getMensagem('sequencia_dia7_sem_aula', vars, admin, a.tenant_id),
           instancia)
         enviados++
       }

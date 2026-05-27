@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getTenantId } from '@/lib/tenant'
+import { audit, getIp } from '@/lib/audit'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -66,6 +67,16 @@ export async function PUT(req: NextRequest) {
   if (erros.length > 0) {
     return NextResponse.json({ error: erros.join(' | ') }, { status: 500 })
   }
+
+  await audit({
+    acao: 'admin.configuracao_alterada',
+    entidade: 'configuracoes',
+    tenant_id: tenantId ?? null,
+    usuario_id: user.id,
+    usuario_tipo: adminRecord ? 'admin' : 'super',
+    dados_novos: Object.fromEntries(body.map(({ chave, valor }) => [chave, valor])),
+    ip: getIp(req),
+  })
 
   return NextResponse.json({ ok: true })
 }

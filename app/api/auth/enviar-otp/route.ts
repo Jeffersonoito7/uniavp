@@ -1,7 +1,12 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { Resend } from 'resend'
 import { EMAIL_FROM } from '@/lib/constants'
+import { rateLimit, LIMITS } from '@/lib/rate-limit'
+import { getIp } from '@/lib/audit'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('enviar-otp')
 
 export const dynamic = 'force-dynamic'
 
@@ -15,10 +20,17 @@ function mascaraEmail(email: string): string {
   return `${visible}${'*'.repeat(Math.max(local.length - 2, 3))}@${domain}`
 }
 
-export async function POST() {
+export async function POST(req: NextRequest) {
+  try {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user?.email) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+
+  const rl = await rateLimit(`otp:${user.id}`, LIMITS.otp)
+  if (!rl.allowed) return NextResponse.json(
+    { error: 'Muitas tentativas. Aguarde alguns minutos.' },
+    { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) } }
+  )
 
   const adminClient = createServiceRoleClient()
 
@@ -79,7 +91,7 @@ export async function POST() {
       })
       enviado = true
     } catch (e) {
-      console.error('Erro ao enviar email OTP:', e)
+      log.error('falha ao enviar email OTP', { err: String(e) })
     }
   }
 
@@ -92,4 +104,8 @@ export async function POST() {
     destino: mascaraEmail(user.email),
     ...(!enviado ? { codigoDev: codigo } : {}),
   })
+  } catch (e) {
+    log.error('erro inesperado em enviar-otp', { err: String(e) })
+    return NextResponse.json({ error: 'Erro interno. Tente novamente.' }, { status: 500 })
+  }
 }

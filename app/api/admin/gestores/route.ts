@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
+import { audit, getIp } from '@/lib/audit'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,6 +45,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: gestorError.message }, { status: 400 })
   }
 
+  await audit({
+    acao: 'gestor.ativado',
+    entidade: 'gestores',
+    entidade_id: gestor.id,
+    tenant_id: ctx.tenantId,
+    usuario_id: user.id,
+    usuario_tipo: 'admin',
+    dados_novos: { nome, email, whatsapp: whatsapp.replace(/\D/g, '') },
+    ip: getIp(request),
+  })
+
   return NextResponse.json({ gestor }, { status: 201 })
 }
 
@@ -79,6 +91,17 @@ export async function PUT(request: NextRequest) {
       await adminClient.auth.admin.updateUserById(gestor.user_id, authUpdates).catch(() => {})
     }
   }
+
+  await audit({
+    acao: ativo === false ? 'gestor.suspenso' : 'gestor.ativado',
+    entidade: 'gestores',
+    entidade_id: id,
+    tenant_id: ctx.tenantId,
+    usuario_id: user.id,
+    usuario_tipo: 'admin',
+    dados_novos: updates,
+    ip: getIp(request),
+  })
 
   return NextResponse.json({ gestor })
 }
@@ -132,6 +155,16 @@ export async function DELETE(request: NextRequest) {
   if (gestor?.user_id) {
     await adminClient.auth.admin.deleteUser(gestor.user_id).catch(() => {})
   }
+
+  await audit({
+    acao: 'gestor.deletado',
+    entidade: 'gestores',
+    entidade_id: id,
+    tenant_id: ctx.tenantId,
+    usuario_id: user.id,
+    usuario_tipo: 'admin',
+    ip: getIp(request),
+  })
 
   return NextResponse.json({ ok: true })
 }

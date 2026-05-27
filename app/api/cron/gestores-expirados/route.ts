@@ -4,6 +4,7 @@ import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
 import { contarPROsAtivosIndicados, getLimitePROGratuito } from '@/lib/pros-indicados'
 import { alertarDiscord } from '@/lib/discord'
+import { getMensagem } from '@/lib/mensagem'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,23 +50,19 @@ export async function GET(req: NextRequest) {
     const instancia = await instanciaDo(g.tenant_id)
     const LIMITE = await limiteDo(g.tenant_id)
 
+    const varsGestor = { gestorNome: g.nome, vencimento: vencimento.toLocaleDateString('pt-BR'), appUrl }
+
     // ── Aviso 3 dias antes ────────────────────────────────────────
     if (diasParaVencer === 3) {
-      await enviarWhatsApp(
-        g.whatsapp,
-        `⏰ *Seu plano UNIAVP PRO vence em 3 dias!*\n\nOlá, ${g.nome}! Seu acesso expira em ${vencimento.toLocaleDateString('pt-BR')}.\n\nRenove agora para não perder acesso à sua equipe:\n👉 ${appUrl}/pro/assinar`,
-        instancia
-      )
+      await enviarWhatsApp(g.whatsapp,
+        await getMensagem('pro_vencimento_3dias', varsGestor, admin, g.tenant_id), instancia)
       avisos++
     }
 
     // ── Aviso no dia do vencimento ────────────────────────────────
     if (diasParaVencer === 0) {
-      await enviarWhatsApp(
-        g.whatsapp,
-        `🔔 *Seu plano UNIAVP PRO vence hoje!*\n\nRenove agora para continuar gerenciando sua equipe FREE:\n👉 ${appUrl}/pro/assinar`,
-        instancia
-      )
+      await enviarWhatsApp(g.whatsapp,
+        await getMensagem('pro_vencimento_hoje', varsGestor, admin, g.tenant_id), instancia)
       avisos++
     }
 
@@ -75,11 +72,8 @@ export async function GET(req: NextRequest) {
         .update({ ativo: false, status_assinatura: 'suspenso' })
         .eq('id', g.id)
 
-      await enviarWhatsApp(
-        g.whatsapp,
-        `⚠️ *Acesso UNIAVP PRO suspenso*\n\nOlá, ${g.nome}. Seu plano venceu e o acesso foi suspenso.\n\nRegularize para reativar imediatamente:\n👉 ${appUrl}/pro/assinar`,
-        instancia
-      )
+      await enviarWhatsApp(g.whatsapp,
+        await getMensagem('pro_suspenso', varsGestor, admin, g.tenant_id), instancia)
       suspensos++
       nomesSuspensos.push(g.nome)
 
@@ -97,12 +91,13 @@ export async function GET(req: NextRequest) {
           const faltam = limiteOrigem - totalAgora
           const perdeuBeneficio = totalAgora === limiteOrigem - 1
 
-          const msg = perdeuBeneficio
-            ? `⚠️ *Você perdeu o PRO gratuito!*\n\n${g.nome} cancelou o plano PRO e sua rede caiu para *${totalAgora}/${limiteOrigem}*.\n\nIndique mais *1 PRO* para recuperar o benefício!\n\n🔗 Link PRO direto:\n${appUrl}/captacao?direto=1&plano=pro`
-            : `📉 *${g.nome}* cancelou o plano PRO.\n\nSua rede agora tem *${totalAgora}/${limiteOrigem}* PROs ativos. Faltam ${faltam} para ter o PRO gratuito.\n\n🔗 Indique mais PROs:\n${appUrl}/captacao?direto=1&plano=pro`
-
+          const chaveRede = perdeuBeneficio ? 'pro_rede_perdeu_beneficio' : 'pro_rede_membro_saiu'
           const instanciaOrigem = await instanciaDo(gestorOrigem.tenant_id)
-          await enviarWhatsApp(gestorOrigem.whatsapp, msg, instanciaOrigem)
+          await enviarWhatsApp(gestorOrigem.whatsapp,
+            await getMensagem(chaveRede, {
+              membroNome: g.nome, totalAtivos: String(totalAgora), limite: String(limiteOrigem), faltam: String(faltam), appUrl,
+            }, admin, gestorOrigem.tenant_id),
+            instanciaOrigem)
           alertasRede++
         }
       }
@@ -127,11 +122,9 @@ export async function GET(req: NextRequest) {
         .eq('id', g.id)
 
       const instancia = await instanciaDo(g.tenant_id)
-      await enviarWhatsApp(
-        g.whatsapp,
-        `🎉 *Seu PRO foi reativado gratuitamente!*\n\nOlá, ${g.nome}! Sua rede voltou a ter *${total} PROs ativos*.\n\nSeu plano PRO está ativo por mais 30 dias sem custo.\n\n👉 Acesse: ${appUrl}/pro`,
-        instancia
-      )
+      await enviarWhatsApp(g.whatsapp,
+        await getMensagem('pro_reativado_gratuito', { gestorNome: g.nome, totalAtivos: String(total), appUrl }, admin, g.tenant_id),
+        instancia)
       avisos++
     }
   }

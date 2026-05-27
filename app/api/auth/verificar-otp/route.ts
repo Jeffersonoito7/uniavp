@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { rateLimit, LIMITS } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
@@ -7,6 +8,12 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+
+  const rl = await rateLimit(`verificar-otp:${user.id}`, LIMITS.otp)
+  if (!rl.allowed) return NextResponse.json(
+    { error: 'Muitas tentativas. Aguarde alguns minutos.' },
+    { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) } }
+  )
 
   const { codigo } = await req.json()
   if (!codigo) return NextResponse.json({ error: 'Código obrigatório' }, { status: 400 })

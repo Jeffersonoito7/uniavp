@@ -1,3 +1,7 @@
+import type { createServiceRoleClient } from '@/lib/supabase-server'
+
+type AdminClient = ReturnType<typeof createServiceRoleClient>
+
 const EVO_URL = process.env.EVOLUTION_API_URL
 const EVO_KEY = process.env.EVOLUTION_API_KEY
 const EVO_INSTANCE_GLOBAL = process.env.EVOLUTION_API_INSTANCE
@@ -25,7 +29,7 @@ export async function enviarWhatsApp(numero: string, mensagem: string, instancia
   }
 }
 
-export async function getInstanciaTenant(tenantId: string | null | undefined, adminClient: any): Promise<string | null> {
+export async function getInstanciaTenant(tenantId: string | null | undefined, adminClient: AdminClient): Promise<string | null> {
   if (!tenantId) return null
   const { data } = await adminClient.from('admins')
     .select('whatsapp_instancia')
@@ -37,7 +41,7 @@ export async function getInstanciaTenant(tenantId: string | null | undefined, ad
   return data?.whatsapp_instancia ?? null
 }
 
-export async function getInstanciaGestorPorNome(gestorNome: string, adminClient: any, tenantId?: string | null): Promise<string | null> {
+export async function getInstanciaGestorPorNome(gestorNome: string, adminClient: AdminClient, tenantId?: string | null): Promise<string | null> {
   let q = adminClient.from('gestores')
     .select('whatsapp_instancia')
     .eq('nome', gestorNome)

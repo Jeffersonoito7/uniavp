@@ -24,10 +24,13 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   if (!aula || !aula.publicado) redirect(`/aluno/${params.whatsapp}`)
 
   // ── Verificação server-side: aula bloqueada? ──
-  const { data: trilhaRaw } = await (adminClient as any)
+  type TrilhaRow = { aula_id: string; modulo_id: string; status: string; aula_titulo: string; aula_ordem: number; capa_url: string | null; youtube_video_id: string }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: trilhaRaw } = await (adminClient as unknown as { rpc(fn: string, args: Record<string, unknown>): Promise<{ data: TrilhaRow[] | null }> })
     .rpc('obter_trilha_aluno', { p_aluno_id: aluno.id })
-  const trilhaStatus = ((trilhaRaw ?? []) as { aula_id: string; status: string }[])
-    .find(t => t.aula_id === params.aulaId)
+  const trilha = (trilhaRaw ?? []) as TrilhaRow[]
+  const trilhaStatus = trilha.find(t => t.aula_id === params.aulaId)
   if (trilhaStatus?.status === 'bloqueada') redirect(`/aluno/${params.whatsapp}`)
 
   // ── Verificação de permissão do módulo (PRO exclusivo) ──
@@ -38,11 +41,9 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   if (moduloApenasProPermissao) redirect(`/upgrade`)
 
   // Trilha do módulo para sidebar
-  const { data: trilhaSidebar } = await (adminClient as any)
-    .rpc('obter_trilha_aluno', { p_aluno_id: aluno.id })
-  const aulasModulo: { aula_id: string; aula_titulo: string; aula_ordem: number; status: string; capa_url: string | null; youtube_video_id: string }[] =
-    ((trilhaSidebar ?? []) as any[]).filter((t: any) => t.modulo_id === aula.modulo_id)
-      .sort((a: any, b: any) => a.aula_ordem - b.aula_ordem)
+  const aulasModulo = trilha
+    .filter(t => t.modulo_id === aula.modulo_id)
+    .sort((a, b) => a.aula_ordem - b.aula_ordem)
 
   const idxAtual = aulasModulo.findIndex(a => a.aula_id === params.aulaId)
   const aulaAnteriorNav = idxAtual > 0
@@ -127,7 +128,8 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
   const { data: questoesRaw } = await adminClient.from('questoes')
     .select('id, enunciado, alternativas, explicacao, ordem')
     .eq('aula_id', params.aulaId).eq('ativa', true).order('ordem')
-  const questoes = (questoesRaw ?? []) as any[]
+  type QuestaoRow = { id: string; enunciado: string; alternativas: { texto: string; correta: boolean }[]; explicacao: string | null; ordem: number }
+  const questoes = (questoesRaw ?? []) as QuestaoRow[]
 
   // Progresso do aluno nesta aula
   const { data: progressoRow } = await adminClient.from('progresso')

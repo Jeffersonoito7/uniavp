@@ -23,16 +23,21 @@ export default function OtpForm() {
   async function enviarOtp() {
     setEnviando(true)
     setErro('')
-    const res = await fetch('/api/auth/enviar-otp', { method: 'POST' })
-    const data = await res.json()
-    if (data.ok) {
-      setInfo(data)
-      setReenvioSegundos(60)
-    } else {
-      setErro('Erro ao enviar código. Tente novamente.')
+    try {
+      const res = await fetch('/api/auth/enviar-otp', { method: 'POST' })
+      const data = await res.json()
+      if (data.ok) {
+        setInfo(data)
+        setReenvioSegundos(60)
+      } else {
+        setErro(data.error || 'Erro ao enviar código. Tente novamente.')
+      }
+    } catch {
+      setErro('Erro de conexão. Tente novamente.')
+    } finally {
+      setEnviando(false)
+      setTimeout(() => refs.current[0]?.focus(), 100)
     }
-    setEnviando(false)
-    setTimeout(() => refs.current[0]?.focus(), 100)
   }
 
   function handleDigit(idx: number, val: string) {

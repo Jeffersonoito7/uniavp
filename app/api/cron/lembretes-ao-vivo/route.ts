@@ -2,14 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
 import { alertarDiscord } from '@/lib/discord'
+import { getMensagem } from '@/lib/mensagem'
 
 const aulasTable = (client: ReturnType<typeof createServiceRoleClient>) => client.from('aulas_ao_vivo')
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get('x-cron-secret') || new URL(req.url).searchParams.get('secret')
-  if (secret !== process.env.CRON_SECRET) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  if (req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`)
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
   const agora = new Date()
@@ -40,24 +41,20 @@ export async function GET(req: NextRequest) {
       timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit',
       year: 'numeric', hour: '2-digit', minute: '2-digit',
     })
-    const icone = aula.plataforma === 'zoom' ? '🔵' : '🟢'
     const plataformaNome = aula.plataforma === 'zoom' ? 'Zoom' : 'Google Meet'
-
-    const msg = [
-      `${icone} *Lembrete: Aula ao Vivo em 1 hora!*`,
-      ``,
-      `📚 *${aula.titulo}*`,
-      aula.descricao ? `📝 ${aula.descricao}` : '',
-      ``,
-      `🕐 *Horário:* ${dataHora}`,
-      `⏱️ *Duração:* ${aula.duracao_minutos} minutos`,
-      `📺 *Plataforma:* ${plataformaNome}`,
-      ``,
-      `🔗 *Acesse agora:*`,
-      aula.link,
-      ``,
-      `${aula.obrigatoria ? '⚠️ Presença *obrigatória*.' : 'Sua participação é muito bem-vinda!'}`,
-    ].filter(Boolean).join('\n')
+    const tenantId = aula.gestor_id
+      ? ((await adminClient.from('gestores').select('tenant_id').eq('id', aula.gestor_id).maybeSingle())?.data?.tenant_id ?? null)
+      : null
+    const vars = {
+      titulo: aula.titulo,
+      descricao: aula.descricao ? `📝 ${aula.descricao}\n` : '',
+      dataHora,
+      duracao: String(aula.duracao_minutos),
+      plataforma: plataformaNome,
+      link: aula.link,
+      presenca: aula.obrigatoria ? '⚠️ Presença *obrigatória*.' : 'Sua participação é muito bem-vinda!',
+    }
+    const msg = await getMensagem('lembrete_ao_vivo', vars, adminClient, tenantId)
 
     // Admin: envia para todos os alunos ativos (aula global, sem tenant isolado)
     if (!aula.gestor_id) {

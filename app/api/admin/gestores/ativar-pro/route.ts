@@ -3,6 +3,7 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
 import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
+import { audit, getIp } from '@/lib/audit'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,6 +45,17 @@ export async function POST(req: NextRequest) {
       instancia
     ).catch(() => {})
   }
+
+  await audit({
+    acao: 'gestor.ativado',
+    entidade: 'gestores',
+    entidade_id: gestor_id,
+    tenant_id: ctx.tenantId,
+    usuario_id: user.id,
+    usuario_tipo: 'admin',
+    dados_novos: { dias, vencimento, origem: 'manual_admin' },
+    ip: getIp(req),
+  })
 
   return NextResponse.json({ ok: true, vencimento })
 }

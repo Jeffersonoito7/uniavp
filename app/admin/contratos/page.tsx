@@ -28,6 +28,9 @@ export default async function ContratosPage() {
   const naoAssinaram = (todosAlunos ?? []).filter((a: any) => !wppAssinados.has(a.whatsapp.replace(/\D/g, '')))
   const formadosSemContrato = naoAssinaram.filter((a: any) => a.status === 'concluido').length
 
+  const { data: cfgClausulas } = await adminClient.from('configuracoes')
+    .select('chave').eq('chave', 'contrato_clausulas').maybeSingle()
+
   return (
     <AdminLayout>
       <ContratosCliente
@@ -36,6 +39,7 @@ export default async function ContratosPage() {
         formadosSemContrato={formadosSemContrato}
         naoAssinaram={naoAssinaram}
         totalAlunos={(todosAlunos ?? []).length}
+        temClausulasIA={!!cfgClausulas}
       />
     </AdminLayout>
   )

@@ -59,7 +59,7 @@ export default async function SuperPage() {
       clientes={clientes}
       stats={{ totalAlunos: totalAlunos ?? 0, totalGestores: totalGestores ?? 0, totalAdmins: totalAdmins ?? 0, totalModulos: totalModulos ?? 0, totalAulas: totalAulas ?? 0 }}
       recentesAlunos={recentesAlunos ?? []}
-      configs={(configs ?? []) as any}
+      configs={(configs ?? []).map(c => ({ ...c, valor: c.valor != null ? String(c.valor) : null }))}
     />
   )
 }

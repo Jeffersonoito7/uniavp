@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 type Contrato = {
   id: string; nome: string; cpf: string | null; whatsapp: string; email: string | null
@@ -47,6 +47,173 @@ function StatusBadge({ status }: { status: string | null }) {
     <span style={{ background: s.bg, color: s.cor, borderRadius: 6, padding: '3px 9px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>
       {s.label}
     </span>
+  )
+}
+
+type ClausulaIA = { num: number; titulo: string; resumo: string; texto: string }
+
+function ProcessarContratoIA({ clausulasAtuais }: { clausulasAtuais: boolean }) {
+  const [etapa, setEtapa] = useState<'idle' | 'processando' | 'revisao' | 'salvando' | 'salvo'>('idle')
+  const [clausulas, setClausulas] = useState<ClausulaIA[]>([])
+  const [editando, setEditando] = useState<number | null>(null)
+  const [clausulaEdit, setClausulaEdit] = useState<ClausulaIA | null>(null)
+  const [erro, setErro] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  async function processar(file: File) {
+    setEtapa('processando')
+    setErro(null)
+    try {
+      const form = new FormData()
+      form.append('arquivo', file)
+      const res = await fetch('/api/admin/contratos/processar-pdf', { method: 'POST', body: form })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Erro ao processar PDF')
+      setClausulas(data.clausulas)
+      setEtapa('revisao')
+    } catch (e: any) {
+      setErro(e.message)
+      setEtapa('idle')
+    }
+  }
+
+  async function salvar() {
+    setEtapa('salvando')
+    setErro(null)
+    try {
+      const res = await fetch('/api/admin/configuracoes', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([{ chave: 'contrato_clausulas', valor: JSON.stringify(clausulas) }]),
+      })
+      if (!res.ok) throw new Error((await res.json()).error ?? 'Erro ao salvar')
+      setEtapa('salvo')
+    } catch (e: any) {
+      setErro(e.message)
+      setEtapa('revisao')
+    }
+  }
+
+  function abrirEdicao(c: ClausulaIA) {
+    setEditando(c.num)
+    setClausulaEdit({ ...c })
+  }
+
+  function salvarEdicao() {
+    if (!clausulaEdit) return
+    setClausulas(prev => prev.map(c => c.num === clausulaEdit.num ? clausulaEdit : c))
+    setEditando(null)
+    setClausulaEdit(null)
+  }
+
+  return (
+    <div style={{ background: 'rgba(139,92,246,0.05)', border: '1.5px solid rgba(139,92,246,0.25)', borderRadius: 14, padding: '18px 22px', marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: etapa === 'idle' ? 0 : 16 }}>
+        <div>
+          <p style={{ fontWeight: 800, fontSize: 14, margin: 0, color: '#a78bfa' }}>
+            Cláusulas via IA
+            {clausulasAtuais && etapa === 'idle' && (
+              <span style={{ marginLeft: 8, fontSize: 11, color: '#22c55e', fontWeight: 600 }}>ativo</span>
+            )}
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '3px 0 0' }}>
+            {etapa === 'idle' ? 'Faça upload do seu contrato em PDF e a IA extrai as cláusulas automaticamente.' : etapa === 'processando' ? 'Analisando o contrato...' : etapa === 'revisao' ? `${clausulas.length} cláusulas extraídas — revise antes de salvar.` : etapa === 'salvando' ? 'Salvando...' : 'Cláusulas salvas! O formulário de contrato já usa os novos textos.'}
+          </p>
+        </div>
+        {etapa === 'idle' && (
+          <>
+            <input ref={inputRef} type="file" accept="application/pdf" style={{ display: 'none' }}
+              onChange={e => { const f = e.target.files?.[0]; if (f) processar(f); e.target.value = '' }} />
+            <button
+              onClick={() => inputRef.current?.click()}
+              style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.4)', color: '#a78bfa', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}
+            >
+              {clausulasAtuais ? 'Atualizar contrato' : 'Upload do PDF'}
+            </button>
+          </>
+        )}
+        {etapa === 'processando' && (
+          <div style={{ fontSize: 13, color: '#a78bfa', fontWeight: 600 }}>Aguarde...</div>
+        )}
+        {etapa === 'salvo' && (
+          <button
+            onClick={() => { setEtapa('idle'); setClausulas([]) }}
+            style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
+          >
+            Feito
+          </button>
+        )}
+      </div>
+
+      {erro && (
+        <p style={{ fontSize: 12, color: '#f87171', margin: '0 0 12px', background: 'rgba(239,68,68,0.08)', padding: '8px 12px', borderRadius: 6 }}>{erro}</p>
+      )}
+
+      {etapa === 'revisao' && (
+        <>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+            {clausulas.map(c => (
+              <div key={c.num} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa' }}>{c.num}. {c.titulo}</span>
+                  <button
+                    onClick={() => abrirEdicao(c)}
+                    style={{ border: '1px solid var(--avp-border)', background: 'transparent', borderRadius: 6, padding: '2px 8px', fontSize: 11, color: 'var(--avp-text-dim)', cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    Editar
+                  </button>
+                </div>
+                <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 4px', fontStyle: 'italic' }}>{c.resumo}</p>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>{c.texto}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <button
+              onClick={() => { setEtapa('idle'); setClausulas([]) }}
+              style={{ border: '1px solid var(--avp-border)', background: 'transparent', borderRadius: 8, padding: '8px 16px', fontSize: 13, color: 'var(--avp-text-dim)', cursor: 'pointer' }}
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={salvar}
+              style={{ background: '#7c3aed', border: 'none', borderRadius: 8, padding: '8px 20px', fontSize: 13, fontWeight: 700, color: '#fff', cursor: 'pointer' }}
+            >
+              Salvar cláusulas
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Modal de edição de cláusula */}
+      {editando !== null && clausulaEdit && (
+        <div onClick={() => setEditando(null)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div onClick={e => e.stopPropagation()}
+            style={{ background: 'var(--avp-card)', borderRadius: 12, padding: 24, maxWidth: 560, width: '90%', maxHeight: '85vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <span style={{ fontSize: 14, fontWeight: 700 }}>Editar cláusula {clausulaEdit.num}</span>
+              <button onClick={() => setEditando(null)} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: 'var(--avp-text-dim)' }}>×</button>
+            </div>
+            {(['titulo', 'resumo', 'texto'] as const).map(campo => (
+              <div key={campo} style={{ marginBottom: 14 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, color: 'var(--avp-text-dim)', display: 'block', marginBottom: 4 }}>{campo}</label>
+                <textarea
+                  value={clausulaEdit[campo]}
+                  onChange={e => setClausulaEdit(prev => prev ? { ...prev, [campo]: e.target.value } : prev)}
+                  rows={campo === 'titulo' ? 1 : 4}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--avp-border)', background: 'var(--avp-bg)', color: 'var(--avp-text)', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }}
+                />
+              </div>
+            ))}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setEditando(null)} style={{ border: '1px solid var(--avp-border)', background: 'transparent', borderRadius: 8, padding: '7px 14px', fontSize: 13, color: 'var(--avp-text-dim)', cursor: 'pointer' }}>Cancelar</button>
+              <button onClick={salvarEdicao} style={{ background: '#7c3aed', border: 'none', borderRadius: 8, padding: '7px 18px', fontSize: 13, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>Salvar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -250,12 +417,14 @@ export default function ContratosCliente({
   formadosSemContrato,
   naoAssinaram,
   totalAlunos,
+  temClausulasIA,
 }: {
   contratosIniciais: Contrato[]
   total: number
   formadosSemContrato: number
   naoAssinaram: AlunoSemContrato[]
   totalAlunos: number
+  temClausulasIA: boolean
 }) {
   const [lista] = useState(contratosIniciais)
   const [naoAss] = useState(naoAssinaram)
@@ -318,6 +487,10 @@ export default function ContratosCliente({
         </a>
       </div>
 
+      <ProcessarContratoIA clausulasAtuais={temClausulasIA} />
+      <PainelEnvioContrato formadosSemContrato={formadosSemContrato} />
+      <GeradorLinkPersonalizado />
+
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14, marginBottom: 28 }}>
         {[
@@ -334,8 +507,6 @@ export default function ContratosCliente({
           </div>
         ))}
       </div>
-
-      <PainelEnvioContrato formadosSemContrato={formadosSemContrato} />
 
       {/* Abas */}
       <div style={{ borderBottom: '1px solid var(--avp-border)', marginBottom: 20, display: 'flex', gap: 0 }}>
@@ -409,7 +580,6 @@ export default function ContratosCliente({
 
       {aba === 'nao_assinaram' && (
         <>
-          <GeradorLinkPersonalizado />
           <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
             <input
               value={buscaNao} onChange={e => setBuscaNao(e.target.value)}

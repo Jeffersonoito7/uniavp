@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
 import Anthropic from '@anthropic-ai/sdk'
+import type { MessageParam, DocumentBlockParam, Base64PDFSource } from '@anthropic-ai/sdk/resources'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -44,8 +45,6 @@ export async function POST(req: NextRequest) {
   if (!apiKey) return NextResponse.json({ error: 'Serviço de IA indisponível' }, { status: 503 })
 
   let pdfBase64: string
-  let mimeType: 'application/pdf' | 'text/plain'
-
   const contentType = req.headers.get('content-type') ?? ''
 
   if (contentType.includes('multipart/form-data')) {
@@ -55,33 +54,27 @@ export async function POST(req: NextRequest) {
 
     const buf = await file.arrayBuffer()
     pdfBase64 = Buffer.from(buf).toString('base64')
-    mimeType = file.type === 'application/pdf' ? 'application/pdf' : 'text/plain'
   } else {
     const body = await req.json()
     if (!body.pdfBase64) return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
     pdfBase64 = body.pdfBase64
-    mimeType = body.mimeType ?? 'application/pdf'
   }
 
   const client = new Anthropic({ apiKey })
+
+  const pdfSource: Base64PDFSource = { type: 'base64', media_type: 'application/pdf', data: pdfBase64 }
+  const docBlock: DocumentBlockParam = { type: 'document', source: pdfSource }
+  const userMessage: MessageParam = {
+    role: 'user',
+    content: [docBlock, { type: 'text', text: PROMPT }],
+  }
 
   let message: Awaited<ReturnType<typeof client.messages.create>>
   try {
     message = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 4096,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'document',
-              source: { type: 'base64', media_type: mimeType, data: pdfBase64 },
-            } as any,
-            { type: 'text', text: PROMPT },
-          ],
-        },
-      ],
+      messages: [userMessage],
     })
   } catch (e: any) {
     const msg = e?.message ?? String(e)

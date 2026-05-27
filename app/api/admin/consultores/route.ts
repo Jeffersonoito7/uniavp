@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
+import { audit, getIp } from '@/lib/audit'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,6 +16,11 @@ export async function PUT(req: NextRequest) {
 
   const { id, nome, email, whatsapp, status, gestor_nome, gestor_whatsapp, nova_senha, user_id } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
+
+  // Captura estado anterior para o audit
+  let dadosAnteriores: Record<string, unknown> | null = null
+  const { data: anterior } = await adminClient.from('alunos').select('nome,email,whatsapp,status,gestor_nome,gestor_whatsapp').eq('id', id).maybeSingle()
+  if (anterior) dadosAnteriores = anterior as Record<string, unknown>
 
   const updates: { nome?: string; email?: string; whatsapp?: string; status?: string; gestor_nome?: string | null; gestor_whatsapp?: string | null } = {}
   if (nome !== undefined) updates.nome = nome
@@ -39,6 +45,23 @@ export async function PUT(req: NextRequest) {
     }
   }
 
+  // Audit: distingue alteracao de status de edicao geral
+  const acao = status !== undefined && status !== dadosAnteriores?.status
+    ? 'aluno.status_alterado'
+    : nova_senha ? 'aluno.senha_resetada' : 'aluno.status_alterado'
+
+  await audit({
+    acao,
+    entidade: 'alunos',
+    entidade_id: id,
+    tenant_id: ctx.tenantId ?? null,
+    usuario_id: user.id,
+    usuario_tipo: 'admin',
+    dados_anteriores: dadosAnteriores,
+    dados_novos: updates as Record<string, unknown>,
+    ip: getIp(req),
+  })
+
   return NextResponse.json({ ok: true, aluno })
 }
 
@@ -54,25 +77,44 @@ export async function DELETE(req: NextRequest) {
   const { id } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  // Busca o user_id e email do aluno
-  let deleteSelectQuery = adminClient.from('alunos').select('user_id, email').eq('id', id)
-  if (ctx.tenantId) deleteSelectQuery = deleteSelectQuery.eq('tenant_id', ctx.tenantId)
-  const { data: aluno } = await deleteSelectQuery.maybeSingle()
+  // Busca pelo id apenas (sem filtro de tenant) para garantir que encontra o aluno
+  const { data: aluno } = await adminClient.from('alunos')
+    .select('user_id, email, nome, whatsapp, tenant_id').eq('id', id).maybeSingle()
 
-  // Remove do banco
-  let deleteQuery = adminClient.from('alunos').delete().eq('id', id)
-  if (ctx.tenantId) deleteQuery = deleteQuery.eq('tenant_id', ctx.tenantId)
-  const { error } = await deleteQuery
+  // Verifica se o aluno pertence ao tenant do admin (segurança)
+  if (aluno && ctx.tenantId && aluno.tenant_id !== ctx.tenantId) {
+    return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+  }
+
+  const { error } = await adminClient.from('alunos').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Remove da autenticação — tenta por user_id, fallback por email
+  // Deleta o usuário do auth para liberar o e-mail
   if (aluno?.user_id) {
     await adminClient.auth.admin.deleteUser(aluno.user_id).catch(() => {})
   } else if (aluno?.email) {
-    const { data: lista } = await adminClient.auth.admin.listUsers({ perPage: 1000 })
-    const authUser = lista?.users?.find(u => u.email === aluno.email)
-    if (authUser) await adminClient.auth.admin.deleteUser(authUser.id).catch(() => {})
+    let authExistente = null
+    let page = 1
+    while (!authExistente) {
+      const { data: lista } = await adminClient.auth.admin.listUsers({ page, perPage: 1000 })
+      if (!lista?.users?.length) break
+      authExistente = lista.users.find(u => u.email === aluno.email) ?? null
+      if (authExistente || lista.users.length < 1000) break
+      page++
+    }
+    if (authExistente) await adminClient.auth.admin.deleteUser(authExistente.id).catch(() => {})
   }
+
+  await audit({
+    acao: 'aluno.deletado',
+    entidade: 'alunos',
+    entidade_id: id,
+    tenant_id: ctx.tenantId ?? null,
+    usuario_id: user.id,
+    usuario_tipo: 'admin',
+    dados_anteriores: aluno ? { nome: aluno.nome, email: aluno.email, whatsapp: aluno.whatsapp } : null,
+    ip: getIp(req),
+  })
 
   return NextResponse.json({ ok: true })
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { criarCobrancaPix } from '@/lib/efi'
 import { enviarWhatsApp } from '@/lib/whatsapp'
+import { getMensagem } from '@/lib/mensagem'
 import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
@@ -62,10 +63,12 @@ export async function GET(req: NextRequest) {
 
         if (c.contato_whatsapp) {
           const valor = Number(c.mensalidade).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-          await enviarWhatsApp(
-            c.contato_whatsapp,
-            `💰 *Cobrança ${c.nome}*\n\nValor: *${valor}*\nVencimento: ${new Date(vencStr + 'T12:00:00').toLocaleDateString('pt-BR')}\n\n*PIX Copia e Cola:*\n${pixCopiaECola}`
-          )
+          await enviarWhatsApp(c.contato_whatsapp,
+            await getMensagem('cobranca_nova', {
+              clienteNome: c.nome, valor,
+              vencimento: new Date(vencStr + 'T12:00:00').toLocaleDateString('pt-BR'),
+              pixCopiaECola,
+            }, adminClient))
         }
         geradas++
       } catch (e) {
@@ -83,10 +86,8 @@ export async function GET(req: NextRequest) {
           .eq('id', c.id)
 
         if (c.contato_whatsapp) {
-          await enviarWhatsApp(
-            c.contato_whatsapp,
-            `⚠️ *Acesso suspenso — ${c.nome}*\n\nSeu acesso à plataforma foi suspenso por falta de pagamento.\n\nRegularize para reativar imediatamente.`
-          )
+          await enviarWhatsApp(c.contato_whatsapp,
+            await getMensagem('cobranca_acesso_suspenso', { clienteNome: c.nome }, adminClient))
         }
         suspensas++
       }

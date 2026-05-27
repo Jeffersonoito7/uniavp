@@ -1,6 +1,17 @@
 import https from 'https'
 import { URL } from 'url'
 
+// ── Tipos das respostas da API Efí ────────────────────────────────────────
+type EfiTokenResponse   = { access_token: string; token_type: string; expires_in: number }
+type EfiCobrancaLoc     = { id: number; location: string; tipoCob: string }
+type EfiCobrancaResponse= { loc: EfiCobrancaLoc; status: string; txid: string }
+type EfiQrcodeResponse  = { qrcode: string; imagemQrcode: string }
+type EfiStatusResponse  = { status: string }
+type EfiBoletoToken     = { access_token: string }
+type EfiChargeResponse  = { data: { charge_id: number } }
+type EfiBilletResponse  = { data: { barcode: string; pdf: { charge: string }; expire_at: string } }
+type EfiConsultaResponse= { data: { status: string } }
+
 const BASE = process.env.EFI_SANDBOX === 'true'
   ? 'https://pix-h.api.efipay.com.br'
   : 'https://pix.api.efipay.com.br'
@@ -51,7 +62,7 @@ async function getToken(): Promise<string> {
     headers: { Authorization: `Basic ${credentials}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ grant_type: 'client_credentials' }),
   })
-  const d = data as any
+  const d = data as EfiTokenResponse
   if (!d.access_token) throw new Error(`Auth Efí falhou: ${JSON.stringify(d)}`)
   return d.access_token
 }
@@ -76,7 +87,7 @@ export async function criarCobrancaPix(params: {
   // cobv (com vencimento) exige devedor com CPF/CNPJ — se não tiver, usa cob simples
   const temDevedor = !!(devedor.cpf || devedor.cnpj)
 
-  let c: any
+  let c: EfiCobrancaResponse
   if (temDevedor) {
     // Cobrança com vencimento (cobv)
     const payload: Record<string, unknown> = {
@@ -91,7 +102,7 @@ export async function criarCobrancaPix(params: {
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
-    c = data
+    c = data as EfiCobrancaResponse
   } else {
     // Cobrança simples sem vencimento (cob) — expira em 3 dias
     const payload: Record<string, unknown> = {
@@ -105,7 +116,7 @@ export async function criarCobrancaPix(params: {
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
-    c = data
+    c = data as EfiCobrancaResponse
   }
 
   if (!c.loc?.id) throw new Error(`Erro Efí cobrança: ${JSON.stringify(c)}`)
@@ -113,7 +124,7 @@ export async function criarCobrancaPix(params: {
   const { data: qr } = await httpsRequest(`${BASE}/v2/loc/${c.loc.id}/qrcode`, {
     headers: { Authorization: `Bearer ${token}` },
   })
-  const q = qr as any
+  const q = qr as EfiQrcodeResponse
 
   return { pixCopiaECola: q.qrcode, qrcodeBase64: q.imagemQrcode, locId: c.loc.id }
 }
@@ -124,13 +135,13 @@ export async function consultarPagamento(txid: string): Promise<{ status: string
   const { data: dataCobv } = await httpsRequest(`${BASE}/v2/cobv/${txid}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
-  const cobv = dataCobv as any
+  const cobv = dataCobv as EfiStatusResponse
   if (cobv.status) return { status: cobv.status, pago: cobv.status === 'CONCLUIDA' }
 
   const { data: dataCob } = await httpsRequest(`${BASE}/v2/cob/${txid}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
-  const cob = dataCob as any
+  const cob = dataCob as EfiStatusResponse
   return { status: cob.status ?? 'DESCONHECIDO', pago: cob.status === 'CONCLUIDA' }
 }
 
@@ -145,7 +156,7 @@ async function getTokenBoleto(): Promise<string> {
     headers: { Authorization: `Basic ${credentials}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ grant_type: 'client_credentials' }),
   })
-  const d = data as any
+  const d = data as EfiBoletoToken
   if (!d.access_token) throw new Error(`Auth Efí boleto falhou: ${JSON.stringify(d)}`)
   return d.access_token
 }
@@ -206,7 +217,7 @@ export async function criarBoleto(params: {
       }],
     }),
   })
-  const c = charge as any
+  const c = charge as EfiChargeResponse
   if (!c.data?.charge_id) throw new Error(`Erro ao criar cobrança Efí: ${JSON.stringify(c)}`)
   const chargeId = c.data.charge_id
 
@@ -232,7 +243,7 @@ export async function criarBoleto(params: {
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(billet),
   })
-  const b = bil as any
+  const b = bil as EfiBilletResponse
   if (!b.data?.barcode) throw new Error(`Erro ao emitir boleto Efí: ${JSON.stringify(b)}`)
 
   return {
@@ -251,7 +262,7 @@ export async function consultarWebhook(): Promise<{ webhookUrl?: string; registr
       method: 'GET',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     })
-    const d = data as any
+    const d = data as { webhookUrl?: string }
     if (status === 200 && d.webhookUrl) return { webhookUrl: d.webhookUrl, registrado: true }
     return { registrado: false }
   } catch (e: any) {

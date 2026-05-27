@@ -4,6 +4,10 @@ import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
 import { gerarPDFContrato, DadosContratoAVP } from '@/lib/contrato-pdf'
 import { getSiteConfig } from '@/lib/site-config'
 import { getTenantId } from '@/lib/tenant'
+import { rateLimit, LIMITS } from '@/lib/rate-limit'
+import { audit, getIp } from '@/lib/audit'
+import { captureException } from '@/lib/monitor'
+import { getMensagem } from '@/lib/mensagem'
 import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic'
@@ -52,6 +56,17 @@ async function gerarEEnviar(dados: DadosContratoAVP, registro: string, adminClie
 }
 
 export async function POST(req: NextRequest) {
+  const ip = getIp(req) ?? 'desconhecido'
+
+  // Rate limit: 3 contratos/min por IP
+  const rl = await rateLimit(`contrato:${ip}`, LIMITS.contrato)
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Muitas tentativas. Aguarde alguns minutos.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) } }
+    )
+  }
+
   const body = await req.json()
   const { nome, cpf, cnpj_mei, sede_mei, whatsapp, email, aluno_id, clausulas_aceitas, nf_dados, assinatura_base64, data_nascimento, estado_civil, nacionalidade, regra_bonificacao } = body
 
@@ -73,7 +88,6 @@ export async function POST(req: NextRequest) {
   const { count } = await adminClient.from('contratos').select('id', { count: 'exact', head: true })
   const numero_registro = `CONT-${String(((count ?? 0) + 1)).padStart(6, '0')}`
 
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'desconhecido'
   const assinado_em = new Date().toISOString()
 
   // Hash SHA-256
@@ -146,24 +160,40 @@ export async function POST(req: NextRequest) {
     appUrl: process.env.NEXT_PUBLIC_APP_URL || '',
   }
 
-  // Envia confirmação de texto imediata
-  const msg = [
-    `📄 *Contrato assinado digitalmente!*`,
-    ``,
-    `Olá, *${nome.trim().split(' ')[0]}*! Seu contrato foi registrado.`,
-    ``,
-    `🔖 *Registro:* ${numero_registro}`,
-    `📅 *Emissão:* ${new Date(assinado_em).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})}`,
-    ``,
-    `📄 *O PDF será enviado em instantes nesta conversa.*`,
-    ``,
-    `🔐 Hash: ${hash_contrato.slice(0,16)}...`,
-  ].join('\n')
   const instancia = await getInstanciaTenant(tenantId, adminClient)
+  const msg = await getMensagem('contrato_assinado', {
+    primeiroNome: nome.trim().split(' ')[0],
+    numeroRegistro: numero_registro,
+    assinadoEm: new Date(assinado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+    hashParcial: hash_contrato.slice(0, 16),
+  }, adminClient, tenantId)
   await enviarWhatsApp(wppLimpo, msg, instancia)
 
-  // Gera PDF em background
-  gerarEEnviar(dadosGeracao, numero_registro, adminClient).catch(console.error)
+  // Salva job na fila — processado pelo cron /api/cron/processar-pdfs a cada 2 min
+  const { data: contratoCriado } = await adminClient.from('contratos')
+    .select('id').eq('numero_registro', numero_registro).maybeSingle()
+  if (contratoCriado?.id) {
+    await adminClient.from('pdf_jobs').insert({
+      contrato_id: contratoCriado.id,
+      tenant_id: tenantId ?? null,
+      status: 'pendente',
+    }).then(null, (e: unknown) => captureException(e, { endpoint: 'contrato/POST:pdf_jobs', tenantId: tenantId ?? undefined }))
+  } else {
+    // Fallback: se nao conseguiu buscar o id, ainda tenta gerar direto (melhor que nada)
+    gerarEEnviar(dadosGeracao, numero_registro, adminClient).catch(e =>
+      captureException(e, { endpoint: 'contrato/POST:gerarEEnviar', tenantId: tenantId ?? undefined })
+    )
+  }
+
+  await audit({
+    acao: 'contrato.assinado',
+    entidade: 'contratos',
+    entidade_id: numero_registro,
+    tenant_id: tenantId,
+    usuario_tipo: 'sistema',
+    dados_novos: { nome: nome.trim(), whatsapp: wppLimpo, numero_registro, hash_contrato: hash_contrato.slice(0, 16) },
+    ip,
+  })
 
   return NextResponse.json({ ok: true, numero_registro, hash_contrato })
 }

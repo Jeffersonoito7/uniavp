@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp, getInstanciaGestorPorNome } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
+import { getMensagem } from '@/lib/mensagem'
 
 export const dynamic = 'force-dynamic'
 
@@ -251,16 +252,20 @@ export async function POST(req: NextRequest) {
 
           if (moduloConcluido) {
             const instanciaGestor = await getInstanciaGestorPorNome(alunoAtualizado.gestor_nome ?? '', adminClient, aluno.tenant_id)
-            await enviarWhatsApp(
-              alunoAtualizado.gestor_whatsapp!,
-              `📚 *${alunoAtualizado.gestor_nome || 'UNIAVP PRO'}!* Seu membro FREE *${alunoAtualizado.nome}* concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🎉`,
-              instanciaGestor
-            )
             const appUrl = await getAppUrl(aluno.tenant_id)
-            await enviarWhatsApp(
-              alunoAtualizado.whatsapp,
-              `🎉 Parabéns, *${alunoAtualizado.nome}*!\n\nVocê concluiu o *Módulo ${aulaAtual.modulo?.ordem}: ${aulaAtual.modulo?.titulo}*! 🏆\n\nContinue acessando a plataforma:\n👉 ${appUrl}/aluno/${alunoAtualizado.whatsapp}`
-            )
+            const varsModulo = {
+              gestorNome: alunoAtualizado.gestor_nome || 'PRO',
+              alunoNome: alunoAtualizado.nome,
+              moduloOrdem: String(aulaAtual.modulo?.ordem ?? ''),
+              moduloTitulo: String(aulaAtual.modulo?.titulo ?? ''),
+              whatsapp: alunoAtualizado.whatsapp,
+              appUrl,
+            }
+            await enviarWhatsApp(alunoAtualizado.gestor_whatsapp!,
+              await getMensagem('modulo_concluido_gestor', varsModulo, adminClient, aluno.tenant_id),
+              instanciaGestor)
+            await enviarWhatsApp(alunoAtualizado.whatsapp,
+              await getMensagem('modulo_concluido_aluno', varsModulo, adminClient, aluno.tenant_id))
           }
         }
       }
@@ -272,18 +277,20 @@ export async function POST(req: NextRequest) {
       const instanciaGestor = alunoAtualizado.gestor_nome
         ? await getInstanciaGestorPorNome(alunoAtualizado.gestor_nome, adminClient, aluno.tenant_id)
         : null
+      const varsFormacao = {
+        gestorNome: alunoAtualizado.gestor_nome || 'PRO',
+        alunoNome: alunoAtualizado.nome,
+        whatsapp: alunoAtualizado.whatsapp,
+        appUrl,
+      }
       if (alunoAtualizado.gestor_whatsapp) {
-        await enviarWhatsApp(
-          alunoAtualizado.gestor_whatsapp,
-          `🏆 *PARABÉNS, ${alunoAtualizado.gestor_nome || 'UNIAVP PRO'}!*\n\nSeu membro FREE *${alunoAtualizado.nome}* concluiu *100% da formação!* 🎓✨\n\nVer progresso: ${appUrl}/aluno/${alunoAtualizado.whatsapp}`,
-          instanciaGestor
-        )
+        await enviarWhatsApp(alunoAtualizado.gestor_whatsapp,
+          await getMensagem('formacao_concluida_gestor', varsFormacao, adminClient, aluno.tenant_id),
+          instanciaGestor)
       }
       if (alunoAtualizado.whatsapp) {
-        await enviarWhatsApp(
-          alunoAtualizado.whatsapp,
-          `🎓 *PARABÉNS, ${alunoAtualizado.nome}!*\n\nVocê concluiu 100% da formação! 🏆✨\n\nCrie sua arte de formatura:\n👉 ${appUrl}/aluno/${alunoAtualizado.whatsapp}/artes`
-        )
+        await enviarWhatsApp(alunoAtualizado.whatsapp,
+          await getMensagem('formacao_concluida_aluno', varsFormacao, adminClient, aluno.tenant_id))
       }
     }
   }

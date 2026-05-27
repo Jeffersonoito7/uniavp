@@ -1,3 +1,5 @@
+const { withSentryConfig } = require('@sentry/nextjs')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -10,6 +12,7 @@ const nextConfig = {
   },
   experimental: {
     serverActions: { bodySizeLimit: '10mb' },
+    instrumentationHook: true,
   },
 
   async rewrites() {
@@ -39,4 +42,13 @@ const nextConfig = {
     ]
   },
 };
-module.exports = nextConfig;
+
+const sentryOptions = {
+  silent: true,
+  disableServerWebpackPlugin: !process.env.NEXT_PUBLIC_SENTRY_DSN,
+  disableClientWebpackPlugin: !process.env.NEXT_PUBLIC_SENTRY_DSN,
+}
+
+module.exports = process.env.NEXT_PUBLIC_SENTRY_DSN
+  ? withSentryConfig(nextConfig, sentryOptions)
+  : nextConfig
