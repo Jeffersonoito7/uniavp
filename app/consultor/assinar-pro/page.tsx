@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 type Info = {
   jaEhPro: boolean
@@ -22,9 +23,26 @@ export default function AssinarProPage() {
   const [wppCarregando, setWppCarregando] = useState(false)
   const [wppErro, setWppErro] = useState('')
 
+  const router = useRouter()
+
   useEffect(() => {
     fetch('/api/consultor/assinar-pro').then(r => r.json()).then(setInfo)
   }, [])
+
+  // Polling: detecta confirmação do PIX e redireciona automaticamente
+  useEffect(() => {
+    if (info?.ultimoPagamento?.status !== 'pendente') return
+    let tentativas = 0
+    const id = setInterval(async () => {
+      if (++tentativas > 120) { clearInterval(id); return }
+      try {
+        const r = await fetch('/api/consultor/assinar-pro')
+        const d = await r.json()
+        if (d.jaEhPro) { clearInterval(id); router.push('/gestor') }
+      } catch { /**/ }
+    }, 5000)
+    return () => clearInterval(id)
+  }, [info?.ultimoPagamento?.status, router])
 
   async function enviarCodigoWpp() {
     if (!info?.whatsapp) return
@@ -172,7 +190,7 @@ export default function AssinarProPage() {
                   {copiado ? 'PIX copiado!' : 'Copiar PIX Copia e Cola'}
                 </button>
                 <div style={{ background: 'rgba(2,161,83,0.08)', border: '1px solid rgba(2,161,83,0.2)', borderRadius: 10, padding: '12px 16px', fontSize: 13, color: '#6ee7b7', lineHeight: 1.6 }}>
-                  ✅ Assim que o pagamento for confirmado, seu acesso PRO é ativado automaticamente.
+                  Verificando pagamento automaticamente... Assim que confirmado, o acesso PRO abre sozinho.
                 </div>
               </div>
             ) : (

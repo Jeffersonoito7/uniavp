@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 type Status = {
   status: string
@@ -16,9 +17,26 @@ export default function AssinarPage() {
   const [copiado, setCopiado] = useState(false)
   const [msg, setMsg] = useState('')
 
+  const router = useRouter()
+
   useEffect(() => {
     fetch('/api/gestor/assinar').then(r => r.json()).then(setInfo)
   }, [])
+
+  // Polling: detecta confirmação do PIX e redireciona automaticamente
+  useEffect(() => {
+    if (info?.ultimoPagamento?.status !== 'pendente') return
+    let tentativas = 0
+    const id = setInterval(async () => {
+      if (++tentativas > 120) { clearInterval(id); return }
+      try {
+        const r = await fetch('/api/gestor/assinar')
+        const d = await r.json()
+        if (d.status === 'ativo') { clearInterval(id); router.push('/gestor') }
+      } catch { /**/ }
+    }, 5000)
+    return () => clearInterval(id)
+  }, [info?.ultimoPagamento?.status, router])
 
   async function gerarPix() {
     setGerando(true); setMsg('')
@@ -153,7 +171,7 @@ export default function AssinarPage() {
                   {copiado ? 'PIX copiado!' : 'Copiar PIX Copia e Cola'}
                 </button>
                 <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.5 }}>
-                  Após o pagamento, seu acesso é liberado automaticamente em segundos.
+                  Verificando pagamento automaticamente a cada 5 segundos. Assim que confirmado, o painel abre sozinho.
                 </p>
               </div>
             ) : (
