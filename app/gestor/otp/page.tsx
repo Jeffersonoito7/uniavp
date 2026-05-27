@@ -1,24 +1,21 @@
-import OtpForm from '@/app/components/OtpForm'
+import { redirect } from 'next/navigation'
+import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
-export default function GestorOtpPage() {
-  return (
-    <div className="page-wrap">
-      <div style={{ width: 400, maxWidth: '100%' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 8px' }}>Verificação de segurança</h1>
-          <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>
-            Digite o código de 6 dígitos enviado no seu WhatsApp ou e-mail
-          </p>
-        </div>
+export default async function GestorOtpPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/entrar?p=pro')
 
-        <div className="card" style={{ padding: 32 }}>
-          <OtpForm />
-        </div>
+  const admin = createServiceRoleClient()
 
-        <p style={{ textAlign: 'center', marginTop: 20, fontSize: 12, color: 'var(--avp-text-dim)' }}>
-          Verificação obrigatória a cada acesso — Painel PRO
-        </p>
-      </div>
-    </div>
-  )
+  const { data: adminRec } = await admin.from('admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  if (adminRec) redirect('/admin')
+
+  const { data: gestor } = await admin.from('gestores').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+  if (gestor) redirect('/pro')
+
+  const { data: aluno } = await admin.from('alunos').select('whatsapp').eq('user_id', user.id).maybeSingle()
+  if (aluno?.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
+
+  redirect('/entrar?p=pro')
 }
