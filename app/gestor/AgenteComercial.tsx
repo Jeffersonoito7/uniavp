@@ -104,7 +104,7 @@ export default function AgenteComercial() {
         }
       `}</style>
 
-      <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', maxWidth: 780, margin: '0 auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100svh - 200px)', maxWidth: 780, margin: '0 auto' }}>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexShrink: 0 }}>
