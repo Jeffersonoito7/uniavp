@@ -5,6 +5,7 @@ import { rateLimit, LIMITS } from '@/lib/rate-limit'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
+  try {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
 
   await adminClient.from('verificacao_otp').update({ usado: true }).eq('id', otp.id)
 
-  // Determina redirect pelo perfil
+  // Determina redirect pelo perfil (mesma ordem do /api/auth/perfil)
   let redirect = '/'
 
   const { data: adminRec } = await adminClient.from('admins')
@@ -42,14 +43,20 @@ export async function POST(req: NextRequest) {
   if (adminRec) {
     redirect = '/admin'
   } else {
-    const { data: gestor } = await adminClient.from('gestores')
+    const { data: superRec } = await adminClient.from('super_admins')
       .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-    if (gestor) {
-      redirect = '/pro'
+    if (superRec) {
+      redirect = '/super'
     } else {
-      const { data: aluno } = await adminClient.from('alunos')
-        .select('whatsapp').eq('user_id', user.id).maybeSingle()
-      if (aluno?.whatsapp) redirect = `/aluno/${aluno.whatsapp}`
+      const { data: gestor } = await adminClient.from('gestores')
+        .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+      if (gestor) {
+        redirect = '/pro'
+      } else {
+        const { data: aluno } = await adminClient.from('alunos')
+          .select('whatsapp').eq('user_id', user.id).maybeSingle()
+        if (aluno?.whatsapp) redirect = `/aluno/${aluno.whatsapp}`
+      }
     }
   }
 
@@ -64,4 +71,8 @@ export async function POST(req: NextRequest) {
   })
 
   return response
+  } catch (e) {
+    console.error('erro em verificar-otp', e)
+    return NextResponse.json({ error: 'Erro interno. Tente novamente.' }, { status: 500 })
+  }
 }
