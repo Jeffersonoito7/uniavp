@@ -13,6 +13,7 @@ import ThemeToggle from '@/app/components/ThemeToggle'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/configuracoes', label: 'Configurações', icon: Settings },
   { href: '/admin/consultores', label: 'FREE', icon: Users },
   { href: '/admin/gestores', label: 'PRO', icon: UserCog },
   { href: '/admin/admins', label: 'Gerentes', icon: ShieldCheck },
@@ -32,7 +33,6 @@ const navItems = [
   { href: '/admin/mensagens', label: 'Mensagens', icon: MessageSquare },
   { href: '/admin/audit', label: 'Audit Log', icon: Activity },
   { href: '/admin/agente', label: 'Agente IA', icon: Bot },
-  { href: '/admin/configuracoes', label: 'Configurações', icon: Settings },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -220,7 +220,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         {/* ── Nav ── */}
-        <nav style={{ flex: 1, padding: colapsada ? '12px 8px' : '12px 10px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', overflowX: 'hidden' }}>
+        <nav style={{ flex: 1, padding: colapsada ? '12px 8px' : '12px 10px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', overflowX: 'hidden', scrollbarWidth: 'thin' }}>
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || (href !== '/admin' && pathname.startsWith(href))
             return (
