@@ -21,7 +21,18 @@ function resolverModelo(valor: string | null | undefined): string {
 // Modelos que suportam PDF via document block
 const MODELOS_PDF = ['claude-sonnet-4-6', 'claude-opus-4-7', 'claude-haiku-4-5-20251001']
 
-function buildSystemPrompt(nomeAssistente: string, promptExtra: string | null, argumentos: string[]) {
+type ModuloResumo = { titulo: string; ordem: number; aulas: { titulo: string; ordem: number }[] }
+
+function buildModulosSection(modulos: ModuloResumo[]): string {
+  if (!modulos.length) return ''
+  const linhas = modulos.map(m => {
+    const aulas = m.aulas.map(a => `    - Aula ${a.ordem}: ${a.titulo}`).join('\n')
+    return `  Módulo ${m.ordem} — ${m.titulo}${aulas ? '\n' + aulas : ''}`
+  }).join('\n')
+  return `\n\n## CONTEÚDO DA PLATAFORMA\nQuando o consultor tiver dúvida sobre um assunto, indique o módulo e a aula correta abaixo. Diga para ele acessar em "Módulos" na plataforma.\n\n${linhas}`
+}
+
+function buildSystemPrompt(nomeAssistente: string, promptExtra: string | null, argumentos: string[], modulos: ModuloResumo[] = []) {
   let prompt = `Você é ${nomeAssistente}, um assistente comercial especializado em proteção veicular.
 
 Você ajuda consultores a:
@@ -36,6 +47,8 @@ Quando receber uma imagem ou documento, leia o conteúdo e destaque imediatament
   if (argumentos.length > 0) {
     prompt += `\n\n## ARGUMENTOS COMERCIAIS\n${argumentos.map((a, i) => `${i + 1}. ${a}`).join('\n')}`
   }
+
+  prompt += buildModulosSection(modulos)
 
   if (promptExtra?.trim()) {
     prompt += `\n\n## INSTRUÇÕES ESPECÍFICAS\n${promptExtra}`
@@ -98,17 +111,35 @@ export async function POST(req: NextRequest) {
   const saldo = await getSaldo(gestor.id, adminClient)
   if (saldo < custo) return NextResponse.json({ error: 'Créditos insuficientes', semCredito: true }, { status: 402 })
 
-  const [config, argumentos] = await Promise.all([
+  const [config, argumentos, modulosRaw, aulasRaw] = await Promise.all([
     getConfig(tenantId, adminClient),
     getArgumentos(tenantId, adminClient),
+    (() => {
+      let q = adminClient.from('modulos').select('id, titulo, ordem').order('ordem')
+      if (tenantId) q = q.eq('tenant_id', tenantId)
+      return q
+    })(),
+    (() => {
+      let q = adminClient.from('aulas').select('titulo, ordem, modulo_id').eq('publicado', true).order('ordem')
+      if (tenantId) q = q.eq('tenant_id', tenantId)
+      return q
+    })(),
   ])
+
+  // Monta árvore módulo → aulas para o contexto do agente
+  const aulasData = aulasRaw.data ?? []
+  const modulos: ModuloResumo[] = (modulosRaw.data ?? []).map(m => ({
+    titulo: m.titulo,
+    ordem: m.ordem,
+    aulas: aulasData.filter((a: any) => a.modulo_id === m.id).map((a: any) => ({ titulo: a.titulo, ordem: a.ordem })),
+  }))
 
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) return NextResponse.json({ error: 'Serviço indisponível' }, { status: 503 })
 
   const nomeAssistente = config?.nome_assistente ?? 'Assistente'
   const modelo = resolverModelo(config?.modelo)
-  const systemPrompt = buildSystemPrompt(nomeAssistente, config?.prompt_extra ?? null, argumentos)
+  const systemPrompt = buildSystemPrompt(nomeAssistente, config?.prompt_extra ?? null, argumentos, modulos)
 
   // Monta as mensagens para o Anthropic
   // O anexo vai junto com a última mensagem do usuário
