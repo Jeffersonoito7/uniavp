@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import {
   LayoutDashboard, BookOpen, Users, ShieldCheck,
-  Trophy, Settings, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper, Star,
+  Trophy, Cog, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper, Star,
   Menu, X, ChevronLeft, ChevronRight, Link2, IdCard, FileText, ScrollText, Video, Activity, MessageSquare, Bot, HelpCircle
 } from 'lucide-react'
 import LogoutButton from '@/app/components/LogoutButton'
@@ -13,7 +13,7 @@ import ThemeToggle from '@/app/components/ThemeToggle'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/configuracoes', label: 'Configurações', icon: Settings },
+  { href: '/admin/configuracoes', label: 'Configurações', icon: Cog },
   { href: '/admin/consultores', label: 'FREE', icon: Users },
   { href: '/admin/gestores', label: 'PRO', icon: UserCog },
   { href: '/admin/admins', label: 'Gerentes', icon: ShieldCheck },
