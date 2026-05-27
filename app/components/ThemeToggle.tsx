@@ -17,18 +17,22 @@ export default function ThemeToggle({ collapsed = false, inline = false }: { col
     localStorage.setItem('avp-theme', next ? 'light' : 'dark')
   }
 
-  // Versão inline: ícone pequeno para headers (painel aluno/free)
+  // Versão inline: ícone pequeno discreto para headers e topo de sidebar
   if (inline) {
     return (
       <button
         onClick={toggle}
         title={light ? 'Modo escuro' : 'Modo claro'}
         style={{
-          background: 'var(--avp-card)', border: '1px solid var(--avp-border)',
-          borderRadius: 8, width: 34, height: 34,
+          background: 'none', border: 'none',
+          borderRadius: 6, width: 28, height: 28,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', fontSize: 15, flexShrink: 0,
+          cursor: 'pointer', fontSize: 14, flexShrink: 0,
+          color: 'var(--avp-text-dim)', opacity: 0.7,
+          transition: 'opacity 0.15s',
         }}
+        onMouseEnter={e => { e.currentTarget.style.opacity = '1' }}
+        onMouseLeave={e => { e.currentTarget.style.opacity = '0.7' }}
       >
         {light ? '🌙' : '☀️'}
       </button>
