@@ -6,6 +6,9 @@ export const dynamic = 'force-dynamic'
 
 const MODELO_PADRAO = 'claude-haiku-4-5-20251001'
 
+// Modelos que suportam PDF via document block
+const MODELOS_PDF = ['claude-sonnet-4-6', 'claude-opus-4-7', 'claude-haiku-4-5-20251001']
+
 function buildSystemPrompt(nomeAssistente: string, promptExtra: string | null, argumentos: string[]) {
   let prompt = `Você é ${nomeAssistente}, um assistente comercial especializado em proteção veicular.
 
@@ -14,9 +17,9 @@ Você ajuda consultores a:
 - Superar objeções de clientes (preço, confiança, cobertura, concorrentes)
 - Criar scripts de abordagem e follow-up
 - Dar dicas práticas de fechamento
-- Comparar condições da associação com concorrentes
+- Analisar cotações e documentos do concorrente e apontar os diferenciais da associação
 
-Seja direto, objetivo e focado em resultados. Respostas claras, máximo 5 parágrafos.`
+Quando receber uma imagem ou documento, leia o conteúdo e destaque imediatamente os pontos fracos do concorrente e como a associação é melhor. Seja direto, objetivo e focado em resultados. Máximo 5 parágrafos.`
 
   if (argumentos.length > 0) {
     prompt += `\n\n## ARGUMENTOS COMERCIAIS\n${argumentos.map((a, i) => `${i + 1}. ${a}`).join('\n')}`
@@ -29,13 +32,41 @@ Seja direto, objetivo e focado em resultados. Respostas claras, máximo 5 parág
   return prompt
 }
 
+type AnexoPayload = { data: string; type: string; name: string }
+
+function buildMensagemComAnexo(content: string, anexo: AnexoPayload): unknown {
+  const blocos: unknown[] = []
+
+  if (anexo.type === 'application/pdf') {
+    blocos.push({
+      type: 'document',
+      source: { type: 'base64', media_type: 'application/pdf', data: anexo.data },
+    })
+  } else {
+    const mediaType = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(anexo.type)
+      ? anexo.type
+      : 'image/jpeg'
+    blocos.push({
+      type: 'image',
+      source: { type: 'base64', media_type: mediaType, data: anexo.data },
+    })
+  }
+
+  if (content.trim()) {
+    blocos.push({ type: 'text', text: content })
+  }
+
+  return { role: 'user', content: blocos }
+}
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const body = await req.json()
-  const { messages } = body
+  const { messages, attachment } = body as { messages: { role: string; content: string }[]; attachment?: AnexoPayload }
+
   if (!messages?.length) return NextResponse.json({ error: 'Mensagens obrigatórias' }, { status: 400 })
 
   const adminClient = createServiceRoleClient()
@@ -47,8 +78,13 @@ export async function POST(req: NextRequest) {
 
   await garantirRegistroCredito(gestor.id, tenantId, adminClient)
 
+  // Custo: 1 para texto, 2 para imagem, 3 para PDF
+  const custo = attachment
+    ? (attachment.type === 'application/pdf' ? 3 : 2)
+    : 1
+
   const saldo = await getSaldo(gestor.id, adminClient)
-  if (saldo < 1) return NextResponse.json({ error: 'Créditos insuficientes', semCredito: true }, { status: 402 })
+  if (saldo < custo) return NextResponse.json({ error: 'Créditos insuficientes', semCredito: true }, { status: 402 })
 
   const [config, argumentos] = await Promise.all([
     getConfig(tenantId, adminClient),
@@ -62,6 +98,21 @@ export async function POST(req: NextRequest) {
   const modelo = config?.modelo ?? MODELO_PADRAO
   const systemPrompt = buildSystemPrompt(nomeAssistente, config?.prompt_extra ?? null, argumentos)
 
+  // Monta as mensagens para o Anthropic
+  // O anexo vai junto com a última mensagem do usuário
+  const historico = messages.slice(-20)
+  const anthropicMessages = historico.map((m, i) => {
+    if (i === historico.length - 1 && m.role === 'user' && attachment) {
+      return buildMensagemComAnexo(m.content, attachment)
+    }
+    return { role: m.role, content: m.content }
+  })
+
+  // PDF requer modelo compatível — força sonnet se o modelo configurado não suporta
+  const modeloFinal = attachment?.type === 'application/pdf' && !MODELOS_PDF.includes(modelo)
+    ? 'claude-haiku-4-5-20251001'
+    : modelo
+
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -70,10 +121,10 @@ export async function POST(req: NextRequest) {
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: modelo,
+      model: modeloFinal,
       max_tokens: 1024,
       system: systemPrompt,
-      messages: messages.slice(-20),
+      messages: anthropicMessages,
     }),
   })
 
@@ -85,7 +136,10 @@ export async function POST(req: NextRequest) {
   const data = await res.json()
   const texto = data.content?.[0]?.text ?? 'Não consegui processar. Tente novamente.'
 
-  await debitarCreditos(gestor.id, 1, 'Assistente comercial', tenantId, adminClient)
+  const descricao = attachment
+    ? `Assistente comercial — ${attachment.type === 'application/pdf' ? 'PDF' : 'imagem'} anexada`
+    : 'Assistente comercial'
+  await debitarCreditos(gestor.id, custo, descricao, tenantId, adminClient)
   const novoSaldo = await getSaldo(gestor.id, adminClient)
 
   return NextResponse.json({ resposta: texto, saldo: novoSaldo })
