@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     nome: config.nome,
     logoUrl: config.logoPaginaUrl || config.logoMenuUrl || config.logoUrl,
+    logoMenuUrl: config.logoMenuUrl || config.logoUrl,
     isDominioMaster,
     dominioCustomizado: config.dominioCustomizado,
   })

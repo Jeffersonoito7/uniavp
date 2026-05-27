@@ -48,7 +48,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     fetch('/api/site-config').then(r => r.json()).then(d => {
       setSiteNome(d.nome)
-      setSiteLogoUrl(d.logoUrl || '')
+      setSiteLogoUrl(d.logoMenuUrl || d.logoUrl || '')
       setIsDominioMaster(d.isDominioMaster)
       setLogoError(false)
     }).catch(() => {})

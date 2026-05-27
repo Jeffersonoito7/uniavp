@@ -39,7 +39,7 @@ export default function GestorLayout({
   useEffect(() => {
     fetch('/api/site-config').then(r => r.json()).then(d => {
       setSiteNome(d.nome)
-      setSiteLogoUrl(d.logoUrl || '')
+      setSiteLogoUrl(d.logoMenuUrl || d.logoUrl || '')
       setLogoError(false)
     }).catch(() => {})
   }, [])
