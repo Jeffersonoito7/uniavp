@@ -261,10 +261,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             {!colapsada && <span>Painel FREE</span>}
           </Link>
-        </div>
-
-        {/* ── Manual ── */}
-        <div style={{ padding: colapsada ? '8px 8px' : '8px 12px', borderTop: '1px solid var(--avp-border)' }}>
           <a href="/manual.html" target="_blank" rel="noreferrer" title="Manual da Plataforma"
             style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 8, justifyContent: colapsada ? 'center' : 'flex-start', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', color: '#fbbf24', borderRadius: 7, padding: colapsada ? '8px 0' : '7px 12px', fontSize: 12, fontWeight: 600, textDecoration: 'none', transition: 'all 0.15s' }}>
             <HelpCircle size={13} style={{ flexShrink: 0 }} />
