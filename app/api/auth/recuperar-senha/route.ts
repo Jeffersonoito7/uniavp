@@ -7,8 +7,6 @@ export const dynamic = 'force-dynamic'
 
 const EVO_URL = process.env.EVOLUTION_API_URL
 const EVO_KEY = process.env.EVOLUTION_API_KEY
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 async function buscarWhatsAppPorEmail(email: string, adminClient: ReturnType<typeof createServiceRoleClient>): Promise<{ whatsapp: string; instancia: string | null; tenantId: string | null } | null> {
   // Busca em alunos
   const { data: aluno } = await adminClient.from('alunos')
@@ -53,6 +51,7 @@ async function buscarWhatsAppPorEmail(email: string, adminClient: ReturnType<typ
 
 async function enviarLinkEmail(email: string, link: string, siteNome: string) {
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
     const { error } = await resend.emails.send({
       from: EMAIL_FROM,
       to: email,
