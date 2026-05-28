@@ -374,33 +374,37 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
         onCancel={() => setCropSrc(null)}
       />
     )}
-    <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
+    <div className="print-container" style={{ minHeight: '100dvh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
       <style>{`
         @media print {
-          @page { size: A4 portrait; margin: 15mm; }
+          @page { size: A4 portrait; margin: 12mm; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          body { background: #fff !important; margin: 0 !important; }
+          html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
           .no-print { display: none !important; }
+          .print-container {
+            background: #fff !important;
+            min-height: 0 !important;
+            color: #000 !important;
+          }
           .print-area {
             padding: 0 !important;
             max-width: 100% !important;
             display: flex !important;
             flex-direction: column !important;
             align-items: center !important;
-            gap: 18mm !important;
+            gap: 12mm !important;
           }
           .card-wrapper {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
-            width: 100% !important;
             display: flex !important;
             flex-direction: column !important;
             align-items: center !important;
           }
           .card-wrapper > div {
-            width: 130mm !important;
-            height: 82mm !important;
             box-shadow: none !important;
+            border-radius: 4px !important;
+            overflow: hidden !important;
           }
         }
       `}</style>
