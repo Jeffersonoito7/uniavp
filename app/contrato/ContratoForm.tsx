@@ -126,6 +126,21 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
   const [clausulaAtual, setClausulaAtual] = useState(0)
   const [aceitas, setAceitas] = useState<boolean[]>(new Array(CLAUSULAS_ATIVAS.length).fill(false))
   const [form, setForm] = useState({ nome: nomeInicial, whatsapp: whatsappInicial, email: emailInicial, cpf: cpfInicial, cnpj_mei: '', sede_mei: '', rua: '', numero: '', bairro: '', cidade: '', estado: '', cep: '' })
+  const [buscandoCep, setBuscandoCep] = useState(false)
+
+  async function buscarCep(cep: string) {
+    const limpo = cep.replace(/\D/g, '')
+    if (limpo.length !== 8) return
+    setBuscandoCep(true)
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${limpo}/json/`)
+      const data = await res.json()
+      if (!data.erro) {
+        setForm(p => ({ ...p, rua: data.logradouro || p.rua, bairro: data.bairro || p.bairro, cidade: data.localidade || p.cidade, estado: data.uf || p.estado }))
+      }
+    } catch { /* ignora erros de rede */ }
+    setBuscandoCep(false)
+  }
   const [dataNascimento, setDataNascimento] = useState('')
   const [estadoCivil, setEstadoCivil] = useState('')
   const [nacionalidade, setNacionalidade] = useState('Brasileiro(a)')
@@ -393,8 +408,14 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
                     <input style={inp} value={form.bairro} onChange={e => setForm(p=>({...p,bairro:e.target.value}))} placeholder="Centro" />
                   </div>
                   <div>
-                    <label style={lbl}>CEP *</label>
-                    <input style={inp} value={form.cep} onChange={e => setForm(p=>({...p,cep:e.target.value}))} placeholder="00000-000" maxLength={9} />
+                    <label style={lbl}>CEP * {buscandoCep && <span style={{ fontWeight: 400, fontSize: 11, color: '#818cf8' }}>buscando...</span>}</label>
+                    <input style={inp} value={form.cep}
+                      onChange={e => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 8).replace(/(\d{5})(\d)/, '$1-$2')
+                        setForm(p => ({ ...p, cep: val }))
+                        buscarCep(val)
+                      }}
+                      placeholder="00000-000" maxLength={9} />
                   </div>
                 </div>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 80px', gap:12 }}>
