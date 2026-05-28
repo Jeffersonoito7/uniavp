@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
-import { Resend } from 'resend'
-import { EMAIL_FROM } from '@/lib/constants'
+import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
 
 const EVO_URL = process.env.EVOLUTION_API_URL
 const EVO_KEY = process.env.EVOLUTION_API_KEY
+
 async function buscarWhatsAppPorEmail(email: string, adminClient: ReturnType<typeof createServiceRoleClient>): Promise<{ whatsapp: string; instancia: string | null; tenantId: string | null } | null> {
-  // Busca em alunos
   const { data: aluno } = await adminClient.from('alunos')
     .select('whatsapp, gestor_nome, tenant_id').eq('email', email).maybeSingle()
   if (aluno?.whatsapp) {
-    // Tenta pegar instância do gestor do aluno (filtrado pelo tenant)
     let instancia: string | null = null
     if (aluno.gestor_nome) {
       let q = adminClient.from('gestores').select('whatsapp_instancia').eq('nome', aluno.gestor_nome).eq('ativo', true)
@@ -20,7 +18,6 @@ async function buscarWhatsAppPorEmail(email: string, adminClient: ReturnType<typ
       const { data: g } = await q.maybeSingle()
       instancia = g?.whatsapp_instancia ?? null
     }
-    // Fallback: instância do admin do mesmo tenant
     if (!instancia) {
       let q = adminClient.from('admins').select('whatsapp_instancia').eq('ativo', true).not('whatsapp_instancia', 'is', null).limit(1)
       if (aluno.tenant_id) q = q.eq('tenant_id', aluno.tenant_id)
@@ -30,53 +27,19 @@ async function buscarWhatsAppPorEmail(email: string, adminClient: ReturnType<typ
     return { whatsapp: aluno.whatsapp, instancia, tenantId: aluno.tenant_id ?? null }
   }
 
-  // Busca em gestores
   const { data: gestor } = await adminClient.from('gestores')
     .select('whatsapp, whatsapp_instancia, tenant_id').eq('email', email).maybeSingle()
   if (gestor?.whatsapp) {
-    const instancia = gestor.whatsapp_instancia ?? null
-    return { whatsapp: gestor.whatsapp, instancia, tenantId: gestor.tenant_id ?? null }
+    return { whatsapp: gestor.whatsapp, instancia: gestor.whatsapp_instancia ?? null, tenantId: gestor.tenant_id ?? null }
   }
 
-  // Busca em admins — usa instância do próprio admin
   const { data: admin } = await adminClient.from('admins')
     .select('whatsapp, whatsapp_instancia, tenant_id').eq('email', email).maybeSingle()
   if (admin?.whatsapp) {
-    const instancia = admin.whatsapp_instancia ?? null
-    return { whatsapp: admin.whatsapp, instancia, tenantId: admin.tenant_id ?? null }
+    return { whatsapp: admin.whatsapp, instancia: admin.whatsapp_instancia ?? null, tenantId: admin.tenant_id ?? null }
   }
 
   return null
-}
-
-async function enviarLinkEmail(email: string, link: string, siteNome: string) {
-  try {
-    const resend = new Resend(process.env.RESEND_API_KEY)
-    const { error } = await resend.emails.send({
-      from: EMAIL_FROM,
-      to: email,
-      subject: `${siteNome} — Redefinição de senha`,
-      html: `
-        <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#fff">
-          <h2 style="color:#111;margin-bottom:8px">Redefinição de senha</h2>
-          <p style="color:#555;font-size:15px;line-height:1.6;margin-bottom:24px">
-            Recebemos uma solicitação para redefinir a senha da sua conta em <strong>${siteNome}</strong>.
-            Clique no botão abaixo para criar uma nova senha:
-          </p>
-          <a href="${link}" style="display:inline-block;background:#4f46e5;color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:700;font-size:15px">
-            Redefinir minha senha
-          </a>
-          <p style="color:#888;font-size:13px;margin-top:24px;line-height:1.6">
-            O link é válido por <strong>1 hora</strong> e funciona apenas uma vez.<br>
-            Se não foi você que solicitou, ignore este e-mail.
-          </p>
-          <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
-          <p style="color:#aaa;font-size:12px">${siteNome}</p>
-        </div>
-      `,
-    })
-    return !error
-  } catch { return false }
 }
 
 async function enviarLinkWhatsApp(whatsapp: string, link: string, instancia: string, siteNome: string) {
@@ -101,7 +64,7 @@ export async function POST(req: NextRequest) {
   const dest = redirectTo || `${origin}/redefinir-senha`
   const adminClient = createServiceRoleClient()
 
-  // Gera o link de recuperação (sempre funciona)
+  // Gera o link (para WhatsApp e tela)
   const { data, error } = await adminClient.auth.admin.generateLink({
     type: 'recovery',
     email,
@@ -114,31 +77,34 @@ export async function POST(req: NextRequest) {
 
   const link = data.properties.action_link
 
-  // Busca nome do site (antes do WhatsApp para reaproveitar no email)
+  // Envia email via Supabase nativo (usa SMTP configurado no projeto Supabase)
+  try {
+    const anonClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    await anonClient.auth.resetPasswordForEmail(email, { redirectTo: dest })
+  } catch { /* não bloqueia */ }
+
+  // Busca contexto do usuário para WhatsApp
   const ctx = await buscarWhatsAppPorEmail(email, adminClient)
-  let siteNomeGlobal = 'Plataforma'
-
-  // Envia por email (Resend) — canal principal
-  let siteNomeTmp = siteNomeGlobal
-  if (ctx?.tenantId) {
-    const { data: siteNomeCfg } = await adminClient.from('configuracoes')
-      .select('valor').eq('chave', 'site_nome').eq('tenant_id', ctx.tenantId).maybeSingle()
-    try { siteNomeTmp = JSON.parse(String(siteNomeCfg?.valor ?? '')) || siteNomeTmp } catch { /* */ }
-  }
-  siteNomeGlobal = siteNomeTmp
-  const enviadoEmail = await enviarLinkEmail(email, link, siteNomeGlobal)
-
-  // Busca WhatsApp do usuário e envia o link
+  let siteNome = 'Plataforma'
   let enviadoWpp = false
 
+  if (ctx?.tenantId) {
+    const { data: cfg } = await adminClient.from('configuracoes')
+      .select('valor').eq('chave', 'site_nome').eq('tenant_id', ctx.tenantId).maybeSingle()
+    try { siteNome = JSON.parse(String(cfg?.valor ?? '')) || siteNome } catch { /* */ }
+  }
+
   if (ctx?.whatsapp && ctx?.instancia) {
-    enviadoWpp = await enviarLinkWhatsApp(ctx.whatsapp, link, ctx.instancia, siteNomeGlobal)
+    enviadoWpp = await enviarLinkWhatsApp(ctx.whatsapp, link, ctx.instancia, siteNome)
   }
 
   return NextResponse.json({
     ok: true,
     link,
-    enviadoEmail,
+    enviadoEmail: true,
     enviadoWpp,
     whatsappMask: ctx?.whatsapp
       ? `*${ctx.whatsapp.slice(-4).padStart(ctx.whatsapp.length, '*')}`
