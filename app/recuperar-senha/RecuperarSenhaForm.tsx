@@ -6,6 +6,7 @@ export default function RecuperarSenhaForm({ logoUrl, siteNome }: { logoUrl: str
   const [loading, setLoading] = useState(false)
   const [enviado, setEnviado] = useState(false)
   const [link, setLink] = useState<string | null>(null)
+  const [enviadoEmail, setEnviadoEmail] = useState(false)
   const [enviadoWpp, setEnviadoWpp] = useState(false)
   const [whatsappMask, setWhatsappMask] = useState<string | null>(null)
   const [copiado, setCopiado] = useState(false)
@@ -34,6 +35,7 @@ export default function RecuperarSenhaForm({ logoUrl, siteNome }: { logoUrl: str
       const data = await res.json()
       setEnviado(true)
       setLink(data.link ?? null)
+      setEnviadoEmail(data.enviadoEmail ?? false)
       setEnviadoWpp(data.enviadoWpp ?? false)
       setWhatsappMask(data.whatsappMask ?? null)
       setCooldown(60)
@@ -102,25 +104,45 @@ export default function RecuperarSenhaForm({ logoUrl, siteNome }: { logoUrl: str
           ) : (
             <>
               <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>{enviadoWpp ? '📱' : '🔑'}</div>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>
+                  {enviadoEmail ? '📧' : enviadoWpp ? '📱' : '🔑'}
+                </div>
                 <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>
-                  {enviadoWpp ? 'Link enviado pelo WhatsApp!' : 'Link gerado!'}
+                  {enviadoEmail ? 'E-mail enviado!' : enviadoWpp ? 'Link enviado pelo WhatsApp!' : 'Link gerado!'}
                 </h2>
-                {enviadoWpp && whatsappMask && (
+                {enviadoEmail && (
                   <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, lineHeight: 1.6 }}>
-                    Enviado para o WhatsApp <strong style={{ color: '#25d366' }}>{whatsappMask}</strong>
+                    Verifique sua caixa de entrada (e o spam) para <strong style={{ color: 'var(--avp-text)' }}>{email}</strong>
+                  </p>
+                )}
+                {enviadoWpp && whatsappMask && (
+                  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, lineHeight: 1.6, marginTop: 4 }}>
+                    Também enviado para o WhatsApp <strong style={{ color: '#25d366' }}>{whatsappMask}</strong>
                   </p>
                 )}
               </div>
+
+              {/* Email enviado com sucesso */}
+              {enviadoEmail && (
+                <div style={{ background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(79,70,229,0.25)', borderRadius: 10, padding: '14px 16px', marginBottom: 16 }}>
+                  <p style={{ fontSize: 14, color: '#818cf8', fontWeight: 700, marginBottom: 4 }}>
+                    Verifique seu e-mail
+                  </p>
+                  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>
+                    O link de redefinição foi enviado para <strong>{email}</strong>.<br/>
+                    Confira também a pasta de spam se não aparecer.
+                  </p>
+                </div>
+              )}
 
               {/* WhatsApp enviado com sucesso */}
               {enviadoWpp && (
                 <div className="alert" style={{ background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.25)', color: '#25d366', marginBottom: 16, textAlign: 'center' }}>
                   <p style={{ fontSize: 14, color: '#25d366', fontWeight: 700, marginBottom: 4 }}>
-                    ✅ Abra o WhatsApp e clique no link recebido
+                    Abra o WhatsApp e clique no link recebido
                   </p>
                   <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>
-                    O link expira em 1 hora e funciona uma única vez.
+                    O link expira em 1 hora e funciona apenas uma vez.
                   </p>
                 </div>
               )}

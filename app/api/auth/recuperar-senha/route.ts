@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
+import { Resend } from 'resend'
+import { EMAIL_FROM } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
 const EVO_URL = process.env.EVOLUTION_API_URL
 const EVO_KEY = process.env.EVOLUTION_API_KEY
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 async function buscarWhatsAppPorEmail(email: string, adminClient: ReturnType<typeof createServiceRoleClient>): Promise<{ whatsapp: string; instancia: string | null; tenantId: string | null } | null> {
   // Busca em alunos
@@ -48,6 +51,35 @@ async function buscarWhatsAppPorEmail(email: string, adminClient: ReturnType<typ
   return null
 }
 
+async function enviarLinkEmail(email: string, link: string, siteNome: string) {
+  try {
+    const { error } = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: email,
+      subject: `${siteNome} — Redefinição de senha`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#fff">
+          <h2 style="color:#111;margin-bottom:8px">Redefinição de senha</h2>
+          <p style="color:#555;font-size:15px;line-height:1.6;margin-bottom:24px">
+            Recebemos uma solicitação para redefinir a senha da sua conta em <strong>${siteNome}</strong>.
+            Clique no botão abaixo para criar uma nova senha:
+          </p>
+          <a href="${link}" style="display:inline-block;background:#4f46e5;color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:700;font-size:15px">
+            Redefinir minha senha
+          </a>
+          <p style="color:#888;font-size:13px;margin-top:24px;line-height:1.6">
+            O link é válido por <strong>1 hora</strong> e funciona apenas uma vez.<br>
+            Se não foi você que solicitou, ignore este e-mail.
+          </p>
+          <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
+          <p style="color:#aaa;font-size:12px">${siteNome}</p>
+        </div>
+      `,
+    })
+    return !error
+  } catch { return false }
+}
+
 async function enviarLinkWhatsApp(whatsapp: string, link: string, instancia: string, siteNome: string) {
   if (!EVO_URL || !EVO_KEY) return false
   const texto = `🔐 *${siteNome} — Redefinição de senha*\n\nClique no link abaixo para criar uma nova senha:\n\n👉 ${link}\n\n⚠️ O link é válido por 1 hora e funciona apenas uma vez.\n\nSe não foi você que solicitou, ignore esta mensagem.`
@@ -83,25 +115,31 @@ export async function POST(req: NextRequest) {
 
   const link = data.properties.action_link
 
-  // Busca WhatsApp do usuário e envia o link
+  // Busca nome do site (antes do WhatsApp para reaproveitar no email)
   const ctx = await buscarWhatsAppPorEmail(email, adminClient)
+  let siteNomeGlobal = 'Plataforma'
+
+  // Envia por email (Resend) — canal principal
+  let siteNomeTmp = siteNomeGlobal
+  if (ctx?.tenantId) {
+    const { data: siteNomeCfg } = await adminClient.from('configuracoes')
+      .select('valor').eq('chave', 'site_nome').eq('tenant_id', ctx.tenantId).maybeSingle()
+    try { siteNomeTmp = JSON.parse(String(siteNomeCfg?.valor ?? '')) || siteNomeTmp } catch { /* */ }
+  }
+  siteNomeGlobal = siteNomeTmp
+  const enviadoEmail = await enviarLinkEmail(email, link, siteNomeGlobal)
+
+  // Busca WhatsApp do usuário e envia o link
   let enviadoWpp = false
 
   if (ctx?.whatsapp && ctx?.instancia) {
-    // Pega nome do site do tenant correto
-    let siteNome = 'Plataforma'
-    if (ctx.tenantId) {
-      const { data: siteNomeCfg } = await adminClient.from('configuracoes')
-        .select('valor').eq('chave', 'site_nome').eq('tenant_id', ctx.tenantId).maybeSingle()
-      try { siteNome = JSON.parse(String(siteNomeCfg?.valor ?? '')) || siteNome } catch { /* */ }
-    }
-
-    enviadoWpp = await enviarLinkWhatsApp(ctx.whatsapp, link, ctx.instancia, siteNome)
+    enviadoWpp = await enviarLinkWhatsApp(ctx.whatsapp, link, ctx.instancia, siteNomeGlobal)
   }
 
   return NextResponse.json({
     ok: true,
     link,
+    enviadoEmail,
     enviadoWpp,
     whatsappMask: ctx?.whatsapp
       ? `*${ctx.whatsapp.slice(-4).padStart(ctx.whatsapp.length, '*')}`
