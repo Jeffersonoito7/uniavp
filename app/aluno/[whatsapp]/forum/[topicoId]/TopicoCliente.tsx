@@ -31,7 +31,7 @@ export default function TopicoCliente({ topicoId, respostasIniciais }: { topicoI
     setEnviando(false)
   }
 
-  const inputStyle: React.CSSProperties = { width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', resize: 'vertical', minHeight: 90, fontFamily: 'Inter, sans-serif' }
+  const inputStyle: React.CSSProperties = { width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 16, outline: 'none', resize: 'vertical', minHeight: 90, fontFamily: 'Inter, sans-serif' }
 
   return (
     <div>

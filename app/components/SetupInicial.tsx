@@ -54,7 +54,7 @@ export default function SetupInicial({
   // ── PASSO PARCEIRO ───────────────────────────────────────────────
   if (passo === 'parceiro') {
     return (
-      <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '24px 20px' }}>
+      <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: 'max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom))' }}>
         <div style={{ maxWidth: 540, width: '100%', textAlign: 'center', color: '#fff' }}>
 
           {total > 1 && <Indicador total={total} atual={atual} />}
@@ -99,7 +99,7 @@ export default function SetupInicial({
 
   // ── PASSO APP ────────────────────────────────────────────────────
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '24px 20px' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: 'max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom))' }}>
       <div style={{ maxWidth: 540, width: '100%', textAlign: 'center', color: '#fff' }}>
 
         {total > 1 && <Indicador total={total} atual={atual} concluidos={mostrarParceiro ? 1 : 0} />}

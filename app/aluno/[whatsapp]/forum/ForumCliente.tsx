@@ -37,7 +37,7 @@ export default function ForumCliente({ topicosIniciais, whatsapp, alunoId, aluno
   }
 
   const cardStyle = { background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20 }
-  const inputStyle = { width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none' }
+  const inputStyle = { width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 16, outline: 'none' }
   const labelStyle = { display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 6 }
 
   return (

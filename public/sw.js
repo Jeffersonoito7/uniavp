@@ -1,4 +1,4 @@
-const CACHE = 'uniavp-v4'
+const CACHE = 'uniavp-v5'
 const OFFLINE_URLS = ['/entrar', '/captacao', '/logo.png', '/api/pwa/manifest']
 
 self.addEventListener('install', (e) => {
@@ -21,10 +21,24 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return
   if (e.request.url.includes('/api/') && !e.request.url.includes('/api/pwa/')) return
   if (e.request.url.includes('supabase')) return
+
+  // Não cacheia páginas HTML (navegação autenticada como /aluno, /gestor, /pro etc.)
+  // Apenas assets estáticos (_next/) e arquivos públicos (logo, sw) são cacheados
+  const isNavigation = e.request.mode === 'navigate'
+  const isStaticAsset = e.request.url.includes('/_next/') || e.request.url.includes('/logo.') || e.request.url.includes('/api/pwa/')
+
+  if (isNavigation && !isStaticAsset) {
+    // Páginas HTML: sempre busca da rede, sem cache
+    e.respondWith(
+      fetch(e.request).catch(() => caches.match('/entrar').then(r => r || new Response('Offline', { status: 503 })))
+    )
+    return
+  }
+
   e.respondWith(
     fetch(e.request)
       .then(r => {
-        if (r.ok) {
+        if (r.ok && isStaticAsset) {
           const clone = r.clone()
           caches.open(CACHE).then(c => c.put(e.request, clone))
         }

@@ -88,12 +88,12 @@ export default function FunilCaptacao({
   }
 
   const bg = corFundo || '#0a0a0f'
-  const inp: React.CSSProperties = { width: '100%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, padding: '13px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box', fontFamily: 'Inter, sans-serif' }
+  const inp: React.CSSProperties = { width: '100%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, padding: '13px 16px', color: '#fff', fontSize: 16, outline: 'none', boxSizing: 'border-box', fontFamily: 'Inter, sans-serif' }
 
   // ── 1. PERGUNTA INICIAL ─────────────────────────────────────────
   if (etapa === 'pergunta1') {
     return (
-      <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
+      <div style={{ minHeight: '100dvh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
         <div style={{ maxWidth: 680, width: '100%', textAlign: 'center' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 52 }}>
             {logoUrl
@@ -136,7 +136,7 @@ export default function FunilCaptacao({
   if (etapa === 'video' && videoId) {
     return (
       <>
-      <div style={{ minHeight: '100vh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', fontFamily: 'Inter, sans-serif', padding: '12px 20px 140px' }}>
+      <div style={{ minHeight: '100dvh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', fontFamily: 'Inter, sans-serif', padding: '12px 20px 140px' }}>
         <div style={{ maxWidth: 800, width: '100%' }}>
           <div style={{ textAlign: 'center', marginBottom: 10 }}>
             {logoUrl && <img src={logoUrl} alt={siteNome} style={{ height: 32, objectFit: 'contain', marginBottom: 8 }} />}
@@ -190,7 +190,7 @@ export default function FunilCaptacao({
   // ── 3. SEGUNDA PERGUNTA ──────────────────────────────────────────
   if (etapa === 'pergunta2') {
     return (
-      <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
+      <div style={{ minHeight: '100dvh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
         <div style={{ maxWidth: 640, width: '100%', textAlign: 'center' }}>
           <div style={{ fontSize: 56, marginBottom: 24 }}>🚀</div>
           <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2.2rem)', fontWeight: 900, color: '#fff', lineHeight: 1.25, marginBottom: 20 }}>
@@ -225,7 +225,7 @@ export default function FunilCaptacao({
   // ── 4. FORMULÁRIO DE CADASTRO ─────────────────────────────────────
   if (etapa === 'cadastro') {
     return (
-      <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
+      <div style={{ minHeight: '100dvh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
         <div style={{ maxWidth: 520, width: '100%' }}>
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
@@ -310,7 +310,7 @@ export default function FunilCaptacao({
   // ── REPROVADO ────────────────────────────────────────────────────
   if (etapa === 'reprovado') {
     return (
-      <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: 40 }}>
+      <div style={{ minHeight: '100dvh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: 40 }}>
         <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
           <div style={{ fontSize: 56, marginBottom: 20 }}>🙏</div>
           <h2 style={{ fontSize: 24, fontWeight: 900, color: '#fff', marginBottom: 12 }}>Tudo bem!</h2>
@@ -349,7 +349,7 @@ export default function FunilCaptacao({
     const total = (captacaoMostrarParceiro ? 1 : 0) + (captacaoMostrarApp && temApp ? 1 : 0)
     const atual = 1
     return (
-      <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
+      <div style={{ minHeight: '100dvh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
         <div style={{ textAlign: 'center', color: '#fff', maxWidth: 540, width: '100%' }}>
           {total > 1 && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 32 }}>
@@ -410,7 +410,7 @@ export default function FunilCaptacao({
     const total = (captacaoMostrarParceiro ? 1 : 0) + (captacaoMostrarApp && temApp ? 1 : 0)
     const atual = captacaoMostrarParceiro ? 2 : 1
     return (
-      <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
+      <div style={{ minHeight: '100dvh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
         <div style={{ textAlign: 'center', color: '#fff', maxWidth: 540, width: '100%' }}>
           {/* Indicador de passos */}
           {total > 1 && (
@@ -468,7 +468,7 @@ export default function FunilCaptacao({
 
   // ── SUCESSO FINAL ─────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: 40 }}>
+    <div style={{ minHeight: '100dvh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: 40 }}>
       <div style={{ textAlign: 'center', color: '#fff', maxWidth: 480, width: '100%' }}>
         <div style={{ fontSize: 72, marginBottom: 20 }}>✅</div>
         <h2 style={{ fontSize: 28, fontWeight: 900, marginBottom: 12 }}>Tudo pronto!</h2>

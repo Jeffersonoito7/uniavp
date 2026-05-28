@@ -192,6 +192,25 @@ export default function AgenteAdminCliente({
 
   const custosRef: Record<string, number> = { mensagem: 1, resumo: 1, equipe: 1, lembrete: 1, script: 3, comparar: 5 }
 
+  // ── Preview do prompt ──────────────────────────────────────────────────────
+  const [promptPreview, setPromptPreview] = useState<string | null>(null)
+  const [promptBlocos, setPromptBlocos] = useState<{ argumentos: number; modulos: number; aulas: number; temPromptExtra: boolean } | null>(null)
+  const [carregandoPrompt, setCarregandoPrompt] = useState(false)
+  const [mostrarPrompt, setMostrarPrompt] = useState(false)
+
+  async function verPrompt() {
+    if (mostrarPrompt) { setMostrarPrompt(false); return }
+    setCarregandoPrompt(true)
+    const res = await fetch('/api/admin/agente/preview-prompt')
+    const data = await res.json()
+    if (res.ok) {
+      setPromptPreview(data.prompt)
+      setPromptBlocos(data.blocos)
+      setMostrarPrompt(true)
+    }
+    setCarregandoPrompt(false)
+  }
+
   return (
     <div style={{ maxWidth: 780, margin: '0 auto' }}>
       <div style={{ marginBottom: 28 }}>
@@ -268,6 +287,45 @@ export default function AgenteAdminCliente({
             </button>
           </div>
         </form>
+      </SectionCard>
+
+      {/* ── Preview do prompt completo ── */}
+      <SectionCard title="Visualizar Prompt Completo" desc="Veja exatamente o que o agente recebe a cada conversa, com todos os blocos montados">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          {promptBlocos && (
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              {[
+                { label: 'Argumentos', val: promptBlocos.argumentos, cor: '#818cf8' },
+                { label: 'Módulos', val: promptBlocos.modulos, cor: '#60a5fa' },
+                { label: 'Aulas', val: promptBlocos.aulas, cor: '#4ade80' },
+                { label: 'Contexto extra', val: promptBlocos.temPromptExtra ? 'Sim' : 'Não', cor: promptBlocos.temPromptExtra ? '#4ade80' : 'var(--avp-text-dim)' },
+              ].map(({ label, val, cor }) => (
+                <span key={label} style={{ fontSize: 12, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 6, padding: '4px 10px' }}>
+                  <span style={{ color: cor, fontWeight: 700 }}>{val}</span>
+                  <span style={{ color: 'var(--avp-text-dim)', marginLeft: 4 }}>{label}</span>
+                </span>
+              ))}
+            </div>
+          )}
+          <button onClick={verPrompt} disabled={carregandoPrompt} className="btn btn-sm"
+            style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+            {carregandoPrompt ? 'Carregando...' : mostrarPrompt ? 'Ocultar prompt' : 'Visualizar prompt completo'}
+          </button>
+        </div>
+        {mostrarPrompt && promptPreview && (
+          <div style={{ marginTop: 16 }}>
+            <pre style={{
+              background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10,
+              padding: '16px 18px', fontSize: 12, color: 'var(--avp-text)', whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+              maxHeight: 480, overflowY: 'auto', fontFamily: 'monospace', lineHeight: 1.6, margin: 0,
+            }}>
+              {promptPreview}
+            </pre>
+            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 8 }}>
+              Este é o prompt montado com os dados salvos no banco. Salve as configurações antes de visualizar para ver o resultado atualizado.
+            </p>
+          </div>
+        )}
       </SectionCard>
 
       {/* ── Setup Evolution API ── */}

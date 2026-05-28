@@ -46,7 +46,7 @@ export default function Comentarios({ aulaId, alunoId, alunoNome }: { aulaId: st
     setEnviando(false)
   }
 
-  const inputStyle: React.CSSProperties = { width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', resize: 'vertical', minHeight: 80, fontFamily: 'Inter, sans-serif' }
+  const inputStyle: React.CSSProperties = { width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 16, outline: 'none', resize: 'vertical', minHeight: 80, fontFamily: 'Inter, sans-serif' }
   const btnStyle: React.CSSProperties = { background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }
 
   function ComentarioItem({ c, indent = false }: { c: Comentario; indent?: boolean }) {

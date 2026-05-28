@@ -61,7 +61,7 @@ function PerfilGestor({ gestor, onNomeAtualizado, onFotoAtualizada, cncpvHabilit
     setTimeout(() => setMsg(null), 4000)
   }
 
-  const inp: React.CSSProperties = { width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '11px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' as const, fontFamily: 'Inter, sans-serif' }
+  const inp: React.CSSProperties = { width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '11px 14px', color: 'var(--avp-text)', fontSize: 16, outline: 'none', boxSizing: 'border-box' as const, fontFamily: 'Inter, sans-serif' }
 
   return (
     <>
@@ -114,16 +114,14 @@ function PerfilGestor({ gestor, onNomeAtualizado, onFotoAtualizada, cncpvHabilit
               <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>Nome *</label>
               <input style={inp} value={nome} onChange={e => setNome(e.target.value)} required />
             </div>
-            {podeCfgLink && (
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>🔗 Meu link da plataforma parceira</label>
-                <input style={inp} value={linkExterno} onChange={e => setLinkExterno(e.target.value)} placeholder="Cole aqui o seu link de indicação" />
-                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>
-                  Cole exatamente como você recebeu. Aparece para os FREEs que você recrutar.
-                </p>
-              </div>
-            )}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>Meu link da plataforma parceira</label>
+              <input style={inp} value={linkExterno} onChange={e => setLinkExterno(e.target.value)} placeholder="Cole aqui o seu link de indicação" />
+              <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>
+                Cole exatamente como você recebeu. Aparece para os FREEs que você recrutar.
+              </p>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14 }}>
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>WhatsApp</label>
                 <input style={{ ...inp, opacity: 0.6, cursor: 'not-allowed' }} value={gestor.whatsapp} readOnly />
@@ -725,7 +723,7 @@ export default function GestorDashboard({
           )}
 
           {/* Atalhos */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, marginBottom: 24 }}>
             <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20 }}>
               <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>🔗 Link de cadastro</p>
               <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 12 }}>Compartilhe com novos consultores</p>
@@ -795,7 +793,7 @@ export default function GestorDashboard({
           {/* ── Links de captação visíveis ── */}
           <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 18, marginBottom: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>🔗 Links de Captação — compartilhe com futuros consultores</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 }}>
               {/* Funil completo */}
               <div style={{ background: 'var(--avp-black)', borderRadius: 8, padding: '12px 14px' }}>
                 <p style={{ fontWeight: 700, fontSize: 12, marginBottom: 2 }}>🎯 Funil Completo</p>
@@ -1129,7 +1127,7 @@ export default function GestorDashboard({
           {showVivoForm && (
             <form onSubmit={criarAulaVivo} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
               <h3 style={{ fontWeight: 700, fontSize: 16 }}>Nova Aula ao Vivo</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
                 <div style={{ gridColumn: '1 / -1' }}><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Título *</label><input required value={vivoForm.titulo} onChange={e => setVivoForm(p => ({ ...p, titulo: e.target.value }))} style={inp} placeholder="Ex: Técnicas de abordagem" /></div>
                 <div>
                   <label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Plataforma *</label>
@@ -1215,7 +1213,7 @@ export default function GestorDashboard({
           {showEvento && (
             <form onSubmit={salvarEvento} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
               <h3 style={{ fontWeight: 700, fontSize: 16 }}>Novo Evento</h3>
-              <div className="evento-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <div className="evento-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
                 <div><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Título *</label><input required value={eventoForm.titulo} onChange={e => setEventoForm(p => ({ ...p, titulo: e.target.value }))} style={inp} /></div>
                 <div><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Cidade</label><input value={eventoForm.cidade} onChange={e => setEventoForm(p => ({ ...p, cidade: e.target.value }))} style={inp} /></div>
                 <div><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Data e Hora *</label><input required type="datetime-local" value={eventoForm.data_hora} onChange={e => setEventoForm(p => ({ ...p, data_hora: e.target.value }))} style={inp} /></div>

@@ -112,7 +112,7 @@ function EntrarForm() {
 
   const inp: React.CSSProperties = {
     width: '100%', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)',
-    borderRadius: 12, padding: '14px 16px', color: '#fff', fontSize: 15, outline: 'none',
+    borderRadius: 12, padding: '14px 16px', color: '#fff', fontSize: 16, outline: 'none',
     boxSizing: 'border-box', fontFamily: 'Inter, sans-serif', transition: 'border 0.2s',
   }
 
