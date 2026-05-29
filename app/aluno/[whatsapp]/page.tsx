@@ -448,6 +448,24 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
             </div>
           )}
 
+          {/* ── BIBLIOTECA DO PODER ── */}
+          {!moduloAtivo && (
+            <a href={`/aluno/${params.whatsapp}/biblioteca`} style={{ display: 'block', textDecoration: 'none', marginBottom: 20 }}>
+              <div style={{ background: 'linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(124,58,237,0.08) 100%)', border: '1px solid rgba(79,70,229,0.3)', borderRadius: 16, padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}>
+                <div style={{ width: 44, height: 44, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(79,70,229,0.15)', borderRadius: 10, border: '1px solid rgba(79,70,229,0.25)', fontSize: 20 }}>
+                  📚
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--avp-text)', margin: '0 0 2px' }}>Biblioteca do Poder</p>
+                  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0 }}>Audiobooks e podcasts selecionados para acelerar sua evolução</p>
+                </div>
+                <div style={{ background: 'rgba(79,70,229,0.15)', border: '1px solid rgba(79,70,229,0.3)', borderRadius: 8, padding: '8px 16px', color: '#818cf8', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  Acessar →
+                </div>
+              </div>
+            </a>
+          )}
+
           {/* ── INDICAÇÃO ── */}
           {!moduloAtivo && (
             <IndicacaoCard

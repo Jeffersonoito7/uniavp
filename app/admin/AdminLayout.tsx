@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import {
   LayoutDashboard, BookOpen, Users, ShieldCheck,
   Trophy, Cog, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper, Star,
-  Menu, X, ChevronLeft, ChevronRight, Link2, IdCard, FileText, ScrollText, Video, Activity, MessageSquare, Bot, HelpCircle
+  Menu, X, ChevronLeft, ChevronRight, Link2, IdCard, FileText, ScrollText, Video, Activity, MessageSquare, Bot, HelpCircle, Library
 } from 'lucide-react'
 import LogoutButton from '@/app/components/LogoutButton'
 import SupportChat from '@/app/components/SupportChat'
@@ -33,6 +33,7 @@ const navItems = [
   { href: '/admin/mensagens', label: 'Mensagens', icon: MessageSquare },
   { href: '/admin/audit', label: 'Audit Log', icon: Activity },
   { href: '/admin/agente', label: 'Agente IA', icon: Bot },
+  { href: '/admin/biblioteca', label: 'Biblioteca', icon: Library },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
