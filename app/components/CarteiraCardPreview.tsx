@@ -172,7 +172,7 @@ export default function CarteiraCardPreview({
         <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11, margin: '4px 0 0', letterSpacing: 2 }}>{empresaNome.toUpperCase()}</p>
       </div>
 
-      <div style={{ flex: 1, background: '#fff', padding: '18px 24px', display: 'flex', gap: 20, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ flex: 1, background: '#fff', padding: '14px 20px', display: 'flex', gap: 20, position: 'relative', overflow: 'hidden' }}>
         <svg style={{ position: 'absolute', inset: 0, opacity: 0.04, pointerEvents: 'none' }} width="620" height="250">
           {Array.from({ length: 14 }).map((_, i) => (
             <ellipse key={`ve${i}`} cx="310" cy="125" rx={35 + i * 22} ry={18 + i * 11} fill="none" stroke={NAVY} strokeWidth="0.5" />
@@ -215,38 +215,14 @@ export default function CarteiraCardPreview({
         </div>
       </div>
 
-      <div style={{ padding: '8px 24px', borderTop: '1px solid #eee', background: '#fafafa', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <svg width="36" height="36" viewBox="0 0 36 36">
-          {Array.from({ length: 12 }).map((_, i) => {
-            const angle = (i * 30 - 90) * Math.PI / 180
-            const x1 = 18 + 17 * Math.cos(angle)
-            const y1 = 18 + 17 * Math.sin(angle)
-            return <line key={i} x1="18" y1="18" x2={x1} y2={y1} stroke={GREEN} strokeWidth="1.2" opacity="0.7" />
-          })}
-          <circle cx="18" cy="18" r="16" fill="none" stroke={GREEN} strokeWidth="1" />
-          <circle cx="18" cy="18" r="11" fill="none" stroke={GREEN} strokeWidth="0.6" />
-          <circle cx="18" cy="18" r="6" fill={GREEN} opacity="0.15" />
-          <text x="18" y="22" textAnchor="middle" fontSize="7" fontWeight="900" fill={GREEN}>✓</text>
-        </svg>
-        <div>
-          <p style={{ fontSize: 8, fontWeight: 800, color: GREEN, margin: 0, letterSpacing: 1, textTransform: 'uppercase' as const }}>Documento Autêntico</p>
-          <p style={{ fontSize: 7, color: '#888', margin: 0 }}>Nº {DEMO_REG} · Verificável em {verificacaoUrl}/verificar/{DEMO_REG}</p>
-        </div>
-      </div>
-
-      <div style={{ background: '#fff', borderTop: '1px solid #eee', padding: '6px 24px', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-        <div style={{ background: NAVY, borderRadius: 4, padding: '5px 12px' }}>
-          <p style={{ color: '#fff', fontWeight: 900, fontSize: 13, margin: 0 }}>Nº</p>
-        </div>
-        <div style={{ flex: 1, border: '1px solid #ccc', borderRadius: 4, padding: '5px 14px', background: '#fafafa' }}>
-          <p style={{ fontSize: 14, fontWeight: 700, margin: 0, color: NAVY, letterSpacing: 3 }}>{DEMO_REG}</p>
-        </div>
-      </div>
-
-      <div style={{ background: GREEN, height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
+      <div style={{ background: GREEN, height: 58, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
         <div>
           <p style={{ color: '#fff', fontWeight: 800, fontSize: 11, margin: 0, letterSpacing: 0.5 }}>{empresaNome}</p>
-          {tagline && <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 7, margin: 0 }}>{tagline}</p>}
+          {tagline && <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 7, margin: '1px 0' }}>· {tagline}</p>}
+          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 7.5, margin: '3px 0 0', fontWeight: 600, letterSpacing: 0.3 }}>
+            Nº {DEMO_REG} · Verifique em: {verificacaoUrl}
+          </p>
+          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 6.5, margin: '1px 0 0', letterSpacing: 0.8, fontWeight: 700 }}>DOCUMENTO AUTÊNTICO</p>
         </div>
         <div style={{ display: 'flex', gap: 3 }}>
           <div style={{ width: 18, height: 32, background: 'rgba(255,255,255,0.3)', clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
