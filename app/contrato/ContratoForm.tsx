@@ -150,6 +150,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
   const [nfEmpresaCnpj, setNfEmpresaCnpj] = useState('')
   const [nfResponsavelNome, setNfResponsavelNome] = useState('')
   const [nfResponsavelCpf, setNfResponsavelCpf] = useState('')
+  const [semCnpj, setSemCnpj] = useState(false)
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const [resultado, setResultado] = useState<{ numero_registro: string; hash_contrato: string } | null>(null)
@@ -234,12 +235,15 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        nome: form.nome, cpf: form.cpf, cnpj_mei: form.cnpj_mei,
-        sede_mei: sedeMei, whatsapp: form.whatsapp, email: form.email,
+        nome: form.nome, cpf: form.cpf,
+        cnpj_mei: semCnpj ? '' : form.cnpj_mei,
+        sede_mei: semCnpj ? '' : sedeMei,
+        sem_cnpj: semCnpj,
+        whatsapp: form.whatsapp, email: form.email,
         data_nascimento: dataNascimento, estado_civil: estadoCivil, nacionalidade,
         aluno_id: alunoId ?? null,
         clausulas_aceitas: CLAUSULAS_ATIVAS.map(c => c.titulo),
-        nf_dados: nfDados,
+        nf_dados: semCnpj ? null : nfDados,
         assinatura_base64,
         regra_bonificacao: regraBonificacao ?? null,
       }),
@@ -265,7 +269,10 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
     const nfCpfLen = nfResponsavelCpf.replace(/\D/g,'').length
     const nfCpfValido = nfCpfLen === 0 || validarCPF(nfResponsavelCpf)
     const nfOk = nfEmiteProprio === true || (nfEmiteProprio === false && nfEmpresaNome && nfEmpresaCnpj && validarCNPJ(nfEmpresaCnpj) && nfResponsavelNome)
-    const podeAvancar = form.nome && wppValido && form.cnpj_mei && cnpjValido && emailOk && cpfValido && dataNascOk && estadoCivil && nacionalidade && form.rua && form.numero && form.bairro && form.cidade && form.estado && form.cep && nfEmiteProprio !== null && nfOk
+    const cnpjOk = semCnpj || (!!form.cnpj_mei && cnpjValido)
+    const enderecoOk = semCnpj || !!(form.rua && form.numero && form.bairro && form.cidade && form.estado && form.cep)
+    const nfFinal = semCnpj || (nfEmiteProprio !== null && !!nfOk)
+    const podeAvancar = !!(form.nome && wppValido && cnpjOk && emailOk && cpfValido && dataNascOk && estadoCivil && nacionalidade && enderecoOk && nfFinal)
     return (
       <div style={{ minHeight:'100vh', background:bg, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Inter,sans-serif', padding:'32px 20px' }}>
         <div style={{ width:'100%', maxWidth:580 }}>
@@ -381,58 +388,71 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
               <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
                 <div>
                   <label style={lbl}>
-                    CNPJ MEI *
-                    {cnpjLen === 14 && (
+                    CNPJ MEI {semCnpj ? '' : '*'}
+                    {!semCnpj && cnpjLen === 14 && (
                       <span style={{ marginLeft:8, color: cnpjValido ? '#22c55e' : '#f87171', fontWeight:700 }}>
                         {cnpjValido ? '✓ válido' : '✗ inválido'}
                       </span>
                     )}
                   </label>
-                  <input style={{...inp, borderColor: cnpjLen===14 && !cnpjValido ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.15)'}}
-                    value={form.cnpj_mei} onChange={e => setForm(p=>({...p,cnpj_mei:formatarCNPJ(e.target.value)}))} placeholder="00.000.000/0000-00" />
+                  {!semCnpj && (
+                    <input style={{...inp, borderColor: cnpjLen===14 && !cnpjValido ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.15)'}}
+                      value={form.cnpj_mei} onChange={e => setForm(p=>({...p,cnpj_mei:formatarCNPJ(e.target.value)}))} placeholder="00.000.000/0000-00" />
+                  )}
+                  <label style={{ display:'flex', alignItems:'center', gap:10, marginTop:10, cursor:'pointer' }}>
+                    <div style={{ width:20, height:20, borderRadius:4, border:`2px solid ${semCnpj ? '#6366f1' : 'rgba(255,255,255,0.25)'}`, background: semCnpj ? '#6366f1' : 'transparent', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all 0.2s' }}>
+                      {semCnpj && <span style={{ color:'#fff', fontSize:12, fontWeight:900, lineHeight:1 }}>✓</span>}
+                    </div>
+                    <input type="checkbox" checked={semCnpj} onChange={e => { setSemCnpj(e.target.checked); if (e.target.checked) setForm(p => ({ ...p, cnpj_mei: '', rua: '', numero: '', bairro: '', cidade: '', estado: '', cep: '' })) }} style={{ display:'none' }} />
+                    <span style={{ fontSize:13, color:'rgba(255,255,255,0.7)' }}>Ainda não tenho CNPJ</span>
+                  </label>
                 </div>
-                <p style={{ fontSize:12, color:'rgba(255,255,255,0.35)', marginTop:-8 }}>Endereço da sede do MEI:</p>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 100px', gap:12 }}>
-                  <div>
-                    <label style={lbl}>Rua / Avenida *</label>
-                    <input style={inp} value={form.rua} onChange={e => setForm(p=>({...p,rua:e.target.value}))} placeholder="Rua das Flores" />
-                  </div>
-                  <div>
-                    <label style={lbl}>Número *</label>
-                    <input style={inp} value={form.numero} onChange={e => setForm(p=>({...p,numero:e.target.value}))} placeholder="123" />
-                  </div>
-                </div>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
-                  <div>
-                    <label style={lbl}>Bairro *</label>
-                    <input style={inp} value={form.bairro} onChange={e => setForm(p=>({...p,bairro:e.target.value}))} placeholder="Centro" />
-                  </div>
-                  <div>
-                    <label style={lbl}>CEP * {buscandoCep && <span style={{ fontWeight: 400, fontSize: 11, color: '#818cf8' }}>buscando...</span>}</label>
-                    <input style={inp} value={form.cep}
-                      onChange={e => {
-                        const val = e.target.value.replace(/\D/g, '').slice(0, 8).replace(/(\d{5})(\d)/, '$1-$2')
-                        setForm(p => ({ ...p, cep: val }))
-                        buscarCep(val)
-                      }}
-                      placeholder="00000-000" maxLength={9} />
-                  </div>
-                </div>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 80px', gap:12 }}>
-                  <div>
-                    <label style={lbl}>Cidade *</label>
-                    <input style={inp} value={form.cidade} onChange={e => setForm(p=>({...p,cidade:e.target.value}))} placeholder="Petrolina" />
-                  </div>
-                  <div>
-                    <label style={lbl}>UF *</label>
-                    <input style={inp} value={form.estado} onChange={e => setForm(p=>({...p,estado:e.target.value.toUpperCase().slice(0,2)}))} placeholder="PE" maxLength={2} />
-                  </div>
-                </div>
+                {!semCnpj && <p style={{ fontSize:12, color:'rgba(255,255,255,0.35)', marginTop:-8 }}>Endereço da sede do MEI:</p>}
+                {!semCnpj && (
+                  <>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 100px', gap:12 }}>
+                      <div>
+                        <label style={lbl}>Rua / Avenida *</label>
+                        <input style={inp} value={form.rua} onChange={e => setForm(p=>({...p,rua:e.target.value}))} placeholder="Rua das Flores" />
+                      </div>
+                      <div>
+                        <label style={lbl}>Número *</label>
+                        <input style={inp} value={form.numero} onChange={e => setForm(p=>({...p,numero:e.target.value}))} placeholder="123" />
+                      </div>
+                    </div>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                      <div>
+                        <label style={lbl}>Bairro *</label>
+                        <input style={inp} value={form.bairro} onChange={e => setForm(p=>({...p,bairro:e.target.value}))} placeholder="Centro" />
+                      </div>
+                      <div>
+                        <label style={lbl}>CEP * {buscandoCep && <span style={{ fontWeight: 400, fontSize: 11, color: '#818cf8' }}>buscando...</span>}</label>
+                        <input style={inp} value={form.cep}
+                          onChange={e => {
+                            const val = e.target.value.replace(/\D/g, '').slice(0, 8).replace(/(\d{5})(\d)/, '$1-$2')
+                            setForm(p => ({ ...p, cep: val }))
+                            buscarCep(val)
+                          }}
+                          placeholder="00000-000" maxLength={9} />
+                      </div>
+                    </div>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 80px', gap:12 }}>
+                      <div>
+                        <label style={lbl}>Cidade *</label>
+                        <input style={inp} value={form.cidade} onChange={e => setForm(p=>({...p,cidade:e.target.value}))} placeholder="Petrolina" />
+                      </div>
+                      <div>
+                        <label style={lbl}>UF *</label>
+                        <input style={inp} value={form.estado} onChange={e => setForm(p=>({...p,estado:e.target.value.toUpperCase().slice(0,2)}))} placeholder="PE" maxLength={2} />
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
             {/* Nota Fiscal */}
-            <div style={{ marginTop:24, paddingTop:20, borderTop:'1px solid rgba(255,255,255,0.1)' }}>
+            {!semCnpj && <div style={{ marginTop:24, paddingTop:20, borderTop:'1px solid rgba(255,255,255,0.1)' }}>
               <p style={{ fontWeight:700, fontSize:14, color:'#818cf8', marginBottom:6 }}>🧾 Emissão de Nota Fiscal</p>
               <p style={{ fontSize:12, color:'rgba(255,255,255,0.4)', marginBottom:14, lineHeight:1.6 }}>Informe como será feita a emissão de notas fiscais pelos seus serviços.</p>
               <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
@@ -499,7 +519,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
                   </p>
                 </div>
               )}
-            </div>
+            </div>}
 
             <button onClick={() => setEtapa('clausulas')} disabled={!podeAvancar}
               className="btn btn-primary btn-full btn-lg" style={{ marginTop: 24 }}>
@@ -585,6 +605,23 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
 
   // ── ETAPA 3: CONFIRMAR ────────────────────────────────────────────────────
   if (etapa === 'confirmar') {
+    const dadosConfirmar: [string, string][] = [
+      ['CONTRATANTE', `${contratanteNome} · CNPJ ${contratanteCnpj}`],
+      ['CONTRATADO', form.nome.toUpperCase()],
+      ['NASCIMENTO', dataNascimento ? new Date(dataNascimento + 'T12:00:00').toLocaleDateString('pt-BR') : '—'],
+      ['ESTADO CIVIL', estadoCivil || '—'],
+      ['NACIONALIDADE', nacionalidade || '—'],
+      ['CPF', form.cpf || '—'],
+      ['CNPJ MEI', semCnpj ? 'Pendente — sera informado apos abertura' : form.cnpj_mei],
+    ]
+    if (!semCnpj) dadosConfirmar.push(['SEDE MEI', sedeMei])
+    dadosConfirmar.push(
+      ['WhatsApp', form.whatsapp],
+      ['E-mail', form.email || '—'],
+      ['Prazo', '24 meses a partir da assinatura'],
+      ['Foro', foro || 'Petrolina/PE'],
+    )
+    if (!semCnpj) dadosConfirmar.push(['Nota Fiscal', nfEmiteProprio ? 'Emitida pelo proprio MEI' : `Emitida por: ${nfEmpresaNome} — Recebe: ${nfResponsavelNome}`])
     return (
       <div style={{ minHeight:'100vh', background:bg, fontFamily:'Inter,sans-serif', padding:'32px 20px', display:'flex', alignItems:'center', justifyContent:'center' }}>
         <div style={{ maxWidth:600, width:'100%' }}>
@@ -597,21 +634,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
           <div style={{ background:'rgba(10,22,40,0.85)', border:'1px solid rgba(79,70,229,0.3)', borderRadius:20, padding:28, marginBottom:20 }}>
             <p style={{ fontWeight:700, fontSize:13, color:'#818cf8', marginBottom:16 }}>📋 Dados do contrato</p>
             <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-              {[
-                ['CONTRATANTE',`${contratanteNome} · CNPJ ${contratanteCnpj}`],
-                ['CONTRATADO',form.nome.toUpperCase()],
-                ['NASCIMENTO', dataNascimento ? new Date(dataNascimento + 'T12:00:00').toLocaleDateString('pt-BR') : '—'],
-                ['ESTADO CIVIL', estadoCivil || '—'],
-                ['NACIONALIDADE', nacionalidade || '—'],
-                ['CPF', form.cpf || '—'],
-                ['CNPJ MEI',form.cnpj_mei],
-                ['SEDE MEI',sedeMei],
-                ['WhatsApp',form.whatsapp],
-                ['E-mail',form.email || '—'],
-                ['Prazo','24 meses a partir da assinatura'],
-                ['Foro',foro || 'Petrolina/PE'],
-                ['Nota Fiscal', nfEmiteProprio ? 'Emitida pelo próprio MEI' : `Emitida por: ${nfEmpresaNome} — Recebe: ${nfResponsavelNome}`],
-              ].map(([l,v]) => (
+              {dadosConfirmar.map(([l,v]) => (
                 <div key={l} style={{ display:'flex', gap:12, padding:'10px 14px', background:'rgba(255,255,255,0.03)', borderRadius:10 }}>
                   <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:0.8, flexShrink:0, width:100 }}>{l}</span>
                   <span style={{ fontSize:13, color:'#fff', flex:1 }}>{v}</span>

@@ -17,7 +17,7 @@ export default async function ContratosPage() {
 
   const [{ data: contratos, count }, { data: todosAlunos }] = await Promise.all([
     adminClient.from('contratos')
-      .select('id, nome, cpf, whatsapp, email, cnpj_mei, sede_mei, numero_registro, assinado_em, hash_contrato, pdf_url, pdf_status', { count: 'exact' })
+      .select('id, nome, cpf, whatsapp, email, cnpj_mei, sede_mei, numero_registro, assinado_em, hash_contrato, pdf_url, pdf_status, clausulas_aceitas', { count: 'exact' })
       .order('assinado_em', { ascending: false }),
     adminClient.from('alunos')
       .select('id, nome, whatsapp, email, status')

@@ -5,6 +5,7 @@ type Contrato = {
   id: string; nome: string; cpf: string | null; whatsapp: string; email: string | null
   cnpj_mei: string | null; sede_mei: string | null; numero_registro: string | null
   assinado_em: string | null; hash_contrato: string | null; pdf_url: string | null; pdf_status: string | null
+  clausulas_aceitas?: { sem_cnpj?: boolean } | null
 }
 
 type AlunoSemContrato = {
@@ -441,6 +442,7 @@ export default function ContratosCliente({
   }).length
 
   const comPDF = lista.filter(c => c.pdf_url).length
+  const semCnpjCount = lista.filter(c => c.clausulas_aceitas?.sem_cnpj).length
   const pctAdesao = totalAlunos > 0 ? Math.round((total / totalAlunos) * 100) : 0
 
   const filtrada = lista.filter(c =>
@@ -500,6 +502,7 @@ export default function ContratosCliente({
           { label: 'Adesao', value: `${pctAdesao}%`, cor: '#818cf8' },
           { label: 'Este mes', value: esteMes, cor: '#c8a535' },
           { label: 'Formados sem contrato', value: formadosSemContrato, cor: '#f59e0b' },
+          { label: 'Sem CNPJ', value: semCnpjCount, cor: '#fb923c' },
         ].map(s => (
           <div key={s.label} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: '16px 20px' }}>
             <p style={{ color: 'var(--avp-text-dim)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 }}>{s.label}</p>
@@ -547,7 +550,12 @@ export default function ContratosCliente({
                       </td>
                       <td style={{ padding: '12px 14px', fontWeight: 600, color: 'var(--avp-text)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.nome}</td>
                       <td style={{ padding: '12px 14px', fontFamily: 'monospace', color: 'var(--avp-text-dim)', whiteSpace: 'nowrap' }}>{mascaraCPF(c.cpf)}</td>
-                      <td style={{ padding: '12px 14px', fontFamily: 'monospace', color: 'var(--avp-text-dim)', whiteSpace: 'nowrap', fontSize: 11 }}>{mascaraCNPJ(c.cnpj_mei)}</td>
+                      <td style={{ padding: '12px 14px', whiteSpace: 'nowrap', fontSize: 11 }}>
+                        {c.clausulas_aceitas?.sem_cnpj
+                          ? <span style={{ background: 'rgba(251,146,60,0.1)', color: '#fb923c', borderRadius: 6, padding: '2px 8px', fontWeight: 700 }}>Sem CNPJ</span>
+                          : <span style={{ fontFamily: 'monospace', color: 'var(--avp-text-dim)' }}>{mascaraCNPJ(c.cnpj_mei)}</span>
+                        }
+                      </td>
                       <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
                         <a href={linkWpp(c.whatsapp)} target="_blank" rel="noreferrer" style={{ color: '#22c55e', textDecoration: 'none' }}>
                           {mascaraWpp(c.whatsapp)}

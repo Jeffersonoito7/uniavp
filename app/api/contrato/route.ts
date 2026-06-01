@@ -68,10 +68,10 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { nome, cpf, cnpj_mei, sede_mei, whatsapp, email, aluno_id, clausulas_aceitas, nf_dados, assinatura_base64, data_nascimento, estado_civil, nacionalidade, regra_bonificacao } = body
+  const { nome, cpf, cnpj_mei, sede_mei, sem_cnpj, whatsapp, email, aluno_id, clausulas_aceitas, nf_dados, assinatura_base64, data_nascimento, estado_civil, nacionalidade, regra_bonificacao } = body
 
-  if (!nome || !whatsapp || !cnpj_mei || !sede_mei)
-    return NextResponse.json({ error: 'Nome, WhatsApp, CNPJ MEI e sede são obrigatórios.' }, { status: 400 })
+  if (!nome || !whatsapp || (!sem_cnpj && (!cnpj_mei || !sede_mei)))
+    return NextResponse.json({ error: 'Nome, WhatsApp e CNPJ MEI são obrigatórios.' }, { status: 400 })
 
   const adminClient = createServiceRoleClient()
   const host = req.headers.get('host')?.replace(/:\d+$/, '') ?? ''
@@ -93,21 +93,27 @@ export async function POST(req: NextRequest) {
   // Hash SHA-256
   const hash_contrato = crypto.createHash('sha256').update(JSON.stringify({
     nome: nome.trim(), cpf: cpf?.replace(/\D/g,'') || null,
-    cnpj_mei: cnpj_mei.replace(/\D/g,''), sede_mei,
+    cnpj_mei: sem_cnpj ? null : cnpj_mei?.replace(/\D/g,'') || null,
+    sede_mei: sem_cnpj ? null : sede_mei,
     whatsapp: wppLimpo, email: email?.trim().toLowerCase(),
     numero_registro, assinado_em, ip,
   }), 'utf8').digest('hex')
 
   const dadosPessoais = { data_nascimento: data_nascimento || null, estado_civil: estado_civil || null, nacionalidade: nacionalidade || null }
 
-  const clausulasPayload = nf_dados
-    ? { clausulas: Array.isArray(clausulas_aceitas) ? clausulas_aceitas : [], nf: nf_dados, dados_pessoais: dadosPessoais, regra_bonificacao: regra_bonificacao || null }
-    : { clausulas: Array.isArray(clausulas_aceitas) ? clausulas_aceitas : [], dados_pessoais: dadosPessoais, regra_bonificacao: regra_bonificacao || null }
+  const clausulasBase = {
+    clausulas: Array.isArray(clausulas_aceitas) ? clausulas_aceitas : [],
+    dados_pessoais: dadosPessoais,
+    regra_bonificacao: regra_bonificacao || null,
+    sem_cnpj: !!sem_cnpj,
+  }
+  const clausulasPayload = nf_dados ? { ...clausulasBase, nf: nf_dados } : clausulasBase
 
   const { error } = await adminClient.from('contratos').insert({
     aluno_id: aluno_id ?? null, nome: nome.trim(),
     cpf: cpf?.replace(/\D/g,'') || null,
-    cnpj_mei: cnpj_mei.replace(/\D/g,''), sede_mei,
+    cnpj_mei: sem_cnpj ? null : cnpj_mei?.replace(/\D/g,'') || null,
+    sede_mei: sem_cnpj ? null : sede_mei || null,
     whatsapp: wppLimpo, email: email?.trim().toLowerCase() || null,
     ip, numero_registro, clausulas_aceitas: clausulasPayload, hash_contrato,
     pdf_status: 'pendente',
@@ -138,7 +144,8 @@ export async function POST(req: NextRequest) {
 
   const dadosGeracao: DadosContratoAVP = {
     nome: nome.trim(), cpf: cpf?.replace(/\D/g,'') || null,
-    cnpjMei: cnpj_mei.replace(/\D/g,''), sedeMei: sede_mei,
+    cnpjMei: sem_cnpj ? '' : cnpj_mei?.replace(/\D/g,'') || '',
+    sedeMei: sem_cnpj ? 'Pendente — CNPJ sera informado apos abertura' : sede_mei || '',
     whatsapp: wppLimpo, email: email?.trim().toLowerCase() || '',
     dataNascimento: data_nascimento || null,
     estadoCivil: estado_civil || null,
