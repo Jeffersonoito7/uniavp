@@ -104,8 +104,9 @@ export default function GestorLayout({
 
   const sidebarW = colapsada ? 56 : 220
   const hoverCSS = `
-    .pro-nav-item:hover { background: rgba(2,161,83,0.16) !important; color: #fff !important; }
+    .pro-nav-item:hover { background: rgba(34,197,94,0.18) !important; color: #4ade80 !important; }
     .pro-nav-item { transition: background 0.18s, color 0.18s !important; }
+    .pro-nav-active { transition: background 0.18s, color 0.18s !important; }
   `
 
   return (
@@ -162,7 +163,7 @@ export default function GestorLayout({
             style={{ padding: '14px 20px', borderBottom: '1px solid var(--avp-border)', flexShrink: 0, background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' as const }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'rgba(79,70,229,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15, border: '2px solid var(--avp-border)' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'linear-gradient(135deg, #22c55e, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, border: '2px solid rgba(74,222,128,0.45)', boxShadow: '0 0 14px rgba(34,197,94,0.35), 0 0 6px rgba(79,70,229,0.25)' }}>
                 {fotoPerfil
                   ? <img src={fotoPerfil} alt={nomeGestor} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   : <span style={{ color: '#fff' }}>{nomeGestor.charAt(0).toUpperCase()}</span>
@@ -184,18 +185,19 @@ export default function GestorLayout({
             return (
               <button key={item.id} onClick={() => handleNav(item.id)}
                 onMouseEnter={() => playHover()}
-                className={ativo ? undefined : 'pro-nav-item'}
+                className={ativo ? 'pro-nav-active' : 'pro-nav-item'}
                 title={colapsada && !isMobile ? item.label : undefined}
                 style={{
                   display: 'flex', alignItems: 'center', gap: colapsada && !isMobile ? 0 : 10,
                   padding: colapsada && !isMobile ? '10px 0' : '10px 12px',
                   justifyContent: colapsada && !isMobile ? 'center' : 'flex-start',
-                  borderRadius: 8, cursor: 'pointer',
-                  background: ativo ? 'rgba(79,70,229,0.18)' : 'none',
-                  border: ativo ? '1px solid rgba(79,70,229,0.3)' : '1px solid transparent',
-                  color: ativo ? '#fff' : 'var(--avp-text-dim)',
-                  fontWeight: ativo ? 600 : 400, fontSize: 14,
+                  borderRadius: 9, cursor: 'pointer',
+                  border: 'none',
+                  color: ativo ? undefined : 'var(--avp-text-dim)',
+                  fontWeight: ativo ? 700 : 400, fontSize: 14,
                   width: '100%',
+                  transition: 'all 0.18s ease',
+                  background: ativo ? undefined : 'none',
                 }}
               >
                 <Icon size={18} />

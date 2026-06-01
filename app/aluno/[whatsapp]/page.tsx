@@ -280,8 +280,8 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
 
           {/* ── HERO SAUDAÇÃO ── */}
           <div style={{ marginBottom: aulaAtual ? 20 : 28 }}>
-            <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 4 }}>
-              Olá, {aluno.nome.split(' ')[0]}! 👋
+            <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 6, lineHeight: 1.15, letterSpacing: '-0.5px' }}>
+              Olá, <span style={{ background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{aluno.nome.split(' ')[0]}</span>! 👋
             </h1>
             <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>
               Continue sua jornada de formação em {siteConfig.nome}.
@@ -290,15 +290,17 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
 
           {/* ── PRÓXIMA AULA ── */}
           {aulaAtual && (
-            <div style={{ marginBottom: 24, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+            <div style={{ marginBottom: 24, background: 'linear-gradient(135deg, rgba(79,70,229,0.1) 0%, rgba(79,70,229,0.04) 100%)', border: '1px solid rgba(79,70,229,0.3)', borderRadius: 16, padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', boxShadow: '0 4px 24px rgba(79,70,229,0.12), inset 0 1px 0 rgba(255,255,255,0.05)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, #4f46e5, #818cf8)', borderRadius: '16px 16px 0 0' }} />
               <div style={{ minWidth: 0 }}>
-                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>{aulaAtual.modulo_titulo}</p>
-                <p style={{ fontSize: 16, fontWeight: 800, color: 'var(--avp-text)', margin: 0 }}>{aulaAtual.aula_titulo}</p>
-                {aulaAtual.duracao_minutos && <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 2 }}>⏱ {aulaAtual.duracao_minutos} min</p>}
+                <p style={{ fontSize: 10, color: '#818cf8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 5 }}>Continuar de onde parou</p>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 600, marginBottom: 3 }}>{aulaAtual.modulo_titulo}</p>
+                <p style={{ fontSize: 17, fontWeight: 800, color: 'var(--avp-text)', margin: 0, lineHeight: 1.2 }}>{aulaAtual.aula_titulo}</p>
+                {aulaAtual.duracao_minutos && <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 4 }}>⏱ {aulaAtual.duracao_minutos} min</p>}
               </div>
               <Link href={`/aluno/${params.whatsapp}/aula/${aulaAtual.aula_id}`}
                 className="btn btn-primary"
-                style={{ flexShrink: 0, textDecoration: 'none', whiteSpace: 'nowrap', borderRadius: 10 }}>
+                style={{ flexShrink: 0, textDecoration: 'none', whiteSpace: 'nowrap', borderRadius: 10, background: 'linear-gradient(135deg, #4338ca, #4f46e5)', boxShadow: '0 4px 16px rgba(79,70,229,0.4)' }}>
                 ▶ Continuar agora
               </Link>
             </div>
@@ -451,15 +453,16 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
           {/* ── BIBLIOTECA DO PODER ── */}
           {!moduloAtivo && (
             <a href={`/aluno/${params.whatsapp}/biblioteca`} style={{ display: 'block', textDecoration: 'none', marginBottom: 20 }}>
-              <div style={{ background: 'linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(124,58,237,0.08) 100%)', border: '1px solid rgba(79,70,229,0.3)', borderRadius: 16, padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}>
-                <div style={{ width: 44, height: 44, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(79,70,229,0.15)', borderRadius: 10, border: '1px solid rgba(79,70,229,0.25)', fontSize: 20 }}>
+              <div style={{ background: 'linear-gradient(135deg, rgba(79,70,229,0.14) 0%, rgba(124,58,237,0.08) 60%, rgba(15,15,30,0.6) 100%)', border: '1px solid rgba(79,70,229,0.35)', borderRadius: 18, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 18, cursor: 'pointer', boxShadow: '0 4px 28px rgba(79,70,229,0.14), inset 0 1px 0 rgba(255,255,255,0.06)', transition: 'transform 0.2s, box-shadow 0.2s', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, #4f46e5, #7c3aed, #818cf8)' }} />
+                <div style={{ width: 48, height: 48, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, rgba(79,70,229,0.3), rgba(124,58,237,0.2))', borderRadius: 12, border: '1px solid rgba(79,70,229,0.35)', fontSize: 22, boxShadow: '0 4px 12px rgba(79,70,229,0.25)' }}>
                   📚
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--avp-text)', margin: '0 0 2px' }}>Biblioteca do Poder</p>
+                  <p style={{ fontWeight: 800, fontSize: 16, color: 'var(--avp-text)', margin: '0 0 3px', letterSpacing: '-0.2px' }}>Biblioteca do Poder</p>
                   <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0 }}>Audiobooks e podcasts selecionados para acelerar sua evolução</p>
                 </div>
-                <div style={{ background: 'rgba(79,70,229,0.15)', border: '1px solid rgba(79,70,229,0.3)', borderRadius: 8, padding: '8px 16px', color: '#818cf8', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                <div style={{ background: 'linear-gradient(135deg, rgba(79,70,229,0.25), rgba(79,70,229,0.15))', border: '1px solid rgba(129,140,248,0.4)', borderRadius: 10, padding: '9px 18px', color: '#c7d2fe', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', flexShrink: 0 }}>
                   Acessar →
                 </div>
               </div>

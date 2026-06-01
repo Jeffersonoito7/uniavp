@@ -635,7 +635,9 @@ export default function GestorDashboard({
           <LiberacoesPendentes />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
             <div>
-              <h1 style={{ fontSize: 22, fontWeight: 800 }}>Dashboard</h1>
+              <h1 style={{ fontSize: 24, fontWeight: 900, letterSpacing: '-0.4px', margin: 0 }}>
+                <span style={{ background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Dashboard</span>
+              </h1>
               <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Visão geral da sua equipe</p>
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -646,18 +648,31 @@ export default function GestorDashboard({
 
           {/* Cards de stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 14, marginBottom: 24 }}>
-            {[
-              { label: 'FREE ativos', value: totalAtivos, cor: 'var(--avp-text)' },
-              { label: 'Em andamento', value: emAndamento, cor: 'var(--avp-text)' },
-              { label: 'Concluídos', value: concluidos, cor: 'var(--avp-green)' },
-              { label: 'Progresso médio', value: `${mediaProgresso}%`, cor: '#3b82f6' },
-              { label: 'Inativos 7 dias', value: inativos7d.length, cor: inativos7d.length > 0 ? '#6366f1' : 'var(--avp-text)' },
-            ].map(s => (
-              <div key={s.label} style={{ background: 'var(--avp-card)', border: `1px solid ${s.label === 'Inativos 7 dias' && inativos7d.length > 0 ? '#6366f140' : 'var(--avp-border)'}`, borderRadius: 12, padding: 20 }}>
-                <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, marginBottom: 6 }}>{s.label}</p>
-                <p style={{ fontSize: 30, fontWeight: 800, color: s.cor }}>{s.value}</p>
-              </div>
-            ))}
+            <div className="stat-card stat-card-blue">
+              <div className="stat-glow-blue" />
+              <p className="stat-label-blue" style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>FREE ativos</p>
+              <p className="stat-value-text" style={{ fontSize: 32, fontWeight: 900, margin: 0, lineHeight: 1 }}>{totalAtivos}</p>
+            </div>
+            <div className="stat-card stat-card-sky">
+              <div className="stat-glow-sky" />
+              <p className="stat-label-sky" style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>Em andamento</p>
+              <p className="stat-value-text" style={{ fontSize: 32, fontWeight: 900, margin: 0, lineHeight: 1 }}>{emAndamento}</p>
+            </div>
+            <div className="stat-card stat-card-green">
+              <div className="stat-glow-green" />
+              <p className="stat-label-green" style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>Concluídos</p>
+              <p className="stat-value-green" style={{ fontSize: 32, fontWeight: 900, margin: 0, lineHeight: 1 }}>{concluidos}</p>
+            </div>
+            <div className="stat-card stat-card-sky">
+              <div className="stat-glow-sky" />
+              <p className="stat-label-sky" style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>Progresso médio</p>
+              <p className="stat-value-sky" style={{ fontSize: 32, fontWeight: 900, margin: 0, lineHeight: 1 }}>{mediaProgresso}%</p>
+            </div>
+            <div className={`stat-card ${inativos7d.length > 0 ? 'stat-card-violet' : 'stat-card-base'}`}>
+              {inativos7d.length > 0 && <div className="stat-glow-violet" />}
+              <p className={inativos7d.length > 0 ? 'stat-label-violet' : undefined} style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: 1.5, marginBottom: 8, color: inativos7d.length > 0 ? undefined : 'var(--avp-text-dim)' }}>Inativos 7 dias</p>
+              <p className={inativos7d.length > 0 ? 'stat-value-violet' : 'stat-value-text'} style={{ fontSize: 32, fontWeight: 900, margin: 0, lineHeight: 1 }}>{inativos7d.length}</p>
+            </div>
           </div>
 
           {/* Card do Assistente IA */}

@@ -139,8 +139,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const sidebarW = colapsada ? 56 : 240
   const hoverCSS = `
-    .adm-nav-item:hover { background: rgba(99,102,241,0.14) !important; color: #fff !important; }
+    .adm-nav-item:hover { background: rgba(99,102,241,0.18) !important; color: #c7d2fe !important; }
     .adm-nav-item { transition: background 0.18s, color 0.18s !important; }
+    .adm-nav-active { transition: background 0.18s !important; }
   `
 
   return (
@@ -227,7 +228,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             const active = pathname === href || (href !== '/admin' && pathname.startsWith(href))
             return (
               <Link key={href} href={href}
-                className={active ? undefined : 'adm-nav-item'}
+                className={active ? 'adm-nav-active' : 'adm-nav-item'}
                 onClick={() => isMobile && setMenuAberto(false)}
                 onMouseEnter={() => playHover()}
                 title={colapsada ? label : undefined}
@@ -235,11 +236,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 10,
                   justifyContent: colapsada ? 'center' : 'flex-start',
                   padding: colapsada ? '10px 0' : '11px 12px',
-                  borderRadius: 8, fontSize: 14, fontWeight: 500,
-                  color: active ? '#fff' : 'var(--avp-text-dim)',
-                  background: active ? 'var(--avp-border)' : 'transparent',
+                  borderRadius: 9, fontSize: 14,
+                  color: active ? undefined : 'var(--avp-text-dim)',
+                  background: active ? undefined : 'transparent',
                   textDecoration: 'none',
                   whiteSpace: 'nowrap', overflow: 'hidden',
+                  transition: 'all 0.18s ease',
                 }}>
                 <Icon size={17} style={{ flexShrink: 0 }} />
                 {!colapsada && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>}

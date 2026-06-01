@@ -11,6 +11,9 @@ export default function InstalarApp() {
     if (window.matchMedia('(display-mode: standalone)').matches) return
     if (sessionStorage.getItem('pwa_dispensado')) return
 
+    const path = window.location.pathname
+    if (path.startsWith('/captacao') || path.startsWith('/g/') || path.startsWith('/c/')) return
+
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !(window.navigator as any).standalone
     if (ios) {
       setIsIos(true)

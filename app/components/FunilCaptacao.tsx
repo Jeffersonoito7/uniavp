@@ -43,6 +43,10 @@ export default function FunilCaptacao({
   const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', senha: '', gestor_nome: '', gestor_whatsapp: '' })
 
   useEffect(() => {
+    if (etapa !== 'video') window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [etapa])
+
+  useEffect(() => {
     if (videoAssistido && btnContinuarRef.current) {
       setTimeout(() => {
         btnContinuarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -165,7 +169,7 @@ export default function FunilCaptacao({
       {/* Botão fixo no rodapé — aparece quando vídeo termina */}
       {videoAssistido && (
         <div style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 999,
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10000,
           background: 'linear-gradient(to top, rgba(10,10,15,0.98) 70%, transparent)',
           padding: '20px 24px 32px',
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
