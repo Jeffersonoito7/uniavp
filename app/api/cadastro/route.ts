@@ -258,11 +258,12 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Boas-vindas para o candidato + link da plataforma parceira (se configurado)
-  const chaveBoasVindas = linkExterno ? 'cadastro_boas_vindas_link_externo' : 'cadastro_boas_vindas'
-  const msgCandidato = await getMensagem(chaveBoasVindas, { ...vars, linkExterno: linkExterno ?? '' }, adminClient, tenantId)
-
-  await enviarWhatsApp(whatsappLimpo, msgCandidato, instanciaTenant)
+  // Boas-vindas para o candidato — não envia quando cadastro veio do painel admin
+  if (!isAdminRoute) {
+    const chaveBoasVindas = linkExterno ? 'cadastro_boas_vindas_link_externo' : 'cadastro_boas_vindas'
+    const msgCandidato = await getMensagem(chaveBoasVindas, { ...vars, linkExterno: linkExterno ?? '' }, adminClient, tenantId)
+    await enviarWhatsApp(whatsappLimpo, msgCandidato, instanciaTenant)
+  }
 
   await audit({
     acao: 'aluno.criado',
