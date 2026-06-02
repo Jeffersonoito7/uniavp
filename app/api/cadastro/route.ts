@@ -110,7 +110,8 @@ export async function POST(req: NextRequest) {
     // Busca o auth user pelo email via paginação completa
     let authExistente = null
     let page = 1
-    while (!authExistente) {
+    const MAX_PAGES = 20
+    while (!authExistente && page <= MAX_PAGES) {
       const { data: lista } = await adminClient.auth.admin.listUsers({ page, perPage: 1000 })
       if (!lista?.users?.length) break
       authExistente = lista.users.find(u => u.email === emailLimpo) ?? null

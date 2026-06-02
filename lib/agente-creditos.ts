@@ -48,14 +48,16 @@ export async function debitarCreditos(
     .eq('saldo', saldoAtual) // otimistic lock — garante que não houve corrida
 
   if (error) {
-    // Retry único em caso de corrida
+    // Retry com otimistic lock — relê saldo atual e tenta novamente
     const { data: retry } = await admin.from('agente_creditos')
       .select('saldo').eq('gestor_id', gestorId).maybeSingle()
     const saldoRetry = retry?.saldo ?? 0
     if (saldoRetry < quantidade) return { ok: false, saldoAtual: saldoRetry }
-    await admin.from('agente_creditos')
+    const { error: retryError } = await admin.from('agente_creditos')
       .update({ saldo: saldoRetry - quantidade, updated_at: new Date().toISOString() })
       .eq('gestor_id', gestorId)
+      .eq('saldo', saldoRetry) // mantém otimistic lock no retry
+    if (retryError) return { ok: false, saldoAtual: saldoRetry }
   }
 
   await admin.from('agente_transacoes').insert({

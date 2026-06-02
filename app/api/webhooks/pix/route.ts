@@ -25,12 +25,18 @@ export async function POST(req: NextRequest) {
     const txid = pag.txid
     if (!txid) continue
 
-    // Persiste o evento antes de processar — garante rastreabilidade e permite retry
+    // Upsert com ignoreDuplicates: se o txid já existe, não processa de novo (idempotência)
     const { data: evento } = await adminClient.from('webhook_events')
-      .insert({ fonte: 'efi', txid, payload: pag as unknown as Json, status: 'pendente' })
+      .upsert(
+        { fonte: 'efi', txid, payload: pag as unknown as Json, status: 'pendente' },
+        { onConflict: 'fonte,txid', ignoreDuplicates: true }
+      )
       .select('id')
       .single()
       .then(r => r, () => ({ data: null }))
+
+    // Se não retornou id, o evento já existia — evita reprocessamento
+    if (!evento?.id) continue
 
     try {
       const result = await processarPixTxid(txid, adminClient)
@@ -40,7 +46,7 @@ export async function POST(req: NextRequest) {
           .eq('id', evento.id)
       }
       if (!result.processado) {
-        console.log(`[webhook/pix] txid ${txid} ignorado: ${result.motivo}`)
+        // txid ignorado intencionalmente (result.motivo disponível para debug)
       }
     } catch (e: any) {
       captureException(e, { endpoint: 'webhook/pix', extra: { txid } })

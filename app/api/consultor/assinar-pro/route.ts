@@ -3,6 +3,7 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { criarCobrancaPix } from '@/lib/efi'
 import { randomUUID } from 'crypto'
 import { verificarPROGratuito, contarPROsAtivosIndicados, getLimitePROGratuito } from '@/lib/pros-indicados'
+import { captureException } from '@/lib/monitor'
 
 export const dynamic = 'force-dynamic'
 
@@ -207,7 +208,7 @@ export async function POST() {
   } catch (e: any) {
     const raw: string = e.message ?? ''
     // Loga apenas o tipo do erro — evita expor tokens ou respostas brutas da API
-    console.error('[assinar-pro] Erro Efi Bank — tipo:', e.constructor?.name ?? 'Error')
+    captureException(e, { endpoint: 'consultor/assinar-pro', extra: { tipo: e.constructor?.name ?? 'Error' } })
     const msgUsuario = raw.includes('invalid_client') || raw.includes('credentials')
       ? 'Erro na integração de pagamento. Entre em contato com o suporte.'
       : raw.includes('Auth') || raw.includes('token')

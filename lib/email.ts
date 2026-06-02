@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { captureException } from '@/lib/monitor'
 
 function getResend() {
   if (!process.env.RESEND_API_KEY) return null
@@ -106,7 +107,7 @@ export async function enviarEmailCNCPV(opts: {
     })
     return true
   } catch (e) {
-    console.error('Erro ao enviar email CNCPV:', e)
+    captureException(e, { endpoint: 'email/enviarEmailCNCPV' })
     return false
   }
 }

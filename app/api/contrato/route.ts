@@ -50,7 +50,7 @@ async function gerarEEnviar(dados: DadosContratoAVP, registro: string, adminClie
       enviarPDFWhatsApp(dados.whatsapp, pdfBytes, nome),
     ])
   } catch (e) {
-    console.error('Erro ao gerar contrato PDF:', e)
+    captureException(e, { endpoint: 'contrato/gerarEEnviar', extra: { registro } })
     await adminClient.from('contratos').update({ pdf_status: 'erro' }).eq('numero_registro', registro)
   }
 }

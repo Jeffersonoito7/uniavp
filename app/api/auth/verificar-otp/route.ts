@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { rateLimit, LIMITS } from '@/lib/rate-limit'
+import { captureException } from '@/lib/monitor'
 
 export const dynamic = 'force-dynamic'
 
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
 
   return response
   } catch (e) {
-    console.error('erro em verificar-otp', e)
+    captureException(e, { endpoint: 'auth/verificar-otp' })
     return NextResponse.json({ error: 'Erro interno. Tente novamente.' }, { status: 500 })
   }
 }

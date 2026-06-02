@@ -105,7 +105,12 @@ export async function POST(req: NextRequest) {
     const linkSenha = linkData?.properties?.action_link ?? `${appUrl}/recuperar-senha`
 
     let isLideranca = false
-    try { isLideranca = JSON.parse(cliente.observacoes || '{}')._tipo === 'lideranca' } catch { /* */ }
+    if (cliente.observacoes) {
+      try {
+        const obs = JSON.parse(cliente.observacoes)
+        isLideranca = obs?._tipo === 'lideranca'
+      } catch { /* campo observacoes não é JSON — trata como falso */ }
+    }
 
     const nomeCliente = cliente.contato_nome || cliente.nome
 

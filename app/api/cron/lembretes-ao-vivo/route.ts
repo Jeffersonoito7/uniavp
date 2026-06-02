@@ -3,10 +3,39 @@ import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
 import { alertarDiscord } from '@/lib/discord'
 import { getMensagem } from '@/lib/mensagem'
+import { captureException } from '@/lib/monitor'
 
 const aulasTable = (client: ReturnType<typeof createServiceRoleClient>) => client.from('aulas_ao_vivo')
 
 export const dynamic = 'force-dynamic'
+
+// Envia em lotes paralelos com pausa entre lotes para não sobrecarregar a API
+async function enviarEmLotes(
+  numeros: string[],
+  msg: string,
+  instancia: string | null,
+): Promise<{ enviados: number; erros: number }> {
+  const LOTE = 10
+  const PAUSA_MS = 500
+  let enviados = 0
+  let erros = 0
+
+  for (let i = 0; i < numeros.length; i += LOTE) {
+    const lote = numeros.slice(i, i + LOTE)
+    const resultados = await Promise.allSettled(
+      lote.map(wpp => enviarWhatsApp(wpp, msg, instancia))
+    )
+    for (const r of resultados) {
+      if (r.status === 'fulfilled') enviados++
+      else erros++
+    }
+    if (i + LOTE < numeros.length) {
+      await new Promise(r => setTimeout(r, PAUSA_MS))
+    }
+  }
+
+  return { enviados, erros }
+}
 
 export async function GET(req: NextRequest) {
   if (req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`)
@@ -24,7 +53,6 @@ export async function GET(req: NextRequest) {
     return instanciaCache.get(key) ?? null
   }
 
-  // Aulas que começam entre 1h e 1h30 a partir de agora e ainda não enviaram lembrete
   const { data: aulas } = await aulasTable(adminClient)
     .select('*')
     .gte('data_hora', em1h.toISOString())
@@ -56,48 +84,37 @@ export async function GET(req: NextRequest) {
     }
     const msg = await getMensagem('lembrete_ao_vivo', vars, adminClient, tenantId)
 
-    // Admin: envia para todos os alunos ativos (aula global, sem tenant isolado)
-    if (!aula.gestor_id) {
-      const instancia = await instanciaDo(null)
-      const { data: alunos } = await adminClient.from('alunos').select('whatsapp').eq('status', 'ativo')
+    try {
+      if (!aula.gestor_id) {
+        const instancia = await instanciaDo(null)
+        const { data: alunos } = await adminClient.from('alunos').select('whatsapp').eq('status', 'ativo')
+        const numeros = (alunos ?? []).map(a => a.whatsapp)
+        const resultado = await enviarEmLotes(numeros, msg, instancia)
+        totalEnviados += resultado.enviados
+        totalErros += resultado.erros
+      } else {
+        const { data: gestor } = await adminClient
+          .from('gestores')
+          .select('whatsapp, whatsapp_instancia, tenant_id')
+          .eq('id', aula.gestor_id)
+          .maybeSingle()
 
-      for (const aluno of alunos ?? []) {
-        try {
-          await enviarWhatsApp(aluno.whatsapp, msg, instancia)
-          totalEnviados++
-        } catch (e) {
-          totalErros++
-          console.error('[lembretes-ao-vivo] Falha ao enviar para', aluno.whatsapp, e)
-        }
-        await new Promise(r => setTimeout(r, 300))
-      }
-    } else {
-      // Gestor: envia só para os consultores deste gestor
-      const { data: gestor } = await adminClient
-        .from('gestores')
-        .select('whatsapp, whatsapp_instancia, tenant_id')
-        .eq('id', aula.gestor_id)
-        .maybeSingle()
-
-      if (gestor?.whatsapp) {
-        const instancia = gestor.whatsapp_instancia ?? await instanciaDo(gestor.tenant_id ?? null)
-        const { data: alunos } = await adminClient
-          .from('alunos')
-          .select('whatsapp')
-          .eq('gestor_whatsapp', gestor.whatsapp)
-          .eq('status', 'ativo')
-
-        for (const aluno of alunos ?? []) {
-          try {
-            await enviarWhatsApp(aluno.whatsapp, msg, instancia)
-            totalEnviados++
-          } catch (e) {
-            totalErros++
-            console.error('[lembretes-ao-vivo] Falha ao enviar para', aluno.whatsapp, e)
-          }
-          await new Promise(r => setTimeout(r, 300))
+        if (gestor?.whatsapp) {
+          const instancia = gestor.whatsapp_instancia ?? await instanciaDo(gestor.tenant_id ?? null)
+          const { data: alunos } = await adminClient
+            .from('alunos')
+            .select('whatsapp')
+            .eq('gestor_whatsapp', gestor.whatsapp)
+            .eq('status', 'ativo')
+          const numeros = (alunos ?? []).map(a => a.whatsapp)
+          const resultado = await enviarEmLotes(numeros, msg, instancia)
+          totalEnviados += resultado.enviados
+          totalErros += resultado.erros
         }
       }
+    } catch (e) {
+      captureException(e, { endpoint: 'cron/lembretes-ao-vivo', aulaId: aula.id })
+      totalErros++
     }
 
     await aulasTable(adminClient).update({ lembrete_enviado: true }).eq('id', aula.id)

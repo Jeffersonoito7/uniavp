@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
+import { captureException } from '@/lib/monitor'
 
 export const dynamic = 'force-dynamic'
 
@@ -122,7 +123,7 @@ Na "resposta": use emojis, seja direto, use negrito com *asteriscos*, máximo 10
     const parsed = JSON.parse(texto)
     return parsed
   } catch (e) {
-    console.error('[zap-agente] Erro Claude:', e)
+    captureException(e, { endpoint: 'zap-agente/chamarClaude' })
     return { acao: 'ajuda', resposta: '⚠️ Não entendi. Tente: "menu" para ver o que posso fazer.' }
   }
 }
@@ -203,7 +204,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true })
   } catch (e) {
-    console.error('[zap-agente] Erro:', e)
+    captureException(e, { endpoint: 'zap-agente/POST' })
     return NextResponse.json({ ok: true }) // sempre retorna 200 para Evolution API
   }
 }

@@ -4,6 +4,7 @@ import { enviarWhatsApp } from '@/lib/whatsapp'
 import { enviarEmailCNCPV } from '@/lib/email'
 import { gerarPDFContratoCNCPV } from '@/lib/cncpv-pdf'
 import { getSiteConfig } from '@/lib/site-config'
+import { captureException } from '@/lib/monitor'
 import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic'
@@ -82,7 +83,7 @@ async function gerarEEnviar(dados: {
       }) : Promise.resolve(false),
     ])
   } catch (e) {
-    console.error('Erro ao gerar/enviar PDF CNCPV:', e)
+    captureException(e, { endpoint: 'cncpv/gerarEEnviar' })
     await adminClient.from('cncpv_assinaturas')
       .update({ pdf_status: 'erro' })
       .eq('numero_registro', dados.numero_registro)
@@ -199,7 +200,7 @@ export async function POST(req: NextRequest) {
   await enviarWhatsApp(wppLimpo, msgWpp)
 
   // Gera PDF e envia em background (fire-and-forget)
-  gerarEEnviar(dadosGeracao, adminClient).catch(console.error)
+  gerarEEnviar(dadosGeracao, adminClient).catch(e => captureException(e, { endpoint: 'cncpv/POST:gerarEEnviar' }))
 
   return NextResponse.json({ ok: true, numero_registro, hash_contrato })
 }
