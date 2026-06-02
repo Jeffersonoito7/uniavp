@@ -1,9 +1,12 @@
 'use client'
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import ImageCropModal from '@/app/components/ImageCropModal'
 
 const NAVY_DEFAULT = '#0D2B6E'
 const GREEN_DEFAULT = '#0A7A42'
+
+const W = 420
+const H = 560
 
 type Props = {
   nome: string
@@ -33,12 +36,17 @@ function Field({ label, value, flex, labelColor = '#1A7A50' }: { label: string; 
   return (
     <div style={{ flex: flex ? 1 : undefined, minWidth: 0 }}>
       <p style={{ fontSize: 7, fontWeight: 700, color: labelColor, margin: '0 0 1px', letterSpacing: 0.8, textTransform: 'uppercase' as const }}>{label}</p>
-      <p style={{ fontSize: 11.5, fontWeight: 600, color: '#1a1a1a', margin: '0 0 4px', borderBottom: '1px solid #bbb', paddingBottom: 1, lineHeight: 1.3, wordBreak: 'break-word' as const }}>{value || '—'}</p>
+      <p style={{ fontSize: 12.5, fontWeight: 600, color: '#1a1a1a', margin: '0 0 6px', borderBottom: '1px solid #e0e0e0', paddingBottom: 2, lineHeight: 1.2, wordBreak: 'break-word' as const }}>{value || '—'}</p>
     </div>
   )
 }
 
-export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicial, dataFormacao, validade, cargaHoraria, turma, whatsapp, status, empresaNome = 'UNIVERSIDADE', empresaLogoUrl, logoEsquerdaUrl, logoDireitaUrl, assinaturaNome = 'Presidente', assinaturaCargo = 'PRESIDENTE', assinaturaEmpresa, assinaturaUrl, urlVerificacao = '', tagline = '', corPrimaria, corSecundaria }: Props) {
+export default function CarteiraDisplay({
+  nome, numRegistro, fotoUrl: fotoInicial, dataFormacao, validade, cargaHoraria, turma,
+  whatsapp, status, empresaNome = 'UNIVERSIDADE', empresaLogoUrl,
+  logoEsquerdaUrl, logoDireitaUrl, assinaturaNome = 'Presidente', assinaturaCargo = 'PRESIDENTE',
+  assinaturaEmpresa, assinaturaUrl, urlVerificacao = '', tagline = '', corPrimaria, corSecundaria,
+}: Props) {
   const NAVY = corPrimaria || NAVY_DEFAULT
   const GREEN = corSecundaria || GREEN_DEFAULT
   const GREEN_LABEL = corSecundaria || '#1A7A50'
@@ -48,13 +56,10 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
   const [cropSrc, setCropSrc] = useState<string | null>(null)
   const fotoRef = useRef<HTMLInputElement>(null)
 
-  const [baseVerificacao, setBaseVerificacao] = useState(urlVerificacao || '')
-  useEffect(() => {
-    setBaseVerificacao(urlVerificacao || window.location.origin)
-  }, [urlVerificacao])
-  const verificacaoUrl = baseVerificacao.replace(/^https?:\/\//, '').replace(/\/$/, '')
-  const verificacaoLink = `${baseVerificacao.startsWith('http') ? baseVerificacao : 'https://' + baseVerificacao}/verificar/${numRegistro}`
-  const qrVerificacao = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(verificacaoLink)}&color=0A7A42&bgcolor=ffffff`
+  const urlBase = (urlVerificacao || (typeof window !== 'undefined' ? window.location.origin : '')).replace(/^https?:\/\//, '').replace(/\/$/, '')
+  const urlFull = urlVerificacao?.startsWith('http') ? urlVerificacao : `https://${urlBase}`
+  const verificacaoLink = `${urlFull}/verificar/${numRegistro}`
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(verificacaoLink)}&color=0A7A42&bgcolor=ffffff`
 
   function handleFotoSelecionada(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -77,360 +82,297 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
     setTimeout(() => setMsgFoto(''), 3000)
   }
 
-  const qrUrl = qrVerificacao
+  const HeaderNav = () => (
+    <div style={{ background: NAVY, height: 68, display: 'flex', alignItems: 'center', padding: '0 18px', gap: 12, flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
+      <svg style={{ position: 'absolute', inset: 0, opacity: 0.07, pointerEvents: 'none' }} width={W} height="68">
+        {Array.from({ length: 7 }).map((_, i) => (
+          <ellipse key={i} cx={W / 2} cy="34" rx={28 + i * 36} ry={7 + i * 3} fill="none" stroke="#fff" strokeWidth="0.5" />
+        ))}
+      </svg>
+      <div style={{ flexShrink: 0, height: 52, display: 'flex', alignItems: 'center', zIndex: 1 }}>
+        {logoEsquerdaUrl ? (
+          <img src={logoEsquerdaUrl} alt="Logo" style={{ height: 52, maxWidth: 60, objectFit: 'contain' }} />
+        ) : (
+          <div style={{ width: 44, height: 44, border: '1.5px solid rgba(255,255,255,0.3)', borderRadius: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.08)', padding: 3 }}>
+            <span style={{ fontSize: 5, color: 'rgba(255,255,255,0.7)', letterSpacing: 0.3, fontWeight: 600, textAlign: 'center' as const, lineHeight: 1.2 }}>{(empresaNome || '').substring(0, 10).toUpperCase()}</span>
+            <span style={{ fontSize: 19, fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>{(empresaNome || 'U').substring(0, 1).toUpperCase()}</span>
+          </div>
+        )}
+      </div>
+      <div style={{ flex: 1, textAlign: 'center' as const, zIndex: 1 }}>
+        <p style={{ color: '#fff', fontWeight: 900, fontSize: 14, margin: 0, letterSpacing: 2, textTransform: 'uppercase' as const }}>
+          CARTEIRA <span style={{ fontWeight: 300 }}>de</span> FORMAÇÃO
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 3 }}>
+          <div style={{ flex: 1, height: 0.8, background: 'rgba(255,255,255,0.2)' }} />
+          <p style={{ color: GREEN, fontWeight: 700, fontSize: 8, margin: 0, letterSpacing: 1.5 }}>CONSULTOR CERTIFICADO</p>
+          <div style={{ flex: 1, height: 0.8, background: 'rgba(255,255,255,0.2)' }} />
+        </div>
+      </div>
+      <div style={{ flexShrink: 0, height: 52, display: 'flex', alignItems: 'center', zIndex: 1 }}>
+        {logoDireitaUrl ? (
+          <img src={logoDireitaUrl} alt={empresaNome} style={{ height: 52, maxWidth: 90, objectFit: 'contain' }} />
+        ) : empresaLogoUrl ? (
+          <img src={empresaLogoUrl} alt={empresaNome} style={{ height: 44, maxWidth: 90, objectFit: 'contain' }} />
+        ) : (
+          <div style={{ textAlign: 'right' as const }}>
+            <p style={{ color: '#fff', fontWeight: 900, fontSize: 11, margin: 0 }}>{empresaNome}</p>
+            {tagline && <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 6.5, margin: '2px 0 0' }}>{tagline}</p>}
+          </div>
+        )}
+      </div>
+    </div>
+  )
 
-  // Frente e verso do cartão
   const CardFrente = () => (
-    <div style={{ width: 620, height: 390, position: 'relative', overflow: 'hidden', fontFamily: '"Arial", "Helvetica", sans-serif', display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
+    <div style={{ width: W, height: H, position: 'relative', overflow: 'hidden', fontFamily: '"Arial", "Helvetica", sans-serif', display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: 16, boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
+      <HeaderNav />
 
-      {/* Cabeçalho */}
-      <div style={{ background: NAVY, height: 76, display: 'flex', alignItems: 'center', padding: '0 18px', gap: 12, flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
-        {/* Guilloché sutil no cabeçalho */}
-        <svg style={{ position: 'absolute', inset: 0, opacity: 0.06, pointerEvents: 'none' }} width="620" height="76">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <ellipse key={i} cx="310" cy="38" rx={30 + i * 38} ry={10 + i * 4} fill="none" stroke="#fff" strokeWidth="0.5" />
+      {/* Corpo */}
+      <div style={{ flex: 1, background: '#fff', display: 'flex', padding: '16px 18px', gap: 14, position: 'relative' }}>
+        {/* Marca d'água */}
+        <svg style={{ position: 'absolute', inset: 0, opacity: 0.04, pointerEvents: 'none' }} width={W} height="400">
+          {Array.from({ length: 16 }).map((_, i) => (
+            <ellipse key={`e${i}`} cx={W / 2} cy={200} rx={18 + i * 14} ry={9 + i * 7} fill="none" stroke={NAVY} strokeWidth="0.5" />
+          ))}
+          {Array.from({ length: 12 }).map((_, i) => (
+            <ellipse key={`r${i}`} cx={80} cy={80} rx={6 + i * 6} ry={3 + i * 3} fill="none" stroke={NAVY} strokeWidth="0.4" transform={`rotate(${i * 15} 80 80)`} />
+          ))}
+          {Array.from({ length: 22 }).map((_, i) => (
+            <line key={`l${i}`} x1="0" y1={8 + i * 18} x2={W} y2={8 + i * 18} stroke={NAVY} strokeWidth="0.25" strokeDasharray="4 8" />
           ))}
         </svg>
-
-        {/* Logo esquerda (UNIAVP) */}
-        <div style={{ flexShrink: 0, height: 58, display: 'flex', alignItems: 'center' }}>
-          {logoEsquerdaUrl ? (
-            <img src={logoEsquerdaUrl} alt="Logo" style={{ height: 58, maxWidth: 70, objectFit: 'contain' }} />
-          ) : (
-            <div style={{ width: 52, height: 52, border: '1.5px solid rgba(255,255,255,0.3)', borderRadius: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.08)', padding: 4 }}>
-              <span style={{ fontSize: 6, color: 'rgba(255,255,255,0.7)', letterSpacing: 0.4, fontWeight: 600, textAlign: 'center', lineHeight: 1.2 }}>{(empresaNome || '').substring(0, 10).toUpperCase()}</span>
-              <span style={{ fontSize: 22, fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>{(empresaNome || 'U').substring(0, 1).toUpperCase()}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Título central */}
-        <div style={{ flex: 1, textAlign: 'center' as const }}>
-          <p style={{ color: '#fff', fontWeight: 900, fontSize: 16, margin: 0, letterSpacing: 2, textTransform: 'uppercase' as const }}>CARTEIRA <span style={{ fontWeight: 300 }}>de</span> FORMAÇÃO</p>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 }}>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.25)' }} />
-            <p style={{ color: GREEN, fontWeight: 700, fontSize: 9, margin: 0, letterSpacing: 2 }}>CONSULTOR CERTIFICADO</p>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.25)' }} />
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', opacity: 0.02 }}>
+          <div style={{ fontSize: 100, fontWeight: 900, color: NAVY, transform: 'rotate(-20deg)', whiteSpace: 'nowrap' as const, letterSpacing: -4 }}>
+            {empresaNome} {empresaNome}
           </div>
         </div>
 
-        {/* Logo direita (AUTOVALE) */}
-        <div style={{ flexShrink: 0, height: 58, display: 'flex', alignItems: 'center' }}>
-          {logoDireitaUrl ? (
-            <img src={logoDireitaUrl} alt={empresaNome} style={{ height: 58, maxWidth: 100, objectFit: 'contain' }} />
-          ) : empresaLogoUrl ? (
-            <img src={empresaLogoUrl} alt={empresaNome} style={{ height: 48, maxWidth: 100, objectFit: 'contain' }} />
-          ) : (
-            <div style={{ textAlign: 'right' as const }}>
-              <p style={{ color: '#fff', fontWeight: 900, fontSize: 12, margin: 0 }}>{empresaNome}</p>
-              {tagline && <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 7, margin: '2px 0 0' }}>{tagline}</p>}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Corpo */}
-      <div style={{ flex: 1, background: '#fff', display: 'flex', padding: '10px 14px', gap: 12, position: 'relative', overflow: 'hidden' }}>
-        {/* ── MARCA D'ÁGUA ESTILO CÉDULA ── */}
-        <svg style={{ position: 'absolute', inset: 0, opacity: 0.045, pointerEvents: 'none' }} width="620" height="232" xmlns="http://www.w3.org/2000/svg">
-          {/* Guilloché centro — elipses concêntricas */}
-          {Array.from({ length: 18 }).map((_, i) => (
-            <ellipse key={`e${i}`} cx="310" cy="116" rx={20 + i * 16} ry={10 + i * 8} fill="none" stroke={NAVY} strokeWidth="0.5" />
-          ))}
-          {/* Roseta superior esquerda */}
-          {Array.from({ length: 12 }).map((_, i) => (
-            <ellipse key={`r1${i}`} cx="100" cy="60" rx={8 + i * 7} ry={4 + i * 3.5} fill="none" stroke={NAVY} strokeWidth="0.4"
-              transform={`rotate(${i * 15} 100 60)`} />
-          ))}
-          {/* Roseta superior direita */}
-          {Array.from({ length: 12 }).map((_, i) => (
-            <ellipse key={`r2${i}`} cx="520" cy="60" rx={8 + i * 7} ry={4 + i * 3.5} fill="none" stroke={NAVY} strokeWidth="0.4"
-              transform={`rotate(${i * 15} 520 60)`} />
-          ))}
-          {/* Roseta inferior */}
-          {Array.from({ length: 12 }).map((_, i) => (
-            <ellipse key={`r3${i}`} cx="310" cy="210" rx={8 + i * 6} ry={4 + i * 3} fill="none" stroke={GREEN} strokeWidth="0.4"
-              transform={`rotate(${i * 15} 310 210)`} />
-          ))}
-          {/* Linhas finas horizontais */}
-          {Array.from({ length: 24 }).map((_, i) => (
-            <line key={`l${i}`} x1="0" y1={8 + i * 9} x2="620" y2={8 + i * 9} stroke={NAVY} strokeWidth="0.3" strokeDasharray="4 8" />
-          ))}
-        </svg>
-
-        {/* Texto AVP diagonal tênue */}
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', opacity: 0.025 }}>
-          <div style={{ fontSize: 160, fontWeight: 900, color: NAVY, transform: 'rotate(-18deg)', letterSpacing: -8, whiteSpace: 'nowrap' as const }}>{empresaNome} {empresaNome}</div>
-        </div>
-
-        {/* Foto 3x4 */}
+        {/* Foto 3×4 com upload */}
         <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
           <div
             onClick={() => fotoRef.current?.click()}
-            style={{ width: 144, height: 192, border: `2.5px solid ${GREEN}`, borderRadius: 4, overflow: 'hidden', background: '#e8e8e8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
+            style={{ width: 110, height: 146, border: `2.5px solid ${GREEN}`, borderRadius: 5, overflow: 'hidden', background: '#ebebeb', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
           >
             {fotoUrl ? (
               <>
                 <img src={fotoUrl} alt={nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                {/* Overlay trocar foto */}
-                <div className="no-print" style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 6, opacity: 0, transition: 'opacity 0.2s' }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = '1') }
-                  onMouseLeave={e => (e.currentTarget.style.opacity = '0') }>
-                  <span style={{ background: 'rgba(0,0,0,0.65)', color: '#fff', fontSize: 9, padding: '3px 7px', borderRadius: 4, fontWeight: 600 }}>Trocar foto</span>
+                <div className="no-print" style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 5, opacity: 0, transition: 'opacity 0.2s' }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = '0')}>
+                  <span style={{ background: 'rgba(0,0,0,0.65)', color: '#fff', fontSize: 8, padding: '2px 6px', borderRadius: 3, fontWeight: 600 }}>Trocar foto</span>
                 </div>
               </>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                <svg width="56" height="72" viewBox="0 0 56 72" fill="none">
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+                <svg width="46" height="58" viewBox="0 0 56 72" fill="none">
                   <circle cx="28" cy="24" r="14" fill="#bbb" />
                   <ellipse cx="28" cy="60" rx="28" ry="17" fill="#bbb" />
                 </svg>
-                <span style={{ fontSize: 9, color: '#888', fontWeight: 600, textAlign: 'center' as const, lineHeight: 1.3, padding: '0 4px' }}>📷 Toque para{'\n'}adicionar foto</span>
+                <span style={{ fontSize: 8, color: '#888', fontWeight: 600, textAlign: 'center' as const, lineHeight: 1.3 }}>Toque para{'\n'}adicionar foto</span>
               </div>
             )}
             {uploadando && (
-              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                <span style={{ color: '#fff', fontSize: 18 }}>⏳</span>
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ color: '#fff', fontSize: 9 }}>Salvando...</span>
               </div>
             )}
           </div>
           <input ref={fotoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFotoSelecionada} />
-          {/* Botão visível fora do card (no-print) */}
           <button className="no-print" onClick={() => fotoRef.current?.click()}
-            style={{ marginTop: 5, background: GREEN, color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 9, fontWeight: 700, cursor: 'pointer', width: 144 }}>
-            {fotoUrl ? '🔄 Trocar foto' : '📷 Adicionar foto'}
+            style={{ marginTop: 4, background: GREEN, color: '#fff', border: 'none', borderRadius: 3, padding: '3px 0', fontSize: 8, fontWeight: 700, cursor: 'pointer', width: 110 }}>
+            {fotoUrl ? 'Trocar foto' : 'Adicionar foto'}
           </button>
         </div>
 
         {/* Campos */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 0, paddingTop: 4, minWidth: 0 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', minWidth: 0, paddingTop: 2 }}>
           <Field label="Nome do Consultor" value={nome} labelColor={GREEN_LABEL} />
           <Field label="Nº de Registro" value={numRegistro} labelColor={GREEN_LABEL} />
-          <div style={{ display: 'flex', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 8 }}>
             <Field label="Data de Formação" value={dataFormacao} flex labelColor={GREEN_LABEL} />
             <Field label="Validade" value={validade} flex labelColor={GREEN_LABEL} />
           </div>
           <Field label="Curso de Formação" value={`Formação de Consultor ${empresaNome}`} labelColor={GREEN_LABEL} />
-          <div style={{ display: 'flex', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 8 }}>
             <Field label="Carga Horária" value={cargaHoraria} flex labelColor={GREEN_LABEL} />
             <Field label="Turma" value={turma} flex labelColor={GREEN_LABEL} />
           </div>
         </div>
       </div>
 
-      {/* Assinatura + badge */}
-      <div style={{ background: '#fff', borderTop: '1px solid #e0e0e0', padding: '4px 14px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+      {/* Assinatura + Badge */}
+      <div style={{ background: '#fafafa', borderTop: '1px solid #ebebeb', padding: '7px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, height: 52 }}>
         <div>
           {assinaturaUrl ? (
-            <img src={assinaturaUrl} alt={assinaturaNome} style={{ height: 52, maxWidth: 200, objectFit: 'contain', display: 'block', marginBottom: 2 }} />
+            <img src={assinaturaUrl} alt={assinaturaNome} style={{ height: 26, maxWidth: 160, objectFit: 'contain', display: 'block', marginBottom: 1 }} />
           ) : (
-            <p style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 20, color: '#222', margin: 0, lineHeight: 1 }}>{assinaturaNome}</p>
+            <p style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 17, color: '#222', margin: 0, lineHeight: 1 }}>{assinaturaNome}</p>
           )}
-          <div style={{ width: 100, height: 0.8, background: '#555', margin: '3px 0 1px' }} />
-          <p style={{ fontSize: 7.5, color: '#555', margin: 0, letterSpacing: 0.5, fontWeight: 600 }}>{assinaturaCargo}</p>
-          <p style={{ fontSize: 7, color: '#777', margin: 0, letterSpacing: 0.3 }}>{assinaturaEmpresa || empresaNome}</p>
+          <div style={{ width: 88, height: 0.8, background: '#555', margin: '2px 0 1px' }} />
+          <p style={{ fontSize: 7, color: '#555', margin: 0, letterSpacing: 0.5, fontWeight: 600 }}>{assinaturaCargo}</p>
         </div>
-        <div style={{ background: GREEN, borderRadius: 5, padding: '5px 14px', textAlign: 'center' as const }}>
-          <p style={{ color: '#fff', fontWeight: 900, fontSize: 9.5, margin: 0, letterSpacing: 1.2 }}>CONSULTOR CERTIFICADO</p>
-          <div style={{ width: '100%', height: 0.8, background: 'rgba(255,255,255,0.4)', margin: '2px 0' }} />
-          <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: 7.5, margin: 0, letterSpacing: 0.8 }}>— COMPROMISSO • ÉTICA • EXCELÊNCIA —</p>
+        <div style={{ background: GREEN, borderRadius: 5, padding: '5px 12px', textAlign: 'center' as const }}>
+          <p style={{ color: '#fff', fontWeight: 900, fontSize: 8.5, margin: 0, letterSpacing: 1 }}>CONSULTOR CERTIFICADO</p>
+          <div style={{ width: '100%', height: 0.8, background: 'rgba(255,255,255,0.35)', margin: '2px 0' }} />
+          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 6.5, margin: 0, letterSpacing: 0.5 }}>— COMPROMISSO • ÉTICA • EXCELÊNCIA —</p>
         </div>
       </div>
 
-      {/* Rodapé verde */}
-      <div style={{ background: GREEN, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
-        <p style={{ color: '#fff', fontSize: 8, fontWeight: 700, margin: 0, letterSpacing: 0.8 }}>VÁLIDA EM TODO TERRITÓRIO NACIONAL</p>
-        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 7.5, margin: 0, letterSpacing: 0.3 }}>VERIFIQUE EM: {verificacaoUrl}/verificar/{numRegistro}</p>
+      {/* Rodapé */}
+      <div style={{ background: GREEN, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
+        <p style={{ color: '#fff', fontSize: 7.5, fontWeight: 700, margin: 0, letterSpacing: 0.5 }}>VÁLIDA EM TODO TERRITÓRIO NACIONAL</p>
+        <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 7, margin: 0 }}>VERIFIQUE EM: {urlBase}/verificar/{numRegistro}</p>
       </div>
     </div>
   )
 
   const CardVerso = () => (
-    <div style={{ width: 620, height: 390, position: 'relative', overflow: 'hidden', fontFamily: '"Arial", "Helvetica", sans-serif', display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
+    <div style={{ width: W, height: H, position: 'relative', overflow: 'hidden', fontFamily: '"Arial", "Helvetica", sans-serif', display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: 16, boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
 
       {/* Cabeçalho */}
-      <div style={{ background: NAVY, height: 78, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <p style={{ color: '#fff', fontWeight: 900, fontSize: 20, margin: 0, letterSpacing: 2.5 }}>CONSULTOR CERTIFICADO</p>
-        <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11, margin: '4px 0 0', letterSpacing: 2 }}>{empresaNome.toUpperCase()}</p>
+      <div style={{ background: NAVY, height: 68, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
+        <svg style={{ position: 'absolute', inset: 0, opacity: 0.07, pointerEvents: 'none' }} width={W} height="68">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <ellipse key={i} cx={W / 2} cy="34" rx={28 + i * 36} ry={7 + i * 3} fill="none" stroke="#fff" strokeWidth="0.5" />
+          ))}
+        </svg>
+        <p style={{ color: '#fff', fontWeight: 900, fontSize: 18, margin: 0, letterSpacing: 2.5 }}>CONSULTOR CERTIFICADO</p>
+        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 10, margin: '4px 0 0', letterSpacing: 2 }}>{empresaNome.toUpperCase()}</p>
       </div>
 
-      {/* Corpo */}
-      <div style={{ flex: 1, background: '#fff', padding: '8px 16px', display: 'flex', gap: 20, position: 'relative', overflow: 'hidden' }}>
-        {/* Guilloché verso */}
-        <svg style={{ position: 'absolute', inset: 0, opacity: 0.04, pointerEvents: 'none' }} width="620" height="250">
+      {/* Corpo — coluna com espaço real entre texto e assinatura */}
+      <div style={{ flex: 1, background: '#fff', padding: '22px 22px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
+        {/* Marca d'água */}
+        <svg style={{ position: 'absolute', inset: 0, opacity: 0.04, pointerEvents: 'none' }} width={W} height="452">
           {Array.from({ length: 14 }).map((_, i) => (
-            <ellipse key={`ve${i}`} cx="310" cy="125" rx={35 + i * 22} ry={18 + i * 11} fill="none" stroke={NAVY} strokeWidth="0.5" />
-          ))}
-          {Array.from({ length: 14 }).map((_, i) => (
-            <ellipse key={`vr${i}`} cx="120" cy="125" rx={10 + i * 8} ry={5 + i * 4} fill="none" stroke={GREEN} strokeWidth="0.4"
-              transform={`rotate(${i * 13} 120 125)`} />
+            <ellipse key={`ve${i}`} cx={W / 2} cy={226} rx={30 + i * 20} ry={15 + i * 10} fill="none" stroke={NAVY} strokeWidth="0.5" />
           ))}
           {Array.from({ length: 20 }).map((_, i) => (
-            <line key={`vl${i}`} x1="0" y1={6 + i * 12} x2="620" y2={6 + i * 12} stroke={NAVY} strokeWidth="0.25" strokeDasharray="3 6" />
+            <line key={`vl${i}`} x1="0" y1={5 + i * 22} x2={W} y2={5 + i * 22} stroke={NAVY} strokeWidth="0.22" strokeDasharray="3 7" />
           ))}
         </svg>
 
-        {/* Coluna principal */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {/* Texto de certificação */}
-          <div style={{ border: `1.5px solid ${GREEN}`, borderRadius: 6, padding: '7px 12px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <p style={{ fontSize: 10.5, fontWeight: 700, color: '#111', margin: '0 0 5px', textAlign: 'center' as const, lineHeight: 1.35, letterSpacing: 0.3 }}>
-              ESTA CARTEIRA CERTIFICA QUE O PORTADOR<br/>
-              CONCLUIU COM APROVEITAMENTO O CURSO<br/>
-              DE FORMAÇÃO DA {empresaNome.toUpperCase()}.
-            </p>
-            <div style={{ width: '50%', height: 0.8, background: '#ccc', margin: '0 auto 5px' }} />
-            <p style={{ fontSize: 9.5, color: '#333', margin: 0, textAlign: 'center' as const, lineHeight: 1.5, letterSpacing: 0.2 }}>
-              O PORTADOR ESTÁ HABILITADO A ATUAR COMO<br/>
-              CONSULTOR AUTORIZADO, SEGUINDO TODOS<br/>
-              OS PADRÕES DE QUALIDADE, ÉTICA E<br/>
-              COMPROMISSO DA EMPRESA.
-            </p>
-          </div>
+        {/* Caixa de texto — altura automática, jamais corta */}
+        <div style={{ border: `1.5px solid ${GREEN}`, borderRadius: 8, padding: '16px 20px' }}>
+          <p style={{ fontSize: 11.5, fontWeight: 700, color: '#111', margin: '0 0 8px', textAlign: 'center' as const, lineHeight: 1.55, letterSpacing: 0.3 }}>
+            ESTA CARTEIRA CERTIFICA QUE O PORTADOR<br />
+            CONCLUIU COM APROVEITAMENTO O CURSO<br />
+            DE FORMAÇÃO DA {empresaNome.toUpperCase()}.
+          </p>
+          <div style={{ width: '45%', height: 0.8, background: '#ccc', margin: '0 auto 8px' }} />
+          <p style={{ fontSize: 10.5, color: '#333', margin: 0, textAlign: 'center' as const, lineHeight: 1.55, letterSpacing: 0.2 }}>
+            O PORTADOR ESTÁ HABILITADO A ATUAR COMO<br />
+            CONSULTOR AUTORIZADO, SEGUINDO TODOS<br />
+            OS PADRÕES DE QUALIDADE, ÉTICA E<br />
+            COMPROMISSO DA EMPRESA.
+          </p>
+        </div>
 
-          {/* Assinatura */}
-          <div>
+        {/* Assinatura + QR na mesma linha */}
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 20 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             {assinaturaUrl ? (
-              <img src={assinaturaUrl} alt={assinaturaNome} style={{ height: 40, maxWidth: 260, objectFit: 'contain', display: 'block', marginBottom: 2 }} />
+              <img src={assinaturaUrl} alt={assinaturaNome} style={{ height: 46, maxWidth: 220, objectFit: 'contain', display: 'block', marginBottom: 2 }} />
             ) : (
               <p style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 19, color: '#222', margin: '0 0 2px' }}>{assinaturaNome}</p>
             )}
-            <div style={{ width: 140, height: 0.8, background: '#444', marginBottom: 3 }} />
+            <div style={{ width: 130, height: 0.8, background: '#444', marginBottom: 3 }} />
             <p style={{ fontSize: 8, color: '#555', margin: 0, fontWeight: 600, letterSpacing: 0.5 }}>{assinaturaCargo}</p>
             <p style={{ fontSize: 7.5, color: '#777', margin: 0, letterSpacing: 0.3 }}>{assinaturaEmpresa || empresaNome}</p>
           </div>
-        </div>
-
-        {/* QR Code */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-          <img src={qrUrl} alt="QR Code" width={80} height={80} style={{ borderRadius: 4, border: '1px solid #ddd' }} />
-          <p style={{ fontSize: 7, color: '#999', margin: 0, textAlign: 'center' as const }}>VERIFIQUE<br/>AUTENTICIDADE</p>
+          <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+            <img src={qrUrl} alt="QR Code" width={88} height={88} style={{ borderRadius: 6, border: '1px solid #ddd', display: 'block' }} />
+            <p style={{ fontSize: 7, color: '#999', margin: 0, textAlign: 'center' as const, lineHeight: 1.4 }}>VERIFIQUE<br />AUTENTICIDADE</p>
+          </div>
         </div>
       </div>
 
-      {/* Rodapé consolidado */}
-      <div style={{ background: GREEN, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
+      {/* Rodapé */}
+      <div style={{ background: GREEN, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {empresaLogoUrl
-              ? <img src={empresaLogoUrl} alt={empresaNome} style={{ height: 28, maxWidth: 80, objectFit: 'contain' }} />
-              : <p style={{ color: '#fff', fontWeight: 800, fontSize: 11, margin: 0, letterSpacing: 0.5 }}>{empresaNome}</p>}
-            {tagline && <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 7, margin: 0 }}>· {tagline}</p>}
-          </div>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 7.5, margin: '3px 0 0', fontWeight: 600, letterSpacing: 0.3 }}>
-            Nº {numRegistro} · Verifique em: {verificacaoUrl}
+          {empresaLogoUrl
+            ? <img src={empresaLogoUrl} alt={empresaNome} style={{ height: 22, maxWidth: 80, objectFit: 'contain' }} />
+            : <p style={{ color: '#fff', fontWeight: 800, fontSize: 10, margin: 0 }}>{empresaNome}</p>}
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 7, margin: '1px 0 0' }}>
+            Nº {numRegistro} · Verifique em: {urlBase}
           </p>
-          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 6.5, margin: '1px 0 0', letterSpacing: 0.8, fontWeight: 700 }}>DOCUMENTO AUTÊNTICO</p>
         </div>
-        <div style={{ display: 'flex', gap: 3 }}>
-          <div style={{ width: 18, height: 32, background: 'rgba(255,255,255,0.3)', clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
-          <div style={{ width: 18, height: 32, background: 'rgba(255,255,255,0.3)', clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
-        </div>
+        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 7, margin: 0, fontWeight: 700, letterSpacing: 1 }}>DOCUMENTO AUTÊNTICO</p>
       </div>
     </div>
   )
 
   return (
     <>
-    {cropSrc && (
-      <ImageCropModal
-        src={cropSrc}
-        aspectRatio={3 / 4}
-        title="Ajustar foto 3x4"
-        onSave={handleCropSalvo}
-        onCancel={() => setCropSrc(null)}
-      />
-    )}
-    <div className="print-container" style={{ minHeight: '100dvh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
-      <style>{`
-        @media print {
-          @page { size: A4 portrait; margin: 12mm; }
-          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
-          .no-print { display: none !important; }
-          .print-container {
-            background: #fff !important;
-            min-height: 0 !important;
-            color: #000 !important;
+      {cropSrc && (
+        <ImageCropModal
+          src={cropSrc}
+          aspectRatio={3 / 4}
+          title="Ajustar foto 3x4"
+          onSave={handleCropSalvo}
+          onCancel={() => setCropSrc(null)}
+        />
+      )}
+      <div className="print-container" style={{ minHeight: '100dvh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
+        <style>{`
+          @media print {
+            @page { size: A4 portrait; margin: 12mm; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+            .no-print { display: none !important; }
+            .print-container { background: #fff !important; min-height: 0 !important; color: #000 !important; }
+            .print-area { padding: 0 !important; max-width: 100% !important; display: flex !important; flex-direction: column !important; align-items: center !important; gap: 12mm !important; }
+            .card-wrapper { page-break-inside: avoid !important; break-inside: avoid !important; display: flex !important; flex-direction: column !important; align-items: center !important; }
           }
-          .print-area {
-            padding: 0 !important;
-            max-width: 100% !important;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            gap: 12mm !important;
-          }
-          .card-wrapper {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-          }
-          .card-wrapper > div {
-            box-shadow: none !important;
-            border-radius: 4px !important;
-            overflow: hidden !important;
-          }
-        }
-      `}</style>
+        `}</style>
 
-      {/* Header */}
-      <header className="no-print" style={{ background: 'rgba(8,9,13,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--avp-border)', padding: '0 24px', height: 62, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <a href={`/aluno/${whatsapp}`} style={{ color: 'var(--avp-text-dim)', textDecoration: 'none', fontSize: 14 }}>← Meu Painel</a>
-        <h1 style={{ fontWeight: 800, fontSize: 16, margin: 0 }}>🎓 Carteira de Formação</h1>
-        <div style={{ display: 'flex', gap: 10 }}>
-          {msgFoto && <span style={{ color: 'var(--avp-green)', fontSize: 13, alignSelf: 'center' }}>{msgFoto}</span>}
-          <a
-            href={verificacaoLink}
-            target="_blank"
-            rel="noreferrer"
-            style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 700, cursor: 'pointer', fontSize: 13, textDecoration: 'none' }}
-          >
-            🔍 Verificar autenticidade
-          </a>
-          <button
-            onClick={() => window.print()}
-            style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}
-          >
-            🖨 Imprimir / PDF
-          </button>
-        </div>
-      </header>
-
-      {/* Instruções */}
-      <div className="no-print" style={{ maxWidth: 700, margin: '24px auto 0', padding: '0 24px' }}>
-        {status !== 'concluido' && (
-          <div style={{ background: '#f59e0b15', border: '1px solid #f59e0b50', borderRadius: 10, padding: '14px 18px', marginBottom: 20, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-            <span style={{ fontSize: 20 }}>⚠️</span>
-            <div>
-              <p style={{ fontWeight: 700, color: '#f59e0b', margin: '0 0 4px' }}>Curso em andamento</p>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0 }}>Sua carteira ficará completa quando você concluir todos os módulos. Você já pode visualizá-la e adicionar sua foto.</p>
-            </div>
+        {/* Header */}
+        <header className="no-print" style={{ background: 'rgba(8,9,13,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--avp-border)', padding: '0 24px', height: 62, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <a href={`/aluno/${whatsapp}`} style={{ color: 'var(--avp-text-dim)', textDecoration: 'none', fontSize: 14 }}>← Meu Painel</a>
+          <h1 style={{ fontWeight: 800, fontSize: 16, margin: 0 }}>Carteira de Formação</h1>
+          <div style={{ display: 'flex', gap: 10 }}>
+            {msgFoto && <span style={{ color: 'var(--avp-green)', fontSize: 13, alignSelf: 'center' }}>{msgFoto}</span>}
+            <a href={verificacaoLink} target="_blank" rel="noreferrer"
+              style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 700, cursor: 'pointer', fontSize: 13, textDecoration: 'none' }}>
+              Verificar autenticidade
+            </a>
+            <button onClick={() => window.print()}
+              style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>
+              Imprimir / PDF
+            </button>
           </div>
-        )}
-        <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '12px 18px', marginBottom: 20, display: 'flex', gap: 12, alignItems: 'center' }}>
-          <span style={{ fontSize: 20 }}>📸</span>
-          <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0 }}>
-            <strong style={{ color: 'var(--avp-text)' }}>Foto 3x4:</strong> Clique na área da foto na carteira abaixo para adicionar ou trocar sua foto. Use uma foto recente com fundo claro.
-          </p>
-        </div>
-      </div>
+        </header>
 
-      {/* Cards */}
-      <div className="print-area" style={{ maxWidth: 700, margin: '0 auto', padding: '0 24px 60px', display: 'flex', flexDirection: 'column', gap: 32, alignItems: 'center' }}>
-        <div className="card-wrapper">
-          <p className="no-print" style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 10, textAlign: 'center' as const }}>FRENTE</p>
-          <CardFrente />
+        {/* Avisos */}
+        <div className="no-print" style={{ maxWidth: 520, margin: '24px auto 0', padding: '0 24px' }}>
+          {status !== 'concluido' && (
+            <div style={{ background: '#f59e0b15', border: '1px solid #f59e0b50', borderRadius: 10, padding: '14px 18px', marginBottom: 16, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <div>
+                <p style={{ fontWeight: 700, color: '#f59e0b', margin: '0 0 4px', fontSize: 14 }}>Curso em andamento</p>
+                <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0 }}>Sua carteira ficará completa quando você concluir todos os módulos.</p>
+              </div>
+            </div>
+          )}
+          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '12px 18px', marginBottom: 20, display: 'flex', gap: 10, alignItems: 'center' }}>
+            <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0 }}>
+              <strong style={{ color: 'var(--avp-text)' }}>Foto 3×4:</strong> Clique na área da foto para adicionar ou trocar sua foto.
+            </p>
+          </div>
         </div>
-        <div className="card-wrapper">
-          <p className="no-print" style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 10, textAlign: 'center' as const }}>VERSO</p>
-          <CardVerso />
+
+        {/* Cards */}
+        <div className="print-area" style={{ maxWidth: 520, margin: '0 auto', padding: '0 24px 60px', display: 'flex', flexDirection: 'column', gap: 32, alignItems: 'center' }}>
+          <div className="card-wrapper">
+            <p className="no-print" style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 10, textAlign: 'center' as const }}>FRENTE</p>
+            <CardFrente />
+          </div>
+          <div className="card-wrapper">
+            <p className="no-print" style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 10, textAlign: 'center' as const }}>VERSO</p>
+            <CardVerso />
+          </div>
         </div>
       </div>
-    </div>
     </>
   )
 }
