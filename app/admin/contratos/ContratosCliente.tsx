@@ -483,10 +483,16 @@ export default function ContratosCliente({
             Visao geral de assinaturas de todos os alunos
           </p>
         </div>
-        <a href="/contrato" target="_blank" rel="noreferrer"
-          style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', borderRadius: 8, padding: '8px 16px', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
-          Abrir pagina do contrato
-        </a>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <a href="/admin/configuracoes#contrato"
+            style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.35)', color: '#fbbf24', borderRadius: 8, padding: '8px 16px', fontWeight: 700, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+            Personalizar contrato
+          </a>
+          <a href="/contrato" target="_blank" rel="noreferrer"
+            style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', borderRadius: 8, padding: '8px 16px', fontWeight: 700, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+            Abrir pagina do contrato
+          </a>
+        </div>
       </div>
 
       <ProcessarContratoIA clausulasAtuais={temClausulasIA} />

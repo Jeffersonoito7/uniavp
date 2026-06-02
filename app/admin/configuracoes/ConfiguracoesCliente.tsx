@@ -1325,7 +1325,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
       </div>
 
       {/* CONTRATO DE REPRESENTAÇÃO */}
-      <div style={{ ...card, border: '2px solid rgba(99,102,241,0.25)', background: 'rgba(99,102,241,0.03)' }}>
+      <div id="contrato" style={{ ...card, border: '2px solid rgba(99,102,241,0.25)', background: 'rgba(99,102,241,0.03)', scrollMarginTop: 80 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
           <div>
             <p style={{ fontWeight: 800, fontSize: 16 }}>📄 Contrato de Representação</p>
