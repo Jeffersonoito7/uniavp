@@ -587,6 +587,57 @@ export type Database = {
           },
         ]
       }
+      biblioteca: {
+        Row: {
+          ativo: boolean | null
+          autor: string | null
+          capa_url: string | null
+          categoria: string | null
+          created_at: string | null
+          descricao: string | null
+          duracao: string | null
+          id: string
+          ordem: number | null
+          plano: string | null
+          tenant_id: string | null
+          tipo: string | null
+          titulo: string
+          url: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          autor?: string | null
+          capa_url?: string | null
+          categoria?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          duracao?: string | null
+          id?: string
+          ordem?: number | null
+          plano?: string | null
+          tenant_id?: string | null
+          tipo?: string | null
+          titulo: string
+          url: string
+        }
+        Update: {
+          ativo?: boolean | null
+          autor?: string | null
+          capa_url?: string | null
+          categoria?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          duracao?: string | null
+          id?: string
+          ordem?: number | null
+          plano?: string | null
+          tenant_id?: string | null
+          tipo?: string | null
+          titulo?: string
+          url?: string
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           ativo: boolean | null
