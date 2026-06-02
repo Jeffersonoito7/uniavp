@@ -268,7 +268,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
     const nfCnpjValido = nfCnpjLen === 0 || validarCNPJ(nfEmpresaCnpj)
     const nfCpfLen = nfResponsavelCpf.replace(/\D/g,'').length
     const nfCpfValido = nfCpfLen === 0 || validarCPF(nfResponsavelCpf)
-    const nfOk = nfEmiteProprio === true || (nfEmiteProprio === false && nfEmpresaNome && nfEmpresaCnpj && validarCNPJ(nfEmpresaCnpj) && nfResponsavelNome)
+    const nfOk = nfEmiteProprio === true || (nfEmiteProprio === false && nfEmpresaNome && nfCnpjValido && nfResponsavelNome)
     const cnpjOk = semCnpj || (!!form.cnpj_mei && cnpjValido)
     const enderecoOk = semCnpj || !!(form.rua && form.numero && form.bairro && form.cidade && form.estado && form.cep)
     const nfFinal = semCnpj || (nfEmiteProprio !== null && !!nfOk)
