@@ -215,7 +215,7 @@ export default function CarteiraCardPreview({
         </div>
       </div>
 
-      <div style={{ background: GREEN, height: 58, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
+      <div style={{ background: GREEN, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
         <div>
           <p style={{ color: '#fff', fontWeight: 800, fontSize: 11, margin: 0, letterSpacing: 0.5 }}>{empresaNome}</p>
           {tagline && <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 7, margin: '1px 0' }}>· {tagline}</p>}

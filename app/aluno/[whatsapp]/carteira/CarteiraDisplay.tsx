@@ -310,7 +310,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
       </div>
 
       {/* Rodapé consolidado */}
-      <div style={{ background: GREEN, height: 58, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
+      <div style={{ background: GREEN, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {empresaLogoUrl
