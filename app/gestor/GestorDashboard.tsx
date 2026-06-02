@@ -339,7 +339,7 @@ export default function GestorDashboard({
     setMsgConsultor(null)
     const res = await fetch('/api/cadastro', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-admin-request': 'true' },
       body: JSON.stringify({
         nome: novoForm.nome,
         whatsapp: novoForm.whatsapp.replace(/\D/g, ''),
