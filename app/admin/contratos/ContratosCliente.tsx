@@ -403,6 +403,67 @@ function GeradorLinkPersonalizado({ acordos }: { acordos: Acordo[] }) {
   )
 }
 
+function PainelSemCnpj({ contratos }: { contratos: Contrato[] }) {
+  const [expandido, setExpandido] = useState(false)
+  const lista = contratos.filter(c => c.clausulas_aceitas?.sem_cnpj)
+  if (lista.length === 0) return null
+
+  const base = typeof window !== 'undefined' ? window.location.origin : ''
+  const linkContrato = `${base}/contrato`
+
+  function msgCobrar(nome: string) {
+    const primeiro = nome.trim().split(' ')[0]
+    return encodeURIComponent(
+      `Ola, ${primeiro}! Seu contrato de representacao foi assinado sem o CNPJ MEI.\n\nAssim que abrir sua empresa, acesse o link abaixo para assinar novamente com os dados atualizados:\n${linkContrato}\n\nQualquer duvida, estamos aqui!`
+    )
+  }
+
+  return (
+    <div style={{ background: 'rgba(251,146,60,0.06)', border: '1.5px solid rgba(251,146,60,0.3)', borderRadius: 14, padding: '18px 22px', marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+        <div>
+          <p style={{ fontWeight: 800, fontSize: 14, margin: 0, color: '#fb923c' }}>
+            Contratos sem CNPJ — revisao pendente
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '3px 0 0' }}>
+            <strong style={{ color: '#fb923c' }}>{lista.length}</strong> consultor(es) assinaram sem CNPJ MEI. Quando abrirem empresa, solicite novo contrato.
+          </p>
+        </div>
+        <button onClick={() => setExpandido(v => !v)}
+          style={{ background: 'rgba(251,146,60,0.1)', border: '1px solid rgba(251,146,60,0.35)', color: '#fb923c', borderRadius: 8, padding: '8px 16px', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          {expandido ? 'Ocultar lista' : `Ver os ${lista.length}`}
+        </button>
+      </div>
+
+      {expandido && (
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {lista.map(c => {
+            const wppNum = c.whatsapp.replace(/\D/g, '')
+            const wppHref = `https://wa.me/${wppNum.startsWith('55') ? wppNum : '55' + wppNum}?text=${msgCobrar(c.nome)}`
+            return (
+              <div key={c.id} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontWeight: 700, fontSize: 13, margin: 0 }}>{c.nome}</p>
+                  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
+                    {mascaraWpp(c.whatsapp)}
+                    {c.assinado_em && (
+                      <> &middot; assinou em {new Date(c.assinado_em).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</>
+                    )}
+                  </p>
+                </div>
+                <a href={wppHref} target="_blank" rel="noreferrer"
+                  style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 12, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  Cobrar via WhatsApp
+                </a>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function ContratosCliente({
   contratosIniciais,
   total,
@@ -489,6 +550,7 @@ export default function ContratosCliente({
       <ModelosAcordo acordosIniciais={acordos} />
       <PainelEnvioContrato formadosSemContrato={formadosSemContrato} />
       <GeradorLinkPersonalizado acordos={acordos} />
+      <PainelSemCnpj contratos={lista} />
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14, marginBottom: 28 }}>
