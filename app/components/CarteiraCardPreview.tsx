@@ -183,14 +183,14 @@ export default function CarteiraCardPreview({
         </svg>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <div style={{ border: `1.5px solid ${GREEN}`, borderRadius: 6, padding: '10px 14px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <p style={{ fontSize: 10.5, fontWeight: 700, color: '#111', margin: '0 0 8px', textAlign: 'center' as const, lineHeight: 1.6, letterSpacing: 0.3 }}>
+          <div style={{ border: `1.5px solid ${GREEN}`, borderRadius: 6, padding: '7px 12px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <p style={{ fontSize: 10.5, fontWeight: 700, color: '#111', margin: '0 0 5px', textAlign: 'center' as const, lineHeight: 1.35, letterSpacing: 0.3 }}>
               ESTA CARTEIRA CERTIFICA QUE O PORTADOR<br />
               CONCLUIU COM APROVEITAMENTO O CURSO<br />
               DE FORMAÇÃO DA {empresaNome.toUpperCase()}.
             </p>
-            <div style={{ width: '50%', height: 0.8, background: '#ccc', margin: '0 auto 8px' }} />
-            <p style={{ fontSize: 9.5, color: '#333', margin: 0, textAlign: 'center' as const, lineHeight: 1.7, letterSpacing: 0.2 }}>
+            <div style={{ width: '50%', height: 0.8, background: '#ccc', margin: '0 auto 5px' }} />
+            <p style={{ fontSize: 9.5, color: '#333', margin: 0, textAlign: 'center' as const, lineHeight: 1.5, letterSpacing: 0.2 }}>
               O PORTADOR ESTÁ HABILITADO A ATUAR COMO<br />
               CONSULTOR AUTORIZADO, SEGUINDO TODOS<br />
               OS PADRÕES DE QUALIDADE, ÉTICA E<br />
