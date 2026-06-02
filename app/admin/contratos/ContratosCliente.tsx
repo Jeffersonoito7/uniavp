@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 
 type Contrato = {
   id: string; nome: string; cpf: string | null; whatsapp: string; email: string | null
@@ -51,165 +51,141 @@ function StatusBadge({ status }: { status: string | null }) {
   )
 }
 
-type ClausulaIA = { num: number; titulo: string; resumo: string; texto: string }
+type Acordo = { id: string; nome: string; regra_bonificacao: string; criado_em: string }
 
-function ProcessarContratoIA({ clausulasAtuais }: { clausulasAtuais: boolean }) {
-  const [etapa, setEtapa] = useState<'idle' | 'processando' | 'revisao' | 'salvando' | 'salvo'>('idle')
-  const [clausulas, setClausulas] = useState<ClausulaIA[]>([])
-  const [editando, setEditando] = useState<number | null>(null)
-  const [clausulaEdit, setClausulaEdit] = useState<ClausulaIA | null>(null)
-  const [erro, setErro] = useState<string | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+async function salvarAcordosConfig(lista: Acordo[]) {
+  await fetch('/api/admin/configuracoes', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify([{ chave: 'contrato_acordos', valor: JSON.stringify(lista) }]),
+  })
+}
 
-  async function processar(file: File) {
-    setEtapa('processando')
-    setErro(null)
-    try {
-      const form = new FormData()
-      form.append('arquivo', file)
-      const res = await fetch('/api/admin/contratos/processar-pdf', { method: 'POST', body: form })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Erro ao processar PDF')
-      setClausulas(data.clausulas)
-      setEtapa('revisao')
-    } catch (e: any) {
-      setErro(e.message)
-      setEtapa('idle')
-    }
+function ModelosAcordo({ acordosIniciais }: { acordosIniciais: Acordo[] }) {
+  const [lista, setLista] = useState(acordosIniciais)
+  const [criando, setCriando] = useState(false)
+  const [novoNome, setNovoNome] = useState('')
+  const [novaRegra, setNovaRegra] = useState('')
+  const [salvando, setSalvando] = useState(false)
+  const [editando, setEditando] = useState<Acordo | null>(null)
+
+  const inp2 = { width: '100%', background: 'var(--avp-bg)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '9px 12px', color: 'var(--avp-text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' } as React.CSSProperties
+
+  async function criar() {
+    if (!novoNome.trim() || !novaRegra.trim()) return
+    setSalvando(true)
+    const novo: Acordo = { id: crypto.randomUUID(), nome: novoNome.trim(), regra_bonificacao: novaRegra.trim(), criado_em: new Date().toISOString() }
+    const novaLista = [...lista, novo]
+    await salvarAcordosConfig(novaLista)
+    setLista(novaLista); setNovoNome(''); setNovaRegra(''); setCriando(false); setSalvando(false)
   }
 
-  async function salvar() {
-    setEtapa('salvando')
-    setErro(null)
-    try {
-      const res = await fetch('/api/admin/configuracoes', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify([{ chave: 'contrato_clausulas', valor: JSON.stringify(clausulas) }]),
-      })
-      if (!res.ok) throw new Error((await res.json()).error ?? 'Erro ao salvar')
-      setEtapa('salvo')
-    } catch (e: any) {
-      setErro(e.message)
-      setEtapa('revisao')
-    }
+  async function deletar(id: string) {
+    if (!confirm('Remover este modelo de acordo?')) return
+    const novaLista = lista.filter(a => a.id !== id)
+    await salvarAcordosConfig(novaLista)
+    setLista(novaLista)
   }
 
-  function abrirEdicao(c: ClausulaIA) {
-    setEditando(c.num)
-    setClausulaEdit({ ...c })
-  }
-
-  function salvarEdicao() {
-    if (!clausulaEdit) return
-    setClausulas(prev => prev.map(c => c.num === clausulaEdit.num ? clausulaEdit : c))
-    setEditando(null)
-    setClausulaEdit(null)
+  async function salvarEdicao() {
+    if (!editando) return
+    setSalvando(true)
+    const novaLista = lista.map(a => a.id === editando.id ? editando : a)
+    await salvarAcordosConfig(novaLista)
+    setLista(novaLista); setEditando(null); setSalvando(false)
   }
 
   return (
-    <div style={{ background: 'rgba(139,92,246,0.05)', border: '1.5px solid rgba(139,92,246,0.25)', borderRadius: 14, padding: '18px 22px', marginBottom: 20 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: etapa === 'idle' ? 0 : 16 }}>
+    <div style={{ background: 'rgba(34,197,94,0.04)', border: '1.5px solid rgba(34,197,94,0.2)', borderRadius: 14, padding: '18px 22px', marginBottom: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: lista.length > 0 || criando ? 16 : 0 }}>
         <div>
-          <p style={{ fontWeight: 800, fontSize: 14, margin: 0, color: '#a78bfa' }}>
-            Cláusulas via IA
-            {clausulasAtuais && etapa === 'idle' && (
-              <span style={{ marginLeft: 8, fontSize: 11, color: '#22c55e', fontWeight: 600 }}>ativo</span>
-            )}
-          </p>
+          <p style={{ fontWeight: 800, fontSize: 14, margin: 0, color: '#22c55e' }}>Modelos de Acordo</p>
           <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '3px 0 0' }}>
-            {etapa === 'idle' ? 'Faça upload do seu contrato em PDF e a IA extrai as cláusulas automaticamente.' : etapa === 'processando' ? 'Analisando o contrato...' : etapa === 'revisao' ? `${clausulas.length} cláusulas extraídas — revise antes de salvar.` : etapa === 'salvando' ? 'Salvando...' : 'Cláusulas salvas! O formulário de contrato já usa os novos textos.'}
+            Salve regras de bonificacao com nome. Ao gerar um link, basta selecionar o modelo em vez de redigitar.
           </p>
         </div>
-        {etapa === 'idle' && (
-          <>
-            <input ref={inputRef} type="file" accept="application/pdf" style={{ display: 'none' }}
-              onChange={e => { const f = e.target.files?.[0]; if (f) processar(f); e.target.value = '' }} />
-            <button
-              onClick={() => inputRef.current?.click()}
-              style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.4)', color: '#a78bfa', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}
-            >
-              {clausulasAtuais ? 'Atualizar contrato' : 'Upload do PDF'}
-            </button>
-          </>
-        )}
-        {etapa === 'processando' && (
-          <div style={{ fontSize: 13, color: '#a78bfa', fontWeight: 600 }}>Aguarde...</div>
-        )}
-        {etapa === 'salvo' && (
-          <button
-            onClick={() => { setEtapa('idle'); setClausulas([]) }}
-            style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
-          >
-            Feito
+        {!criando && (
+          <button onClick={() => setCriando(true)}
+            style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', color: '#22c55e', borderRadius: 8, padding: '8px 16px', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            + Novo modelo
           </button>
         )}
       </div>
 
-      {erro && (
-        <p style={{ fontSize: 12, color: '#f87171', margin: '0 0 12px', background: 'rgba(239,68,68,0.08)', padding: '8px 12px', borderRadius: 6 }}>{erro}</p>
+      {lista.length === 0 && !criando && (
+        <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', margin: 0 }}>
+          Nenhum modelo salvo. Crie o primeiro para agilizar o envio de contratos.
+        </p>
       )}
 
-      {etapa === 'revisao' && (
-        <>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-            {clausulas.map(c => (
-              <div key={c.num} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: 14 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa' }}>{c.num}. {c.titulo}</span>
-                  <button
-                    onClick={() => abrirEdicao(c)}
-                    style={{ border: '1px solid var(--avp-border)', background: 'transparent', borderRadius: 6, padding: '2px 8px', fontSize: 11, color: 'var(--avp-text-dim)', cursor: 'pointer', flexShrink: 0 }}
-                  >
-                    Editar
-                  </button>
-                </div>
-                <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 4px', fontStyle: 'italic' }}>{c.resumo}</p>
-                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>{c.texto}</p>
+      {lista.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: criando ? 14 : 0 }}>
+          {lista.map(a => (
+            <div key={a.id} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>{a.nome}</p>
+                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                  {a.regra_bonificacao.slice(0, 180)}{a.regra_bonificacao.length > 180 ? '...' : ''}
+                </p>
               </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-            <button
-              onClick={() => { setEtapa('idle'); setClausulas([]) }}
-              style={{ border: '1px solid var(--avp-border)', background: 'transparent', borderRadius: 8, padding: '8px 16px', fontSize: 13, color: 'var(--avp-text-dim)', cursor: 'pointer' }}
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={salvar}
-              style={{ background: '#7c3aed', border: 'none', borderRadius: 8, padding: '8px 20px', fontSize: 13, fontWeight: 700, color: '#fff', cursor: 'pointer' }}
-            >
-              Salvar cláusulas
-            </button>
-          </div>
-        </>
+              <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                <button onClick={() => setEditando({ ...a })}
+                  style={{ border: '1px solid var(--avp-border)', background: 'transparent', borderRadius: 6, padding: '4px 10px', fontSize: 11, color: 'var(--avp-text-dim)', cursor: 'pointer' }}>Editar</button>
+                <button onClick={() => deletar(a.id)}
+                  style={{ border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.06)', borderRadius: 6, padding: '4px 10px', fontSize: 11, color: '#f87171', cursor: 'pointer' }}>Remover</button>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
 
-      {/* Modal de edição de cláusula */}
-      {editando !== null && clausulaEdit && (
-        <div onClick={() => setEditando(null)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div onClick={e => e.stopPropagation()}
-            style={{ background: 'var(--avp-card)', borderRadius: 12, padding: 24, maxWidth: 560, width: '90%', maxHeight: '85vh', overflowY: 'auto' }}>
+      {criando && (
+        <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, color: 'var(--avp-text-dim)', display: 'block', marginBottom: 5 }}>Nome do modelo *</label>
+            <input value={novoNome} onChange={e => setNovoNome(e.target.value)} placeholder="Ex: Acordo Padrao AVP, Acordo Especial 200 fichas..." style={inp2} />
+          </div>
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, color: 'var(--avp-text-dim)', display: 'block', marginBottom: 5 }}>Regra de bonificacao *</label>
+            <textarea value={novaRegra} onChange={e => setNovaRegra(e.target.value)}
+              placeholder={'Ex:\n10 filiações = R$ 500,00\n20 filiações = R$ 1.500,00\nRecorrência de 5% com 300+ veículos ativos.'}
+              rows={5} style={{ ...inp2, resize: 'vertical', fontFamily: 'Inter, sans-serif' } as React.CSSProperties} />
+          </div>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button onClick={() => { setCriando(false); setNovoNome(''); setNovaRegra('') }}
+              style={{ border: '1px solid var(--avp-border)', background: 'transparent', borderRadius: 8, padding: '8px 16px', fontSize: 13, color: 'var(--avp-text-dim)', cursor: 'pointer' }}>Cancelar</button>
+            <button onClick={criar} disabled={!novoNome.trim() || !novaRegra.trim() || salvando}
+              style={{ background: !novoNome.trim() || !novaRegra.trim() || salvando ? 'var(--avp-border)' : '#22c55e', border: 'none', borderRadius: 8, padding: '8px 20px', fontSize: 13, fontWeight: 700, color: '#fff', cursor: !novoNome.trim() || !novaRegra.trim() || salvando ? 'not-allowed' : 'pointer' }}>
+              {salvando ? 'Salvando...' : 'Salvar modelo'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {editando && (
+        <div onClick={() => setEditando(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--avp-card)', borderRadius: 12, padding: 24, maxWidth: 560, width: '90%', maxHeight: '85vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <span style={{ fontSize: 14, fontWeight: 700 }}>Editar cláusula {clausulaEdit.num}</span>
+              <span style={{ fontSize: 14, fontWeight: 700 }}>Editar modelo</span>
               <button onClick={() => setEditando(null)} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: 'var(--avp-text-dim)' }}>×</button>
             </div>
-            {(['titulo', 'resumo', 'texto'] as const).map(campo => (
-              <div key={campo} style={{ marginBottom: 14 }}>
-                <label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, color: 'var(--avp-text-dim)', display: 'block', marginBottom: 4 }}>{campo}</label>
-                <textarea
-                  value={clausulaEdit[campo]}
-                  onChange={e => setClausulaEdit(prev => prev ? { ...prev, [campo]: e.target.value } : prev)}
-                  rows={campo === 'titulo' ? 1 : 4}
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--avp-border)', background: 'var(--avp-bg)', color: 'var(--avp-text)', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }}
-                />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, color: 'var(--avp-text-dim)', display: 'block', marginBottom: 5 }}>Nome</label>
+                <input value={editando.nome} onChange={e => setEditando(p => p ? { ...p, nome: e.target.value } : p)} style={inp2} />
               </div>
-            ))}
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button onClick={() => setEditando(null)} style={{ border: '1px solid var(--avp-border)', background: 'transparent', borderRadius: 8, padding: '7px 14px', fontSize: 13, color: 'var(--avp-text-dim)', cursor: 'pointer' }}>Cancelar</button>
-              <button onClick={salvarEdicao} style={{ background: '#7c3aed', border: 'none', borderRadius: 8, padding: '7px 18px', fontSize: 13, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>Salvar</button>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, color: 'var(--avp-text-dim)', display: 'block', marginBottom: 5 }}>Regra de bonificacao</label>
+                <textarea value={editando.regra_bonificacao} onChange={e => setEditando(p => p ? { ...p, regra_bonificacao: e.target.value } : p)}
+                  rows={6} style={{ ...inp2, resize: 'vertical', fontFamily: 'Inter, sans-serif' } as React.CSSProperties} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+              <button onClick={() => setEditando(null)} style={{ border: '1px solid var(--avp-border)', background: 'transparent', borderRadius: 8, padding: '8px 16px', fontSize: 13, color: 'var(--avp-text-dim)', cursor: 'pointer' }}>Cancelar</button>
+              <button onClick={salvarEdicao} disabled={!editando.nome.trim() || !editando.regra_bonificacao.trim() || salvando}
+                style={{ background: '#22c55e', border: 'none', borderRadius: 8, padding: '8px 20px', fontSize: 13, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>
+                {salvando ? 'Salvando...' : 'Salvar'}
+              </button>
             </div>
           </div>
         </div>
@@ -217,6 +193,7 @@ function ProcessarContratoIA({ clausulasAtuais }: { clausulasAtuais: boolean }) 
     </div>
   )
 }
+
 
 function PainelEnvioContrato({ formadosSemContrato }: { formadosSemContrato: number }) {
   const [enviando, setEnviando] = useState(false)
@@ -338,11 +315,20 @@ function BotaoPDF({ contrato, onGerado }: { contrato: Contrato; onGerado: (url: 
   )
 }
 
-function GeradorLinkPersonalizado() {
+function GeradorLinkPersonalizado({ acordos }: { acordos: Acordo[] }) {
   const [wpp, setWpp] = useState('')
   const [regra, setRegra] = useState('')
+  const [modeloId, setModeloId] = useState('')
   const [link, setLink] = useState('')
   const [copiado, setCopiado] = useState(false)
+
+  const inpStyle = { width: '100%', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '9px 12px', color: 'var(--avp-text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' } as React.CSSProperties
+
+  function selecionarModelo(id: string) {
+    setModeloId(id)
+    const a = acordos.find(x => x.id === id)
+    if (a) setRegra(a.regra_bonificacao)
+  }
 
   function gerar() {
     const base = typeof window !== 'undefined' ? window.location.origin : ''
@@ -360,49 +346,54 @@ function GeradorLinkPersonalizado() {
 
   return (
     <div style={{ background: 'rgba(245,158,11,0.05)', border: '1.5px solid rgba(245,158,11,0.25)', borderRadius: 14, padding: '18px 22px', marginBottom: 20 }}>
-      <p style={{ fontWeight: 800, fontSize: 14, margin: '0 0 4px', color: '#fbbf24' }}>Gerar link com regra de bonificacao personalizada</p>
+      <p style={{ fontWeight: 800, fontSize: 14, margin: '0 0 4px', color: '#fbbf24' }}>Gerar link de contrato</p>
       <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 16px' }}>
-        Use para consultores com plano de ganhos diferente do padrao. O link gerado carrega a regra no contrato desse consultor.
+        Selecione um modelo salvo ou escreva a regra manualmente. O link gerado abre o contrato pre-configurado para o consultor assinar.
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {acordos.length > 0 && (
+          <div>
+            <label style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 8 }}>
+              Usar modelo de acordo salvo
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {acordos.map(a => (
+                <button key={a.id} onClick={() => selecionarModelo(modeloId === a.id ? '' : a.id)}
+                  style={{ background: modeloId === a.id ? 'rgba(34,197,94,0.12)' : 'var(--avp-card)', border: `1px solid ${modeloId === a.id ? 'rgba(34,197,94,0.5)' : 'var(--avp-border)'}`, color: modeloId === a.id ? '#22c55e' : 'var(--avp-text)', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: modeloId === a.id ? 700 : 400, cursor: 'pointer' }}>
+                  {a.nome}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <div>
           <label style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>
-            WhatsApp do consultor (opcional — para pre-preencher o formulario)
+            WhatsApp do consultor (opcional — pre-preenche o formulario)
           </label>
-          <input
-            value={wpp} onChange={e => setWpp(e.target.value)}
-            placeholder="87 99999-9999"
-            style={{ width: '100%', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '9px 12px', color: 'var(--avp-text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
-          />
+          <input value={wpp} onChange={e => setWpp(e.target.value)} placeholder="87 99999-9999" style={inpStyle} />
         </div>
         <div>
           <label style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>
-            Regra de bonificacao personalizada *
+            Regra de bonificacao {acordos.length > 0 ? '(preenchida ao selecionar modelo)' : '*'}
           </label>
           <textarea
-            value={regra} onChange={e => setRegra(e.target.value)}
-            placeholder={'Ex:\nR$ 100,00 por filiacao ativa, independente do numero total.\nApos atingir 300 veiculos ativos, passa a valer a tabela padrao.'}
+            value={regra} onChange={e => { setRegra(e.target.value); setModeloId('') }}
+            placeholder={'Ex:\nR$ 100,00 por filiacao ativa.\nApos 300 veiculos ativos, passa a valer a tabela padrao.'}
             rows={4}
-            style={{ width: '100%', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '9px 12px', color: 'var(--avp-text)', fontSize: 13, outline: 'none', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'Inter, sans-serif' }}
+            style={{ ...inpStyle, resize: 'vertical', fontFamily: 'Inter, sans-serif' } as React.CSSProperties}
           />
         </div>
-        <button
-          onClick={gerar}
-          disabled={!regra.trim()}
-          style={{ alignSelf: 'flex-start', background: regra.trim() ? 'rgba(245,158,11,0.15)' : 'var(--avp-border)', border: `1px solid ${regra.trim() ? 'rgba(245,158,11,0.4)' : 'transparent'}`, color: regra.trim() ? '#fbbf24' : 'var(--avp-text-dim)', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 13, cursor: regra.trim() ? 'pointer' : 'not-allowed' }}
-        >
+        <button onClick={gerar} disabled={!regra.trim()}
+          style={{ alignSelf: 'flex-start', background: regra.trim() ? 'rgba(245,158,11,0.15)' : 'var(--avp-border)', border: `1px solid ${regra.trim() ? 'rgba(245,158,11,0.4)' : 'transparent'}`, color: regra.trim() ? '#fbbf24' : 'var(--avp-text-dim)', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 13, cursor: regra.trim() ? 'pointer' : 'not-allowed' }}>
           Gerar link
         </button>
         {link && (
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-            <input
-              readOnly value={link}
+            <input readOnly value={link}
               style={{ flex: 1, minWidth: 200, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '8px 12px', color: 'var(--avp-text)', fontSize: 12, outline: 'none', fontFamily: 'monospace' }}
             />
-            <button
-              onClick={copiar}
-              style={{ background: copiado ? 'rgba(34,197,94,0.1)' : 'rgba(99,102,241,0.1)', border: `1px solid ${copiado ? 'rgba(34,197,94,0.3)' : 'rgba(99,102,241,0.3)'}`, color: copiado ? '#22c55e' : '#818cf8', borderRadius: 8, padding: '8px 16px', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}
-            >
+            <button onClick={copiar}
+              style={{ background: copiado ? 'rgba(34,197,94,0.1)' : 'rgba(99,102,241,0.1)', border: `1px solid ${copiado ? 'rgba(34,197,94,0.3)' : 'rgba(99,102,241,0.3)'}`, color: copiado ? '#22c55e' : '#818cf8', borderRadius: 8, padding: '8px 16px', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>
               {copiado ? 'Copiado!' : 'Copiar link'}
             </button>
           </div>
@@ -418,14 +409,14 @@ export default function ContratosCliente({
   formadosSemContrato,
   naoAssinaram,
   totalAlunos,
-  temClausulasIA,
+  acordos,
 }: {
   contratosIniciais: Contrato[]
   total: number
   formadosSemContrato: number
   naoAssinaram: AlunoSemContrato[]
   totalAlunos: number
-  temClausulasIA: boolean
+  acordos: Acordo[]
 }) {
   const [lista] = useState(contratosIniciais)
   const [naoAss] = useState(naoAssinaram)
@@ -495,9 +486,9 @@ export default function ContratosCliente({
         </div>
       </div>
 
-      <ProcessarContratoIA clausulasAtuais={temClausulasIA} />
+      <ModelosAcordo acordosIniciais={acordos} />
       <PainelEnvioContrato formadosSemContrato={formadosSemContrato} />
-      <GeradorLinkPersonalizado />
+      <GeradorLinkPersonalizado acordos={acordos} />
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14, marginBottom: 28 }}>
