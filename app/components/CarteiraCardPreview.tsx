@@ -172,7 +172,7 @@ export default function CarteiraCardPreview({
         <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11, margin: '4px 0 0', letterSpacing: 2 }}>{empresaNome.toUpperCase()}</p>
       </div>
 
-      <div style={{ flex: 1, background: '#fff', padding: '14px 20px', display: 'flex', gap: 20, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ flex: 1, background: '#fff', padding: '8px 16px', display: 'flex', gap: 20, position: 'relative', overflow: 'hidden' }}>
         <svg style={{ position: 'absolute', inset: 0, opacity: 0.04, pointerEvents: 'none' }} width="620" height="250">
           {Array.from({ length: 14 }).map((_, i) => (
             <ellipse key={`ve${i}`} cx="310" cy="125" rx={35 + i * 22} ry={18 + i * 11} fill="none" stroke={NAVY} strokeWidth="0.5" />
@@ -182,7 +182,7 @@ export default function CarteiraCardPreview({
           ))}
         </svg>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
           <div style={{ border: `1.5px solid ${GREEN}`, borderRadius: 6, padding: '10px 14px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <p style={{ fontSize: 10.5, fontWeight: 700, color: '#111', margin: '0 0 8px', textAlign: 'center' as const, lineHeight: 1.6, letterSpacing: 0.3 }}>
               ESTA CARTEIRA CERTIFICA QUE O PORTADOR<br />
@@ -199,7 +199,7 @@ export default function CarteiraCardPreview({
           </div>
           <div>
             {assinaturaUrl ? (
-              <img src={assinaturaUrl} alt={assinaturaNome} style={{ height: 52, maxWidth: 260, objectFit: 'contain', display: 'block', marginBottom: 2 }} />
+              <img src={assinaturaUrl} alt={assinaturaNome} style={{ height: 40, maxWidth: 260, objectFit: 'contain', display: 'block', marginBottom: 2 }} />
             ) : (
               <p style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 19, color: '#222', margin: '0 0 2px' }}>{assinaturaNome}</p>
             )}

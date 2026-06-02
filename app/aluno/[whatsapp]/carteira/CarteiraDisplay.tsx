@@ -256,7 +256,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
       </div>
 
       {/* Corpo */}
-      <div style={{ flex: 1, background: '#fff', padding: '14px 20px', display: 'flex', gap: 20, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ flex: 1, background: '#fff', padding: '8px 16px', display: 'flex', gap: 20, position: 'relative', overflow: 'hidden' }}>
         {/* Guilloché verso */}
         <svg style={{ position: 'absolute', inset: 0, opacity: 0.04, pointerEvents: 'none' }} width="620" height="250">
           {Array.from({ length: 14 }).map((_, i) => (
@@ -272,7 +272,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
         </svg>
 
         {/* Coluna principal */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
           {/* Texto de certificação */}
           <div style={{ border: `1.5px solid ${GREEN}`, borderRadius: 6, padding: '10px 14px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <p style={{ fontSize: 10.5, fontWeight: 700, color: '#111', margin: '0 0 8px', textAlign: 'center' as const, lineHeight: 1.6, letterSpacing: 0.3 }}>
@@ -292,7 +292,7 @@ export default function CarteiraDisplay({ nome, numRegistro, fotoUrl: fotoInicia
           {/* Assinatura */}
           <div>
             {assinaturaUrl ? (
-              <img src={assinaturaUrl} alt={assinaturaNome} style={{ height: 52, maxWidth: 260, objectFit: 'contain', display: 'block', marginBottom: 2 }} />
+              <img src={assinaturaUrl} alt={assinaturaNome} style={{ height: 40, maxWidth: 260, objectFit: 'contain', display: 'block', marginBottom: 2 }} />
             ) : (
               <p style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 19, color: '#222', margin: '0 0 2px' }}>{assinaturaNome}</p>
             )}
