@@ -26,7 +26,7 @@ function Field({ label, value, flex, labelColor = '#1A7A50' }: { label: string; 
   return (
     <div style={{ flex: flex ? 1 : undefined, minWidth: 0 }}>
       <p style={{ fontSize: 7, fontWeight: 700, color: labelColor, margin: '0 0 1px', letterSpacing: 0.8, textTransform: 'uppercase' as const }}>{label}</p>
-      <p style={{ fontSize: 11.5, fontWeight: 600, color: '#1a1a1a', margin: '0 0 4px', borderBottom: '1px solid #bbb', paddingBottom: 1, whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>{value || '—'}</p>
+      <p style={{ fontSize: 11.5, fontWeight: 600, color: '#1a1a1a', margin: '0 0 4px', borderBottom: '1px solid #bbb', paddingBottom: 1, lineHeight: 1.3, wordBreak: 'break-word' as const }}>{value || '—'}</p>
     </div>
   )
 }

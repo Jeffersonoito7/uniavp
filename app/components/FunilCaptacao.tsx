@@ -163,30 +163,31 @@ export default function FunilCaptacao({
               O botão "Continuar" aparece ao terminar o vídeo
             </p>
           )}
+
+          {/* Botão inline abaixo do vídeo — aparece quando termina */}
+          <div ref={btnContinuarRef} style={{ marginTop: 32, minHeight: videoAssistido ? undefined : 0 }}>
+            {videoAssistido && (
+              <div style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+                animation: 'slideUp 0.4s ease',
+                background: 'rgba(34,197,94,0.07)', border: '1.5px solid rgba(34,197,94,0.3)',
+                borderRadius: 16, padding: '24px 20px',
+              }}>
+                <p style={{ color: '#22c55e', fontSize: 15, fontWeight: 700, margin: 0, textAlign: 'center' }}>
+                  Ótimo! Você assistiu ao vídeo completo.
+                </p>
+                <button
+                  onClick={() => setEtapa('pergunta2')}
+                  className="btn btn-green btn-full" style={{ fontSize: 18, borderRadius: 14, padding: '18px 0', maxWidth: 480 }}
+                >
+                  Continuar →
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Botão fixo no rodapé — aparece quando vídeo termina */}
-      {videoAssistido && (
-        <div style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10000,
-          background: 'linear-gradient(to top, rgba(10,10,15,0.98) 70%, transparent)',
-          padding: '20px 24px 32px',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-          animation: 'slideUp 0.4s ease',
-        }}>
-          <p style={{ color: '#22c55e', fontSize: 15, fontWeight: 700, margin: 0 }}>
-            🎯 Ótimo! Você assistiu ao vídeo completo.
-          </p>
-          <button
-            onClick={() => setEtapa('pergunta2')}
-            className="btn btn-green btn-full" style={{ fontSize: 18, borderRadius: 14, padding: '18px 0', maxWidth: 480 }}
-          >
-            Continuar →
-          </button>
-        </div>
-      )}
-      <style>{`@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`}</style>
+      <style>{`@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`}</style>
       </>
     )
   }
