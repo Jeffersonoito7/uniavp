@@ -281,7 +281,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
               <p style={{ fontWeight:900, fontSize:14, color:'#818cf8', margin:0, letterSpacing:2, textTransform:'uppercase' }}>Contrato de Representação</p>
               <p style={{ fontWeight:800, fontSize:22, color:'#fff', margin:'6px 0 0' }}>{contratanteNome}</p>
             </div>
-            <p style={{ color:'rgba(255,255,255,0.45)', fontSize:14, lineHeight:1.6 }}>Preencha seus dados como MEI para gerar o contrato</p>
+            <p style={{ color:'rgba(255,255,255,0.45)', fontSize:14, lineHeight:1.6 }}>Preencha seus dados para gerar o contrato</p>
           </div>
 
           <div style={{ background:'rgba(10,22,40,0.85)', border:'1px solid rgba(99,102,241,0.25)', borderRadius:20, padding:32, backdropFilter:'blur(12px)' }}>
@@ -384,11 +384,11 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
             </div>
 
             <div style={{ marginTop:24, paddingTop:20, borderTop:'1px solid rgba(255,255,255,0.1)' }}>
-              <p style={{ fontWeight:700, fontSize:14, color:'#818cf8', marginBottom:16 }}>🏢 Dados do MEI</p>
+              <p style={{ fontWeight:700, fontSize:14, color:'#818cf8', marginBottom:16 }}>🏢 Dados do CNPJ</p>
               <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
                 <div>
                   <label style={lbl}>
-                    CNPJ MEI {semCnpj ? '' : '*'}
+                    CNPJ {semCnpj ? '' : '*'}
                     {!semCnpj && cnpjLen === 14 && (
                       <span style={{ marginLeft:8, color: cnpjValido ? '#22c55e' : '#f87171', fontWeight:700 }}>
                         {cnpjValido ? '✓ válido' : '✗ inválido'}
@@ -457,7 +457,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
               <p style={{ fontSize:12, color:'rgba(255,255,255,0.4)', marginBottom:14, lineHeight:1.6 }}>Informe como será feita a emissão de notas fiscais pelos seus serviços.</p>
               <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                 {[
-                  { val: true, label:'✅ Sim, eu mesmo emito minha Nota Fiscal (MEI ativo)', sub:'Você emitirá NF pelo seu próprio CNPJ MEI.' },
+                  { val: true, label:'✅ Sim, eu mesmo emito minha Nota Fiscal', sub:'Você emitirá NF pelo seu próprio CNPJ.' },
                   { val: false, label:'⚠️ Não consigo emitir NF — outra empresa/pessoa emitirá por mim', sub:'Você autoriza outra empresa a emitir e receber em seu nome.' },
                 ].map(op => (
                   <label key={String(op.val)} style={{ display:'flex', gap:12, alignItems:'flex-start', background: nfEmiteProprio === op.val ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.04)', border:`1px solid ${nfEmiteProprio === op.val ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.12)'}`, borderRadius:10, padding:'14px 16px', cursor:'pointer' }}>

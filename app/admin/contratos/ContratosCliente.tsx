@@ -5,7 +5,7 @@ type Contrato = {
   id: string; nome: string; cpf: string | null; whatsapp: string; email: string | null
   cnpj_mei: string | null; sede_mei: string | null; numero_registro: string | null
   assinado_em: string | null; hash_contrato: string | null; pdf_url: string | null; pdf_status: string | null
-  clausulas_aceitas?: { sem_cnpj?: boolean } | null
+  clausulas_aceitas?: unknown
 }
 
 type AlunoSemContrato = {
@@ -405,16 +405,17 @@ function GeradorLinkPersonalizado({ acordos }: { acordos: Acordo[] }) {
 
 function PainelSemCnpj({ contratos }: { contratos: Contrato[] }) {
   const [expandido, setExpandido] = useState(false)
-  const lista = contratos.filter(c => c.clausulas_aceitas?.sem_cnpj)
+  const lista = contratos.filter(c => (c.clausulas_aceitas as { sem_cnpj?: boolean } | null)?.sem_cnpj)
   if (lista.length === 0) return null
 
   const base = typeof window !== 'undefined' ? window.location.origin : ''
   const linkContrato = `${base}/contrato`
 
-  function msgCobrar(nome: string) {
+  function msgCobrar(nome: string, wpp: string) {
     const primeiro = nome.trim().split(' ')[0]
+    const wppLimpo = wpp.replace(/\D/g, '')
     return encodeURIComponent(
-      `Ola, ${primeiro}! Seu contrato de representacao foi assinado sem o CNPJ MEI.\n\nAssim que abrir sua empresa, acesse o link abaixo para assinar novamente com os dados atualizados:\n${linkContrato}\n\nQualquer duvida, estamos aqui!`
+      `Ola, ${primeiro}! Seu contrato de representacao foi assinado sem CNPJ.\n\nAssim que tiver o CNPJ ou definir quem vai emitir nota fiscal por voce, acesse o link abaixo para atualizar seu contrato:\n${linkContrato}/aditivo?wpp=${wppLimpo}\n\nQualquer duvida, estamos aqui!`
     )
   }
 
@@ -426,7 +427,7 @@ function PainelSemCnpj({ contratos }: { contratos: Contrato[] }) {
             Contratos sem CNPJ — revisao pendente
           </p>
           <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '3px 0 0' }}>
-            <strong style={{ color: '#fb923c' }}>{lista.length}</strong> consultor(es) assinaram sem CNPJ MEI. Quando abrirem empresa, solicite novo contrato.
+            <strong style={{ color: '#fb923c' }}>{lista.length}</strong> consultor(es) assinaram sem CNPJ. Solicite o aditivo quando tiverem o CNPJ ou definirem quem emite NF por eles.
           </p>
         </div>
         <button onClick={() => setExpandido(v => !v)}
@@ -439,7 +440,7 @@ function PainelSemCnpj({ contratos }: { contratos: Contrato[] }) {
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
           {lista.map(c => {
             const wppNum = c.whatsapp.replace(/\D/g, '')
-            const wppHref = `https://wa.me/${wppNum.startsWith('55') ? wppNum : '55' + wppNum}?text=${msgCobrar(c.nome)}`
+            const wppHref = `https://wa.me/${wppNum.startsWith('55') ? wppNum : '55' + wppNum}?text=${msgCobrar(c.nome, c.whatsapp)}`
             return (
               <div key={c.id} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -494,7 +495,7 @@ export default function ContratosCliente({
   }).length
 
   const comPDF = lista.filter(c => c.pdf_url).length
-  const semCnpjCount = lista.filter(c => c.clausulas_aceitas?.sem_cnpj).length
+  const semCnpjCount = lista.filter(c => (c.clausulas_aceitas as { sem_cnpj?: boolean } | null)?.sem_cnpj).length
   const pctAdesao = totalAlunos > 0 ? Math.round((total / totalAlunos) * 100) : 0
 
   const filtrada = lista.filter(c =>
@@ -594,7 +595,7 @@ export default function ContratosCliente({
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--avp-border)', background: 'rgba(255,255,255,0.02)' }}>
-                    {['Registro', 'Nome', 'CPF', 'CNPJ MEI', 'WhatsApp', 'E-mail', 'Assinado em', 'PDF', 'Hash'].map(h => (
+                    {['Registro', 'Nome', 'CPF', 'CNPJ', 'WhatsApp', 'E-mail', 'Assinado em', 'PDF', 'Hash'].map(h => (
                       <th key={h} style={{ padding: '11px 14px', textAlign: 'left', color: 'var(--avp-text-dim)', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.8, whiteSpace: 'nowrap' }}>{h}</th>
                     ))}
                   </tr>
@@ -610,7 +611,7 @@ export default function ContratosCliente({
                       <td style={{ padding: '12px 14px', fontWeight: 600, color: 'var(--avp-text)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.nome}</td>
                       <td style={{ padding: '12px 14px', fontFamily: 'monospace', color: 'var(--avp-text-dim)', whiteSpace: 'nowrap' }}>{mascaraCPF(c.cpf)}</td>
                       <td style={{ padding: '12px 14px', whiteSpace: 'nowrap', fontSize: 11 }}>
-                        {c.clausulas_aceitas?.sem_cnpj
+                        {(c.clausulas_aceitas as { sem_cnpj?: boolean } | null)?.sem_cnpj
                           ? <span style={{ background: 'rgba(251,146,60,0.1)', color: '#fb923c', borderRadius: 6, padding: '2px 8px', fontWeight: 700 }}>Sem CNPJ</span>
                           : <span style={{ fontFamily: 'monospace', color: 'var(--avp-text-dim)' }}>{mascaraCNPJ(c.cnpj_mei)}</span>
                         }

@@ -15,6 +15,7 @@ export type AuditAcao =
   | 'aluno.status_alterado'
   | 'aluno.senha_resetada'
   | 'contrato.assinado'
+  | 'contrato.aditivo.assinado'
   | 'contrato.pdf_gerado'
   | 'pagamento.confirmado'
   | 'pagamento.expirado'
