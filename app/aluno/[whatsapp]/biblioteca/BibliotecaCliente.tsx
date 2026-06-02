@@ -8,10 +8,10 @@ type Item = {
   autor: string | null
   descricao: string | null
   url: string
-  tipo: string
+  tipo: string | null
   capa_url: string | null
   categoria: string | null
-  plano: string
+  plano: string | null
   duracao: string | null
 }
 
@@ -54,7 +54,7 @@ function Player({ item }: { item: Item }) {
   )
 }
 
-function TipoIcon({ tipo }: { tipo: string }) {
+function TipoIcon({ tipo }: { tipo: string | null }) {
   if (tipo === 'youtube') return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="#ff4444">
       <path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.3 3 12 3 12 3s-4.3 0-6.8.9c-.6.1-1.9.1-3 1.3C1.3 5 1 7 1 7S.7 9.1.7 11.3v2c0 2.1.3 4.2.3 4.2s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.3 21.6 12 22 12 22s4.3 0 6.8-.6c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.1.3-4.2v-2C23.3 9.1 23 7 23 7zM9.7 15.5V8.4l6.6 3.6-6.6 3.5z"/>
@@ -130,7 +130,7 @@ function CapaCard({ item, ativo, onClick }: { item: Item; ativo: boolean; onClic
           background: item.plano === 'pro' ? 'rgba(139,92,246,0.92)' : 'rgba(34,197,94,0.92)',
           color: '#fff', borderRadius: 5, padding: '2px 6px', fontSize: 9, fontWeight: 800, letterSpacing: 0.5,
         }}>
-          {item.plano.toUpperCase()}
+          {(item.plano ?? 'pro').toUpperCase()}
         </span>
         {/* Ícone tipo */}
         <span style={{ position: 'absolute', top: 8, left: 8 }}>

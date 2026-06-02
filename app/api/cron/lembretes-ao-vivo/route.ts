@@ -113,7 +113,7 @@ export async function GET(req: NextRequest) {
         }
       }
     } catch (e) {
-      captureException(e, { endpoint: 'cron/lembretes-ao-vivo', aulaId: aula.id })
+      captureException(e, { endpoint: 'cron/lembretes-ao-vivo', extra: { aulaId: aula.id } })
       totalErros++
     }
 

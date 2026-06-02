@@ -7,13 +7,13 @@ type Item = {
   autor: string | null
   descricao: string | null
   url: string
-  tipo: string
+  tipo: string | null
   capa_url: string | null
   categoria: string | null
-  plano: string
+  plano: string | null
   duracao: string | null
-  ordem: number
-  ativo: boolean
+  ordem: number | null
+  ativo: boolean | null
 }
 
 const CATEGORIAS = ['Audiobook', 'Podcast', 'Vendas', 'Mentalidade', 'Liderança', 'Finanças', 'Negócios', 'Motivação']
@@ -38,7 +38,7 @@ export default function BibliotecaAdminCliente({ inicial }: { inicial: Item[] })
 
   function abrirNovo() { setForm(EMPTY); setEditando(null); setAbrindo(true) }
   function abrirEdicao(item: Item) {
-    setForm({ titulo: item.titulo, autor: item.autor || '', descricao: item.descricao || '', url: item.url, tipo: item.tipo, capa_url: item.capa_url || '', categoria: item.categoria || 'Audiobook', plano: item.plano, duracao: item.duracao || '', ordem: item.ordem })
+    setForm({ titulo: item.titulo, autor: item.autor || '', descricao: item.descricao || '', url: item.url, tipo: item.tipo || 'drive', capa_url: item.capa_url || '', categoria: item.categoria || 'Audiobook', plano: item.plano || 'pro', duracao: item.duracao || '', ordem: item.ordem ?? 0 })
     setEditando(item.id)
     setAbrindo(true)
   }
@@ -161,7 +161,7 @@ export default function BibliotecaAdminCliente({ inicial }: { inicial: Item[] })
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <span style={{ fontWeight: 700, fontSize: 15 }}>{item.titulo}</span>
                 <span style={{ background: item.plano === 'pro' ? 'rgba(79,70,229,0.15)' : 'rgba(34,197,94,0.15)', color: item.plano === 'pro' ? '#818cf8' : '#22c55e', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>
-                  {item.plano.toUpperCase()}
+                  {(item.plano || 'pro').toUpperCase()}
                 </span>
                 <span style={{ background: 'var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 6, padding: '2px 8px', fontSize: 11 }}>{item.categoria}</span>
               </div>
