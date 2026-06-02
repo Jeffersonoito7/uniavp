@@ -15,7 +15,7 @@ export default async function BibliotecaPage({ params }: { params: { whatsapp: s
   if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}/biblioteca`)
 
   const { data: items } = await admin.from('biblioteca')
-    .select('*').eq('tenant_id', aluno.tenant_id).eq('ativo', true)
+    .select('*').eq('tenant_id', aluno.tenant_id ?? '').eq('ativo', true)
     .order('ordem').order('created_at', { ascending: false })
 
   return (

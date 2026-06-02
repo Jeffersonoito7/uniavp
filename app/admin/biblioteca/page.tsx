@@ -11,7 +11,7 @@ export default async function BibliotecaAdminPage() {
   const { data: adminRecord } = await admin.from('admins').select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) redirect('/entrar?p=adm')
   const { data: items } = await admin.from('biblioteca')
-    .select('*').eq('tenant_id', adminRecord.tenant_id).order('ordem').order('created_at', { ascending: false })
+    .select('*').eq('tenant_id', adminRecord.tenant_id ?? '').order('ordem').order('created_at', { ascending: false })
   return (
     <AdminLayout>
       <div style={{ marginBottom: 28 }}>
