@@ -112,12 +112,11 @@ export async function GET(req: NextRequest) {
           totalErros += resultado.erros
         }
       }
+      await aulasTable(adminClient).update({ lembrete_enviado: true }).eq('id', aula.id)
     } catch (e) {
       captureException(e, { endpoint: 'cron/lembretes-ao-vivo', extra: { aulaId: aula.id } })
       totalErros++
     }
-
-    await aulasTable(adminClient).update({ lembrete_enviado: true }).eq('id', aula.id)
   }
 
   if (totalErros > 0) {

@@ -6,7 +6,14 @@ import type { Json } from '@/lib/database.types'
 
 export const dynamic = 'force-dynamic'
 
+// A URL registrada na Efi deve incluir ?token=EFI_WEBHOOK_TOKEN
+// Ex: https://dominio.com/api/webhooks/pix?token=SEU_TOKEN
 export async function POST(req: NextRequest) {
+  const token = req.nextUrl.searchParams.get('token')
+  if (!token || token !== process.env.EFI_WEBHOOK_TOKEN) {
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  }
+
   let body: { pix?: Array<{ txid?: string }> }
   try {
     body = await req.json()

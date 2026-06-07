@@ -5,7 +5,14 @@ import { alertarDiscord } from '@/lib/discord'
 
 export const dynamic = 'force-dynamic'
 
+// Evolution API envia o header "apikey" em todos os callbacks
+function autorizado(req: NextRequest): boolean {
+  return req.headers.get('apikey') === process.env.EVOLUTION_API_KEY
+}
+
 export async function POST(req: NextRequest) {
+  if (!autorizado(req)) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+
   try {
     const body = await req.json()
     const evento = body?.event
@@ -65,6 +72,7 @@ export async function POST(req: NextRequest) {
 }
 
 // Evolution API faz GET para verificar o webhook
-export async function GET() {
+export async function GET(req: NextRequest) {
+  if (!autorizado(req)) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   return NextResponse.json({ ok: true, service: 'UNIAVP PRO Assistant' })
 }
