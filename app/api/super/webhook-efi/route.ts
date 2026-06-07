@@ -27,7 +27,10 @@ export async function POST(req: NextRequest) {
   if (!await isSuperAdmin(user.id, adminClient)) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const appUrl = await getAppUrl()
-  const webhookUrl = `${appUrl}/api/webhooks/pix`
+  const token = process.env.EFI_WEBHOOK_TOKEN
+  if (!token) return NextResponse.json({ error: 'EFI_WEBHOOK_TOKEN não configurado no ambiente' }, { status: 500 })
+
+  const webhookUrl = `${appUrl}/api/webhooks/pix?token=${token}`
 
   try {
     await registrarWebhook(webhookUrl)
