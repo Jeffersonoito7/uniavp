@@ -617,7 +617,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
                 </p>
               </div>
               <button onClick={() => setFreePodeConfigurarLink(v => !v)}
-                style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: freePodeConfigurarLink ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+                style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: freePodeConfigurarLink ? 'var(--avp-green)' : '#ef4444', position: 'relative', transition: 'background 0.2s' }}>
                 <span style={{ position: 'absolute', top: 3, left: freePodeConfigurarLink ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
               </button>
             </div>
@@ -632,7 +632,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
                 </p>
               </div>
               <button onClick={() => setProPodeConfigurarLink(v => !v)}
-                style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: proPodeConfigurarLink ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+                style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: proPodeConfigurarLink ? 'var(--avp-green)' : '#ef4444', position: 'relative', transition: 'background 0.2s' }}>
                 <span style={{ position: 'absolute', top: 3, left: proPodeConfigurarLink ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
               </button>
             </div>
@@ -903,7 +903,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
               </p>
             </div>
             <button type="button" onClick={() => setCaptacaoMostrarParceiro(v => !v)}
-              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: captacaoMostrarParceiro ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: captacaoMostrarParceiro ? 'var(--avp-green)' : '#ef4444', position: 'relative', transition: 'background 0.2s' }}>
               <span style={{ position: 'absolute', top: 3, left: captacaoMostrarParceiro ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
             </button>
           </div>
@@ -916,7 +916,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
                   <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Consultor só continua após clicar no botão do sistema parceiro</p>
                 </div>
                 <button type="button" onClick={() => setCaptacaoBloquearParceiro(v => !v)}
-                  style={{ flexShrink: 0, width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', background: captacaoBloquearParceiro ? 'var(--avp-danger)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+                  style={{ flexShrink: 0, width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', background: captacaoBloquearParceiro ? 'var(--avp-green)' : '#ef4444', position: 'relative', transition: 'background 0.2s' }}>
                   <span style={{ position: 'absolute', top: 2, left: captacaoBloquearParceiro ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
                 </button>
               </label>
@@ -951,7 +951,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
               </p>
             </div>
             <button type="button" onClick={() => setCaptacaoMostrarApp(v => !v)}
-              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: captacaoMostrarApp ? '#6366f1' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: captacaoMostrarApp ? 'var(--avp-green)' : '#ef4444', position: 'relative', transition: 'background 0.2s' }}>
               <span style={{ position: 'absolute', top: 3, left: captacaoMostrarApp ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
             </button>
           </div>
@@ -963,7 +963,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
                 <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Consultor só vai para o login após clicar em um dos botões do app</p>
               </div>
               <button type="button" onClick={() => setCaptacaoBloquearApp(v => !v)}
-                style={{ flexShrink: 0, width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', background: captacaoBloquearApp ? 'var(--avp-danger)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+                style={{ flexShrink: 0, width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', background: captacaoBloquearApp ? 'var(--avp-green)' : '#ef4444', position: 'relative', transition: 'background 0.2s' }}>
                 <span style={{ position: 'absolute', top: 2, left: captacaoBloquearApp ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
               </button>
             </label>
@@ -985,7 +985,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
             </p>
           </div>
           <button type="button" onClick={() => setPassosPainelHabilitado(v => !v)}
-            style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: passosPainelHabilitado ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+            style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: passosPainelHabilitado ? 'var(--avp-green)' : '#ef4444', position: 'relative', transition: 'background 0.2s' }}>
             <span style={{ position: 'absolute', top: 3, left: passosPainelHabilitado ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
           </button>
         </div>
@@ -1015,7 +1015,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
                   </p>
                 </div>
                 <div onClick={() => setQuiz(v => !v)}
-                  style={{ width: 44, height: 24, borderRadius: 12, background: quiz ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', flexShrink: 0, cursor: 'pointer', transition: 'background 0.2s' }}>
+                  style={{ width: 44, height: 24, borderRadius: 12, background: quiz ? 'var(--avp-green)' : '#ef4444', position: 'relative', flexShrink: 0, cursor: 'pointer', transition: 'background 0.2s' }}>
                   <div style={{ position: 'absolute', top: 3, left: quiz ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.3)' }} />
                 </div>
               </label>
@@ -1029,7 +1029,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
                   </p>
                 </div>
                 <div onClick={() => setVideo(v => !v)}
-                  style={{ width: 44, height: 24, borderRadius: 12, background: video ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', flexShrink: 0, cursor: 'pointer', transition: 'background 0.2s' }}>
+                  style={{ width: 44, height: 24, borderRadius: 12, background: video ? 'var(--avp-green)' : '#ef4444', position: 'relative', flexShrink: 0, cursor: 'pointer', transition: 'background 0.2s' }}>
                   <div style={{ position: 'absolute', top: 3, left: video ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.3)' }} />
                 </div>
               </label>
@@ -1138,7 +1138,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
             </div>
             <button
               onClick={() => setCertAssinaturaAtiva(v => !v)}
-              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: certAssinaturaAtiva ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: certAssinaturaAtiva ? 'var(--avp-green)' : '#ef4444', position: 'relative', transition: 'background 0.2s' }}>
               <span style={{ position: 'absolute', top: 3, left: certAssinaturaAtiva ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
             </button>
           </div>
@@ -1264,7 +1264,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
               </p>
             </div>
             <button onClick={() => setCncpvHabilitado(v => !v)}
-              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: cncpvHabilitado ? 'var(--avp-green)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}>
+              style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: cncpvHabilitado ? 'var(--avp-green)' : '#ef4444', position: 'relative', transition: 'background 0.2s' }}>
               <span style={{ position: 'absolute', top: 3, left: cncpvHabilitado ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
             </button>
           </div>
