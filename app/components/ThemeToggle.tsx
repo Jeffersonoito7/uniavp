@@ -1,19 +1,41 @@
 'use client'
 import { useEffect, useState } from 'react'
 
+const LIGHT_VARS: Record<string, string> = {
+  '--avp-black': '#f1f5f9',
+  '--avp-dark': '#e2e8f0',
+  '--avp-card': '#ffffff',
+  '--avp-card-hover': '#f8fafc',
+  '--avp-border': '#cbd5e1',
+  '--avp-text': '#0f172a',
+  '--avp-text-dim': '#475569',
+  '--avp-header-bg': 'rgba(241,245,249,0.97)',
+  '--avp-sidebar': '#ffffff',
+}
+
+function applyTheme(isLight: boolean) {
+  const el = document.documentElement
+  el.classList.toggle('light', isLight)
+  if (isLight) {
+    Object.entries(LIGHT_VARS).forEach(([k, v]) => el.style.setProperty(k, v))
+  } else {
+    Object.keys(LIGHT_VARS).forEach(k => el.style.removeProperty(k))
+  }
+}
+
 export default function ThemeToggle({ collapsed = false, inline = false }: { collapsed?: boolean; inline?: boolean }) {
   const [light, setLight] = useState(false)
 
   useEffect(() => {
     const saved = localStorage.getItem('avp-theme') === 'light'
     setLight(saved)
-    document.documentElement.classList.toggle('light', saved)
+    applyTheme(saved)
   }, [])
 
   function toggle() {
     const next = !light
     setLight(next)
-    document.documentElement.classList.toggle('light', next)
+    applyTheme(next)
     localStorage.setItem('avp-theme', next ? 'light' : 'dark')
   }
 
