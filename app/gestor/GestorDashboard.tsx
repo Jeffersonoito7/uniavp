@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef } from 'react'
+import { TogglePill } from '@/app/components/TogglePill'
 import { createBrowserClient } from '@supabase/ssr'
 import GestorLayout from './GestorLayout'
 import LiberacoesPendentes from './LiberacoesPendentes'
@@ -1161,7 +1162,8 @@ export default function GestorDashboard({
                 <div><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Descrição</label><input value={vivoForm.descricao} onChange={e => setVivoForm(p => ({ ...p, descricao: e.target.value }))} style={inp} placeholder="Assuntos abordados..." /></div>
               </div>
               <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-                <input type="checkbox" checked={vivoForm.obrigatoria} onChange={e => setVivoForm(p => ({ ...p, obrigatoria: e.target.checked }))} style={{ width: 16, height: 16, accentColor: 'var(--avp-green)' }} />
+                <input type="checkbox" checked={vivoForm.obrigatoria} onChange={e => setVivoForm(p => ({ ...p, obrigatoria: e.target.checked }))} style={{ display: 'none' }} />
+                <TogglePill checked={vivoForm.obrigatoria} />
                 <span style={{ fontSize: 14 }}>Presença obrigatória</span>
               </label>
               <button type="submit" disabled={salvandoVivo} style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 700, cursor: 'pointer', fontSize: 14, alignSelf: 'flex-start', opacity: salvandoVivo ? 0.7 : 1 }}>
@@ -1235,7 +1237,8 @@ export default function GestorDashboard({
                 <div><label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 4 }}>Descrição</label><input value={eventoForm.descricao} onChange={e => setEventoForm(p => ({ ...p, descricao: e.target.value }))} style={inp} /></div>
               </div>
               <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-                <input type="checkbox" checked={eventoForm.notificar} onChange={e => setEventoForm(p => ({ ...p, notificar: e.target.checked }))} style={{ width: 16, height: 16, accentColor: 'var(--avp-green)' }} />
+                <input type="checkbox" checked={eventoForm.notificar} onChange={e => setEventoForm(p => ({ ...p, notificar: e.target.checked }))} style={{ display: 'none' }} />
+                <TogglePill checked={eventoForm.notificar} />
                 <span style={{ fontSize: 14 }}>Notificar meus consultores via WhatsApp</span>
               </label>
               <button type="submit" disabled={salvandoEvento} style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 700, cursor: 'pointer', fontSize: 14, alignSelf: 'flex-start', opacity: salvandoEvento ? 0.7 : 1 }}>

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Video, Plus, Trash2, ExternalLink, Edit2, Check, X } from 'lucide-react'
+import { TogglePill } from '@/app/components/TogglePill'
 
 type AulaAoVivo = {
   id: string; titulo: string; descricao: string | null; plataforma: string
@@ -102,7 +103,8 @@ export default function AulasAoVivoAdmin({ inicial }: { inicial: AulaAoVivo[] })
         <div><label style={label}>Descrição</label><textarea style={{ ...input, minHeight: 64, resize: 'vertical' }} value={form.descricao} onChange={e => setForm(p => ({ ...p, descricao: e.target.value }))} placeholder="Assuntos abordados..." /></div>
 
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
-          <input type="checkbox" checked={form.obrigatoria} onChange={e => setForm(p => ({ ...p, obrigatoria: e.target.checked }))} />
+          <input type="checkbox" checked={form.obrigatoria} onChange={e => setForm(p => ({ ...p, obrigatoria: e.target.checked }))} style={{ display: 'none' }} />
+          <TogglePill checked={form.obrigatoria} />
           <span style={{ color: 'var(--avp-text)' }}>Presença obrigatória</span>
         </label>
 

@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { TogglePill } from '@/app/components/TogglePill'
 
 type AgenteConfig = {
   nome_assistente: string
@@ -270,13 +271,15 @@ export default function AgenteAdminCliente({
               </p>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, paddingTop: 24 }}>
-              <input type="checkbox" id="agenteAtivo" checked={cfg.ativo} onChange={e => setCfg(p => ({ ...p, ativo: e.target.checked }))}
-                style={{ width: 18, height: 18, marginTop: 2, cursor: 'pointer' }} />
-              <label htmlFor="agenteAtivo" style={{ fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-                Agente ativo
-                <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', fontWeight: 400, margin: '2px 0 0' }}>
-                  Desative para pausar o agente sem perder as configurações
-                </p>
+              <input type="checkbox" id="agenteAtivo" checked={cfg.ativo} onChange={e => setCfg(p => ({ ...p, ativo: e.target.checked }))} style={{ display: 'none' }} />
+              <label htmlFor="agenteAtivo" style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+                <TogglePill checked={cfg.ativo} />
+                <div>
+                  <span style={{ fontSize: 14, fontWeight: 600 }}>Agente ativo</span>
+                  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', fontWeight: 400, margin: '2px 0 0' }}>
+                    Desative para pausar o agente sem perder as configurações
+                  </p>
+                </div>
               </label>
             </div>
           </div>

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import ConfiguracoesCliente from '@/app/admin/configuracoes/ConfiguracoesCliente'
+import { TogglePill } from '@/app/components/TogglePill'
 
 type Cliente = { id: string; nome: string; dominio: string | null; ativo: boolean | null; contato_nome: string | null; contato_whatsapp: string | null; contato_email: string | null; observacoes: string | null; created_at: string | null; gestor_ativo: boolean | null; limite_consultores: number | null; cpf_cnpj?: string | null; sede_mei?: string | null; cnpj_mei?: string | null; mensalidade?: number | null; status_pagamento?: string | null; vencimento_dia?: number | null; pix_txid?: string | null; ultimo_pagamento?: string | null; whatsapp_instancia?: string | null; pro_modo?: string | null; pro_valor?: number | null }
 type Stats = { totalAlunos: number; totalGestores: number; totalAdmins: number; totalModulos: number; totalAulas: number }
@@ -856,11 +857,13 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
                         <div><label style={lbl}>Limite de consultores</label><input style={{ ...inp, fontSize: 12 }} type="number" min={1} value={p.limite_consultores} onChange={e => atualizarPlano(p.id, 'limite_consultores', parseInt(e.target.value) || 100)} /></div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingTop: 18 }}>
                           <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, color: C.text }}>
-                            <input type="checkbox" checked={p.destaque} onChange={e => atualizarPlano(p.id, 'destaque', e.target.checked)} style={{ accentColor: C.accent }} />
+                            <input type="checkbox" checked={p.destaque} onChange={e => atualizarPlano(p.id, 'destaque', e.target.checked)} style={{ display: 'none' }} />
+                            <TogglePill checked={p.destaque} />
                             Plano destaque
                           </label>
                           <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, color: C.text }}>
-                            <input type="checkbox" checked={p.gestor_ativo} onChange={e => atualizarPlano(p.id, 'gestor_ativo', e.target.checked)} style={{ accentColor: '#f59e0b' }} />
+                            <input type="checkbox" checked={p.gestor_ativo} onChange={e => atualizarPlano(p.id, 'gestor_ativo', e.target.checked)} style={{ display: 'none' }} />
+                            <TogglePill checked={p.gestor_ativo} />
                             Inclui Painel PRO
                           </label>
                         </div>

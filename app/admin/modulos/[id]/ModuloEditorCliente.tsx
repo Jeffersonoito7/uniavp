@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import AulasCliente from './AulasCliente'
+import { TogglePill } from '@/app/components/TogglePill'
 
 type Modulo = {
   id: string; titulo: string; descricao: string | null; capa_url: string | null; ordem: number; publicado: boolean | null
@@ -188,9 +189,9 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
             <div style={card}>
               <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 12 }}>Status</p>
               <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                <input type="checkbox" checked={publicado} onChange={e => setPublicado(e.target.checked)}
-                  style={{ width: 18, height: 18, accentColor: 'var(--avp-green)', cursor: 'pointer' }} />
-                <span style={{ fontSize: 14, fontWeight: 600, color: publicado ? 'var(--avp-green)' : 'var(--avp-text-dim)' }}>
+                <input type="checkbox" checked={publicado} onChange={e => setPublicado(e.target.checked)} style={{ display: 'none' }} />
+                <TogglePill checked={publicado} />
+                <span style={{ fontSize: 14, fontWeight: 600, color: publicado ? '#22c55e' : '#ef4444' }}>
                   {publicado ? 'Publicado' : 'Rascunho'}
                 </span>
               </label>

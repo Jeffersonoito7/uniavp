@@ -1,5 +1,6 @@
 'use client'
 import { useRef, useState } from 'react'
+import { TogglePill } from '@/app/components/TogglePill'
 
 type Evento = { id: string; titulo: string; descricao: string | null; cidade: string | null; data_hora: string; imagem_url?: string | null; created_at?: string | null; gestor_id?: string | null }
 
@@ -130,8 +131,11 @@ export default function EventosCliente({ inicial }: { inicial: Evento[] }) {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <input type="checkbox" id="notificar" checked={form.notificar} onChange={e => setForm(p => ({ ...p, notificar: e.target.checked }))} style={{ width: 16, height: 16, accentColor: 'var(--avp-green)', cursor: 'pointer' }} />
-          <label htmlFor="notificar" style={{ ...labelStyle, marginBottom: 0, cursor: 'pointer', fontSize: 13 }}>Notificar consultores via WhatsApp</label>
+          <input type="checkbox" id="notificar" checked={form.notificar} onChange={e => setForm(p => ({ ...p, notificar: e.target.checked }))} style={{ display: 'none' }} />
+          <label htmlFor="notificar" style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: 0 }}>
+            <TogglePill checked={form.notificar} />
+            <span style={{ fontSize: 13, color: 'var(--avp-text)' }}>Notificar consultores via WhatsApp</span>
+          </label>
         </div>
 
         {msg && <p style={{ fontSize: 13, color: msg.includes('Erro') || msg.includes('❌') ? 'var(--avp-danger)' : 'var(--avp-green)' }}>{msg}</p>}
