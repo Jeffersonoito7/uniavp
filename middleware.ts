@@ -13,6 +13,11 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const hostname = request.headers.get('host') || ''
 
+  // Bloqueia arquivos sensiveis: .env, .git, .htaccess, source maps
+  if (pathname.startsWith('/.') || pathname.endsWith('.map')) {
+    return new NextResponse(null, { status: 404 })
+  }
+
   // ── Roteamento por subdomínio ───────────────────────────────────
 
   // adm.dominio → painel admin
