@@ -3,6 +3,7 @@ import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 // Roda a cada hora — dispara lembretes pendentes dos PROs
 export async function GET(req: NextRequest) {

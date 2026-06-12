@@ -10,6 +10,7 @@ import { createLogger } from '@/lib/logger'
 const log = createLogger('cron/boas-vindas')
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 // Roda diariamente às 9h — envia mensagens de boas-vindas nos dias 1, 3, 7
 export async function GET(req: NextRequest) {

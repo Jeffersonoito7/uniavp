@@ -10,6 +10,7 @@ import { randomUUID } from 'crypto'
 const log = createLogger('cron/cobranca')
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 export async function GET(req: NextRequest) {
   const auth = req.headers.get('authorization')

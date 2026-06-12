@@ -4,6 +4,7 @@ import { enviarWhatsApp } from '@/lib/whatsapp'
 import { alertarDiscord } from '@/lib/discord'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 30
 
 // Evolution API envia o header "apikey" em todos os callbacks
 function autorizado(req: NextRequest): boolean {

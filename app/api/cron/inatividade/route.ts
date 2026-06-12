@@ -8,6 +8,7 @@ import { getMensagem } from '@/lib/mensagem'
 import { jaEnviouHoje, registrarEnvio } from '@/lib/mensagens-log'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 const DIAS_ALERTA = [3, 7, 15]
 

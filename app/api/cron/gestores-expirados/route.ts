@@ -7,6 +7,7 @@ import { alertarDiscord } from '@/lib/discord'
 import { getMensagem } from '@/lib/mensagem'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 // Roda diariamente — gerencia planos PRO: aviso de vencimento + suspensão + alerta de rede
 export async function GET(req: NextRequest) {

@@ -3,6 +3,7 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getConfig, getArgumentos, getSaldo, debitarCreditos, garantirRegistroCredito } from '@/lib/agente-creditos'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 30
 
 const MODELO_PADRAO = 'claude-haiku-4-5-20251001'
 

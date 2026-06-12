@@ -8,6 +8,7 @@ import { captureException } from '@/lib/monitor'
 const aulasTable = (client: ReturnType<typeof createServiceRoleClient>) => client.from('aulas_ao_vivo')
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 // Envia em lotes paralelos com pausa entre lotes para não sobrecarregar a API
 async function enviarEmLotes(

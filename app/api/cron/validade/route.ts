@@ -6,6 +6,7 @@ import { alertarDiscord } from '@/lib/discord'
 import { getMensagem } from '@/lib/mensagem'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 // Roda diariamente — avisa consultor que aula vai expirar em 7 dias
 export async function GET(req: NextRequest) {

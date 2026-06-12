@@ -5,6 +5,7 @@ import { getAppUrl } from '@/lib/get-app-url'
 import { EMAIL_FROM } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 async function enviarEmailRelatorio(para: string, nomeGestor: string, stats: {
   total: number; ativos: number; concluidos: number; parados: string[]

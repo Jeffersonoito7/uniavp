@@ -10,6 +10,7 @@ import { getMensagem } from '@/lib/mensagem'
 import { z } from 'zod'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 30
 
 async function buscarInstanciaAdmin(adminClient: ReturnType<typeof createServiceRoleClient>, tenantId: string | null) {
   let q = adminClient.from('admins')
@@ -208,73 +209,74 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ erro }, { status: 400 })
   }
 
-  const siteConfig = await getSiteConfig(host)
-  const nomePlataforma = siteConfig.nome || 'Universidade'
+  const gestorWppLimpo = gestor_whatsapp.replace(/\D/g, '')
 
+  // Busca config do site, dados do gestor e instâncias em paralelo
+  const [siteConfig, gestorDataRes, instanciaTenant, instanciaGestor] = await Promise.all([
+    getSiteConfig(host),
+    gestorWppLimpo
+      ? adminClient.from('gestores').select('id, link_externo').eq('whatsapp', gestorWppLimpo).eq('ativo', true).maybeSingle()
+      : Promise.resolve({ data: null }),
+    getInstanciaTenant(tenantId, adminClient),
+    getInstanciaGestorPorNome(gestor_nome, adminClient, tenantId),
+  ])
+
+  const gestorData = gestorDataRes.data
+  const linkExterno: string | null = gestorData?.link_externo ?? null
+  const nomePlataforma = siteConfig.nome || 'Universidade'
   const proto = 'https'
-  // Nunca usar domínio admin (adm.) como URL da plataforma do aluno
   const hostLimpo = host.startsWith('adm.') ? host.replace(/^adm\./, 'free.') : host
   const appUrl = siteConfig.dominioCustomizado
     ? `${proto}://${siteConfig.dominioCustomizado}`
     : `${proto}://${hostLimpo}`
-
-  // Busca o gestor (PRO) para pegar o link externo configurado
-  const gestorWppLimpo = gestor_whatsapp.replace(/\D/g, '')
-  const { data: gestorData } = await adminClient.from('gestores')
-    .select('id, link_externo').eq('whatsapp', gestorWppLimpo).eq('ativo', true).maybeSingle()
-  const linkExterno: string | null = gestorData?.link_externo ?? null
-
-  // Link wa.me clicável para o novo aluno
   const ddi = whatsappLimpo.startsWith('55') ? whatsappLimpo : `55${whatsappLimpo}`
   const wppLink = `https://wa.me/${ddi}`
-
-  // Instância WhatsApp do tenant (usada para mensagens sem remetente específico)
-  const instanciaTenant = await getInstanciaTenant(tenantId, adminClient)
-
   const vars = { gestorNome: gestor_nome, alunoNome: nome.trim(), nomePlataforma, wppLink, appUrl }
 
-  // Notifica o gestor (PRO) com link clicável
-  const instanciaGestor = await getInstanciaGestorPorNome(gestor_nome, adminClient, tenantId)
-  if (gestor_whatsapp.replace(/\D/g, '')) {
-    await enviarWhatsApp(
-      gestor_whatsapp,
-      await getMensagem('cadastro_gestor_novo_free', vars, adminClient, tenantId),
-      instanciaGestor
+  // Monta todas as tarefas de notificação para rodar em paralelo
+  const tarefasWpp: Promise<unknown>[] = []
+
+  if (gestorWppLimpo) {
+    tarefasWpp.push(
+      getMensagem('cadastro_gestor_novo_free', vars, adminClient, tenantId)
+        .then(msg => enviarWhatsApp(gestor_whatsapp, msg, instanciaGestor))
     )
   }
 
-  // Notifica o indicador FREE (quem compartilhou o link /c/) se for diferente do gestor
   if (indicador_whatsapp) {
     const indicadorWpp = indicador_whatsapp.replace(/\D/g, '')
-    const gestorWpp = gestor_whatsapp.replace(/\D/g, '')
-    if (indicadorWpp && indicadorWpp !== gestorWpp) {
-      const instanciaIndicador = await buscarInstanciaAdmin(adminClient, tenantId)
-      if (instanciaIndicador) {
-        await enviarWhatsApp(
-          indicadorWpp,
-          await getMensagem('cadastro_indicador_novo_free', vars, adminClient, tenantId),
-          instanciaIndicador
-        )
-      }
+    if (indicadorWpp && indicadorWpp !== gestorWppLimpo) {
+      tarefasWpp.push(
+        buscarInstanciaAdmin(adminClient, tenantId).then(async instanciaIndicador => {
+          if (!instanciaIndicador) return
+          const msg = await getMensagem('cadastro_indicador_novo_free', vars, adminClient, tenantId)
+          await enviarWhatsApp(indicadorWpp, msg, instanciaIndicador)
+        })
+      )
     }
   }
 
-  // Boas-vindas para o candidato — não envia quando cadastro veio do painel admin
   if (!isAdminRoute) {
     const chaveBoasVindas = linkExterno ? 'cadastro_boas_vindas_link_externo' : 'cadastro_boas_vindas'
-    const msgCandidato = await getMensagem(chaveBoasVindas, { ...vars, linkExterno: linkExterno ?? '' }, adminClient, tenantId)
-    await enviarWhatsApp(whatsappLimpo, msgCandidato, instanciaTenant)
+    tarefasWpp.push(
+      getMensagem(chaveBoasVindas, { ...vars, linkExterno: linkExterno ?? '' }, adminClient, tenantId)
+        .then(msg => enviarWhatsApp(whatsappLimpo, msg, instanciaTenant))
+    )
   }
 
-  await audit({
-    acao: 'aluno.criado',
-    entidade: 'alunos',
-    entidade_id: aluno.id,
-    tenant_id: tenantId,
-    usuario_tipo: 'sistema',
-    dados_novos: { nome: aluno.nome, whatsapp: aluno.whatsapp, email: aluno.email },
-    ip,
-  })
+  // Notificações WhatsApp + audit em paralelo — falha individual não bloqueia resposta
+  await Promise.allSettled([
+    ...tarefasWpp,
+    audit({
+      acao: 'aluno.criado',
+      entidade: 'alunos',
+      entidade_id: aluno.id,
+      tenant_id: tenantId,
+      usuario_tipo: 'sistema',
+      dados_novos: { nome: aluno.nome, whatsapp: aluno.whatsapp, email: aluno.email },
+      ip,
+    }),
+  ])
 
   return NextResponse.json({ aluno })
 }
