@@ -76,6 +76,20 @@ html.light .adm-nav-active {
 html.light .pro-nav-item:hover { background: #dcfce7 !important; color: #15803d !important; }
 html.light .adm-nav-item:hover { background: #ede9fe !important; color: #4338ca !important; }
 
+/* ── Sidebar action buttons (Painel PRO / FREE / Manual) ── */
+.adm-sidebar-pro { background: rgba(79,70,229,0.25); border: 1px solid rgba(99,102,241,0.5); color: #c7d2fe; }
+.adm-sidebar-pro-active { background: #4f46e5 !important; color: #fff !important; }
+html.light .adm-sidebar-pro { background: rgba(79,70,229,0.12); border: 1px solid rgba(79,70,229,0.45); color: #3730a3; }
+html.light .adm-sidebar-pro-active { background: #4f46e5 !important; color: #fff !important; }
+
+.adm-sidebar-free { background: rgba(22,163,74,0.25); border: 1px solid rgba(34,197,94,0.5); color: #86efac; }
+.adm-sidebar-free-active { background: #16a34a !important; color: #fff !important; }
+html.light .adm-sidebar-free { background: rgba(22,163,74,0.12); border: 1px solid rgba(22,163,74,0.45); color: #15803d; }
+html.light .adm-sidebar-free-active { background: #16a34a !important; color: #fff !important; }
+
+.adm-sidebar-manual { background: rgba(217,119,6,0.25); border: 1px solid rgba(251,191,36,0.5); color: #fde68a; }
+html.light .adm-sidebar-manual { background: rgba(217,119,6,0.12); border: 1px solid rgba(217,119,6,0.45); color: #92400e; }
+
 /* ── Stat Cards — dark mode ── */
 .stat-card { border-radius: 16px; padding: 18px 20px; position: relative; overflow: hidden; }
 .stat-card-blue   { background: linear-gradient(135deg, rgba(79,70,229,0.22) 0%, rgba(79,70,229,0.08) 100%); border: 1px solid rgba(129,140,248,0.5); box-shadow: 0 4px 24px rgba(79,70,229,0.2), inset 0 1px 0 rgba(255,255,255,0.06); }
