@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 
 type Entrada = { id: string; nome: string; pontos: number }
 
-const medalhas = ['', '', '']
+const medalhas = ['🥇', '🥈', '🥉']
 const cores = ['#f59e0b', '#94a3b8', '#d97706']
 
 export default function RankingWidget({ meuId }: { meuId: string }) {
@@ -66,7 +66,7 @@ export default function RankingWidget({ meuId }: { meuId: string }) {
  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
  }}>
  <div>
- <p style={{ fontWeight: 800, fontSize: 15, color: '#fff', margin: 0 }}> Ranking da Equipe</p>
+ <p style={{ fontWeight: 800, fontSize: 15, color: '#fff', margin: 0 }}>Ranking da Equipe</p>
  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', margin: '2px 0 0' }}>Top consultores por pontos</p>
  </div>
  <button onClick={() => setAberto(false)}
@@ -87,7 +87,7 @@ export default function RankingWidget({ meuId }: { meuId: string }) {
  {top3[1].nome.split(' ')[0]}
  </p>
  <p style={{ fontSize: 10, color: '#94a3b8', margin: 0 }}>{top3[1].pontos} pts</p>
- <div style={{ background: '#94a3b830', borderRadius: '6px 6px 0 0', height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 6, fontSize: 20 }}></div>
+ <div style={{ background: '#94a3b830', borderRadius: '6px 6px 0 0', height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 6, fontSize: 20 }}>🥈</div>
  </div>
  )}
  {/* 1º lugar */}
@@ -100,7 +100,7 @@ export default function RankingWidget({ meuId }: { meuId: string }) {
  {top3[0].nome.split(' ')[0]}
  </p>
  <p style={{ fontSize: 11, color: '#f59e0b', margin: 0, fontWeight: 600 }}>{top3[0].pontos} pts</p>
- <div style={{ background: '#f59e0b30', borderRadius: '6px 6px 0 0', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 6, fontSize: 24 }}></div>
+ <div style={{ background: '#f59e0b30', borderRadius: '6px 6px 0 0', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 6, fontSize: 24 }}>🥇</div>
  </div>
  )}
  {/* 3º lugar */}
@@ -113,7 +113,7 @@ export default function RankingWidget({ meuId }: { meuId: string }) {
  {top3[2].nome.split(' ')[0]}
  </p>
  <p style={{ fontSize: 10, color: '#d97706', margin: 0 }}>{top3[2].pontos} pts</p>
- <div style={{ background: '#d9770630', borderRadius: '6px 6px 0 0', height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 6, fontSize: 18 }}></div>
+ <div style={{ background: '#d9770630', borderRadius: '6px 6px 0 0', height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 6, fontSize: 18 }}>🥉</div>
  </div>
  )}
  </div>
@@ -148,7 +148,7 @@ export default function RankingWidget({ meuId }: { meuId: string }) {
  {minhaPosicao === -1 && (
  <div style={{ padding: '0 16px 16px' }}>
  <div style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 8, padding: '10px 14px', textAlign: 'center' }}>
- <p style={{ fontSize: 13, color: '#60a5fa', margin: 0 }}>Complete aulas para entrar no ranking! </p>
+ <p style={{ fontSize: 13, color: '#60a5fa', margin: 0 }}>Complete aulas para entrar no ranking!</p>
  </div>
  </div>
  )}

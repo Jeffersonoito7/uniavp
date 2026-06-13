@@ -65,7 +65,7 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
  const lista = Array.isArray(criados) ? criados : [criados]
  setTemplates(prev => [...prev, ...lista])
  setAba('stories')
- setMsg(` ${lista.length} templates Stories criados! Agora suba o PNG de cada um.`)
+ setMsg(`${lista.length} templates Stories criados! Agora suba o PNG de cada um.`)
  } else {
  setMsg('Erro ao duplicar.')
  }
@@ -96,7 +96,7 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
  setMsg(`Erro no upload: ${data.error || 'Tente novamente.'}`)
  } else {
  atualizar(templateId, 'arte_url', data.url)
- setMsg(' Arte enviada! Clique em Salvar para confirmar.')
+ setMsg('Arte enviada! Clique em Salvar para confirmar.')
  }
  setUploading(null)
  }
@@ -108,7 +108,7 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
  body: JSON.stringify(templates),
  })
  setSalvando(false)
- setMsg(res.ok ? ' Templates salvos com sucesso!' : ' Erro ao salvar.')
+ setMsg(res.ok ? 'Templates salvos com sucesso!' : 'Erro ao salvar.')
  }
 
  const inputStyle: React.CSSProperties = {
@@ -129,7 +129,7 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
  <div>
  {/* Info */}
  <div style={{ marginBottom: 16, padding: '12px 16px', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, fontSize: 13, color: 'var(--avp-text-dim)' }}>
- <strong style={{ color: 'var(--avp-text)' }}>Como funciona:</strong> Faça upload do PNG com fundo transparente usando o botão <strong style={{ color: 'var(--avp-text)' }}> Subir Arte</strong>. Configure X/Y/Largura/Altura (% da imagem) para posicionar a foto do consultor. Os templates aparecem automaticamente para todos os gestores.
+ <strong style={{ color: 'var(--avp-text)' }}>Como funciona:</strong> Faça upload do PNG com fundo transparente usando o botão <strong style={{ color: 'var(--avp-text)' }}>Subir Arte</strong>. Configure X/Y/Largura/Altura (% da imagem) para posicionar a foto do consultor. Os templates aparecem automaticamente para todos os gestores.
  </div>
 
  {/* Tabs + ações */}
@@ -142,7 +142,7 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
  borderRadius: 8, padding: '10px 20px', cursor: 'pointer',
  color: aba === f ? '#fff' : 'var(--avp-text-dim)', fontWeight: 700, fontSize: 14,
  }}>
- {f === 'feed' ? ' Feed (1080×1080)' : ' Stories (1080×1920)'}
+ {f === 'feed' ? 'Feed (1080×1080)' : 'Stories (1080×1920)'}
  <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.7 }}>
  {templates.filter(t => t.formato === f).length}
  </span>
@@ -157,7 +157,7 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
  {aba === 'feed' && !temStoriesDeTodos && templates.filter(t => t.formato === 'feed').length> 0 && (
  <button onClick={duplicarComoStories} disabled={duplicando}
  style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: 'pointer', fontWeight: 700, fontSize: 13, opacity: duplicando ? 0.7 : 1 }}>
- {duplicando ? '...' : ' Criar versão Stories de todos'}
+ {duplicando ? '...' : 'Criar versão Stories de todos'}
  </button>
  )}
  </div>
@@ -223,7 +223,7 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
  <button onClick={() => inputRefs.current[t.id]?.click()}
  disabled={uploading === t.id}
  style={{ background: uploading === t.id ? 'var(--avp-border)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '0 14px', cursor: uploading === t.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap' }}>
- {uploading === t.id ? ' Enviando...' : ' Subir Arte'}
+ {uploading === t.id ? 'Enviando...' : 'Subir Arte'}
  </button>
  </div>
  </div>
@@ -343,7 +343,7 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
  )}
 
  {msg && (
- <p style={{ fontSize: 14, marginTop: 16, color: msg.includes('Erro') || msg.includes('') ? 'var(--avp-danger)' : 'var(--avp-green)' }}>{msg}</p>
+ <p style={{ fontSize: 14, marginTop: 16, color: msg.includes('Erro') ? 'var(--avp-danger)' : 'var(--avp-green)' }}>{msg}</p>
  )}
 
  <button onClick={salvar} disabled={salvando}

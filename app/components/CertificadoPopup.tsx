@@ -168,7 +168,7 @@ export default function CertificadoPopup({
 >
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 20, padding: 32, maxWidth: 780, width: '100%', textAlign: 'center' }}>
 
- <div style={{ fontSize: 56, marginBottom: 8 }}></div>
+ <div style={{ fontSize: 56, marginBottom: 8 }}>🏆</div>
  <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: 'var(--avp-text)' }}>
  Parabéns, {nomeAluno.split(' ')[0]}!
  </h1>
@@ -181,7 +181,7 @@ export default function CertificadoPopup({
  <div style={{ marginBottom: 20, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--avp-border)', position: 'relative', background: '#f8f8f8', containerType: 'inline-size' }}>
  {!imgCarregada && (
  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1, background: '#111' }}>
- <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}> Carregando...</p>
+ <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>Carregando...</p>
  </div>
  )}
  <img

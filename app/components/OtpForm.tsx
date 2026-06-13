@@ -97,11 +97,11 @@ export default function OtpForm() {
  return (
  <div style={{ textAlign: 'center' }}>
  {enviando ? (
- <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}> Enviando código...</p>
+ <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Enviando código...</p>
  ) : info ? (
  <div style={{ marginBottom: 24 }}>
  <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 14, lineHeight: 1.6 }}>
- Código enviado via <strong style={{ color: '#60a5fa' }}> E-mail</strong><br />
+ Código enviado via <strong style={{ color: '#60a5fa' }}>E-mail</strong><br />
  para <strong style={{ color: '#60a5fa' }}>{info.destino}</strong>
  </p>
  {info.codigoDev && (
@@ -136,7 +136,7 @@ export default function OtpForm() {
  </div>
 
  {loading && (
- <p style={{ color: '#60a5fa', fontSize: 14, marginBottom: 12 }}> Verificando...</p>
+ <p style={{ color: '#60a5fa', fontSize: 14, marginBottom: 12 }}>Verificando...</p>
  )}
 
  {erro && (

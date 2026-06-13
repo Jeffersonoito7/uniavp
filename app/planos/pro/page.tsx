@@ -1,6 +1,7 @@
 import { getSiteConfig } from '@/lib/site-config'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { headers } from 'next/headers'
+import { Users, BarChart2, Link2, Image as ImageIcon, MessageCircle, BookOpen, Award, Bell, Gift, Zap, Check } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
@@ -34,16 +35,16 @@ export default async function PlanoProPage() {
  .select('id', { count: 'exact', head: true }).eq('status', 'ativo')
 
  const beneficios = [
- { icon: '', titulo: 'Gestão completa da equipe', desc: 'Veja todos os FREEs da sua rede, status, progresso e data de cadastro em um painel centralizado.' },
- { icon: '', titulo: 'Relatórios e métricas', desc: 'Acompanhe inativos, progresso médio da equipe, engajamento e receba relatório semanal por WhatsApp.' },
- { icon: '', titulo: 'Links de captação exclusivos', desc: 'Links personalizados para captar FREEs e novos PROs com rastreamento automático.' },
- { icon: '', titulo: 'Templates de arte', desc: 'Crie artes profissionais personalizadas com a foto de boas-vindas de cada FREE da sua equipe.' },
- { icon: '', titulo: 'WhatsApp integrado', desc: 'Envie mensagens direto do painel para qualquer membro da equipe sem sair da plataforma.' },
- { icon: '', titulo: 'Conteúdo ilimitado', desc: 'Acesso a todos os módulos e aulas, incluindo conteúdos exclusivos marcados como PRO.' },
- { icon: '', titulo: 'Certificados e carteirinha', desc: 'Emita certificados de conclusão e carteirinha de formação para sua equipe completa.' },
- { icon: '', titulo: 'Automação de reengajamento', desc: 'O sistema avisa você automaticamente sobre FREEs inativos para você agir antes de perdê-los.' },
- { icon: '', titulo: 'PRO gratuito por rede', desc: 'Ative 20 PROs na sua rede e sua assinatura fica ZERO — sem pagar mensalidade enquanto mantiver.' },
- { icon: '', titulo: 'Alertas em tempo real', desc: 'Receba notificações por WhatsApp quando alguém entra na equipe, conclui módulo ou fica inativo.' },
+ { Icon: Users, titulo: 'Gestão completa da equipe', desc: 'Veja todos os FREEs da sua rede, status, progresso e data de cadastro em um painel centralizado.' },
+ { Icon: BarChart2, titulo: 'Relatórios e métricas', desc: 'Acompanhe inativos, progresso médio da equipe, engajamento e receba relatório semanal por WhatsApp.' },
+ { Icon: Link2, titulo: 'Links de captação exclusivos', desc: 'Links personalizados para captar FREEs e novos PROs com rastreamento automático.' },
+ { Icon: ImageIcon, titulo: 'Templates de arte', desc: 'Crie artes profissionais personalizadas com a foto de boas-vindas de cada FREE da sua equipe.' },
+ { Icon: MessageCircle, titulo: 'WhatsApp integrado', desc: 'Envie mensagens direto do painel para qualquer membro da equipe sem sair da plataforma.' },
+ { Icon: BookOpen, titulo: 'Conteúdo ilimitado', desc: 'Acesso a todos os módulos e aulas, incluindo conteúdos exclusivos marcados como PRO.' },
+ { Icon: Award, titulo: 'Certificados e carteirinha', desc: 'Emita certificados de conclusão e carteirinha de formação para sua equipe completa.' },
+ { Icon: Bell, titulo: 'Automação de reengajamento', desc: 'O sistema avisa você automaticamente sobre FREEs inativos para você agir antes de perdê-los.' },
+ { Icon: Gift, titulo: 'PRO gratuito por rede', desc: 'Ative 20 PROs na sua rede e sua assinatura fica ZERO — sem pagar mensalidade enquanto mantiver.' },
+ { Icon: Zap, titulo: 'Alertas em tempo real', desc: 'Receba notificações por WhatsApp quando alguém entra na equipe, conclui módulo ou fica inativo.' },
  ]
 
  const faq = [
@@ -121,7 +122,7 @@ export default async function PlanoProPage() {
 
  {/* Destaque: PRO grátis por rede */}
  <div style={{ background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(79,70,229,0.25)', borderRadius: 20, padding: 28, marginBottom: 48, textAlign: 'center' }}>
- <p style={{ fontSize: 28, marginBottom: 8 }}></p>
+ <Gift size={32} style={{ color: '#c4b5fd', margin: '0 auto 8px', display: 'block' }} />
  <p style={{ fontWeight: 900, fontSize: 20, color: '#c4b5fd', marginBottom: 8 }}>Sua assinatura pode ser ZERO</p>
  <p style={{ color: 'rgba(241,245,249,0.6)', fontSize: 15, maxWidth: 500, margin: '0 auto', lineHeight: 1.7 }}>
  Indique <strong style={{ color: '#fff' }}>20 PROs ativos</strong> para a plataforma e sua mensalidade fica <strong style={{ color: '#4ade80' }}>completamente gratuita</strong> — enquanto eles mantiverem o plano.
@@ -143,12 +144,14 @@ export default async function PlanoProPage() {
  <p style={{ fontWeight: 800, fontSize: 22, marginBottom: 8, textAlign: 'center' }}>Tudo que o PRO inclui</p>
  <p style={{ color: 'rgba(241,245,249,0.45)', fontSize: 14, textAlign: 'center', marginBottom: 36 }}>Um painel completo para líderes que levam a equipe a sério.</p>
  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
- {beneficios.map(b => (
- <div key={b.titulo} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '20px 22px', display: 'flex', gap: 14, alignItems: 'flex-start', transition: 'border-color 0.2s' }}>
- <span style={{ fontSize: 28, flexShrink: 0, lineHeight: 1 }}>{b.icon}</span>
+ {beneficios.map(({ Icon, titulo, desc }) => (
+ <div key={titulo} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '20px 22px', display: 'flex', gap: 14, alignItems: 'flex-start', transition: 'border-color 0.2s' }}>
+ <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+ <Icon size={18} style={{ color: '#818cf8' }} />
+ </div>
  <div>
- <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 5 }}>{b.titulo}</p>
- <p style={{ fontSize: 13, color: 'rgba(241,245,249,0.5)', lineHeight: 1.6 }}>{b.desc}</p>
+ <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 5 }}>{titulo}</p>
+ <p style={{ fontSize: 13, color: 'rgba(241,245,249,0.5)', lineHeight: 1.6 }}>{desc}</p>
  </div>
  </div>
  ))}
@@ -162,7 +165,7 @@ export default async function PlanoProPage() {
  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
  <th style={{ padding: '20px 24px', textAlign: 'left', fontSize: 14, color: 'rgba(241,245,249,0.5)', fontWeight: 600 }}>Recurso</th>
  <th style={{ padding: '20px 16px', textAlign: 'center', fontSize: 14, color: '#4ade80', fontWeight: 700 }}>FREE</th>
- <th style={{ padding: '20px 16px', textAlign: 'center', fontSize: 14, color: '#818cf8', fontWeight: 700, background: 'rgba(99,102,241,0.08)' }}> PRO</th>
+ <th style={{ padding: '20px 16px', textAlign: 'center', fontSize: 14, color: '#818cf8', fontWeight: 700, background: 'rgba(99,102,241,0.08)' }}>PRO</th>
  </tr>
  </thead>
  <tbody>
@@ -181,8 +184,8 @@ export default async function PlanoProPage() {
  ].map(([recurso, free, pro], i) => (
  <tr key={recurso} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}>
  <td style={{ padding: '14px 24px', fontSize: 14, color: 'rgba(241,245,249,0.75)' }}>{recurso}</td>
- <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: 15, color: free === '' ? '#4ade80' : 'rgba(241,245,249,0.2)' }}>{free}</td>
- <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: 15, color: pro === '' ? '#818cf8' : 'rgba(241,245,249,0.2)', background: 'rgba(99,102,241,0.05)' }}>{pro}</td>
+ <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: 15, color: free === '' ? '#4ade80' : 'rgba(241,245,249,0.2)' }}>{free === '' ? <Check size={16} /> : free}</td>
+ <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: 15, color: pro === '' ? '#818cf8' : 'rgba(241,245,249,0.2)', background: 'rgba(99,102,241,0.05)' }}>{pro === '' ? <Check size={16} /> : pro}</td>
  </tr>
  ))}
  </tbody>

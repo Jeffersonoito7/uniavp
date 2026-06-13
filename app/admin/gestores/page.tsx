@@ -21,7 +21,7 @@ export default async function GestoresPage() {
  return (
  <AdminLayout>
  <div style={{ marginBottom: 24 }}>
- <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}> UNIAVP PRO</h1>
+ <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>UNIAVP PRO</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Gerenciamento de contas PRO</p>
  </div>
  <GestoresCliente gestoresIniciais={gestores ?? []} />

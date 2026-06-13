@@ -131,7 +131,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
  { id: 'geral', label: 'Geral' },
  { id: 'aulas', label: 'Aulas' },
  { id: 'configuracoes', label: 'Configurações' },
- { id: 'certificado', label: ' Certificado' },
+ { id: 'certificado', label: 'Certificado' },
  ]
 
  return (
@@ -215,7 +215,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
  onChange={e => { const f = e.target.files?.[0]; if (f) selecionarCapa(f); e.target.value = '' }} />
  <button onClick={() => fileRef.current?.click()}
  style={{ width: '100%', background: capaPreview ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
- {capaPreview ? ' Trocar capa' : ' Subir capa'}
+ {capaPreview ? 'Trocar capa' : 'Subir capa'}
  </button>
  </div>
  </div>
@@ -235,7 +235,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
  <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
  <div>
- <p style={{ fontWeight: 800, fontSize: 16, margin: 0 }}> Certificado deste módulo</p>
+ <p style={{ fontWeight: 800, fontSize: 16, margin: 0 }}>Certificado deste módulo</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: 6 }}>
  Quando ativado, o aluno recebe um certificado exclusivo ao concluir todas as aulas deste módulo.
  </p>
@@ -253,7 +253,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
  <div style={card}>
  <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>Template do certificado</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 12 }}>
- <strong style={{ color: 'var(--avp-green)' }}> 2480×1748px · A4 paisagem · mín. 150 dpi</strong>
+ <strong style={{ color: 'var(--avp-green)' }}>2480×1748px · A4 paisagem · mín. 150 dpi</strong>
  </p>
 
  {/* Botões de upload */}
@@ -262,7 +262,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
  <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
  <button onClick={() => certTemplateRef.current?.click()} disabled={certUploading === 'template'}
  style={{ flex: 1, background: certUploading === 'template' ? 'var(--avp-border)' : certTemplateUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
- {certUploading === 'template' ? ' Enviando...' : certTemplateUrl ? ' Trocar template' : ' Subir template'}
+ {certUploading === 'template' ? 'Enviando...' : certTemplateUrl ? 'Trocar template' : 'Subir template'}
  </button>
  {certTemplateUrl && <button onClick={() => setCertTemplateUrl('')}
  style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}></button>}
@@ -311,7 +311,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
  </div>
  ) : (
  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 120, background: 'var(--avp-black)', borderRadius: 8, border: '2px dashed var(--avp-border)', marginBottom: 20 }}>
- <span style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}> Faça upload para ver o preview</span>
+ <span style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Faça upload para ver o preview</span>
  </div>
  )}
 
@@ -359,7 +359,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
  <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 16, marginTop: 16 }}>
  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: certAssinaturaAtiva ? 16 : 0 }}>
  <div>
- <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}> Sobrepor assinatura</p>
+ <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>Sobrepor assinatura</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '3px 0 0' }}>
  Ative somente se o template <strong>não</strong> tiver assinatura gravada.
  </p>
@@ -381,7 +381,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
  <div style={{ display: 'flex', gap: 8 }}>
  <button onClick={() => certAssinaturaRef.current?.click()} disabled={certUploading === 'assinatura'}
  style={{ flex: 1, background: certUploading === 'assinatura' ? 'var(--avp-border)' : certAssinaturaUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
- {certUploading === 'assinatura' ? ' Enviando...' : certAssinaturaUrl ? ' Trocar' : ' Subir assinatura'}
+ {certUploading === 'assinatura' ? 'Enviando...' : certAssinaturaUrl ? 'Trocar' : 'Subir assinatura'}
  </button>
  {certAssinaturaUrl && <button onClick={() => setCertAssinaturaUrl('')} style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}></button>}
  </div>
@@ -426,7 +426,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
  <div style={{ display: 'flex', gap: 6 }}>
  <button onClick={() => ref.current?.click()} disabled={certUploading === campo}
  style={{ flex: 1, background: certUploading === campo ? 'var(--avp-border)' : val ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
- {certUploading === campo ? '' : val ? ' Trocar' : ' Subir'}
+ {certUploading === campo ? 'Enviando...' : val ? 'Trocar' : 'Subir'}
  </button>
  {val && <button onClick={() => setVal('')} style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '8px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}></button>}
  </div>

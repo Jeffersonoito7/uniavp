@@ -36,7 +36,7 @@ export default async function GestorArtesPage({ params }: { params: { whatsapp: 
  ← Voltar ao painel
  </Link>
  <div style={{ textAlign: 'center' }}>
- <p style={{ fontWeight: 800, fontSize: 15, margin: 0 }}> Artes</p>
+ <p style={{ fontWeight: 800, fontSize: 15, margin: 0 }}>Artes</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>{consultor.nome}</p>
  </div>
  <div />
@@ -44,7 +44,7 @@ export default async function GestorArtesPage({ params }: { params: { whatsapp: 
 
  {(templates ?? []).length === 0 ? (
  <div style={{ textAlign: 'center', padding: 80, color: 'var(--avp-text-dim)' }}>
- <p style={{ fontSize: 48, marginBottom: 16 }}></p>
+ <p style={{ fontSize: 48, marginBottom: 16 }}>🖼️</p>
  <p style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Sem templates configurados</p>
  <p>O administrador ainda não adicionou templates de arte.</p>
  </div>

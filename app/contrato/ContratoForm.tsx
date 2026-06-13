@@ -285,7 +285,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
  </div>
 
  <div style={{ background:'rgba(10,22,40,0.85)', border:'1px solid rgba(99,102,241,0.25)', borderRadius:20, padding:32, backdropFilter:'blur(12px)' }}>
- <p style={{ fontWeight:700, fontSize:14, color:'#818cf8', marginBottom:20 }}> Seus dados pessoais</p>
+ <p style={{ fontWeight:700, fontSize:14, color:'#818cf8', marginBottom:20 }}>Seus dados pessoais</p>
  <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
  <div>
  <label style={lbl}>Nome completo *</label>
@@ -297,7 +297,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
  WhatsApp *
  {wppLen>= 10 && (
  <span style={{ marginLeft:8, color: wppValido ? '#22c55e' : '#f87171', fontWeight:700 }}>
- {wppValido ? ' válido' : ' inválido'}
+ {wppValido ? 'válido' : 'inválido'}
  </span>
  )}
  </label>
@@ -312,7 +312,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
  CPF
  {cpfLen === 11 && (
  <span style={{ marginLeft:8, color: cpfValido ? '#22c55e' : '#f87171', fontWeight:700 }}>
- {cpfValido ? ' válido' : ' inválido'}
+ {cpfValido ? 'válido' : 'inválido'}
  </span>
  )}
  </label>
@@ -328,7 +328,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
  E-mail
  {form.email.length> 4 && (
  <span style={{ marginLeft:8, color: emailOk ? '#22c55e' : '#f87171', fontWeight:700 }}>
- {emailOk ? ' válido' : ' inválido'}
+ {emailOk ? 'válido' : 'inválido'}
  </span>
  )}
  </label>
@@ -384,14 +384,14 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
  </div>
 
  <div style={{ marginTop:24, paddingTop:20, borderTop:'1px solid rgba(255,255,255,0.1)' }}>
- <p style={{ fontWeight:700, fontSize:14, color:'#818cf8', marginBottom:16 }}> Dados do CNPJ</p>
+ <p style={{ fontWeight:700, fontSize:14, color:'#818cf8', marginBottom:16 }}>Dados do CNPJ</p>
  <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
  <div>
  <label style={lbl}>
  CNPJ {semCnpj ? '' : '*'}
  {!semCnpj && cnpjLen === 14 && (
  <span style={{ marginLeft:8, color: cnpjValido ? '#22c55e' : '#f87171', fontWeight:700 }}>
- {cnpjValido ? ' válido' : ' inválido'}
+ {cnpjValido ? 'válido' : 'inválido'}
  </span>
  )}
  </label>
@@ -453,12 +453,12 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
 
  {/* Nota Fiscal */}
  {!semCnpj && <div style={{ marginTop:24, paddingTop:20, borderTop:'1px solid rgba(255,255,255,0.1)' }}>
- <p style={{ fontWeight:700, fontSize:14, color:'#818cf8', marginBottom:6 }}> Emissão de Nota Fiscal</p>
+ <p style={{ fontWeight:700, fontSize:14, color:'#818cf8', marginBottom:6 }}>Emissão de Nota Fiscal</p>
  <p style={{ fontSize:12, color:'rgba(255,255,255,0.4)', marginBottom:14, lineHeight:1.6 }}>Informe como será feita a emissão de notas fiscais pelos seus serviços.</p>
  <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
  {[
- { val: true, label:' Sim, eu mesmo emito minha Nota Fiscal', sub:'Você emitirá NF pelo seu próprio CNPJ.' },
- { val: false, label:' Não consigo emitir NF — outra empresa/pessoa emitirá por mim', sub:'Você autoriza outra empresa a emitir e receber em seu nome.' },
+ { val: true, label:'Sim, eu mesmo emito minha Nota Fiscal', sub:'Você emitirá NF pelo seu próprio CNPJ.' },
+ { val: false, label:'Não consigo emitir NF — outra empresa/pessoa emitirá por mim', sub:'Você autoriza outra empresa a emitir e receber em seu nome.' },
  ].map(op => (
  <label key={String(op.val)} style={{ display:'flex', gap:12, alignItems:'flex-start', background: nfEmiteProprio === op.val ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.04)', border:`1px solid ${nfEmiteProprio === op.val ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.12)'}`, borderRadius:10, padding:'14px 16px', cursor:'pointer' }}>
  <div style={{ width:20, height:20, borderRadius:'50%', border:`2px solid ${nfEmiteProprio === op.val ? '#6366f1' : 'rgba(255,255,255,0.25)'}`, background: nfEmiteProprio === op.val ? '#6366f1' : 'transparent', flexShrink:0, marginTop:1, display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -475,7 +475,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
 
  {nfEmiteProprio === false && (
  <div style={{ marginTop:14, background:'rgba(251,191,36,0.06)', border:'1px solid rgba(251,191,36,0.2)', borderRadius:10, padding:'14px 16px', display:'flex', flexDirection:'column', gap:12 }}>
- <p style={{ fontSize:12, color:'rgba(251,191,36,0.9)', fontWeight:700, margin:0 }}> Preencha os dados de quem vai emitir e receber por você:</p>
+ <p style={{ fontSize:12, color:'rgba(251,191,36,0.9)', fontWeight:700, margin:0 }}>Preencha os dados de quem vai emitir e receber por você:</p>
  <div>
  <label style={lbl}>Razão social da empresa emissora *</label>
  <input style={inp} value={nfEmpresaNome} onChange={e => setNfEmpresaNome(e.target.value)} placeholder="Ex: ABC Serviços Ltda" />
@@ -485,7 +485,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
  CNPJ da empresa emissora *
  {nfCnpjLen === 14 && (
  <span style={{ marginLeft:8, color: nfCnpjValido ? '#22c55e' : '#f87171', fontWeight:700 }}>
- {nfCnpjValido ? ' válido' : ' inválido'}
+ {nfCnpjValido ? 'válido' : 'inválido'}
  </span>
  )}
  </label>
@@ -504,7 +504,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
  CPF do responsável
  {nfCpfLen === 11 && (
  <span style={{ marginLeft:8, color: nfCpfValido ? '#22c55e' : '#f87171', fontWeight:700 }}>
- {nfCpfValido ? ' válido' : ' inválido'}
+ {nfCpfValido ? 'válido' : 'inválido'}
  </span>
  )}
  </label>
@@ -626,13 +626,13 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
  <div style={{ minHeight:'100vh', background:bg, fontFamily:'Inter,sans-serif', padding:'32px 20px', display:'flex', alignItems:'center', justifyContent:'center' }}>
  <div style={{ maxWidth:600, width:'100%' }}>
  <div style={{ textAlign:'center', marginBottom:28 }}>
- <div style={{ fontSize:52, marginBottom:12 }}></div>
+ <div style={{ fontSize:52, marginBottom:12 }}>📋</div>
  <p style={{ fontWeight:900, fontSize:22, color:'#fff', margin:'0 0 8px' }}>Revisão final</p>
  <p style={{ color:'rgba(255,255,255,0.5)', fontSize:14 }}>Confirme seus dados antes de assinar</p>
  </div>
 
  <div style={{ background:'rgba(10,22,40,0.85)', border:'1px solid rgba(79,70,229,0.3)', borderRadius:20, padding:28, marginBottom:20 }}>
- <p style={{ fontWeight:700, fontSize:13, color:'#818cf8', marginBottom:16 }}> Dados do contrato</p>
+ <p style={{ fontWeight:700, fontSize:13, color:'#818cf8', marginBottom:16 }}>Dados do contrato</p>
  <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
  {dadosConfirmar.map(([l,v]) => (
  <div key={l} style={{ display:'flex', gap:12, padding:'10px 14px', background:'rgba(255,255,255,0.03)', borderRadius:10 }}>
@@ -643,7 +643,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
  </div>
 
  <div style={{ marginTop:16, padding:'12px 16px', background:'rgba(99,102,241,0.08)', borderRadius:10, border:'1px solid rgba(99,102,241,0.2)' }}>
- <p style={{ fontSize:12, color:'rgba(255,255,255,0.5)', margin:'0 0 4px', fontWeight:700 }}> Todas as {CLAUSULAS_ATIVAS.length} cláusulas aceitas</p>
+ <p style={{ fontSize:12, color:'rgba(255,255,255,0.5)', margin:'0 0 4px', fontWeight:700 }}>Todas as {CLAUSULAS_ATIVAS.length} cláusulas aceitas</p>
  <p style={{ fontSize:11, color:'rgba(255,255,255,0.35)', margin:0 }}>Assinatura eletrônica com hash SHA-256 — validade jurídica conforme MP 2.200-2/2001</p>
  </div>
  </div>
@@ -716,7 +716,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
  </button>
  <button onClick={assinar} disabled={!hasSignature || loading}
  style={{ flex:2, background: hasSignature && !loading ? '#22c55e' : 'rgba(255,255,255,0.1)', color:'#fff', border:'none', borderRadius:10, padding:'14px', fontWeight:700, fontSize:16, cursor: hasSignature && !loading ? 'pointer' : 'not-allowed', transition:'background 0.2s' }}>
- {loading ? 'Registrando...' : ' Confirmar Assinatura'}
+ {loading ? 'Registrando...' : 'Confirmar Assinatura'}
  </button>
  </div>
  </div>
@@ -729,7 +729,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
  return (
  <div style={{ minHeight:'100vh', background:bg, fontFamily:'Inter,sans-serif', display:'flex', alignItems:'center', justifyContent:'center', padding:'32px 20px' }}>
  <div style={{ textAlign:'center', color:'#fff', maxWidth:520, width:'100%' }}>
- <div style={{ fontSize:72, marginBottom:20 }}></div>
+ <div style={{ fontSize:72, marginBottom:20 }}>✅</div>
  <h1 style={{ fontSize:28, fontWeight:900, marginBottom:12 }}>Contrato assinado!</h1>
  <p style={{ color:'rgba(255,255,255,0.6)', fontSize:15, marginBottom:24, lineHeight:1.7 }}>
  Seu contrato foi registrado digitalmente e o PDF será enviado via WhatsApp em instantes.
@@ -737,7 +737,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
  {resultado && (
  <>
  <div style={{ background:'rgba(99,102,241,0.08)', border:'1px solid rgba(99,102,241,0.25)', borderRadius:14, padding:'16px 20px', marginBottom:20, textAlign:'left' }}>
- <p style={{ fontSize:11, color:'#818cf8', fontWeight:700, marginBottom:8, textTransform:'uppercase', letterSpacing:1 }}> Registro do contrato</p>
+ <p style={{ fontSize:11, color:'#818cf8', fontWeight:700, marginBottom:8, textTransform:'uppercase', letterSpacing:1 }}>Registro do contrato</p>
  <p style={{ fontSize:16, fontWeight:800, color:'#fff', margin:'0 0 4px' }}>{resultado.numero_registro}</p>
  <p style={{ fontSize:11, color:'rgba(255,255,255,0.4)', margin:0, fontFamily:'monospace', wordBreak:'break-all' }}>
  SHA-256: {resultado.hash_contrato}

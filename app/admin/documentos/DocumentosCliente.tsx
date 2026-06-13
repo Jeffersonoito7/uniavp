@@ -14,7 +14,7 @@ type Documento = {
 
 const painelLabel: Record<string, string> = {
  free: '🆓 Painel FREE',
- pro: ' Painel PRO',
+ pro: 'Painel PRO',
  ambos: '🆓 Ambos os painéis',
 }
 
@@ -58,18 +58,18 @@ export default function DocumentosCliente({ documentosIniciais }: { documentosIn
  const data = await res.json()
  if (data.url) {
  setForm(p => ({ ...p, pdf_url: data.url }))
- setMsg(' PDF enviado com sucesso!')
+ setMsg('PDF enviado com sucesso!')
  } else {
- setMsg(' Erro no upload: ' + (data.error || 'tente novamente'))
+ setMsg('Erro no upload: ' + (data.error || 'tente novamente'))
  }
  } catch {
- setMsg(' Erro ao enviar o PDF')
+ setMsg('Erro ao enviar o PDF')
  }
  setUploading(false)
  }
 
  async function salvar() {
- if (!form.titulo || !form.pdf_url) { setMsg(' Título e PDF são obrigatórios'); return }
+ if (!form.titulo || !form.pdf_url) { setMsg('Título e PDF são obrigatórios'); return }
  setLoading(true)
  setMsg('')
  const body = { ...form, ordem: parseInt(form.ordem) || 0, ...(editando ? { id: editando.id } : {}) }
@@ -88,7 +88,7 @@ export default function DocumentosCliente({ documentosIniciais }: { documentosIn
  setModal(false)
  setMsg('')
  } else {
- setMsg(' ' + (data.error || 'Erro ao salvar'))
+ setMsg(data.error || 'Erro ao salvar')
  }
  setLoading(false)
  }
@@ -115,7 +115,7 @@ export default function DocumentosCliente({ documentosIniciais }: { documentosIn
  <>
  <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
  <div>
- <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}> Documentos do Painel</h1>
+ <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Documentos do Painel</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>
  PDFs disponíveis para download nos painéis dos consultores
  </p>
@@ -165,7 +165,7 @@ export default function DocumentosCliente({ documentosIniciais }: { documentosIn
  </button>
  <button onClick={() => excluir(doc.id)}
  style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.15)', color: '#f87171', borderRadius: 8, padding: '7px 10px', fontSize: 13, cursor: 'pointer' }}>
- 
+ Excluir
  </button>
  </div>
  </div>
@@ -178,7 +178,7 @@ export default function DocumentosCliente({ documentosIniciais }: { documentosIn
  <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 20, padding: 36, maxWidth: 520, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
  <h2 style={{ fontWeight: 800, fontSize: 20, color: 'var(--avp-text)', marginBottom: 24 }}>
- {editando ? ' Editar documento' : '+ Novo documento'}
+ {editando ? 'Editar documento' : '+ Novo documento'}
  </h2>
 
  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -197,7 +197,7 @@ export default function DocumentosCliente({ documentosIniciais }: { documentosIn
  <select style={{ ...inp, cursor: 'pointer' }} value={form.painel} onChange={e => setForm(p => ({ ...p, painel: e.target.value }))}>
  <option value="ambos">🆓 Ambos os painéis (FREE e PRO)</option>
  <option value="free">🆓 Apenas painel FREE</option>
- <option value="pro"> Apenas painel PRO</option>
+ <option value="pro">Apenas painel PRO</option>
  </select>
  </div>
 
@@ -226,7 +226,7 @@ export default function DocumentosCliente({ documentosIniciais }: { documentosIn
  onChange={e => { const f = e.target.files?.[0]; if (f) uploadPDF(f); e.target.value = '' }} />
  <button onClick={() => fileRef.current?.click()} disabled={uploading}
  style={{ background: uploading ? 'var(--avp-border)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, fontSize: 14, cursor: uploading ? 'not-allowed' : 'pointer', opacity: uploading ? 0.7 : 1 }}>
- {uploading ? ' Enviando...' : ' Selecionar PDF'}
+ {uploading ? 'Enviando...' : 'Selecionar PDF'}
  </button>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 6 }}>Máximo 10MB · somente PDF</p>
  </div>
@@ -235,7 +235,7 @@ export default function DocumentosCliente({ documentosIniciais }: { documentosIn
  </div>
 
  {msg && (
- <div style={{ marginTop: 16, padding: '10px 14px', background: msg.includes('') ? 'rgba(2,161,83,0.1)' : 'rgba(248,113,113,0.1)', border: `1px solid ${msg.includes('') ? 'rgba(2,161,83,0.3)' : 'rgba(248,113,113,0.3)'}`, borderRadius: 8, color: msg.includes('') ? '#02A153' : '#f87171', fontSize: 13 }}>
+ <div style={{ marginTop: 16, padding: '10px 14px', background: msg.includes('sucesso') || msg.includes('enviado') ? 'rgba(2,161,83,0.1)' : 'rgba(248,113,113,0.1)', border: `1px solid ${msg.includes('sucesso') || msg.includes('enviado') ? 'rgba(2,161,83,0.3)' : 'rgba(248,113,113,0.3)'}`, borderRadius: 8, color: msg.includes('sucesso') || msg.includes('enviado') ? '#02A153' : '#f87171', fontSize: 13 }}>
  {msg}
  </div>
  )}

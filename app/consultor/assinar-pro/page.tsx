@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { BookOpen, Users, Link2, BarChart2, MessageCircle, Image as ImageIcon, Repeat2, Award, QrCode, Smartphone, CheckCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 type Info = {
@@ -134,7 +135,7 @@ export default function AssinarProPage() {
  {/* Já é PRO */}
  {info?.jaEhPro && (
  <div style={{ background: 'rgba(2,161,83,0.1)', border: '1px solid #02A153', borderRadius: 14, padding: '24px', textAlign: 'center' }}>
- <p style={{ fontSize: 32, marginBottom: 8 }}></p>
+ <CheckCircle size={40} style={{ color: '#22c55e', margin: '0 auto 8px', display: 'block' }} />
  <p style={{ fontWeight: 800, fontSize: 18, color: '#22c55e', marginBottom: 8 }}>Você já é {nomePro}!</p>
  <a href="/pro" style={{ display: 'inline-block', background: '#22c55e', color: '#fff', borderRadius: 10, padding: '12px 28px', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
  → Acessar painel PRO
@@ -160,10 +161,10 @@ export default function AssinarProPage() {
  </div>
  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
  {[
- ' Módulos ilimitados', ' Equipe ilimitada',
- ' Links de captação', ' Relatórios da equipe',
- ' WhatsApp direto', ' Templates de arte',
- ' Indicações ilimitadas', ' Certificados',
+ 'Módulos ilimitados', 'Equipe ilimitada',
+ 'Links de captação', 'Relatórios da equipe',
+ 'WhatsApp direto', 'Templates de arte',
+ 'Indicações ilimitadas', 'Certificados',
  ].map(item => (
  <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#c4b5fd' }}>
  {item}
@@ -175,7 +176,7 @@ export default function AssinarProPage() {
  {/* PIX pendente → mostra direto sem precisar verificar de novo */}
  {temPixPendente ? (
  <div style={{ background: '#181b24', border: '1px solid #252836', borderRadius: 14, padding: '24px', textAlign: 'center' }}>
- <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}> Pague via PIX e ative agora</p>
+ <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}><QrCode size={16} style={{ opacity: 0.7, flexShrink: 0 }} />Pague via PIX e ative agora</p>
  <p style={{ color: '#8a8fa3', fontSize: 13, marginBottom: 20 }}>
  Vence em: {pag!.vencimento ? new Date(pag!.vencimento + 'T12:00:00').toLocaleDateString('pt-BR') : '—'}
  </p>
@@ -201,7 +202,7 @@ export default function AssinarProPage() {
  /* Etapa 1: verificar WhatsApp */
  <div>
  <div style={{ textAlign: 'center', marginBottom: 20 }}>
- <div style={{ fontSize: 36, marginBottom: 10 }}></div>
+ <Smartphone size={40} style={{ color: '#818cf8', margin: '0 auto 10px', display: 'block' }} />
  <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 6 }}>Confirme seu WhatsApp</p>
  <p style={{ color: '#8a8fa3', fontSize: 13, lineHeight: 1.6 }}>
  Para garantir que as notificações da sua equipe cheguem no lugar certo, precisamos confirmar seu número.
@@ -210,7 +211,7 @@ export default function AssinarProPage() {
 
  {wppFormatado && (
  <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 10, padding: '12px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
- <span style={{ fontSize: 20 }}></span>
+ <Smartphone size={18} style={{ color: '#818cf8', flexShrink: 0 }} />
  <div>
  <p style={{ fontSize: 11, color: '#818cf8', fontWeight: 700, margin: 0 }}>Número cadastrado</p>
  <p style={{ fontSize: 15, fontWeight: 800, margin: 0 }}>{wppFormatado}</p>
@@ -242,7 +243,7 @@ export default function AssinarProPage() {
  <button onClick={confirmarCodigoWpp}
  disabled={wppCarregando || wppCodigo.length < 6}
  className="btn btn-green" style={{ padding: '0 18px', borderRadius: 10, whiteSpace: 'nowrap' }}>
- {wppCarregando ? '...' : ' OK'}
+ {wppCarregando ? '...' : 'OK'}
  </button>
  </div>
  {wppErro && <p style={{ color: '#f87171', fontSize: 13, textAlign: 'center', margin: 0 }}>{wppErro}</p>}
@@ -257,7 +258,7 @@ export default function AssinarProPage() {
  /* Etapa 2: WhatsApp verificado → gerar PIX */
  <div>
  <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#22c55e', fontSize: 14, fontWeight: 700, marginBottom: 20 }}>
- <span style={{ fontSize: 20 }}></span> WhatsApp verificado!
+ <CheckCircle size={20} style={{ color: '#22c55e', flexShrink: 0 }} /> WhatsApp verificado!
  </div>
  <button onClick={gerarPix} disabled={gerando} className="btn btn-primary btn-full btn-lg" style={{ fontSize: 18 }}>
  {gerando ? 'Gerando PIX...' : `Assinar ${nomePro} — R$ ${valor.toFixed(2).replace('.', ',')} /mês`}

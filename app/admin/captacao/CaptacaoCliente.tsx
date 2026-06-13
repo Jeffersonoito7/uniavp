@@ -1,5 +1,7 @@
 'use client'
+import React from 'react'
 import { useState } from 'react'
+import { Users, Link2, Star, Globe, Zap } from 'lucide-react'
 
 type Gestor = { id: string; nome: string; whatsapp: string }
 
@@ -10,7 +12,7 @@ function qrUrl(link: string) {
 function LinkCard({
  icon, titulo, desc, link, cor,
 }: {
- icon: string; titulo: string; desc: string; link: string; cor: string
+ icon: React.ReactNode; titulo: string; desc: string; link: string; cor: string
 }) {
  const [copiado, setCopiado] = useState(false)
  const [verQR, setVerQR] = useState(false)
@@ -22,14 +24,14 @@ function LinkCard({
  }
 
  function compartilharWpp() {
- const msg = encodeURIComponent(` *Cadastre-se na plataforma:*\n\n${link}`)
+ const msg = encodeURIComponent(`*Cadastre-se na plataforma:*\n\n${link}`)
  window.open(`https://wa.me/?text=${msg}`, '_blank')
  }
 
  return (
  <div style={{ background: 'var(--avp-card)', border: `2px solid ${cor}30`, borderRadius: 16, padding: 24 }}>
  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 16 }}>
- <span style={{ fontSize: 22, flexShrink: 0 }}>{icon}</span>
+ <span style={{ fontSize: 22, flexShrink: 0, display: 'flex', alignItems: 'center' }}>{icon}</span>
  <div style={{ flex: 1 }}>
  <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 4 }}>{titulo}</p>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, lineHeight: 1.5 }}>{desc}</p>
@@ -89,22 +91,22 @@ export default function CaptacaoCliente({ gestores, baseUrl }: { gestores: Gesto
  {/* Explicação */}
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 14, padding: 20, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
  <div style={{ borderRight: '1px solid var(--avp-border)', paddingRight: 16 }}>
- <p style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}> Funil Completo</p>
+ <p style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}>Funil Completo</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>Para quem <strong style={{ color: 'var(--avp-text)' }}>não conhece</strong> o negócio. Pergunta → vídeo → cadastro FREE.</p>
  </div>
  <div style={{ borderRight: '1px solid var(--avp-border)', paddingRight: 16 }}>
- <p style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}> Acesso Direto FREE</p>
+ <p style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}>Acesso Direto FREE</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>Para quem <strong style={{ color: 'var(--avp-text)' }}>já conhece</strong>. Pula o funil, vai direto ao formulário e cadastra como <strong style={{ color: 'var(--avp-text)' }}>FREE</strong>.</p>
  </div>
  <div>
- <p style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}> Acesso Direto PRO</p>
+ <p style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}>Acesso Direto PRO</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>Para quem <strong style={{ color: 'var(--avp-text)' }}>já conhece e quer ser PRO</strong>. Cria conta e redireciona ao pagamento automaticamente.</p>
  </div>
  </div>
 
  {/* Link genérico de consultor — Funil completo */}
  <LinkCard
- icon=""
+ icon={<Users size={22} style={{ opacity: 0.8 }} />}
  titulo="UNIAVP FREE — Funil Completo"
  desc="Para quem não conhece o negócio. Passa por perguntas + vídeo obrigatório antes de se cadastrar."
  link={`${baseUrl}/captacao`}
@@ -113,7 +115,7 @@ export default function CaptacaoCliente({ gestores, baseUrl }: { gestores: Gesto
 
  {/* Link genérico direto */}
  <LinkCard
- icon=""
+ icon={<Link2 size={22} style={{ opacity: 0.8 }} />}
  titulo="UNIAVP FREE — Acesso Direto"
  desc="Para quem já conhece. Pula o funil e vai direto ao formulário de cadastro."
  link={`${baseUrl}/captacao?direto=1`}
@@ -148,21 +150,21 @@ export default function CaptacaoCliente({ gestores, baseUrl }: { gestores: Gesto
  {gestor && linkGestor && (
  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
  <LinkCard
- icon=""
+ icon={<Users size={22} style={{ opacity: 0.8 }} />}
  titulo={`FREE — Funil Completo — ${gestor.nome}`}
  desc={`Para quem não conhece. Passa por perguntas + vídeo + cadastro, vinculado a ${gestor.nome}.`}
  link={linkGestor}
  cor="#02A153"
  />
  <LinkCard
- icon=""
+ icon={<Link2 size={22} style={{ opacity: 0.8 }} />}
  titulo={`FREE — Acesso Direto — ${gestor.nome}`}
  desc={`Para quem já conhece. Vai direto ao cadastro FREE, vinculado a ${gestor.nome}.`}
  link={`${linkGestor}?direto=1`}
  cor="#f59e0b"
  />
  <LinkCard
- icon=""
+ icon={<Star size={22} style={{ opacity: 0.8 }} />}
  titulo={`PRO — Cadastro + Pagamento — ${gestor.nome}`}
  desc={`Para quem quer ir direto ao PRO. Cria conta e redireciona ao pagamento, vinculado a ${gestor.nome}.`}
  link={`${linkGestor}?direto=1&plano=pro`}
@@ -180,7 +182,7 @@ export default function CaptacaoCliente({ gestores, baseUrl }: { gestores: Gesto
 
  {/* Divisor PRO */}
  <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 8 }}>
- <p style={{ fontWeight: 800, fontSize: 16, color: '#818cf8', marginBottom: 4 }}> Links UNIAVP PRO — Cadastro Direto</p>
+ <p style={{ fontWeight: 800, fontSize: 16, color: '#818cf8', marginBottom: 4 }}>Links UNIAVP PRO — Cadastro Direto</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 16 }}>
  Para quem já conhece o negócio e quer ir direto para o plano PRO. O cadastro cria a conta FREE automaticamente e redireciona para o pagamento.
  </p>
@@ -188,7 +190,7 @@ export default function CaptacaoCliente({ gestores, baseUrl }: { gestores: Gesto
 
  {/* Link PRO genérico direto */}
  <LinkCard
- icon=""
+ icon={<Star size={22} style={{ opacity: 0.8 }} />}
  titulo="UNIAVP PRO — Cadastro + Pagamento Direto"
  desc="Pula o funil. Cria a conta e redireciona direto para o pagamento via PIX. Para quem já conhece e quer ser PRO."
  link={`${baseUrl}/captacao?direto=1&plano=pro`}
@@ -197,7 +199,7 @@ export default function CaptacaoCliente({ gestores, baseUrl }: { gestores: Gesto
 
  {/* Dica */}
  <div style={{ background: '#02A15310', border: '1px solid #02A15330', borderRadius: 12, padding: 18, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
- <span style={{ fontSize: 22, flexShrink: 0 }}></span>
+ <span style={{ fontSize: 22, flexShrink: 0, display: 'flex', alignItems: 'center' }}><Zap size={22} style={{ opacity: 0.8 }} /></span>
  <div style={{ fontSize: 13, color: 'var(--avp-text-dim)', lineHeight: 1.7 }}>
  <strong style={{ color: 'var(--avp-text)' }}>Dica:</strong> Use o <strong style={{ color: 'var(--avp-text)' }}>Link por PRO Específico</strong> sempre que possível.
  O UNIAVP FREE chega direto na apresentação do PRO e já fica vinculado automaticamente —

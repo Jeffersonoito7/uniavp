@@ -191,7 +191,7 @@ export default function AditivoForm({ contratanteNome, contratoNome, contratoNum
  <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 20px', fontFamily: 'Inter,sans-serif' }}>
  <div style={{ width: '100%', maxWidth: 520 }}>
  <div style={{ ...cardStyle, textAlign: 'center' }}>
- <div style={{ fontSize: 48, marginBottom: 16 }}></div>
+ <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
  <p style={{ fontWeight: 800, fontSize: 20, color: '#fff', margin: '0 0 10px' }}>Aditivo assinado!</p>
  <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.7 }}>
  Seu contrato foi atualizado com os dados informados.<br />
@@ -253,14 +253,14 @@ export default function AditivoForm({ contratanteNome, contratoNome, contratoNum
  {/* ETAPA: cnpj proprio */}
  {etapa === 'cnpj' && (
  <>
- <p style={{ fontWeight: 700, fontSize: 14, color: '#818cf8', marginBottom: 20 }}> Dados do seu CNPJ</p>
+ <p style={{ fontWeight: 700, fontSize: 14, color: '#818cf8', marginBottom: 20 }}>Dados do seu CNPJ</p>
  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
  <div>
  <label style={lbl}>
  CNPJ *
  {cnpjLen === 14 && (
  <span style={{ marginLeft: 8, color: cnpjValido ? '#22c55e' : '#f87171', fontWeight: 700 }}>
- {cnpjValido ? ' válido' : ' inválido'}
+ {cnpjValido ? 'válido' : 'inválido'}
  </span>
  )}
  </label>
@@ -318,7 +318,7 @@ export default function AditivoForm({ contratanteNome, contratoNome, contratoNum
  {/* ETAPA: terceiro */}
  {etapa === 'terceiro' && (
  <>
- <p style={{ fontWeight: 700, fontSize: 14, color: '#818cf8', marginBottom: 6 }}> Dados de quem vai emitir por você</p>
+ <p style={{ fontWeight: 700, fontSize: 14, color: '#818cf8', marginBottom: 6 }}>Dados de quem vai emitir por você</p>
  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 18, lineHeight: 1.6 }}>
  Preencha os dados da empresa ou pessoa que vai emitir a Nota Fiscal e receber em seu nome.
  </p>
@@ -332,7 +332,7 @@ export default function AditivoForm({ contratanteNome, contratoNome, contratoNum
  CNPJ da empresa emissora
  {nfCnpjLen === 14 && (
  <span style={{ marginLeft: 8, color: nfCnpjValido ? '#22c55e' : '#f87171', fontWeight: 700 }}>
- {nfCnpjValido ? ' válido' : ' inválido'}
+ {nfCnpjValido ? 'válido' : 'inválido'}
  </span>
  )}
  </label>
@@ -348,7 +348,7 @@ export default function AditivoForm({ contratanteNome, contratoNome, contratoNum
  CPF do responsável
  {nfCpfLen === 11 && (
  <span style={{ marginLeft: 8, color: nfCpfValido ? '#22c55e' : '#f87171', fontWeight: 700 }}>
- {nfCpfValido ? ' válido' : ' inválido'}
+ {nfCpfValido ? 'válido' : 'inválido'}
  </span>
  )}
  </label>
@@ -375,7 +375,7 @@ export default function AditivoForm({ contratanteNome, contratoNome, contratoNum
  {/* ETAPA: assinatura */}
  {etapa === 'assinatura' && (
  <>
- <p style={{ fontWeight: 700, fontSize: 14, color: '#818cf8', marginBottom: 6 }}> Assine o aditivo</p>
+ <p style={{ fontWeight: 700, fontSize: 14, color: '#818cf8', marginBottom: 6 }}>Assine o aditivo</p>
  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 16, lineHeight: 1.6 }}>
  Desenhe sua assinatura abaixo para confirmar o aditivo contratual.
  </p>

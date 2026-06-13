@@ -1118,7 +1118,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
 
  {!healthData && !healthLoading && (
  <div style={{ ...card, padding: 40, textAlign: 'center' }}>
- <div style={{ fontSize: 40, marginBottom: 12 }}></div>
+ <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
  <p style={{ color: C.text, fontWeight: 600, marginBottom: 6 }}>Análise sob demanda</p>
  <p style={{ color: C.dim, fontSize: 13, marginBottom: 20 }}>Clique em Atualizar para rodar a análise completa da plataforma</p>
  <button
@@ -1145,7 +1145,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  const nivelCor: Record<string, string> = { critico: '#f87171', aviso: '#fbbf24', info: '#818cf8' }
  const nivelBg: Record<string, string> = { critico: '#1a0a0a', aviso: '#3d1c00', info: '#0d0f1e' }
  const nivelBorder: Record<string, string> = { critico: '#3f1515', aviso: '#78350f', info: '#2d3270' }
- const nivelEmoji: Record<string, string> = { critico: '', aviso: '', info: '' }
+ const nivelEmoji: Record<string, string> = { critico: '🔴', aviso: '⚠️', info: 'ℹ️' }
 
  return (
  <>
@@ -1172,7 +1172,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
 
  {alertas.length === 0 && (
  <div style={{ ...card, padding: '14px 18px', borderColor: '#166534', background: '#052e1610', marginBottom: 24 }}>
- <p style={{ color: '#4ade80', fontWeight: 600, fontSize: 13 }}> Nenhum alerta — plataforma saudável</p>
+ <p style={{ color: '#4ade80', fontWeight: 600, fontSize: 13 }}>Nenhum alerta — plataforma saudável</p>
  </div>
  )}
 
@@ -1293,7 +1293,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  'Clique em Connect e escaneie o QR Code com o WhatsApp DO CLIENTE',
  'Aguarde o status Connected — agora o número do cliente está conectado',
  'ANOTE o nome da instância — você vai precisar nos próximos passos',
- ' O WhatsApp precisa estar ativo (não pode ser conta Business com restrições de API)',
+ 'O WhatsApp precisa estar ativo (não pode ser conta Business com restrições de API)',
  ],
  },
  {
@@ -1313,7 +1313,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  'Acesse Clientes → Novo Cliente → Associação',
  'Preencha: Nome da empresa, Domínio (ex: uni.assoc.com.br), WhatsApp e E-mail do responsável',
  'Clique em Cadastrar — o cliente fica salvo mas ainda INATIVO',
- ' O domínio deve ser o domínio RAIZ do cliente (sem subdomínio)',
+ 'O domínio deve ser o domínio RAIZ do cliente (sem subdomínio)',
  ],
  },
  {
@@ -1387,7 +1387,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  'Acesse pro.[domínio] e tente ativar um painel PRO',
  '→ Deve gerar PIX com o valor configurado e ativar após pagamento',
  'Confirme que o admin consegue acessar adm.[domínio]/admin',
- ' Só entregue ao cliente depois de passar por todos esses testes',
+ 'Só entregue ao cliente depois de passar por todos esses testes',
  ],
  },
  ].map(passo => (
@@ -1842,7 +1842,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  {onboardingMsg.length> 0 && (
  <div style={{ marginTop: 16, background: darkMode ? '#080810' : '#f8fafc', borderRadius: 8, padding: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
  {onboardingMsg.map((m, i) => (
- <p key={i} style={{ fontSize: 12, color: m.startsWith('') ? '#4ade80' : m.startsWith('') ? '#fbbf24' : C.dim, margin: 0 }}>{m}</p>
+ <p key={i} style={{ fontSize: 12, color: m.includes('sucesso') || m.includes('Ativado') ? '#4ade80' : m.includes('Erro') || m.includes('falhou') ? '#fbbf24' : C.dim, margin: 0 }}>{m}</p>
  ))}
  </div>
  )}

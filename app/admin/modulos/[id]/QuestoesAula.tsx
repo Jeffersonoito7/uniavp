@@ -14,9 +14,9 @@ const ALT_VAZIAS: Alternativa[] = [
 ]
 
 const TIPOS: { id: QuizTipo; label: string; desc: string }[] = [
- { id: 'obrigatorio', label: ' Quiz obrigatório', desc: 'Aluno deve passar no quiz para avançar' },
- { id: 'indicativo', label: ' Quiz indicativo', desc: 'Aluno pode pular — serve como indicador' },
- { id: 'sim_nao', label: ' Sim ou Não', desc: 'Perguntas obrigatórias — aluno deve responder Sim em todas para continuar' },
+ { id: 'obrigatorio', label: 'Quiz obrigatório', desc: 'Aluno deve passar no quiz para avançar' },
+ { id: 'indicativo', label: 'Quiz indicativo', desc: 'Aluno pode pular — serve como indicador' },
+ { id: 'sim_nao', label: 'Sim ou Não', desc: 'Perguntas obrigatórias — aluno deve responder Sim em todas para continuar' },
 ]
 
 export default function QuestoesAula({
@@ -302,15 +302,15 @@ export default function QuestoesAula({
  {simNaoPerguntas.length> 0 && (
  <>
  <div style={{ display: 'flex', gap: 8, marginTop: 12, marginBottom: 8 }}>
- <div style={{ flex: 1, background: '#02A15320', border: '1px solid var(--avp-green)', borderRadius: 8, padding: '8px 14px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: 'var(--avp-green)' }}> Sim → avança</div>
- <div style={{ flex: 1, background: '#e6394620', border: '1px solid var(--avp-danger)', borderRadius: 8, padding: '8px 14px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: 'var(--avp-danger)' }}> Não → bloqueia</div>
+ <div style={{ flex: 1, background: '#02A15320', border: '1px solid var(--avp-green)', borderRadius: 8, padding: '8px 14px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: 'var(--avp-green)' }}>Sim → avança</div>
+ <div style={{ flex: 1, background: '#e6394620', border: '1px solid var(--avp-danger)', borderRadius: 8, padding: '8px 14px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: 'var(--avp-danger)' }}>Não → bloqueia</div>
  </div>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 12 }}>
  O aluno responde uma por vez. Precisa responder Sim em {simNaoPerguntas.length> 1 ? 'todas' : 'ela'} para avançar.
  </p>
  <button type="button" onClick={() => salvarConfig(quizTipo)} disabled={salvandoConfig || !podeSalvarSimNao}
  style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 13, opacity: (salvandoConfig || !podeSalvarSimNao) ? 0.6 : 1 }}>
- {salvandoConfig ? 'Salvando...' : ' Salvar perguntas'}
+ {salvandoConfig ? 'Salvando...' : 'Salvar perguntas'}
  </button>
  </>
  )}
@@ -364,7 +364,7 @@ export default function QuestoesAula({
  {msg && <p style={{ fontSize: 12, color: msg.includes('atualizada') ? 'var(--avp-green)' : 'var(--avp-danger)' }}>{msg}</p>}
  <div style={{ display: 'flex', gap: 10 }}>
  <button type="button" onClick={salvar} disabled={salvando} style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 13, opacity: salvando ? 0.7 : 1 }}>
- {salvando ? 'Salvando...' : ' Atualizar'}
+ {salvando ? 'Salvando...' : 'Atualizar'}
  </button>
  <button type="button" onClick={resetForm} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13 }}>Cancelar</button>
  </div>
@@ -401,11 +401,11 @@ export default function QuestoesAula({
  <div key={ai} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: a.correta ? 'var(--avp-green)' : 'var(--avp-text-dim)' }}>
  <span style={{ fontWeight: 700, width: 16 }}>{letraAlt(ai)})</span>
  <span>{a.texto}</span>
- {a.correta && <span style={{ marginLeft: 4, fontSize: 10, background: '#02A15320', color: 'var(--avp-green)', borderRadius: 4, padding: '1px 6px', fontWeight: 700 }}> Correta</span>}
+ {a.correta && <span style={{ marginLeft: 4, fontSize: 10, background: '#02A15320', color: 'var(--avp-green)', borderRadius: 4, padding: '1px 6px', fontWeight: 700 }}>Correta</span>}
  </div>
  ))}
  </div>
- {q.explicacao && <p style={{ marginTop: 8, fontSize: 11, color: 'var(--avp-text-dim)', fontStyle: 'italic' }}> {q.explicacao}</p>}
+ {q.explicacao && <p style={{ marginTop: 8, fontSize: 11, color: 'var(--avp-text-dim)', fontStyle: 'italic' }}>{q.explicacao}</p>}
  </div>
  ))}
 
@@ -451,7 +451,7 @@ export default function QuestoesAula({
  {msg && <p style={{ fontSize: 12, color: msg.includes('adicionada') ? 'var(--avp-green)' : 'var(--avp-danger)' }}>{msg}</p>}
  <div style={{ display: 'flex', gap: 10 }}>
  <button type="button" onClick={salvar} disabled={salvando} style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 13, opacity: salvando ? 0.7 : 1 }}>
- {salvando ? 'Salvando...' : ' Salvar questão'}
+ {salvando ? 'Salvando...' : 'Salvar questão'}
  </button>
  <button type="button" onClick={resetForm} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13 }}>Cancelar</button>
  </div>

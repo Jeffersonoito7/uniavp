@@ -40,7 +40,7 @@ export default function MuralNoticias() {
  boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
  display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 480, overflowY: 'auto',
  }}>
- <p style={{ fontWeight: 700, fontSize: 14 }}> Mural de Notícias</p>
+ <p style={{ fontWeight: 700, fontSize: 14 }}>Mural de Notícias</p>
  {noticias.map(n => (
  <div key={n.id} style={{ background: 'var(--avp-black)', borderRadius: 10, overflow: 'hidden' }}>
  {n.imagem_url && (

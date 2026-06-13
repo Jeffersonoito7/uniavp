@@ -66,7 +66,7 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
  if (res.ok && criado.id) setTemplates(prev => [...prev, criado])
  }
  setAba('stories')
- setMsg(` Templates Stories criados! Agora suba o PNG de cada um.`)
+ setMsg(`Templates Stories criados! Agora suba o PNG de cada um.`)
  setDuplicando(false)
  }
 
@@ -85,7 +85,7 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
  const novo = await res.json()
  if (res.ok && novo.id) {
  setTemplates(prev => [...prev, novo])
- setMsg(` "${t.titulo}" copiado! Agora é seu — edite à vontade.`)
+ setMsg(`"${t.titulo}" copiado! Agora é seu — edite à vontade.`)
  } else {
  setMsg('Erro ao copiar template.')
  }
@@ -115,7 +115,7 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
  setMsg(`Erro no upload: ${data.error || 'Tente novamente.'}`)
  } else {
  atualizar(templateId, 'arte_url', data.url)
- setMsg(' Arte enviada! Clique em Salvar para confirmar.')
+ setMsg('Arte enviada! Clique em Salvar para confirmar.')
  }
  setUploading(null)
  }
@@ -127,7 +127,7 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
  body: JSON.stringify(templates),
  })
  setSalvando(false)
- setMsg(res.ok ? ' Templates salvos com sucesso!' : ' Erro ao salvar.')
+ setMsg(res.ok ? 'Templates salvos com sucesso!' : 'Erro ao salvar.')
  }
 
  const inputStyle: React.CSSProperties = {
@@ -149,7 +149,7 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
  <div>
  {/* Info */}
  <div style={{ marginBottom: 16, padding: '12px 16px', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, fontSize: 13, color: 'var(--avp-text-dim)' }}>
- <strong style={{ color: 'var(--avp-text)' }}>Como funciona:</strong> Faça upload do PNG com fundo transparente usando o botão <strong style={{ color: 'var(--avp-text)' }}> Subir Arte</strong>. Configure X/Y/Largura/Altura (% da imagem) para posicionar a foto do consultor. Templates marcados com <strong style={{ color: '#a78bfa' }}>Admin</strong> são configurados pelo administrador.
+ <strong style={{ color: 'var(--avp-text)' }}>Como funciona:</strong> Faça upload do PNG com fundo transparente usando o botão <strong style={{ color: 'var(--avp-text)' }}>Subir Arte</strong>. Configure X/Y/Largura/Altura (% da imagem) para posicionar a foto do consultor. Templates marcados com <strong style={{ color: '#a78bfa' }}>Admin</strong> são configurados pelo administrador.
  </div>
 
  {/* Tabs + ações */}
@@ -162,7 +162,7 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
  borderRadius: 8, padding: '10px 20px', cursor: 'pointer',
  color: aba === f ? '#fff' : 'var(--avp-text-dim)', fontWeight: 700, fontSize: 14,
  }}>
- {f === 'feed' ? ' Feed (1080×1080)' : ' Stories (1080×1920)'}
+ {f === 'feed' ? 'Feed (1080×1080)' : 'Stories (1080×1920)'}
  <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.7 }}>
  {templates.filter(t => t.formato === f).length}
  </span>
@@ -177,7 +177,7 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
  {aba === 'feed' && !temStoriesDeMeus && meusFeed.length> 0 && (
  <button onClick={duplicarComoStories} disabled={duplicando}
  style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: 'pointer', fontWeight: 700, fontSize: 13, opacity: duplicando ? 0.7 : 1 }}>
- {duplicando ? '...' : ' Criar versão Stories de todos'}
+ {duplicando ? '...' : 'Criar versão Stories de todos'}
  </button>
  )}
  </div>
@@ -185,7 +185,7 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
  {/* Lista */}
  {filtrados.length === 0 ? (
  <div style={{ textAlign: 'center', padding: 48, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, color: 'var(--avp-text-dim)' }}>
- <p style={{ fontSize: 36, marginBottom: 8 }}></p>
+ <p style={{ fontSize: 36, marginBottom: 8 }}>🖼️</p>
  <p style={{ marginBottom: 12 }}>Nenhum template de {aba === 'feed' ? 'Feed' : 'Stories'}.</p>
  {aba === 'stories' && meusFeed.length> 0 && (
  <button onClick={duplicarComoStories} disabled={duplicando}
@@ -215,7 +215,7 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
  )}
 
  {msg && (
- <p style={{ fontSize: 14, marginTop: 16, color: msg.includes('Erro') || msg.includes('') ? 'var(--avp-danger)' : 'var(--avp-green)' }}>{msg}</p>
+ <p style={{ fontSize: 14, marginTop: 16, color: msg.includes('Erro') ? 'var(--avp-danger)' : 'var(--avp-green)' }}>{msg}</p>
  )}
 
  <button onClick={salvar} disabled={salvando}
@@ -298,7 +298,7 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
  <button onClick={() => inputRefs.current[t.id]?.click()}
  disabled={uploading === t.id}
  style={{ background: uploading === t.id ? 'var(--avp-border)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '0 14px', cursor: uploading === t.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap' }}>
- {uploading === t.id ? ' Enviando...' : ' Subir Arte'}
+ {uploading === t.id ? 'Enviando...' : 'Subir Arte'}
  </button>
  </div>
  </div>
@@ -327,7 +327,7 @@ export default function GestorArtesTemplates({ inicial, gestorId }: { inicial: T
  <input type="checkbox" checked={t.texto_ativo ?? false}
  onChange={e => atualizar(t.id, 'texto_ativo', e.target.checked)}
  style={{ width: 15, height: 15, accentColor: '#8b5cf6' }} />
- <span style={{ fontSize: 13, fontWeight: 700 }}> Sobrepor nome na arte</span>
+ <span style={{ fontSize: 13, fontWeight: 700 }}>Sobrepor nome na arte</span>
  </label>
 
  {t.texto_ativo && (

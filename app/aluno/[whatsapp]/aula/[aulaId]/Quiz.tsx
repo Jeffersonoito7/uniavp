@@ -46,7 +46,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
  if (jaAprovado) {
  return (
  <div style={{ background: '#02A15310', border: '1px solid var(--avp-green)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
- <span style={{ fontSize: 32 }}></span>
+ <span style={{ fontSize: 32 }}>✅</span>
  <div>
  <p style={{ fontWeight: 700, color: 'var(--avp-green)', fontSize: 16, marginBottom: 4 }}>Compromisso assumido!</p>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Você já confirmou seu comprometimento nesta aula.</p>
@@ -58,7 +58,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
  if (resultado?.aprovado) {
  return (
  <div style={{ background: '#02A15310', border: '1px solid var(--avp-green)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
- <span style={{ fontSize: 32 }}></span>
+ <span style={{ fontSize: 32 }}>✅</span>
  <div>
  <p style={{ fontWeight: 700, color: 'var(--avp-green)', fontSize: 16, marginBottom: 4 }}>Ótimo! Compromisso registrado.</p>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Sua resposta foi salva. A próxima aula está disponível!</p>
@@ -120,7 +120,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
  <div style={{ display: 'flex', gap: 12 }}>
  <button onClick={simNaoSim} disabled={enviando}
  style={{ flex: 1, background: '#02A15320', border: '2px solid var(--avp-green)', color: 'var(--avp-green)', borderRadius: 10, padding: '18px', fontWeight: 800, fontSize: 17, cursor: 'pointer', opacity: enviando ? 0.7 : 1, fontFamily: 'inherit', transition: 'all 0.2s' }}>
- {enviando ? '...' : ' Sim'}
+ {enviando ? '...' : 'Sim'}
  </button>
  <button onClick={() => setSimNaoRecusado(true)} disabled={enviando}
  style={{ flex: 1, background: '#e6394615', border: '2px solid var(--avp-danger)', color: 'var(--avp-danger)', borderRadius: 10, padding: '18px', fontWeight: 800, fontSize: 17, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}>
@@ -173,7 +173,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
  if (jaAprovado) {
  return (
  <div style={{ background: '#02A15310', border: '1px solid var(--avp-green)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
- <span style={{ fontSize: 32 }}></span>
+ <span style={{ fontSize: 32 }}>✅</span>
  <div>
  <p style={{ fontWeight: 700, color: 'var(--avp-green)', fontSize: 16, marginBottom: 4 }}>Quiz concluído com aprovação!</p>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Você já foi aprovado nesta aula. Continue para a próxima!</p>
@@ -185,7 +185,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
  if (resultado?.pulado) {
  return (
  <div style={{ background: '#02A15310', border: '1px solid var(--avp-green)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
- <span style={{ fontSize: 32 }}></span>
+ <span style={{ fontSize: 32 }}>✅</span>
  <div>
  <p style={{ fontWeight: 700, color: 'var(--avp-green)', fontSize: 16, marginBottom: 4 }}>Tudo bem!</p>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>Quiz registrado como visto. Você pode continuar para a próxima aula.</p>
@@ -200,7 +200,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
  const borda = resultado.aprovado ? 'var(--avp-green)' : 'var(--avp-danger)'
  return (
  <div style={{ background: bg, border: `1px solid ${borda}`, borderRadius: 12, padding: 28, display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center', textAlign: 'center' }}>
- <span style={{ fontSize: 48 }}>{resultado.aprovado ? '' : ''}</span>
+ <span style={{ fontSize: 48 }}>{resultado.aprovado ? '🎉' : '❌'}</span>
  <div>
  <p style={{ fontSize: 28, fontWeight: 900, color: cor, marginBottom: 4 }}>{resultado.percentual}%</p>
  <p style={{ fontWeight: 700, fontSize: 16, color: cor, marginBottom: 8 }}>
@@ -219,7 +219,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
  )}
  {resultado.aprovado && pendenteLiberacao && (
  <div style={{ background: '#f59e0b15', border: '1px solid #f59e0b50', borderRadius: 8, padding: '16px 20px' }}>
- <p style={{ color: '#f59e0b', fontSize: 15, fontWeight: 700, marginBottom: 6 }}> Aguardando liberação</p>
+ <p style={{ color: '#f59e0b', fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Aguardando liberação</p>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>
  Você foi aprovado! A próxima aula será liberada pelo {modoLiberacao === 'manual_gestor' ? 'seu gestor' : 'administrador'}. Você receberá uma notificação.
  </p>
@@ -233,7 +233,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
  {deveReassistir ? (
  <>
  <div style={{ background: '#f59e0b15', border: '1px solid #f59e0b50', borderRadius: 10, padding: '14px 20px', textAlign: 'center' }}>
- <p style={{ color: '#f59e0b', fontWeight: 800, fontSize: 15, marginBottom: 6 }}> Você errou 3 vezes!</p>
+ <p style={{ color: '#f59e0b', fontWeight: 800, fontSize: 15, marginBottom: 6 }}>Você errou 3 vezes!</p>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, lineHeight: 1.6 }}>
  Para tentar novamente, você precisa reassistir ao vídeo desta aula antes de refazer o quiz.
  </p>
@@ -265,7 +265,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
  if (!iniciado) {
  return (
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 28, display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center', textAlign: 'center' }}>
- <span style={{ fontSize: 40 }}></span>
+ <span style={{ fontSize: 40 }}>📝</span>
  <div>
  <p style={{ fontWeight: 800, fontSize: 20, marginBottom: 8 }}>Quiz desta aula</p>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 4 }}>
@@ -296,7 +296,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
  return (
  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
- <h2 style={{ fontSize: 20, fontWeight: 800 }}> Quiz</h2>
+ <h2 style={{ fontSize: 20, fontWeight: 800 }}>Quiz</h2>
  <span style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>{Object.keys(respostas).length}/{questoes.length} respondidas</span>
  </div>
 

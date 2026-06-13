@@ -50,7 +50,7 @@ export default function MigrarPage() {
  <div style={{ maxWidth: 800, margin: '0 auto' }}>
 
  <div style={{ marginBottom: 32 }}>
- <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 8 }}> Migrations do Banco</h1>
+ <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 8 }}>Migrations do Banco</h1>
  <p style={{ color: '#8a8fa3', fontSize: 14 }}>
  Copie o SQL e cole no{' '}
  <a href="https://supabase.com/dashboard" target="_blank" rel="noreferrer"
@@ -82,12 +82,12 @@ export default function MigrarPage() {
  <button onClick={() => executar(m.id)} disabled={executando === m.id}
  className="btn btn-sm"
  style={{ background: resultado[m.id] === 'ok' ? '#22c55e' : '#f59e0b' }}>
- {executando === m.id ? ' Executando...' : resultado[m.id] === 'ok' ? ' Aplicada!' : ' Executar'}
+ {executando === m.id ? 'Executando...' : resultado[m.id] === 'ok' ? 'Aplicada!' : 'Executar'}
  </button>
  <button onClick={() => copiar(m.sql, m.id)}
  className="btn btn-sm"
  style={{ background: copiado === m.id ? '#22c55e' : '#252836', border: '1px solid #252836' }}>
- {copiado === m.id ? '' : ''}
+ {copiado === m.id ? 'Copiado!' : 'Copiar'}
  </button>
  </div>
  </div>
@@ -114,7 +114,7 @@ export default function MigrarPage() {
  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
  {aplicadas.map(m => (
  <div key={m.id} style={{ background: '#181b24', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 10, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
- <span style={{ color: '#22c55e', fontSize: 18 }}></span>
+ <span style={{ color: '#22c55e', fontSize: 18 }}>✓</span>
  <div>
  <p style={{ fontWeight: 600, fontSize: 13, margin: 0 }}>{m.id}</p>
  <p style={{ color: '#8a8fa3', fontSize: 12, margin: '2px 0 0' }}>{m.descricao}</p>
@@ -127,7 +127,7 @@ export default function MigrarPage() {
 
  {!loading && migrations.length === 0 && (
  <div style={{ textAlign: 'center', padding: 60, color: '#8a8fa3' }}>
- <p style={{ fontSize: 40, marginBottom: 12 }}></p>
+ <p style={{ fontSize: 40, marginBottom: 12 }}>✓</p>
  <p style={{ fontWeight: 700, fontSize: 16 }}>Nenhuma migration pendente</p>
  </div>
  )}

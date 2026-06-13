@@ -103,7 +103,7 @@ export default function AdminsCliente({ adminsIniciais, meuUserId }: { adminsIni
 
  {/* Info box */}
  <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 10, padding: '14px 18px', marginBottom: 20, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
- <span style={{ fontSize: 22, flexShrink: 0 }}></span>
+ <span style={{ fontSize: 22, flexShrink: 0 }}>ℹ️</span>
  <div>
  <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 4, color: '#a5b4fc' }}>Quem deve ser cadastrado aqui?</p>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, lineHeight: 1.6 }}>
@@ -151,7 +151,7 @@ export default function AdminsCliente({ adminsIniciais, meuUserId }: { adminsIni
  <button onClick={() => setShowForm(false)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
  <button onClick={criar} disabled={salvando}
  style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: salvando ? 0.7 : 1 }}>
- {salvando ? 'Criando...' : ' Adicionar gerente'}
+ {salvando ? 'Criando...' : 'Adicionar gerente'}
  </button>
  </div>
  </div>
@@ -188,13 +188,13 @@ export default function AdminsCliente({ adminsIniciais, meuUserId }: { adminsIni
  {a.user_id !== meuUserId && (
  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
  <button onClick={() => { setResetando(a); setNovaSenha(''); setVerNovaSenha(false) }}
- style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}> Senha</button>
+ style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>Senha</button>
  <button onClick={() => toggleAtivo(a)}
  style={{ background: a.ativo ? '#6366f1' : 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>
  {a.ativo ? 'Desativar' : 'Ativar'}
  </button>
  <button onClick={() => excluir(a)}
- style={{ background: 'var(--avp-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}> Excluir</button>
+ style={{ background: 'var(--avp-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>Excluir</button>
  </div>
  )}
  </td>
@@ -214,7 +214,7 @@ export default function AdminsCliente({ adminsIniciais, meuUserId }: { adminsIni
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32, width: 420, maxWidth: '100%' }}
  onMouseDown={e => e.stopPropagation()}>
  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
- <h2 style={{ fontSize: 18, fontWeight: 700 }}> Redefinir Senha</h2>
+ <h2 style={{ fontSize: 18, fontWeight: 700 }}>Redefinir Senha</h2>
  <button onClick={() => setResetando(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--avp-text-dim)', fontSize: 22 }}>×</button>
  </div>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 20 }}>
@@ -235,7 +235,7 @@ export default function AdminsCliente({ adminsIniciais, meuUserId }: { adminsIni
  <button onClick={() => setResetando(null)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
  <button onClick={salvarSenha} disabled={salvandoSenha || novaSenha.length < 6}
  style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: (salvandoSenha || novaSenha.length < 6) ? 0.6 : 1 }}>
- {salvandoSenha ? 'Salvando...' : ' Redefinir'}
+ {salvandoSenha ? 'Salvando...' : 'Redefinir'}
  </button>
  </div>
  </div>

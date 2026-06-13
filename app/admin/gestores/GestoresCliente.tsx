@@ -27,7 +27,7 @@ function LinkCopiavel({ label, url, desc }: { label: string; url: string; desc: 
  <p style={{ fontSize: 12, color: 'var(--avp-blue)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fullUrl}</p>
  </div>
  <button onClick={copiar} style={{ background: copiado ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
- {copiado ? ' Copiado' : 'Copiar'}
+ {copiado ? 'Copiado' : 'Copiar'}
  </button>
  </div>
  )
@@ -125,7 +125,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
  if (data.ok) {
  const vencimento = data.vencimento
  setGestores(prev => prev.map(g => g.id === ativandoPro!.id ? { ...g, ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento } : g))
- flash('ok', ` PRO ativado por ${dias} dias para ${ativandoPro.nome}!`)
+ flash('ok', `PRO ativado por ${dias} dias para ${ativandoPro.nome}!`)
  setAtivandoPro(null)
  } else flash('err', data.error ?? 'Erro ao ativar PRO.')
  setSalvandoPro(false)
@@ -138,7 +138,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
  <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={e => e.target === e.currentTarget && setAtivandoPro(null)}>
  <div style={{ background: 'var(--avp-card)', border: '2px solid rgba(2,161,83,0.4)', borderRadius: 16, padding: 32, width: 420, maxWidth: '95vw' }} onMouseDown={e => e.stopPropagation()}>
  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
- <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--avp-green)' }}> Ativar PRO Manual</h2>
+ <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--avp-green)' }}>Ativar PRO Manual</h2>
  <button onClick={() => setAtivandoPro(null)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 22 }}>×</button>
  </div>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 20 }}>
@@ -169,7 +169,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
  <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
  <button type="button" onClick={() => setAtivandoPro(null)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
  <button type="submit" disabled={salvandoPro} style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: salvandoPro ? 0.7 : 1 }}>
- {salvandoPro ? ' Ativando...' : ' Ativar PRO'}
+ {salvandoPro ? 'Ativando...' : 'Ativar PRO'}
  </button>
  </div>
  </form>
@@ -182,7 +182,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
  <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={e => e.target === e.currentTarget && setEditando(null)}>
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32, width: 480, maxWidth: '95vw' }} onMouseDown={e => e.stopPropagation()}>
  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
- <h2 style={{ fontSize: 18, fontWeight: 700 }}> Editar PRO — {editando.nome}</h2>
+ <h2 style={{ fontSize: 18, fontWeight: 700 }}>Editar PRO — {editando.nome}</h2>
  <button onClick={() => setEditando(null)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 22 }}>×</button>
  </div>
  <form onSubmit={salvarEdicao} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -192,7 +192,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
  <div><label style={lbl}>Nova senha <span style={{ fontWeight: 400 }}>(em branco = não alterar)</span></label><input type="password" style={inp} value={editForm.nova_senha} onChange={e => setEditForm(p => ({ ...p, nova_senha: e.target.value }))} placeholder="Mínimo 6 caracteres" /></div>
  <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
  <button type="button" onClick={() => setEditando(null)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
- <button type="submit" disabled={salvando} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, cursor: 'pointer', fontSize: 14, opacity: salvando ? 0.6 : 1 }}>{salvando ? 'Salvando...' : ' Salvar'}</button>
+ <button type="submit" disabled={salvando} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, cursor: 'pointer', fontSize: 14, opacity: salvando ? 0.6 : 1 }}>{salvando ? 'Salvando...' : 'Salvar'}</button>
  </div>
  </form>
  </div>
@@ -265,7 +265,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
  )}
 
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, marginBottom: 20 }}>
- <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}> Link de Captação PRO</p>
+ <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>Link de Captação PRO</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 16 }}>Envie este link para novos PROs se cadastrarem na plataforma.</p>
  <LinkCopiavel label="Cadastro PRO direto" url="/captacao?direto=1&plano=pro" desc="Cadastro rápido + pagamento PRO automático." />
  </div>
@@ -309,15 +309,15 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
  Ativar PRO
  </button>
  <button onClick={() => { setEditForm({ nome: g.nome, email: g.email, whatsapp: g.whatsapp, nova_senha: '' }); setEditando(g) }}
- style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}></button>
+ style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Editar</button>
  <button onClick={() => toggleAtivo(g)}
  style={{ background: g.ativo ? '#e6394620' : '#02A15320', color: g.ativo ? 'var(--avp-danger)' : 'var(--avp-green)', border: `1px solid ${g.ativo ? '#e6394640' : '#02A15340'}`, borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
- {g.ativo ? '' : ''}
+ {g.ativo ? 'Desativar' : 'Ativar'}
  </button>
  <button onClick={() => { setResetGestor(g); setNovaSenha('') }}
- style={{ background: '#6366f120', color: '#6366f1', border: '1px solid #6366f160', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}></button>
+ style={{ background: '#6366f120', color: '#6366f1', border: '1px solid #6366f160', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Senha</button>
  <button onClick={() => excluirGestor(g)}
- style={{ background: 'var(--avp-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}></button>
+ style={{ background: 'var(--avp-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Excluir</button>
  </div>
  </td>
  </tr>

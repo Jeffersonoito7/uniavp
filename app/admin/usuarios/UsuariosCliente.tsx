@@ -131,7 +131,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
 
  {/* Abas */}
  <div style={{ display: 'flex', gap: 4, borderBottom: '2px solid var(--avp-border)', marginBottom: 20 }}>
- {([['consultores', `🆓 FREE (${consultores.length})`], ['gestores', ` PRO (${gestores.length})`]] as const).map(([id, label]) => (
+ {([['consultores', `🆓 FREE (${consultores.length})`], ['gestores', `PRO (${gestores.length})`]] as const).map(([id, label]) => (
  <button key={id} onClick={() => { setAba(id); setBusca('') }}
  style={{ background: 'none', border: 'none', borderBottom: `3px solid ${aba === id ? 'var(--avp-blue)' : 'transparent'}`, marginBottom: -2, padding: '10px 20px', cursor: 'pointer', fontWeight: aba === id ? 700 : 500, fontSize: 14, color: aba === id ? 'var(--avp-text)' : 'var(--avp-text-dim)' }}>
  {label}
@@ -172,9 +172,9 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
  <td style={{ padding: '12px 14px', color: 'var(--avp-text-dim)', fontSize: 12 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '—'}</td>
  <td style={{ padding: '12px 14px' }}>
  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
- {btnAcao(' Editar', () => abrirEdicao('consultor', c), 'var(--avp-blue)')}
- {c.user_id && btnAcao(' Senha', () => { setResetando({ user_id: c.user_id!, nome: c.nome }); setNovaSenha(''); setVerSenha(false) }, '#6366f1')}
- {btnAcao(' Excluir', () => excluirConsultor(c), 'var(--avp-danger)')}
+ {btnAcao('Editar', () => abrirEdicao('consultor', c), 'var(--avp-blue)')}
+ {c.user_id && btnAcao('Senha', () => { setResetando({ user_id: c.user_id!, nome: c.nome }); setNovaSenha(''); setVerSenha(false) }, '#6366f1')}
+ {btnAcao('Excluir', () => excluirConsultor(c), 'var(--avp-danger)')}
  </div>
  </td>
  </tr>
@@ -214,10 +214,10 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
  <td style={{ padding: '12px 14px', color: 'var(--avp-text-dim)', fontSize: 12 }}>{g.created_at ? new Date(g.created_at).toLocaleDateString('pt-BR') : '—'}</td>
  <td style={{ padding: '12px 14px' }}>
  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
- {btnAcao(' Editar', () => abrirEdicao('gestor', g), 'var(--avp-blue)')}
- {g.user_id && btnAcao(' Senha', () => { setResetando({ user_id: g.user_id!, nome: g.nome }); setNovaSenha(''); setVerSenha(false) }, '#6366f1')}
+ {btnAcao('Editar', () => abrirEdicao('gestor', g), 'var(--avp-blue)')}
+ {g.user_id && btnAcao('Senha', () => { setResetando({ user_id: g.user_id!, nome: g.nome }); setNovaSenha(''); setVerSenha(false) }, '#6366f1')}
  {btnAcao(g.ativo ? 'Desativar' : 'Ativar', () => toggleGestor(g), g.ativo ? '#6366f1' : 'var(--avp-green)')}
- {btnAcao(' Excluir', () => excluirGestor(g), 'var(--avp-danger)')}
+ {btnAcao('Excluir', () => excluirGestor(g), 'var(--avp-danger)')}
  </div>
  </td>
  </tr>
@@ -275,7 +275,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
  <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
  <button onClick={() => setEditando(null)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
  <button onClick={salvarEdicao} disabled={salvando} style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: salvando ? 0.7 : 1 }}>
- {salvando ? 'Salvando...' : ' Salvar'}
+ {salvando ? 'Salvando...' : 'Salvar'}
  </button>
  </div>
  </div>
@@ -290,7 +290,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32, width: 420, maxWidth: '100%' }}
  onMouseDown={e => e.stopPropagation()}>
  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
- <h2 style={{ fontSize: 18, fontWeight: 700 }}> Redefinir Senha</h2>
+ <h2 style={{ fontSize: 18, fontWeight: 700 }}>Redefinir Senha</h2>
  <button onClick={() => setResetando(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--avp-text-dim)', fontSize: 22 }}>×</button>
  </div>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 20 }}>
@@ -308,13 +308,13 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
  </div>
  </div>
  <div style={{ background: '#6366f115', border: '1px solid #6366f140', borderRadius: 8, padding: '10px 14px', marginBottom: 20 }}>
- <p style={{ fontSize: 12, color: '#6366f1' }}> Após redefinir, informe a nova senha ao usuário. Ele poderá alterá-la depois nas configurações do perfil.</p>
+ <p style={{ fontSize: 12, color: '#6366f1' }}>Após redefinir, informe a nova senha ao usuário. Ele poderá alterá-la depois nas configurações do perfil.</p>
  </div>
  <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
  <button onClick={() => setResetando(null)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
  <button onClick={resetarSenha} disabled={resetando_ || novaSenha.length < 6}
  style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: (resetando_ || novaSenha.length < 6) ? 0.6 : 1 }}>
- {resetando_ ? 'Redefinindo...' : ' Redefinir senha'}
+ {resetando_ ? 'Redefinindo...' : 'Redefinir senha'}
  </button>
  </div>
  </div>

@@ -11,12 +11,12 @@ function CapaUpload({ preview, onSelect, fileRef: ref }: {
  return (
  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
  <div onClick={() => ref.current?.click()} style={{ width: 110, height: 86, flexShrink: 0, borderRadius: 8, overflow: 'hidden', border: `2px dashed ${preview ? 'var(--avp-green)' : 'var(--avp-border)'}`, background: 'var(--avp-black)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
- {preview ? <img src={preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 22, color: 'var(--avp-text-dim)' }}></span>}
+ {preview ? <img src={preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 22, color: 'var(--avp-text-dim)' }}>+</span>}
  </div>
  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
  <input ref={ref} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) onSelect(f); e.target.value = '' }} />
  <button type="button" onClick={() => ref.current?.click()} style={{ background: preview ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
- {preview ? ' Trocar' : ' Subir capa'}
+ {preview ? 'Trocar' : 'Subir capa'}
  </button>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)' }}>1380×1080px · máx. 3MB</p>
  </div>
@@ -178,18 +178,18 @@ export default function ModulosCliente({ modulosIniciais, capaDefault }: { modul
  <div><label style={lbl}>Título *</label><input style={inp} value={form.titulo} onChange={e => setForm(p => ({ ...p, titulo: e.target.value }))} required placeholder="Nome do módulo" /></div>
  <div><label style={lbl}>Descrição</label><input style={inp} value={form.descricao} onChange={e => setForm(p => ({ ...p, descricao: e.target.value }))} placeholder="Descrição opcional" /></div>
  <div>
- <label style={{ ...lbl, marginBottom: 8 }}>Capa <span style={{ color: 'var(--avp-green)', fontSize: 11, fontWeight: 700 }}> 1380×1080px</span></label>
+ <label style={{ ...lbl, marginBottom: 8 }}>Capa <span style={{ color: 'var(--avp-green)', fontSize: 11, fontWeight: 700 }}>1380×1080px</span></label>
  <CapaUpload preview={capaPreview} onSelect={f => selecionarCapa(f, false)} fileRef={fileRef} />
  </div>
  <div>
- <label style={{ ...lbl, marginBottom: 8 }}> Quem pode ver este módulo?</label>
+ <label style={{ ...lbl, marginBottom: 8 }}>Quem pode ver este módulo?</label>
  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
  {PERFIS.map(p => {
  const ativo = form.perfis_permitidos.includes(p.id)
  return (
  <button key={p.id} type="button" onClick={() => togglePerfilForm(p.id, false)}
  style={{ background: ativo ? p.bg : 'var(--avp-black)', border: `2px solid ${ativo ? p.cor : 'var(--avp-border)'}`, color: ativo ? p.cor : 'var(--avp-text-dim)', borderRadius: 8, padding: '7px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, transition: 'all 0.15s' }}>
- {ativo ? ' ' : ''}{p.label}
+ {p.label}
  </button>
  )
  })}
@@ -219,18 +219,18 @@ export default function ModulosCliente({ modulosIniciais, capaDefault }: { modul
  <div><label style={lbl}>Título *</label><input style={inp} value={editForm.titulo} onChange={e => setEditForm(p => ({ ...p, titulo: e.target.value }))} /></div>
  <div><label style={lbl}>Descrição</label><input style={inp} value={editForm.descricao} onChange={e => setEditForm(p => ({ ...p, descricao: e.target.value }))} /></div>
  <div>
- <label style={{ ...lbl, marginBottom: 8 }}>Capa <span style={{ color: 'var(--avp-green)', fontSize: 11, fontWeight: 700 }}> 1380×1080px</span></label>
+ <label style={{ ...lbl, marginBottom: 8 }}>Capa <span style={{ color: 'var(--avp-green)', fontSize: 11, fontWeight: 700 }}>1380×1080px</span></label>
  <CapaUpload preview={editForm.capaPreview} onSelect={f => selecionarCapa(f, true)} fileRef={editFileRef} />
  </div>
  <div>
- <label style={{ ...lbl, marginBottom: 8 }}> Quem pode ver este módulo?</label>
+ <label style={{ ...lbl, marginBottom: 8 }}>Quem pode ver este módulo?</label>
  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
  {PERFIS.map(perf => {
  const ativo = editForm.perfis_permitidos.includes(perf.id)
  return (
  <button key={perf.id} type="button" onClick={() => togglePerfilForm(perf.id, true)}
  style={{ background: ativo ? perf.bg : 'var(--avp-black)', border: `2px solid ${ativo ? perf.cor : 'var(--avp-border)'}`, color: ativo ? perf.cor : 'var(--avp-text-dim)', borderRadius: 8, padding: '7px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, transition: 'all 0.15s' }}>
- {ativo ? ' ' : ''}{perf.label}
+ {perf.label}
  </button>
  )
  })}
@@ -240,7 +240,7 @@ export default function ModulosCliente({ modulosIniciais, capaDefault }: { modul
  <div style={{ display: 'flex', gap: 10 }}>
  <button onClick={() => salvarEdicao(m.id)} disabled={salvandoEdit}
  style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: salvandoEdit ? 0.7 : 1 }}>
- {salvandoEdit ? 'Salvando...' : ' Salvar'}
+ {salvandoEdit ? 'Salvando...' : 'Salvar'}
  </button>
  <button onClick={() => setEditandoId(null)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontSize: 14 }}>
  Cancelar
@@ -278,7 +278,7 @@ export default function ModulosCliente({ modulosIniciais, capaDefault }: { modul
  {/* Badges de perfis permitidos */}
  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
  {(m.perfis_permitidos ?? ['consultor', 'gestor']).length === 0
- ? <span style={{ fontSize: 11, color: 'var(--avp-danger)', fontWeight: 600 }}> Nenhum perfil — módulo invisível</span>
+ ? <span style={{ fontSize: 11, color: 'var(--avp-danger)', fontWeight: 600 }}>Nenhum perfil — módulo invisível</span>
  : (m.perfis_permitidos ?? ['consultor', 'gestor']).map(pid => {
  const perf = PERFIS.find(p => p.id === pid)
  if (!perf) return null
@@ -302,7 +302,7 @@ export default function ModulosCliente({ modulosIniciais, capaDefault }: { modul
  </button>
  <button onClick={() => togglePublicado(m)}
  style={{ background: m.publicado ? 'var(--avp-border)' : 'var(--avp-green)', color: m.publicado ? 'var(--avp-text-dim)' : '#fff', border: 'none', borderRadius: 6, padding: '5px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
- {m.publicado ? ' Despublicar' : ' Publicar'}
+ {m.publicado ? 'Despublicar' : 'Publicar'}
  </button>
  <button onClick={() => excluirModulo(m)}
  style={{ background: 'none', border: '1px solid var(--avp-danger)', color: 'var(--avp-danger)', borderRadius: 6, padding: '5px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>

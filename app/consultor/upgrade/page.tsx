@@ -2,6 +2,7 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import { getSiteConfig } from '@/lib/site-config'
 import { headers } from 'next/headers'
+import { BookOpen, Users, Link2, BarChart2, MessageCircle, Image, Repeat2, Award, Check, X } from 'lucide-react'
 
 export default async function UpgradePage() {
  const supabase = await createClient()
@@ -25,14 +26,30 @@ export default async function UpgradePage() {
  const nomePro = `${nomeSite} PRO`
 
  const beneficios = [
- { icon: '', titulo: 'Módulos ilimitados', desc: 'Acesse todos os módulos da plataforma sem restrições' },
- { icon: '', titulo: 'Gerencie sua equipe', desc: 'Cadastre, acompanhe e reengaje consultores da sua equipe' },
- { icon: '', titulo: 'Links de captação', desc: 'Links personalizados para captar novos consultores' },
- { icon: '', titulo: 'Relatórios e métricas', desc: 'Veja o progresso da equipe, inativos e progresso médio' },
- { icon: '', titulo: 'WhatsApp direto', desc: 'Envie mensagens para consultores diretamente do painel' },
- { icon: '', titulo: 'Templates de arte', desc: 'Crie e personalize artes para sua equipe compartilhar' },
- { icon: '', titulo: 'Indicações ilimitadas', desc: `Indique sem limite — no plano ${nomeFree} o limite é 20` },
- { icon: '', titulo: 'Carteira de Formação', desc: 'Certificado e carteirinha para sua equipe' },
+ { Icon: BookOpen, titulo: 'Módulos ilimitados', desc: 'Acesse todos os módulos da plataforma sem restrições' },
+ { Icon: Users, titulo: 'Gerencie sua equipe', desc: 'Cadastre, acompanhe e reengaje consultores da sua equipe' },
+ { Icon: Link2, titulo: 'Links de captação', desc: 'Links personalizados para captar novos consultores' },
+ { Icon: BarChart2, titulo: 'Relatórios e métricas', desc: 'Veja o progresso da equipe, inativos e progresso médio' },
+ { Icon: MessageCircle, titulo: 'WhatsApp direto', desc: 'Envie mensagens para consultores diretamente do painel' },
+ { Icon: Image, titulo: 'Templates de arte', desc: 'Crie e personalize artes para sua equipe compartilhar' },
+ { Icon: Repeat2, titulo: 'Indicações ilimitadas', desc: `Indique sem limite — no plano ${nomeFree} o limite é 20` },
+ { Icon: Award, titulo: 'Carteira de Formação', desc: 'Certificado e carteirinha para sua equipe' },
+ ]
+
+ const freeItems: { label: string; ok: boolean }[] = [
+ { label: 'Módulos limitados', ok: true },
+ { label: 'Indicar até 20 pessoas', ok: true },
+ { label: 'Gestão de equipe', ok: false },
+ { label: 'Módulos ilimitados', ok: false },
+ { label: 'Relatórios', ok: false },
+ ]
+
+ const proItems = [
+ 'Módulos ilimitados',
+ 'Indicações ilimitadas',
+ 'Gestão de equipe',
+ 'Relatórios e métricas',
+ 'Templates de arte',
  ]
 
  return (
@@ -42,7 +59,7 @@ export default async function UpgradePage() {
  <a href={`/aluno/${aluno.whatsapp}`} style={{ color: 'var(--avp-text-dim)', textDecoration: 'none', fontSize: 14, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
  ← Voltar
  </a>
- <span style={{ fontWeight: 800, fontSize: 15 }}> Faça Upgrade</span>
+ <span style={{ fontWeight: 800, fontSize: 15 }}>Faça Upgrade</span>
  <div />
  </header>
 
@@ -69,14 +86,13 @@ export default async function UpgradePage() {
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 24 }}>
  <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>{nomeFree}</p>
  <p style={{ fontSize: 28, fontWeight: 900, marginBottom: 16 }}>Grátis</p>
- {[
- ' Módulos limitados',
- ' Indicar até 20 pessoas',
- ' Gestão de equipe',
- ' Módulos ilimitados',
- ' Relatórios',
- ].map(item => (
- <p key={item} style={{ fontSize: 13, color: item.startsWith('') ? 'var(--avp-text-dim)' : 'var(--avp-text)', marginBottom: 6, opacity: item.startsWith('') ? 0.5 : 1 }}>{item}</p>
+ {freeItems.map(({ label, ok }) => (
+ <p key={label} style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6, color: ok ? 'var(--avp-text)' : 'var(--avp-text-dim)', opacity: ok ? 1 : 0.5 }}>
+ {ok
+ ? <Check size={13} style={{ color: 'var(--avp-green)', flexShrink: 0 }} />
+ : <X size={13} style={{ flexShrink: 0 }} />}
+ {label}
+ </p>
  ))}
  </div>
  {/* Pro */}
@@ -86,28 +102,30 @@ export default async function UpgradePage() {
  </div>
  <p style={{ fontSize: 11, fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>{nomePro}</p>
  <p style={{ fontSize: 28, fontWeight: 900, marginBottom: 16, color: '#818cf8' }}>Mensal</p>
- {[
- ' Módulos ilimitados',
- ' Indicações ilimitadas',
- ' Gestão de equipe',
- ' Relatórios e métricas',
- ' Templates de arte',
- ].map(item => (
- <p key={item} style={{ fontSize: 13, color: '#c4b5fd', marginBottom: 6 }}>{item}</p>
+ {proItems.map(item => (
+ <p key={item} style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 7, color: '#c4b5fd', marginBottom: 6 }}>
+ <Check size={13} style={{ color: '#818cf8', flexShrink: 0 }} />
+ {item}
+ </p>
  ))}
  </div>
  </div>
 
  {/* Benefícios */}
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: '24px 28px', marginBottom: 32 }}>
- <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 20 }}> Tudo que você ganha no {nomePro}</p>
+ <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+ <Award size={15} style={{ opacity: 0.6, flexShrink: 0 }} />
+ Tudo que você ganha no {nomePro}
+ </p>
  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
- {beneficios.map(b => (
- <div key={b.titulo} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
- <span style={{ fontSize: 22, flexShrink: 0 }}>{b.icon}</span>
+ {beneficios.map(({ Icon, titulo, desc }) => (
+ <div key={titulo} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+ <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(79,70,229,0.1)', border: '1px solid rgba(79,70,229,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+ <Icon size={16} style={{ color: '#818cf8' }} />
+ </div>
  <div>
- <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{b.titulo}</p>
- <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.5 }}>{b.desc}</p>
+ <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{titulo}</p>
+ <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.5 }}>{desc}</p>
  </div>
  </div>
  ))}

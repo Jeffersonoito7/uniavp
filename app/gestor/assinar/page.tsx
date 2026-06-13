@@ -1,4 +1,5 @@
 'use client'
+import { Check } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -147,7 +148,7 @@ export default function AssinarPage() {
  </div>
  {['Painel completo de gestão', 'Cadastro UNIAVP FREE ilimitado', 'Acompanhamento de progresso', 'Geração de artes', 'Relatórios e eventos'].map(item => (
  <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
- <span style={{ color: 'var(--avp-green)', fontWeight: 700 }}></span>
+ <Check size={14} style={{ color: 'var(--avp-green)', flexShrink: 0 }} />
  <span style={{ fontSize: 14 }}>{item}</span>
  </div>
  ))}

@@ -151,11 +151,11 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
 
  const iconeArquivo = (url: string) => {
  const ext = url.split('.').pop()?.toLowerCase()
- if (ext === 'pdf') return ''
- if (['ppt', 'pptx'].includes(ext ?? '')) return ''
- if (['doc', 'docx'].includes(ext ?? '')) return ''
- if (['xls', 'xlsx'].includes(ext ?? '')) return ''
- return ''
+ if (ext === 'pdf') return '📄'
+ if (['ppt', 'pptx'].includes(ext ?? '')) return '📊'
+ if (['doc', 'docx'].includes(ext ?? '')) return '📝'
+ if (['xls', 'xlsx'].includes(ext ?? '')) return '📈'
+ return '📎'
  }
 
  return (
@@ -224,14 +224,14 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
  {/* Arquivos */}
  {(arquivos ?? []).length> 0 && (
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '16px 20px' }}>
- <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}> Materiais</p>
+ <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}>Materiais</p>
  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
  {(arquivos ?? []).map((arq: { id: string; nome: string; url: string }) => (
  <a key={arq.id} href={arq.url} target="_blank" rel="noopener noreferrer"
  style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', textDecoration: 'none', color: 'var(--avp-text)', fontSize: 13 }}>
  <span style={{ fontSize: 18 }}>{iconeArquivo(arq.url)}</span>
  <span style={{ flex: 1 }}>{arq.nome}</span>
- <span style={{ fontSize: 11, color: 'var(--avp-green)', fontWeight: 700 }}> Baixar</span>
+ <span style={{ fontSize: 11, color: 'var(--avp-green)', fontWeight: 700 }}>Baixar</span>
  </a>
  ))}
  </div>
@@ -265,7 +265,7 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
  {thumb && <img src={thumb} alt={a.aula_titulo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
  <div style={{ width: 22, height: 22, borderRadius: '50%', background: isConcluida ? '#22c55e' : isAtual ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: isAtual ? '#1e40af' : '#fff' }}>
- {isConcluida ? '' : isBloqueada ? '' : ''}
+ {isConcluida ? '✓' : isBloqueada ? '🔒' : '▶'}
  </div>
  </div>
  </div>
@@ -274,8 +274,8 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
  <p style={{ fontSize: 12, fontWeight: isAtual ? 700 : 500, color: isAtual ? '#fff' : 'var(--avp-text)', margin: 0, lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
  {idx + 1}. {a.aula_titulo}
  </p>
- {isConcluida && <p style={{ fontSize: 10, color: '#22c55e', margin: '3px 0 0', fontWeight: 600 }}> Concluída</p>}
- {isAtual && !isConcluida && <p style={{ fontSize: 10, color: '#3b82f6', margin: '3px 0 0', fontWeight: 600 }}> Assistindo</p>}
+ {isConcluida && <p style={{ fontSize: 10, color: '#22c55e', margin: '3px 0 0', fontWeight: 600 }}>Concluída</p>}
+ {isAtual && !isConcluida && <p style={{ fontSize: 10, color: '#3b82f6', margin: '3px 0 0', fontWeight: 600 }}>Assistindo</p>}
  </div>
  </div>
  )

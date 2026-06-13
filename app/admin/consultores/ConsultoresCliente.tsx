@@ -10,7 +10,7 @@ function LinkFreeCard() {
  function copiar() { navigator.clipboard.writeText(url); setCopiado(true); setTimeout(() => setCopiado(false), 2000) }
  return (
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, marginBottom: 20 }}>
- <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}> Link de Cadastro FREE</p>
+ <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>Link de Cadastro FREE</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 14 }}>Envie este link para novos membros FREE se cadastrarem na plataforma.</p>
  <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
  <div style={{ flex: 1, minWidth: 0 }}>
@@ -19,7 +19,7 @@ function LinkFreeCard() {
  <p style={{ fontSize: 12, color: 'var(--avp-blue)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{url}</p>
  </div>
  <button onClick={copiar} style={{ background: copiado ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
- {copiado ? ' Copiado' : 'Copiar'}
+ {copiado ? 'Copiado' : 'Copiar'}
  </button>
  </div>
  </div>
@@ -112,7 +112,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  const data = await res.json()
  if (data.ok) {
  setConsultores(prev => prev.map(x => x.id === c.id ? { ...x, user_id: 'vinculado' } : x))
- setMsg({ tipo: 'ok', texto: ` Conta vinculada e link de acesso enviado para ${c.email}` })
+ setMsg({ tipo: 'ok', texto: `Conta vinculada e link de acesso enviado para ${c.email}` })
  } else {
  setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao reenviar acesso.' })
  }
@@ -175,7 +175,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={e => e.target === e.currentTarget && setEditando(null)}>
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32, width: 540, maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto' }}>
  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
- <h2 style={{ fontSize: 18, fontWeight: 700 }}> Editar FREE — {editando.nome}</h2>
+ <h2 style={{ fontSize: 18, fontWeight: 700 }}>Editar FREE — {editando.nome}</h2>
  <button onClick={() => setEditando(null)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 22 }}>×</button>
  </div>
  <form onSubmit={salvarEdicao} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -222,7 +222,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
  <button type="button" onClick={() => setEditando(null)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
  <button type="submit" disabled={salvando} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, cursor: 'pointer', fontSize: 14, opacity: salvando ? 0.6 : 1 }}>
- {salvando ? 'Salvando...' : ' Salvar'}
+ {salvando ? 'Salvando...' : 'Salvar'}
  </button>
  </div>
  </form>

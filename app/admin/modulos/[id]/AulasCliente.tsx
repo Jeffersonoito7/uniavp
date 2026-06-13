@@ -155,7 +155,7 @@ function ArquivosAula({ aulaId }: { aulaId: string }) {
  disabled={uploading}
  style={{ background: uploading ? 'var(--avp-border)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 14px', cursor: uploading ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 600, alignSelf: 'flex-start' }}
 >
- {uploading ? ' Enviando...' : ' Selecionar e enviar arquivo'}
+ {uploading ? 'Enviando...' : 'Selecionar e enviar arquivo'}
  </button>
  {msg && <p style={{ fontSize: 12, color: msg.includes('sucesso') ? 'var(--avp-green)' : 'var(--avp-danger)' }}>{msg}</p>}
  </div>
@@ -250,7 +250,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  })
 
  setVideoUrl(publicUrl)
- setMsg(' Vídeo enviado! Clique em Criar Aula para salvar.')
+ setMsg('Vídeo enviado! Clique em Criar Aula para salvar.')
  } catch (e: any) {
  setMsg(`Erro no upload: ${e.message}`)
  }
@@ -276,7 +276,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  xhr.send(file)
  })
  setEditVideoUrl(publicUrl)
- setMsg(' Vídeo enviado! Salve a aula para confirmar.')
+ setMsg('Vídeo enviado! Salve a aula para confirmar.')
  } catch (e: any) {
  setMsg(`Erro no upload: ${e.message}`)
  }
@@ -471,7 +471,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  {(['youtube', 'arquivo', 'url'] as const).map(t => (
  <button key={t} type="button" onClick={() => { setTipoVideo(t); setVideoUrl('') }}
  style={{ padding: '6px 16px', borderRadius: 6, border: '1px solid', cursor: 'pointer', fontSize: 13, fontWeight: 600, background: tipoVideo === t ? 'var(--avp-blue)' : 'transparent', borderColor: tipoVideo === t ? 'var(--avp-blue)' : 'var(--avp-border)', color: tipoVideo === t ? '#fff' : 'var(--avp-text-dim)' }}>
- {t === 'youtube' ? ' YouTube' : t === 'arquivo' ? ' Arquivo' : ' URL / Vimeo'}
+ {t === 'youtube' ? 'YouTube' : t === 'arquivo' ? 'Arquivo' : 'URL / Vimeo'}
  </button>
  ))}
  </div>
@@ -497,11 +497,11 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  {!videoUrl ? (
  <button type="button" onClick={() => videoFileRef.current?.click()} disabled={uploadandoVideo}
  style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 18px', cursor: uploadandoVideo ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 600 }}>
- {uploadandoVideo ? ` Enviando ${progressoVideo}%...` : ' Selecionar vídeo'}
+ {uploadandoVideo ? `Enviando ${progressoVideo}%...` : 'Selecionar vídeo'}
  </button>
  ) : (
  <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#02A15320', border: '1px solid var(--avp-green)', borderRadius: 8, padding: '10px 14px' }}>
- <span style={{ fontSize: 13, color: 'var(--avp-green)', flex: 1 }}> Vídeo enviado com sucesso</span>
+ <span style={{ fontSize: 13, color: 'var(--avp-green)', flex: 1 }}>Vídeo enviado com sucesso</span>
  <button type="button" onClick={() => setVideoUrl('')} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 12 }}>Remover</button>
  </div>
  )}
@@ -545,12 +545,12 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  <div>
  <label style={labelStyle}>Imagem da aula</label>
  <div onClick={() => capaFileRef.current?.click()} style={{ borderRadius: 8, overflow: 'hidden', border: `2px dashed ${capaPreview ? 'var(--avp-green)' : 'var(--avp-border)'}`, background: 'var(--avp-black)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', aspectRatio: '320/480', marginBottom: 8 }}>
- {capaPreview ? <img src={capaPreview} alt="capa" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: 'var(--avp-text-dim)', fontSize: 28 }}></span>}
+ {capaPreview ? <img src={capaPreview} alt="capa" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: 'var(--avp-text-dim)', fontSize: 28 }}>+</span>}
  </div>
  <input ref={capaFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) selecionarCapa(f); e.target.value = '' }} />
  <button type="button" onClick={() => capaFileRef.current?.click()} disabled={uploadandoCapa}
  style={{ width: '100%', background: capaPreview ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px', cursor: 'pointer', fontSize: 13, fontWeight: 700, opacity: uploadandoCapa ? 0.7 : 1 }}>
- {uploadandoCapa ? ' Lendo...' : capaPreview ? ' Trocar imagem' : ' Subir imagem'}
+ {uploadandoCapa ? 'Lendo...' : capaPreview ? 'Trocar imagem' : 'Subir imagem'}
  </button>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', textAlign: 'center', marginTop: 6 }}>Tamanho recomendado: 320×480 px</p>
  </div>
@@ -564,7 +564,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  <input type="radio" name="liberacao_modo_new" checked={form.liberacao_modo === modo} onChange={() => setForm(p => ({ ...p, liberacao_modo: modo }))} style={{ marginTop: 2, accentColor: 'var(--avp-blue)' }} />
  <div>
  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--avp-text)', margin: 0 }}>
- {modo === 'automatico' ? ' Automático' : modo === 'manual_gestor' ? ' Aprovação do PRO' : ' Aprovação do Admin'}
+ {modo === 'automatico' ? 'Automático' : modo === 'manual_gestor' ? 'Aprovação do PRO' : 'Aprovação do Admin'}
  </p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
  {modo === 'automatico' ? 'Libera sozinho após o tempo configurado' : modo === 'manual_gestor' ? 'O PRO precisa clicar para liberar' : 'Só o admin da empresa pode liberar'}
@@ -575,23 +575,23 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  </div>
  <div><label style={labelStyle}>Espera após aprovação (h) {form.liberacao_modo !== 'automatico' ? <span style={{ color: 'var(--avp-text-dim)', fontWeight: 400 }}>(após liberação manual)</span> : ''}</label><input type="number" style={inputStyle} value={form.espera_horas} onChange={e => setForm(p => ({ ...p, espera_horas: parseInt(e.target.value) || 0 }))} /></div>
  <div style={{ gridColumn: '1 / -1' }}>
- <label style={{ ...labelStyle, marginBottom: 8 }}> Controle do vídeo</label>
+ <label style={{ ...labelStyle, marginBottom: 8 }}>Controle do vídeo</label>
  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${form.bloquear_avancar ? '#22c55e' : 'var(--avp-border)'}`, background: form.bloquear_avancar ? '#22c55e10' : 'transparent' }}>
  <input type="checkbox" checked={!!form.bloquear_avancar} onChange={e => setForm(p => ({ ...p, bloquear_avancar: e.target.checked}))} style={{ display: 'none' }} />
  <TogglePill checked={!!form.bloquear_avancar} />
  <div>
- <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}> Bloquear avanço do vídeo</p>
+ <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>Bloquear avanço do vídeo</p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Aluno não pode pular para frente — precisa assistir na ordem</p>
  </div>
  </label>
  </div>
  <div style={{ gridColumn: '1 / -1' }}>
- <label style={{ ...labelStyle, marginBottom: 8 }}> Link da plataforma parceira</label>
+ <label style={{ ...labelStyle, marginBottom: 8 }}>Link da plataforma parceira</label>
  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${form.mostrar_link_externo ? '#22c55e' : 'var(--avp-border)'}`, background: form.mostrar_link_externo ? '#22c55e10' : 'transparent', marginBottom: 6 }}>
  <input type="checkbox" checked={!!form.mostrar_link_externo} onChange={e => setForm(p => ({ ...p, mostrar_link_externo: e.target.checked}))} style={{ display: 'none' }} />
  <TogglePill checked={!!form.mostrar_link_externo} />
  <div>
- <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}> Mostrar link da plataforma parceira</p>
+ <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>Mostrar link da plataforma parceira</p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Exibe botão com o link do PRO após o vídeo</p>
  </div>
  </label>
@@ -600,7 +600,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  <input type="checkbox" checked={!!form.bloquear_link_externo} onChange={e => setForm(p => ({ ...p, bloquear_link_externo: e.target.checked}))} style={{ display: 'none' }} />
  <TogglePill checked={!!form.bloquear_link_externo} />
  <div>
- <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}> Bloquear avanço até clicar no link</p>
+ <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>Bloquear avanço até clicar no link</p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Aluno não avança para próxima aula sem clicar no link parceiro</p>
  </div>
  </label>
@@ -611,12 +611,12 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  </>)}
  </div>
  <div style={{ gridColumn: '1 / -1' }}>
- <label style={{ ...labelStyle, marginBottom: 8 }}> App consultor</label>
+ <label style={{ ...labelStyle, marginBottom: 8 }}>App consultor</label>
  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${form.mostrar_links_app ? '#22c55e' : 'var(--avp-border)'}`, background: form.mostrar_links_app ? '#22c55e10' : 'transparent', marginBottom: 6 }}>
  <input type="checkbox" checked={!!form.mostrar_links_app} onChange={e => setForm(p => ({ ...p, mostrar_links_app: e.target.checked}))} style={{ display: 'none' }} />
  <TogglePill checked={!!form.mostrar_links_app} />
  <div>
- <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}> Mostrar botões de download do app</p>
+ <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>Mostrar botões de download do app</p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Exibe botões iOS e Android após o vídeo</p>
  </div>
  </label>
@@ -625,7 +625,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  <input type="checkbox" checked={!!form.bloquear_links_app} onChange={e => setForm(p => ({ ...p, bloquear_links_app: e.target.checked}))} style={{ display: 'none' }} />
  <TogglePill checked={!!form.bloquear_links_app} />
  <div>
- <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}> Bloquear avanço até baixar o app</p>
+ <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>Bloquear avanço até baixar o app</p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Aluno não avança para próxima aula sem clicar no link do app</p>
  </div>
  </label>
@@ -642,7 +642,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  <input type="radio" checked={form.quiz_tipo === tipo} onChange={() => setForm(p => ({ ...p, quiz_tipo: tipo }))} style={{ marginTop: 2, accentColor: 'var(--avp-green)' }} />
  <div>
  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--avp-text)', margin: 0 }}>
- {tipo === 'obrigatorio' ? ' Obrigatório' : ' Indicativo'}
+ {tipo === 'obrigatorio' ? 'Obrigatório' : 'Indicativo'}
  </p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
  {tipo === 'obrigatorio' ? 'Aluno deve passar no quiz para desbloquear a próxima aula' : 'Aluno pode pular o quiz — serve como indicador de participação'}
@@ -652,7 +652,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  ))}
  </div>
  <div style={{ gridColumn: '1 / -1', background: '#3b82f615', border: '1px solid #3b82f640', borderRadius: 8, padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
- <span style={{ fontSize: 20, flexShrink: 0 }}></span>
+ <span style={{ fontSize: 20, flexShrink: 0 }}>i</span>
  <div>
  <p style={{ fontWeight: 700, fontSize: 13, color: '#60a5fa', marginBottom: 4 }}>As perguntas do quiz são adicionadas depois de salvar</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>
@@ -700,7 +700,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  {(['youtube', 'arquivo', 'url'] as const).map(t => (
  <button key={t} type="button" onClick={() => { setEditTipoVideo(t); setEditVideoUrl('') }}
  style={{ padding: '5px 14px', borderRadius: 6, border: '1px solid', cursor: 'pointer', fontSize: 12, fontWeight: 600, background: editTipoVideo === t ? 'var(--avp-blue)' : 'transparent', borderColor: editTipoVideo === t ? 'var(--avp-blue)' : 'var(--avp-border)', color: editTipoVideo === t ? '#fff' : 'var(--avp-text-dim)' }}>
- {t === 'youtube' ? ' YouTube' : t === 'arquivo' ? ' Arquivo' : ' URL / Vimeo'}
+ {t === 'youtube' ? 'YouTube' : t === 'arquivo' ? 'Arquivo' : 'URL / Vimeo'}
  </button>
  ))}
  </div>
@@ -724,11 +724,11 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  {!editVideoUrl ? (
  <button type="button" onClick={() => editVideoFileRef.current?.click()} disabled={editUploadandoVideo}
  style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', cursor: editUploadandoVideo ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 600 }}>
- {editUploadandoVideo ? ` Enviando ${editProgressoVideo}%...` : ' Selecionar vídeo'}
+ {editUploadandoVideo ? `Enviando ${editProgressoVideo}%...` : 'Selecionar vídeo'}
  </button>
  ) : (
  <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#02A15320', border: '1px solid var(--avp-green)', borderRadius: 8, padding: '9px 12px' }}>
- <span style={{ fontSize: 12, color: 'var(--avp-green)', flex: 1 }}> Vídeo pronto</span>
+ <span style={{ fontSize: 12, color: 'var(--avp-green)', flex: 1 }}>Vídeo pronto</span>
  <button type="button" onClick={() => setEditVideoUrl('')} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 11 }}>Remover</button>
  </div>
  )}
@@ -746,23 +746,23 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  <div><label style={labelStyle}>Duração (min)</label><input type="number" style={inputStyle} value={editForm.duracao_minutos} onChange={e => setEditForm(p => ({ ...p, duracao_minutos: e.target.value }))} /></div>
  <div><label style={labelStyle}>Espera após aprovação (horas)</label><input type="number" style={inputStyle} value={editForm.espera_horas} onChange={e => setEditForm(p => ({ ...p, espera_horas: parseInt(e.target.value) }))} /></div>
  <div style={{ gridColumn: '1 / -1' }}>
- <label style={{ ...labelStyle, marginBottom: 8 }}> Controle do vídeo</label>
+ <label style={{ ...labelStyle, marginBottom: 8 }}>Controle do vídeo</label>
  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${editForm.bloquear_avancar ? '#22c55e' : 'var(--avp-border)'}`, background: editForm.bloquear_avancar ? '#22c55e10' : 'transparent' }}>
  <input type="checkbox" checked={!!editForm.bloquear_avancar} onChange={e => setEditForm(p => ({ ...p, bloquear_avancar: e.target.checked}))} style={{ display: 'none' }} />
  <TogglePill checked={!!editForm.bloquear_avancar} />
  <div>
- <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}> Bloquear avanço do vídeo</p>
+ <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>Bloquear avanço do vídeo</p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Aluno não pode pular para frente — precisa assistir na ordem</p>
  </div>
  </label>
  </div>
  <div style={{ gridColumn: '1 / -1' }}>
- <label style={{ ...labelStyle, marginBottom: 8 }}> Link da plataforma parceira</label>
+ <label style={{ ...labelStyle, marginBottom: 8 }}>Link da plataforma parceira</label>
  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${editForm.mostrar_link_externo ? '#22c55e' : 'var(--avp-border)'}`, background: editForm.mostrar_link_externo ? '#22c55e10' : 'transparent', marginBottom: 6 }}>
  <input type="checkbox" checked={!!editForm.mostrar_link_externo} onChange={e => setEditForm(p => ({ ...p, mostrar_link_externo: e.target.checked}))} style={{ display: 'none' }} />
  <TogglePill checked={!!editForm.mostrar_link_externo} />
  <div>
- <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}> Mostrar link da plataforma parceira</p>
+ <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>Mostrar link da plataforma parceira</p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Exibe botão com o link do PRO após o vídeo</p>
  </div>
  </label>
@@ -771,7 +771,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  <input type="checkbox" checked={!!editForm.bloquear_link_externo} onChange={e => setEditForm(p => ({ ...p, bloquear_link_externo: e.target.checked}))} style={{ display: 'none' }} />
  <TogglePill checked={!!editForm.bloquear_link_externo} />
  <div>
- <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}> Bloquear avanço até clicar no link</p>
+ <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>Bloquear avanço até clicar no link</p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Aluno não avança sem clicar no link parceiro</p>
  </div>
  </label>
@@ -782,12 +782,12 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  </>)}
  </div>
  <div style={{ gridColumn: '1 / -1' }}>
- <label style={{ ...labelStyle, marginBottom: 8 }}> App consultor</label>
+ <label style={{ ...labelStyle, marginBottom: 8 }}>App consultor</label>
  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${editForm.mostrar_links_app ? '#22c55e' : 'var(--avp-border)'}`, background: editForm.mostrar_links_app ? '#22c55e10' : 'transparent', marginBottom: 6 }}>
  <input type="checkbox" checked={!!editForm.mostrar_links_app} onChange={e => setEditForm(p => ({ ...p, mostrar_links_app: e.target.checked}))} style={{ display: 'none' }} />
  <TogglePill checked={!!editForm.mostrar_links_app} />
  <div>
- <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}> Mostrar botões de download do app</p>
+ <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>Mostrar botões de download do app</p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Exibe botões iOS e Android após o vídeo</p>
  </div>
  </label>
@@ -796,7 +796,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  <input type="checkbox" checked={!!editForm.bloquear_links_app} onChange={e => setEditForm(p => ({ ...p, bloquear_links_app: e.target.checked}))} style={{ display: 'none' }} />
  <TogglePill checked={!!editForm.bloquear_links_app} />
  <div>
- <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}> Bloquear avanço até baixar o app</p>
+ <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>Bloquear avanço até baixar o app</p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Aluno não avança sem clicar no link do app</p>
  </div>
  </label>
@@ -812,7 +812,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  <input type="radio" checked={editForm.quiz_tipo === tipo} onChange={() => setEditForm(p => ({ ...p, quiz_tipo: tipo }))} style={{ marginTop: 2, accentColor: 'var(--avp-green)' }} />
  <div>
  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--avp-text)', margin: 0 }}>
- {tipo === 'obrigatorio' ? ' Obrigatório' : ' Indicativo'}
+ {tipo === 'obrigatorio' ? 'Obrigatório' : 'Indicativo'}
  </p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
  {tipo === 'obrigatorio' ? 'Aluno deve passar no quiz para desbloquear a próxima aula' : 'Aluno pode pular o quiz — serve como indicador de participação'}
@@ -822,7 +822,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  ))}
  </div>
  <div style={{ gridColumn: '1 / -1', background: '#3b82f615', border: '1px solid #3b82f640', borderRadius: 8, padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
- <span style={{ fontSize: 18, flexShrink: 0 }}></span>
+ <span style={{ fontSize: 18, flexShrink: 0 }}>i</span>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>
  As perguntas do quiz são editadas <strong style={{ color: '#60a5fa' }}>abaixo desta seção</strong>, no botão <strong style={{ color: 'var(--avp-text)' }}>"Clique aqui para adicionar as perguntas"</strong>. Cancele a edição para ver o botão.
  </p>
@@ -832,12 +832,12 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  <label style={{ ...labelStyle, marginBottom: 8 }}>Capa <span style={{ color: 'var(--avp-green)', fontSize: 11, fontWeight: 700 }}> 1380×1080px</span></label>
  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
  <div onClick={() => editCapaRef.current?.click()} style={{ width: 110, height: 86, flexShrink: 0, borderRadius: 8, overflow: 'hidden', border: `2px dashed ${editForm.capaPreview ? 'var(--avp-green)' : 'var(--avp-border)'}`, background: 'var(--avp-black)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
- {editForm.capaPreview ? <img src={editForm.capaPreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 22, color: 'var(--avp-text-dim)' }}></span>}
+ {editForm.capaPreview ? <img src={editForm.capaPreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 22, color: 'var(--avp-text-dim)' }}>+</span>}
  </div>
  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
  <input ref={editCapaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) selecionarCapa(f, true); e.target.value = '' }} />
  <button type="button" onClick={() => editCapaRef.current?.click()} style={{ background: editForm.capaPreview ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
- {editForm.capaPreview ? ' Trocar' : ' Subir capa'}
+ {editForm.capaPreview ? 'Trocar' : 'Subir capa'}
  </button>
  {editForm.capaPreview && <button type="button" onClick={() => setEditForm(p => ({ ...p, capaPreview: null, capaBase64: null }))} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '5px 10px', cursor: 'pointer', fontSize: 11 }}>Remover</button>}
  </div>
@@ -846,7 +846,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  <div style={{ display: 'flex', gap: 10 }}>
  <button onClick={() => salvarEdicaoAula(aula.id)} disabled={salvandoEdit}
  style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: salvandoEdit ? 0.7 : 1 }}>
- {salvandoEdit ? 'Salvando...' : ' Salvar'}
+ {salvandoEdit ? 'Salvando...' : 'Salvar'}
  </button>
  <button onClick={() => setEditandoId(null)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
  </div>
@@ -866,9 +866,9 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  </div>
  <div style={{ display: 'flex', gap: 16, color: 'var(--avp-text-dim)', fontSize: 13 }}>
  {aula.youtube_video_id
- ? <span> YouTube: {aula.youtube_video_id}</span>
+ ? <span>YouTube: {aula.youtube_video_id}</span>
  : aula.video_url
- ? <span style={{ color: 'var(--avp-green)' }}> {aula.video_url.includes('vimeo') ? 'Vimeo' : 'Arquivo de vídeo'}</span>
+ ? <span style={{ color: 'var(--avp-green)' }}>{aula.video_url.includes('vimeo') ? 'Vimeo' : 'Arquivo de vídeo'}</span>
  : <span style={{ color: 'var(--avp-danger)' }}>Sem vídeo</span>
  }
  {aula.duracao_minutos && <span>{aula.duracao_minutos} min</span>}

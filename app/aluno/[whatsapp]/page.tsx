@@ -296,7 +296,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  <p style={{ fontSize: 10, color: '#818cf8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 5 }}>Continuar de onde parou</p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 600, marginBottom: 3 }}>{aulaAtual.modulo_titulo}</p>
  <p style={{ fontSize: 17, fontWeight: 800, color: 'var(--avp-text)', margin: 0, lineHeight: 1.2 }}>{aulaAtual.aula_titulo}</p>
- {aulaAtual.duracao_minutos && <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 4 }}> {aulaAtual.duracao_minutos} min</p>}
+ {aulaAtual.duracao_minutos && <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 4 }}>{aulaAtual.duracao_minutos} min</p>}
  </div>
  <Link href={`/aluno/${params.whatsapp}/aula/${aulaAtual.aula_id}`}
  className="btn btn-primary"
@@ -324,7 +324,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  {/* ── AULAS AO VIVO ── */}
  {(aulasVivo ?? []).length> 0 && (
  <div style={{ marginBottom: 28 }}>
- <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}> Aulas ao Vivo</p>
+ <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>Aulas ao Vivo</p>
  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
  {(aulasVivo ?? []).map((aula: any) => {
  const cor = aula.plataforma === 'zoom' ? '#2D8CFF' : '#34A853'
@@ -334,13 +334,13 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  <div key={aula.id} style={{ background: 'var(--avp-card)', border: `1px solid ${encerrada ? 'var(--avp-border)' : cor}`, borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', opacity: encerrada ? 0.65 : 1 }}>
  <div style={{ flex: 1 }}>
  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
- <span style={{ background: cor, color: '#fff', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>{aula.plataforma === 'zoom' ? ' Zoom' : ' Google Meet'}</span>
+ <span style={{ background: cor, color: '#fff', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>{aula.plataforma === 'zoom' ? 'Zoom' : 'Google Meet'}</span>
  {aula.obrigatoria && <span style={{ background: '#ef444420', color: '#ef4444', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>Obrigatória</span>}
  {encerrada && aula.gravacao_url && <span style={{ background: '#8b5cf620', color: '#8b5cf6', fontSize: 11, padding: '2px 8px', borderRadius: 20 }}>Gravação disponível</span>}
  </div>
  <p style={{ fontWeight: 700, fontSize: 15, margin: '0 0 2px' }}>{aula.titulo}</p>
  {aula.descricao && <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', margin: '0 0 4px' }}>{aula.descricao}</p>}
- <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}> {dataHora} · {aula.duracao_minutos} min</p>
+ <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>{dataHora} · {aula.duracao_minutos} min</p>
  </div>
  <div>
  {!encerrada ? (
@@ -432,7 +432,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  <div style={{ background: 'linear-gradient(135deg, rgba(79,70,229,0.14) 0%, rgba(124,58,237,0.08) 60%, rgba(15,15,30,0.6) 100%)', border: '1px solid rgba(79,70,229,0.35)', borderRadius: 18, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 18, cursor: 'pointer', boxShadow: '0 4px 28px rgba(79,70,229,0.14), inset 0 1px 0 rgba(255,255,255,0.06)', transition: 'transform 0.2s, box-shadow 0.2s', position: 'relative', overflow: 'hidden' }}>
  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, #4f46e5, #7c3aed, #818cf8)' }} />
  <div style={{ width: 48, height: 48, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, rgba(79,70,229,0.3), rgba(124,58,237,0.2))', borderRadius: 12, border: '1px solid rgba(79,70,229,0.35)', fontSize: 22, boxShadow: '0 4px 12px rgba(79,70,229,0.25)' }}>
- 
+ 📚
  </div>
  <div style={{ flex: 1 }}>
  <p style={{ fontWeight: 800, fontSize: 16, color: 'var(--avp-text)', margin: '0 0 3px', letterSpacing: '-0.2px' }}>Biblioteca do Poder</p>

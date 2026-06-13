@@ -30,7 +30,7 @@ export default async function CaptacaoPage() {
  return (
  <AdminLayout>
  <div style={{ marginBottom: 24 }}>
- <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}> Links de Captação</h1>
+ <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Links de Captação</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>
  Compartilhe os links abaixo para captar novos consultores e gestores.
  </p>

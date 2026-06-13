@@ -32,7 +32,7 @@ export default async function AdminArtesConsultorPage({ params }: { params: { wh
  ← Voltar a consultores
  </Link>
  <div style={{ textAlign: 'center' as const }}>
- <p style={{ fontWeight: 800, fontSize: 15, margin: 0 }}> Gerar Arte</p>
+ <p style={{ fontWeight: 800, fontSize: 15, margin: 0 }}>Gerar Arte</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>{consultor.nome}</p>
  </div>
  <div />
@@ -40,7 +40,7 @@ export default async function AdminArtesConsultorPage({ params }: { params: { wh
 
  {(templates ?? []).length === 0 ? (
  <div style={{ textAlign: 'center', padding: 80, color: 'var(--avp-text-dim)' }}>
- <p style={{ fontSize: 48, marginBottom: 16 }}></p>
+ <p style={{ fontSize: 48, marginBottom: 16 }}>🎨</p>
  <p style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Sem templates com arte</p>
  <p>Configure e suba um PNG em <Link href="/admin/artes" style={{ color: 'var(--avp-blue)' }}>Templates de Artes</Link>.</p>
  </div>

@@ -288,7 +288,7 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
  {templatesFiltrados.map(t => (
  <button key={t.id} onClick={() => { setTemplateSelecionado(t); setPronto(false) }}
  style={{ background: templateSelecionado?.id === t.id ? 'var(--grad-brand)' : 'var(--avp-black)', border: `1px solid ${templateSelecionado?.id === t.id ? 'transparent' : 'var(--avp-border)'}`, borderRadius: 8, padding: '10px 13px', color: '#fff', cursor: 'pointer', textAlign: 'left' as const, fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
- <span style={{ fontSize: 16 }}>{t.tipo.includes('boas_vindas') ? '' : t.tipo.includes('gestor') ? '' : ''}</span>
+ <span style={{ fontSize: 16 }}>{t.tipo.includes('boas_vindas') ? '👋' : t.tipo.includes('gestor') ? '⭐' : '🖼️'}</span>
  {t.titulo.replace(' (Stories)', '').replace(' (Feed)', '')}
  </button>
  ))}
@@ -303,7 +303,7 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
  <input ref={inputFotoRef} type="file" accept="image/*" onChange={selecionarFoto} style={{ display: 'none' }} />
  <button onClick={() => inputFotoRef.current?.click()}
  style={{ width: '100%', background: fotoLocal ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '11px', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
- {fotoLocal ? ' Trocar foto' : ' Selecionar foto'}
+ {fotoLocal ? 'Trocar foto' : 'Selecionar foto'}
  </button>
  </div>
 
@@ -311,7 +311,7 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
  {fotoLocal && (
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 18 }}>
  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
- <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}> Zoom do corte</p>
+ <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>Zoom do corte</p>
  <span style={{ fontSize: 13, color: 'var(--avp-text-dim)' }}>{Math.round(cropZoom * 100)}%</span>
  </div>
  <input type="range" min="1" max="3" step="0.05" value={cropZoom}
@@ -331,7 +331,7 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
  {(['feed', 'stories'] as Formato[]).map(f => (
  <button key={f} onClick={() => { setFormato(f); setPronto(false) }}
  style={{ flex: 1, background: formato === f ? 'var(--grad-brand)' : 'var(--avp-black)', border: `1px solid ${formato === f ? 'transparent' : 'var(--avp-border)'}`, borderRadius: 8, padding: '10px 8px', cursor: 'pointer', color: '#fff', fontWeight: 700, fontSize: 13, display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 4 }}>
- <span style={{ fontSize: 20 }}>{f === 'feed' ? '' : ''}</span>
+ <span style={{ fontSize: 20 }}>{f === 'feed' ? '🟫' : '📱'}</span>
  <span>{f === 'feed' ? 'Feed' : 'Stories'}</span>
  <span style={{ fontSize: 10, opacity: 0.7 }}>{f === 'feed' ? '1080×1080' : '1080×1920'}</span>
  </button>
@@ -344,13 +344,13 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
  <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
  <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', margin: '0 0 4px' }}>Para gerar, complete:</p>
  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
- <span style={{ fontSize: 16 }}>{templateSelecionado ? '' : ''}</span>
+ <span style={{ fontSize: 16 }}>{templateSelecionado ? '✅' : '⬜'}</span>
  <span style={{ color: templateSelecionado ? 'var(--avp-green)' : 'var(--avp-text-dim)' }}>
  {templateSelecionado ? `Arte: ${templateSelecionado.titulo}` : 'Escolha uma arte (passo 1)'}
  </span>
  </div>
  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
- <span style={{ fontSize: 16 }}>{fotoLocal ? '' : ''}</span>
+ <span style={{ fontSize: 16 }}>{fotoLocal ? '✅' : '⬜'}</span>
  <span style={{ color: fotoLocal ? 'var(--avp-green)' : 'var(--avp-text-dim)' }}>
  {fotoLocal ? 'Foto carregada' : 'Envie uma foto (passo 2)'}
  </span>
@@ -361,7 +361,7 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
  {/* Gerar */}
  <button onClick={gerar} disabled={gerando || !templateSelecionado || !fotoLocal}
  style={{ background: templateSelecionado && fotoLocal ? 'var(--grad-brand)' : 'var(--avp-border)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px', fontWeight: 800, fontSize: 16, cursor: (gerando || !templateSelecionado || !fotoLocal) ? 'not-allowed' : 'pointer', transition: 'background 0.2s' }}>
- {gerando ? ' Gerando...' : templateSelecionado && fotoLocal ? ` Gerar em ${DIMS[formato].label}` : ' Gerar Arte'}
+ {gerando ? 'Gerando...' : templateSelecionado && fotoLocal ? `Gerar em ${DIMS[formato].label}` : 'Gerar Arte'}
  </button>
 
  {erro && (
@@ -375,7 +375,7 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
  <p style={{ fontWeight: 700, fontSize: 15, margin: 0 }}>
- {pronto ? ' Arte gerada — pronta para baixar' : ' Preview ao vivo'}
+ {pronto ? 'Arte gerada — pronta para baixar' : 'Preview ao vivo'}
  </p>
  {fotoLocal && !pronto && (
  <span style={{ fontSize: 12, color: 'var(--avp-text-dim)', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', padding: '3px 10px', borderRadius: 6 }}>
@@ -443,7 +443,7 @@ export default function ArtesCliente({ templates, nomeAluno, fotoInicial }: { te
  {/* Estado vazio */}
  {(!fotoLocal || !templateSelecionado) && (
  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#555', fontSize: 14, gap: 10, textAlign: 'center' as const, padding: 20 }}>
- <span style={{ fontSize: 44 }}>{!fotoLocal ? '' : ''}</span>
+ <span style={{ fontSize: 44 }}>{!fotoLocal ? '📷' : '🖼️'}</span>
  <span>{!fotoLocal ? 'Envie sua foto para ver o preview' : 'Selecione uma arte para ver o preview'}</span>
  </div>
  )}
