@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef } from 'react'
+import { Shield, Lock, FileText, Link2, UserPlus, Users, Gift, BookOpen } from 'lucide-react'
 import { TogglePill } from '@/app/components/TogglePill'
 import { createBrowserClient } from '@supabase/ssr'
 import GestorLayout from './GestorLayout'
@@ -142,7 +143,7 @@ function PerfilGestor({ gestor, onNomeAtualizado, onFotoAtualizada, podeCfgLink 
 
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, overflow: 'hidden', marginTop: 20 }}>
  <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--avp-border)' }}>
- <h2 style={{ fontWeight: 800, fontSize: 16, margin: 0 }}> Segurança</h2>
+ <h2 style={{ fontWeight: 800, fontSize: 16, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Lock size={14} style={{ opacity: 0.6, flexShrink: 0 }} />Segurança</h2>
  </div>
  <div style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
  <div>
@@ -493,18 +494,18 @@ export default function GestorDashboard({
  {/* Aba link ou cadastro manual */}
  <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
  <div style={{ flex: 1, background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
- <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}> Link de cadastro</p>
+ <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 7 }}><Link2 size={13} style={{ opacity: 0.6, flexShrink: 0 }} />Link de cadastro</p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 4, lineHeight: 1.5 }}>Envie este link para o consultor se cadastrar sozinho</p>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', background: 'var(--avp-card)', borderRadius: 6, padding: '6px 8px', marginBottom: 10, wordBreak: 'break-all' as const, fontFamily: 'monospace' }}>{baseUrl}/g/{gestor.whatsapp}</p>
  <button onClick={() => { copiarLink(); }}
  style={{ width: '100%', background: linkCopiado ? 'var(--avp-green)' : 'var(--avp-border)', color: linkCopiado ? '#fff' : 'var(--avp-text)', border: 'none', borderRadius: 8, padding: '9px', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s' }}>
- {linkCopiado ? ' Link copiado!' : ' Copiar link'}
+ {linkCopiado ? 'Link copiado!' : 'Copiar link'}
  </button>
  </div>
  </div>
 
  <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 20, marginBottom: 4 }}>
- <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 16 }}> Cadastrar manualmente</p>
+ <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 7 }}><UserPlus size={13} style={{ opacity: 0.6, flexShrink: 0 }} />Cadastrar manualmente</p>
  </div>
 
  {msgConsultor && (
@@ -667,7 +668,7 @@ export default function GestorDashboard({
  {/* Documentos para download */}
  {documentos && documentos.length> 0 && (
  <div style={{ marginBottom: 20 }}>
- <p style={{ fontWeight: 700, fontSize: 15, color: 'var(--avp-text)', marginBottom: 12 }}> Documentos</p>
+ <p style={{ fontWeight: 700, fontSize: 15, color: 'var(--avp-text)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}><FileText size={14} style={{ opacity: 0.6, flexShrink: 0 }} />Documentos</p>
  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
  {documentos.map(doc => (
  <a key={doc.id} href={doc.pdf_url} target="_blank" rel="noreferrer"
@@ -726,15 +727,15 @@ export default function GestorDashboard({
  {/* Atalhos */}
  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, marginBottom: 24 }}>
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20 }}>
- <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}> Link de cadastro</p>
+ <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 7 }}><Link2 size={13} style={{ opacity: 0.6, flexShrink: 0 }} />Link de cadastro</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 12 }}>Compartilhe com novos consultores</p>
  <button onClick={() => { navigator.clipboard.writeText(`${baseUrl}/g/${gestor.whatsapp}`); setLinkCopiado(true); setTimeout(() => setLinkCopiado(false), 2000) }}
  style={{ background: linkCopiado ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
- {linkCopiado ? ' Copiado!' : ' Copiar link'}
+ {linkCopiado ? 'Copiado!' : 'Copiar link'}
  </button>
  </div>
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
- <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}> Minha Equipe FREE</p>
+ <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 7 }}><Users size={13} style={{ opacity: 0.6, flexShrink: 0 }} />Minha Equipe FREE</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 12 }}>{listaConsultores.length} membro{listaConsultores.length !== 1 ? 's' : ''} vinculado{listaConsultores.length !== 1 ? 's' : ''}</p>
  <button onClick={() => handleSetAba('consultores')}
  style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontWeight: 600, fontSize: 13, alignSelf: 'flex-start' }}>
@@ -803,7 +804,7 @@ export default function GestorDashboard({
  <div style={{ display: 'flex', gap: 6 }}>
  <button onClick={() => { navigator.clipboard.writeText(`${baseUrl}/g/${gestor.whatsapp}`); setLinkCopiado(true); setTimeout(() => setLinkCopiado(false), 2000) }}
  style={{ flex: 1, background: linkCopiado ? 'var(--avp-green)' : '#333687', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 10px', cursor: 'pointer', fontWeight: 700, fontSize: 11 }}>
- {linkCopiado ? ' Copiado!' : ' Copiar'}
+ {linkCopiado ? 'Copiado!' : 'Copiar'}
  </button>
  <a href={`https://wa.me/?text=${encodeURIComponent(` Cadastre-se na plataforma:\n\n${baseUrl}/g/${gestor.whatsapp}`)}`} target="_blank" rel="noreferrer"
  style={{ background: '#25d36620', border: '1px solid #25d36640', color: '#25d366', borderRadius: 6, padding: '7px 10px', textDecoration: 'none', fontSize: 11, fontWeight: 700 }}>
@@ -819,7 +820,7 @@ export default function GestorDashboard({
  <div style={{ display: 'flex', gap: 6 }}>
  <button onClick={() => { navigator.clipboard.writeText(`${baseUrl}/g/${gestor.whatsapp}?direto=1`); setLinkCopiado(true); setTimeout(() => setLinkCopiado(false), 2000) }}
  style={{ flex: 1, background: linkCopiado ? 'var(--avp-green)' : '#1e1b4b', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 10px', cursor: 'pointer', fontWeight: 700, fontSize: 11 }}>
- {linkCopiado ? ' Copiado!' : ' Copiar'}
+ {linkCopiado ? 'Copiado!' : 'Copiar'}
  </button>
  <a href={`https://wa.me/?text=${encodeURIComponent(` Acesse a plataforma:\n\n${baseUrl}/g/${gestor.whatsapp}?direto=1`)}`} target="_blank" rel="noreferrer"
  style={{ background: '#25d36620', border: '1px solid #25d36640', color: '#25d366', borderRadius: 6, padding: '7px 10px', textDecoration: 'none', fontSize: 11, fontWeight: 700 }}>

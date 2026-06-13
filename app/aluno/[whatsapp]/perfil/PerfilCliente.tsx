@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
+import { Link2, Lock, GraduationCap } from 'lucide-react'
 import ImageCropModal from '@/app/components/ImageCropModal'
 
 type Aluno = {
@@ -194,7 +195,7 @@ export default function PerfilCliente({ aluno, email, podeCfgLink }: { aluno: Al
 
  {podeCfgLink && (
  <div>
- <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}> Meu link da plataforma parceira</label>
+ <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--avp-text-dim)', marginBottom: 6 }}><Link2 size={12} style={{ opacity: 0.6, flexShrink: 0 }} />Meu link da plataforma parceira</label>
  <input style={inp} value={linkExterno} onChange={e => setLinkExterno(e.target.value)} placeholder="Cole aqui o seu link de indicação" />
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>
  Cole exatamente como você recebeu. Aparece para quem você indicar ao completar certas aulas.
@@ -204,7 +205,7 @@ export default function PerfilCliente({ aluno, email, podeCfgLink }: { aluno: Al
 
  {aluno.data_formacao && (
  <div style={{ background: '#6366f115', border: '1px solid #6366f130', borderRadius: 10, padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'center' }}>
- <span style={{ fontSize: 22 }}></span>
+ <GraduationCap size={22} style={{ color: '#818cf8', flexShrink: 0 }} />
  <div>
  <p style={{ fontSize: 13, fontWeight: 700, color: '#818cf8', margin: 0 }}>Formado em {new Date(aluno.data_formacao + 'T12:00:00').toLocaleDateString('pt-BR')}</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>Consultor certificado Autovale Prevenções</p>
@@ -219,7 +220,7 @@ export default function PerfilCliente({ aluno, email, podeCfgLink }: { aluno: Al
  </a>
  <button type="submit" disabled={salvando}
  style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 28px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: salvando ? 0.7 : 1 }}>
- {salvando ? 'Salvando...' : ' Salvar alterações'}
+ {salvando ? 'Salvando...' : 'Salvar alterações'}
  </button>
  </div>
  </div>
@@ -228,7 +229,7 @@ export default function PerfilCliente({ aluno, email, podeCfgLink }: { aluno: Al
  {/* Segurança */}
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, overflow: 'hidden', marginTop: 20 }}>
  <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--avp-border)' }}>
- <h2 style={{ fontWeight: 800, fontSize: 16, margin: 0 }}> Segurança</h2>
+ <h2 style={{ fontWeight: 800, fontSize: 16, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Lock size={14} style={{ opacity: 0.6, flexShrink: 0 }} />Segurança</h2>
  </div>
  <div style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
  <div>

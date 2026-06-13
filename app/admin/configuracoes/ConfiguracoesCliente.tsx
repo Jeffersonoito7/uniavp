@@ -1,5 +1,11 @@
 'use client'
 import { useRef, useState, useEffect } from 'react'
+import {
+  Image as ImageIcon, Building2, Palette, Globe, Settings2, CreditCard, Banknote,
+  Award, LayoutGrid, Video, ListOrdered, ListChecks, BookOpen, Smartphone,
+  GraduationCap, ScrollText, Monitor, Link2, BookMarked, Shield, Lock,
+  FileText, Gift, Users, UserPlus, Server, Layers, ChevronRight,
+} from 'lucide-react'
 import PhoneInput from '@/app/components/PhoneInput'
 import CarteiraCardPreview from '@/app/components/CarteiraCardPreview'
 
@@ -419,9 +425,9 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* LOGOS */}
  <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
- <p style={{ fontWeight: 800, fontSize: 16 }}> Logo da empresa</p>
+ <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><ImageIcon size={15} style={{ opacity: 0.6, flexShrink: 0 }} />Logo da empresa</p>
  <div style={{ background: 'var(--avp-black)', borderRadius: 8, padding: '8px 12px' }}>
- <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}> Versão Web (horizontal)</p>
+ <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}><Monitor size={12} style={{ opacity: 0.7 }} />Versão Web (horizontal)</p>
  </div>
  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
  <LogoCard label="Logo principal" campo="logoUrl" value={logoUrl} desc="Fallback geral" rec="400×120px" fileRef={logoUrlRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
@@ -429,7 +435,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  <LogoCard label="Logo da página de login" campo="logoPaginaUrl" value={logoPaginaUrl} desc="Login e captação" rec="300×90px" fileRef={logoPaginaUrlRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
  </div>
  <div style={{ background: 'var(--avp-black)', borderRadius: 8, padding: '8px 12px', marginTop: 8 }}>
- <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}> Versão Mobile (quadrado)</p>
+ <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}><Smartphone size={12} style={{ opacity: 0.7 }} />Versão Mobile (quadrado)</p>
  </div>
  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
  <LogoCard label="Ícone mobile / PWA" campo="logoMobileUrl" value={logoMobileUrl} desc="Tela inicial do celular" rec="512×512px" fileRef={logoMobileUrlRef} uploading={uploading} onUpload={uploadImagem} onDelete={deletarImagem} />
@@ -439,7 +445,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* IDENTIDADE */}
  <div style={card}>
- <p style={{ fontWeight: 700, fontSize: 15 }}> Identidade</p>
+ <p style={{ fontWeight: 700, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}><Building2 size={14} style={{ opacity: 0.6 }} />Identidade</p>
  <div><label style={lbl}>Nome do site</label><input style={inp} value={nome} onChange={e => setNome(e.target.value)} /></div>
  <div><label style={lbl}>Slogan</label><input style={inp} value={slogan} onChange={e => setSlogan(e.target.value)} /></div>
  </div>
@@ -447,7 +453,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  {/* CORES */}
  <div style={card}>
  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
- <p style={{ fontWeight: 800, fontSize: 16 }}> Tema de Cores</p>
+ <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><Palette size={15} style={{ opacity: 0.6 }} />Tema de Cores</p>
  <button
  type="button"
  onClick={() => { setCorPrimaria('#333687'); setCorSecundaria('#02A153'); setCorFundo('#08090d'); setCorCard('#181b24'); setCorBorda('#252836'); setCorTexto('#f0f1f5'); setCorSidebar('#181b24') }}
@@ -514,14 +520,14 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* DOMÍNIO */}
  <div style={card}>
- <p style={{ fontWeight: 700, fontSize: 15 }}> Domínio personalizado</p>
+ <p style={{ fontWeight: 700, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}><Globe size={14} style={{ opacity: 0.6 }} />Domínio personalizado</p>
  <div>
  <label style={lbl}>Seu domínio</label>
  <input style={inp} value={dominio} onChange={e => setDominio(e.target.value.trim())} placeholder="Ex: universidade.suaempresa.com.br" />
  </div>
  {dominio && (
  <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: '14px 16px', fontSize: 13 }}>
- <p style={{ fontWeight: 700, marginBottom: 8 }}> Configure no DNS:</p>
+ <p style={{ fontWeight: 700, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><Server size={13} style={{ opacity: 0.6 }} />Configure no DNS:</p>
  <div style={{ fontFamily: 'monospace', display: 'flex', flexDirection: 'column', gap: 4 }}>
  <span><span style={{ color: 'var(--avp-text-dim)' }}>Tipo:</span> <strong style={{ color: 'var(--avp-green)' }}>CNAME</strong></span>
  <span><span style={{ color: 'var(--avp-text-dim)' }}>Nome:</span> <strong>{dominio.split('.')[0]}</strong></span>
@@ -533,13 +539,13 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* OUTROS */}
  <div style={card}>
- <p style={{ fontWeight: 700, fontSize: 15 }}> Outros</p>
+ <p style={{ fontWeight: 700, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}><Settings2 size={14} style={{ opacity: 0.6 }} />Outros</p>
  <div><label style={lbl}>WhatsApp suporte</label><PhoneInput value={whatsapp} onChange={setWhatsapp} placeholder="suporte da empresa" /></div>
  </div>
 
  {/* VALOR PLANO PRO — só no painel Oito7Digital */}
  {isMaster && <div style={{ ...card, border: '2px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.05)' }}>
- <p style={{ fontWeight: 800, fontSize: 16 }}> Valor do Plano UNIAVP PRO</p>
+ <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><CreditCard size={15} style={{ opacity: 0.6 }} />Valor do Plano UNIAVP PRO</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
  Valor cobrado mensalmente dos usuários que assinam o plano PRO via PIX. Gerado automaticamente ao assinar.
  </p>
@@ -555,7 +561,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  </p>
  <div style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: 320, marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--avp-border)' }}>
  <div style={{ flex: 1 }}>
- <label style={{ ...lbl, marginBottom: 4 }}> PROs necessários para plano gratuito</label>
+ <label style={{ ...lbl, marginBottom: 4 }}>PROs necessários para plano gratuito</label>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '0 0 8px' }}>
  Número de PROs ativos na rede do gestor para ter o plano grátis
  </p>
@@ -578,7 +584,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
  <div style={{ flex: 1 }}>
- <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}> Limite de módulos FREE</p>
+ <p style={{ fontWeight: 700, fontSize: 14, margin: 0, display: 'flex', alignItems: 'center', gap: 7 }}><BookOpen size={13} style={{ opacity: 0.6, flexShrink: 0 }} />Limite de módulos FREE</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0', lineHeight: 1.5 }}>
  Quantos módulos o FREE pode acessar (em ordem). Os demais aparecem travados como "Exclusivo PRO". Use <strong>0</strong> para ilimitado.
  </p>
@@ -599,7 +605,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
  <div>
- <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}> FREE pode configurar link da plataforma parceira</p>
+ <p style={{ fontWeight: 700, fontSize: 14, margin: 0, display: 'flex', alignItems: 'center', gap: 7 }}><Link2 size={13} style={{ opacity: 0.6, flexShrink: 0 }} />FREE pode configurar link da plataforma parceira</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0', lineHeight: 1.5 }}>
  Quando ativado, cada FREE pode colocar o próprio link de indicação no perfil dele.
  Se não tiver link próprio, usa o link do PRO que o indicou.
@@ -614,7 +620,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
  <div>
- <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}> PRO pode configurar link da plataforma parceira</p>
+ <p style={{ fontWeight: 700, fontSize: 14, margin: 0, display: 'flex', alignItems: 'center', gap: 7 }}><Link2 size={13} style={{ opacity: 0.6, flexShrink: 0 }} />PRO pode configurar link da plataforma parceira</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0', lineHeight: 1.5 }}>
  Quando ativado, cada PRO pode colocar o próprio link de indicação no perfil dele.
  Esse link aparece para os FREE que ele recrutar.
@@ -631,7 +637,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* BOLETO — só no painel Oito7Digital */}
  {isMaster && <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
- <p style={{ fontWeight: 800, fontSize: 16 }}> Boleto Bancário (Efí) <span style={{ fontSize: 11, fontWeight: 600, color: '#f59e0b', background: '#f59e0b15', borderRadius: 6, padding: '2px 8px', marginLeft: 6 }}>Exclusivo Oito7Digital</span></p>
+ <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><Banknote size={15} style={{ opacity: 0.6 }} />Boleto Bancário (Efí) <span style={{ fontSize: 11, fontWeight: 600, color: '#f59e0b', background: '#f59e0b15', borderRadius: 6, padding: '2px 8px', marginLeft: 6 }}>Exclusivo Oito7Digital</span></p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
  Configuração exclusiva do painel master Oito7Digital — não aparece para clientes white-label. Configure a mensagem e as instruções do boleto. A logo é configurada no painel da Efí: <strong style={{ color: 'var(--avp-text)' }}>app.efipay.com.br → Minha Conta → Personalização</strong>.
  </p>
@@ -669,7 +675,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  {/* CARTEIRA */}
  <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
- <p style={{ fontWeight: 800, fontSize: 16 }}> Carteira de Formação</p>
+ <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><Award size={15} style={{ opacity: 0.6 }} />Carteira de Formação</p>
  <a href="/teste/carteira" target="_blank" rel="noreferrer"
  style={{ background: '#fbbf2420', border: '1px solid #fbbf2460', color: '#fbbf24', borderRadius: 8, padding: '7px 16px', fontWeight: 700, fontSize: 13, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
  Ver modelo
@@ -681,7 +687,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* Cores da carteira — usa as cores do site */}
  <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
- <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}> Cores da carteirinha</p>
+ <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 6 }}><Palette size={13} style={{ opacity: 0.6, flexShrink: 0 }} />Cores da carteirinha</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.5 }}>
  A carteira usa as cores primária e secundária configuradas em <strong style={{ color: 'var(--avp-text)' }}>Tema de Cores</strong> acima.
  Cor primária = cabeçalho/fundo azul; secundária = destaques verdes/coloridos.
@@ -708,7 +714,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  </div>
  {/* Quando exibir a carteira */}
  <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
- <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}> Quando mostrar a carteira no painel do aluno</p>
+ <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 6 }}><Settings2 size={13} style={{ opacity: 0.6, flexShrink: 0 }} />Quando mostrar a carteira no painel do aluno</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.5 }}>
  Controla em que momento o botão da Carteira de Formação aparece para o aluno.
  </p>
@@ -786,7 +792,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '20px 24px' }}>
  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
  <div>
- <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}> Preview ao vivo</p>
+ <p style={{ fontWeight: 700, fontSize: 14, margin: 0, display: 'flex', alignItems: 'center', gap: 7 }}><Monitor size={14} style={{ opacity: 0.6, flexShrink: 0 }} />Preview ao vivo</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0' }}>Atualiza em tempo real conforme você edita as configurações acima.</p>
  </div>
  <a href="/teste/carteira" target="_blank" rel="noreferrer"
@@ -812,7 +818,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* CAPA PADRÃO DOS MÓDULOS */}
  <div style={{ ...card }}>
- <p style={{ fontWeight: 800, fontSize: 16 }}> Capa padrão dos módulos</p>
+ <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><LayoutGrid size={15} style={{ opacity: 0.6 }} />Capa padrão dos módulos</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8, lineHeight: 1.6 }}>
  Imagem exibida nos módulos que não têm capa própria — aparece no painel Admin, PRO e FREE.
  </p>
@@ -829,14 +835,14 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  {moduloCapaPadrao && moduloCapaPadrao.startsWith('http') && (
  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
  <img src={moduloCapaPadrao} alt="preview" style={{ width: 140, height: 90, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--avp-border)' }} />
- <p style={{ fontSize: 12, color: 'var(--avp-green)' }}> Imagem configurada — módulos sem capa vão usar esta</p>
+ <p style={{ fontSize: 12, color: 'var(--avp-green)' }}>Imagem configurada — módulos sem capa vão usar esta</p>
  </div>
  )}
  </div>
 
  {/* VÍDEO DE CAPTAÇÃO */}
  <div style={{ ...card }}>
- <p style={{ fontWeight: 800, fontSize: 16 }}> Vídeo de Captação (funil de cadastro)</p>
+ <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><Video size={15} style={{ opacity: 0.6 }} />Vídeo de Captação (funil de cadastro)</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8, lineHeight: 1.6 }}>
  Este vídeo aparece no funil de cadastro UNIAVP FREE (<strong>/g/seu-whatsapp</strong>). O candidato precisa assistir até o fim antes de se cadastrar. Cole o ID do YouTube (ex: <code style={{ background: 'var(--avp-black)', padding: '2px 6px', borderRadius: 4 }}>dQw4w9WgXcQ</code>) ou a URL completa.
  </p>
@@ -876,7 +882,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* FLUXO PÓS-CADASTRO — passos obrigatórios */}
  <div style={{ ...card }}>
- <p style={{ fontWeight: 800, fontSize: 16 }}> Fluxo pós-cadastro (passos obrigatórios)</p>
+ <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><ListOrdered size={15} style={{ opacity: 0.6 }} />Fluxo pós-cadastro (passos obrigatórios)</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8, lineHeight: 1.6 }}>
  Após o consultor se cadastrar na captação, você pode exigir que ele complete etapas antes de acessar as aulas.
  A sequência é sempre: <strong style={{ color: 'var(--avp-text)' }}>1. Sistema parceiro → 2. Baixar app → Login</strong>
@@ -886,7 +892,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  <div style={{ background: 'var(--avp-black)', border: `1px solid ${captacaoMostrarParceiro ? 'rgba(2,161,83,0.4)' : 'var(--avp-border)'}`, borderRadius: 12, padding: '16px 18px' }}>
  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: captacaoMostrarParceiro ? 16 : 0 }}>
  <div>
- <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}> Passo 1 — Cadastro no sistema parceiro</p>
+ <p style={{ fontWeight: 700, fontSize: 14, margin: 0, display: 'flex', alignItems: 'center', gap: 7 }}><ChevronRight size={14} style={{ opacity: 0.6, flexShrink: 0 }} />Passo 1 — Cadastro no sistema parceiro</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
  Exibe tela pedindo que o consultor acesse o link configurado no perfil do gestor
  </p>
@@ -934,7 +940,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  <div style={{ background: 'var(--avp-black)', border: `1px solid ${captacaoMostrarApp ? 'rgba(99,102,241,0.4)' : 'var(--avp-border)'}`, borderRadius: 12, padding: '16px 18px' }}>
  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: captacaoMostrarApp ? 16 : 0 }}>
  <div>
- <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}> Passo 2 — Baixar o app do consultor</p>
+ <p style={{ fontWeight: 700, fontSize: 14, margin: 0, display: 'flex', alignItems: 'center', gap: 7 }}><ChevronRight size={14} style={{ opacity: 0.6, flexShrink: 0 }} />Passo 2 — Baixar o app do consultor</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
  Exibe tela com os botões da App Store e Google Play (links configurados abaixo)
  </p>
@@ -964,7 +970,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  <div style={{ ...card, border: `2px solid ${passosPainelHabilitado ? 'rgba(2,161,83,0.35)' : 'var(--avp-border)'}`, background: passosPainelHabilitado ? 'rgba(2,161,83,0.03)' : undefined }}>
  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
  <div>
- <p style={{ fontWeight: 800, fontSize: 16 }}> Passos iniciais no painel do aluno</p>
+ <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><ListChecks size={15} style={{ opacity: 0.6 }} />Passos iniciais no painel do aluno</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: 4, lineHeight: 1.6 }}>
  Quando ativado, o aluno vê os passos configurados acima (parceiro + app) assim que entra no painel — <strong style={{ color: 'var(--avp-text)' }}>antes de acessar as aulas</strong>. Ideal para garantir que ele já tem o app e o cadastro no sistema parceiro antes de começar.
  </p>
@@ -982,7 +988,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* REGRAS DE APRENDIZADO */}
  <div style={card}>
- <p style={{ fontWeight: 800, fontSize: 16 }}> Regras de Aprendizado</p>
+ <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><BookOpen size={15} style={{ opacity: 0.6 }} />Regras de Aprendizado</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8, lineHeight: 1.6 }}>
  Controle o comportamento das aulas para cada tipo de usuário. Essas regras se aplicam globalmente, independente da configuração individual de cada aula.
  </p>
@@ -1030,7 +1036,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* LINKS DO APP */}
  <div style={{ ...card, border: '2px solid rgba(99,102,241,0.25)' }}>
- <p style={{ fontWeight: 800, fontSize: 16 }}> Links de Download do App Consultor</p>
+ <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><Smartphone size={15} style={{ opacity: 0.6 }} />Links de Download do App Consultor</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8, marginBottom: 20 }}>
  Configure os links da loja para o app consultor. Quando ativado em uma aula, o aluno verá dois botões para baixar o app após concluir o vídeo.
  </p>
@@ -1056,7 +1062,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* CERTIFICADO — removido: cada módulo tem seu próprio certificado agora */}
  {false && <div style={{ ...card, border: '2px dashed var(--avp-border)' }}>
- <p style={{ fontWeight: 800, fontSize: 16 }}> Certificado de Conclusão</p>
+ <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><GraduationCap size={15} style={{ opacity: 0.6 }} />Certificado de Conclusão</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: -8 }}>
  Faça upload do template PNG e configure onde o nome do aluno aparece. O certificado baixado terá o nome gravado na posição definida.
  </p>
@@ -1120,7 +1126,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
  <div>
- <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}> Sobrepor assinatura no certificado</p>
+ <p style={{ fontWeight: 700, fontSize: 14, margin: 0, display: 'flex', alignItems: 'center', gap: 7 }}><Layers size={14} style={{ opacity: 0.6, flexShrink: 0 }} />Sobrepor assinatura no certificado</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '4px 0 0', lineHeight: 1.5 }}>
  Ative <strong>somente</strong> se o template <strong>não</strong> tiver assinatura gravada. Se o PNG já tem assinatura, deixe desligado para não duplicar.
  </p>
@@ -1234,7 +1240,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  <div id="contrato" style={{ ...card, border: '2px solid rgba(99,102,241,0.25)', background: 'rgba(99,102,241,0.03)', scrollMarginTop: 80 }}>
  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
  <div>
- <p style={{ fontWeight: 800, fontSize: 16 }}> Contrato de Representação</p>
+ <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><ScrollText size={15} style={{ opacity: 0.6 }} />Contrato de Representação</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: 4 }}>
  Contrato digital de licenciamento com quiz por cláusula, PDF com hash SHA-256 e envio via WhatsApp.
  </p>
@@ -1273,7 +1279,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* Dados da Contratante */}
  <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
- <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 12px' }}> Dados da CONTRATANTE (pré-configurados no contrato)</p>
+ <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 6 }}><Building2 size={13} style={{ opacity: 0.6, flexShrink: 0 }} />Dados da CONTRATANTE (pré-configurados no contrato)</p>
  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
  <div>
@@ -1379,7 +1385,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* Texto do contrato (PDF body) */}
  <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
- <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}> Corpo do contrato</p>
+ <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 6 }}><FileText size={13} style={{ opacity: 0.6, flexShrink: 0 }} />Corpo do contrato</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.6 }}>
  Cole aqui o texto completo do contrato ou importe de um arquivo <strong>.txt</strong>. Se deixar em branco, o sistema usa o texto padrão.<br />
  <strong style={{ color: 'var(--avp-text)' }}>Formato:</strong> use <code style={{ background: 'var(--avp-card)', padding: '1px 5px', borderRadius: 4, fontSize: 11 }}>## 1. TÍTULO DA SEÇÃO</code> para seções
@@ -1420,7 +1426,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  />
  {contratoCorpo?.trim() ? (
  <div style={{ marginTop: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
- <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 700 }}> Contrato personalizado ativo</span>
+ <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 700 }}>Contrato personalizado ativo</span>
  <button
  onClick={() => { if (confirm('Apagar o texto personalizado e voltar ao padrão do sistema?')) setContratoCorpo('') }}
  style={{ background: 'none', border: '1px solid var(--avp-danger)', color: 'var(--avp-danger)', borderRadius: 6, padding: '3px 10px', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
@@ -1434,7 +1440,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* Link direto */}
  <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
- <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 8px' }}> Link direto do contrato</p>
+ <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 6 }}><Link2 size={13} style={{ opacity: 0.6, flexShrink: 0 }} />Link direto do contrato</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 10px' }}>
  Qualquer consultor pode acessar este link para assinar o contrato digitalmente.
  </p>

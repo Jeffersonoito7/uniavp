@@ -86,7 +86,7 @@ export default function CarteiraDisplay({
  <div style={{ width: W, height: H, overflow: 'hidden', fontFamily: '"Arial","Helvetica",sans-serif', display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
 
  {/* Cabeçalho */}
- <div style={{ background: NAVY, height: 70, display: 'flex', alignItems: 'center', padding: '0 18px', gap: 12, flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
+ <div className="carteira-navy" style={{ background: NAVY, height: 70, display: 'flex', alignItems: 'center', padding: '0 18px', gap: 12, flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
  <svg style={{ position: 'absolute', inset: 0, opacity: 0.07, pointerEvents: 'none' }} width={W} height="70">
  {Array.from({ length: 8 }).map((_, i) => (
  <ellipse key={i} cx={W / 2} cy="35" rx={30 + i * 38} ry={9 + i * 4} fill="none" stroke="#fff" strokeWidth="0.5" />
@@ -208,7 +208,7 @@ export default function CarteiraDisplay({
  <div style={{ width: 90, height: 0.8, background: '#555', margin: '2px 0 1px' }} />
  <p style={{ fontSize: 7, color: '#555', margin: 0, letterSpacing: 0.5, fontWeight: 600 }}>{assinaturaCargo}</p>
  </div>
- <div style={{ background: GREEN, borderRadius: 5, padding: '5px 14px', textAlign: 'center' as const }}>
+ <div className="carteira-green" style={{ background: GREEN, borderRadius: 5, padding: '5px 14px', textAlign: 'center' as const }}>
  <p style={{ color: '#fff', fontWeight: 900, fontSize: 9, margin: 0, letterSpacing: 1 }}>CONSULTOR CERTIFICADO</p>
  <div style={{ width: '100%', height: 0.8, background: 'rgba(255,255,255,0.35)', margin: '2px 0' }} />
  <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 7, margin: 0, letterSpacing: 0.5 }}>— COMPROMISSO • ÉTICA • EXCELÊNCIA —</p>
@@ -216,7 +216,7 @@ export default function CarteiraDisplay({
  </div>
 
  {/* Rodapé */}
- <div style={{ background: GREEN, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
+ <div className="carteira-green" style={{ background: GREEN, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
  <p style={{ color: '#fff', fontSize: 7.5, fontWeight: 700, margin: 0, letterSpacing: 0.5 }}>VÁLIDA EM TODO TERRITÓRIO NACIONAL</p>
  <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 7, margin: 0 }}>VERIFIQUE EM: {urlBase}/verificar/{numRegistro}</p>
  </div>
@@ -227,7 +227,7 @@ export default function CarteiraDisplay({
  <div style={{ width: W, height: H, overflow: 'hidden', fontFamily: '"Arial","Helvetica",sans-serif', display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
 
  {/* Cabeçalho */}
- <div style={{ background: NAVY, height: 70, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
+ <div className="carteira-navy" style={{ background: NAVY, height: 70, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
  <svg style={{ position: 'absolute', inset: 0, opacity: 0.07, pointerEvents: 'none' }} width={W} height="70">
  {Array.from({ length: 8 }).map((_, i) => (
  <ellipse key={i} cx={W / 2} cy="35" rx={30 + i * 38} ry={9 + i * 4} fill="none" stroke="#fff" strokeWidth="0.5" />
@@ -287,7 +287,7 @@ export default function CarteiraDisplay({
  </div>
 
  {/* Rodapé */}
- <div style={{ background: GREEN, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
+ <div className="carteira-green" style={{ background: GREEN, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', flexShrink: 0 }}>
  <div>
  {empresaLogoUrl
  ? <img src={empresaLogoUrl} alt={empresaNome} style={{ height: 18, maxWidth: 70, objectFit: 'contain' }} />
@@ -309,12 +309,19 @@ export default function CarteiraDisplay({
  <style>{`
  @media print {
  @page { size: A4 landscape; margin: 10mm; }
- * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+ *, *::before, *::after {
+ -webkit-print-color-adjust: exact !important;
+ print-color-adjust: exact !important;
+ color-adjust: exact !important;
+ forced-color-adjust: none !important;
+ }
  html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
  .no-print { display: none !important; }
  .print-container { background: #fff !important; min-height: 0 !important; color: #000 !important; }
  .print-area { padding: 0 !important; max-width: 100% !important; display: flex !important; flex-direction: column !important; align-items: center !important; gap: 10mm !important; }
  .card-wrapper { page-break-inside: avoid !important; break-inside: avoid !important; }
+ .carteira-navy { background-color: ${NAVY} !important; }
+ .carteira-green { background-color: ${GREEN} !important; }
  }
  `}</style>
 
