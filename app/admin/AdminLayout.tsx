@@ -197,7 +197,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
  {!colapsada && (
  <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
  {logoMarkup()}
- <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 2, whiteSpace: 'nowrap' }}>Painel Admin</p>
  </div>
  )}
  <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
@@ -251,7 +250,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
  {/* ── Acesso rápido ── */}
  <div style={{ padding: colapsada ? '10px 8px' : '10px 12px', borderTop: '1px solid var(--avp-border)', display: 'flex', flexDirection: 'column', gap: 6 }}>
- {!colapsada && <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>Visualizar como</p>}
+ {!colapsada && <p style={{ fontSize: 11, fontWeight: 500, color: 'var(--avp-text-dim)', marginBottom: 4 }}>Visualizar como</p>}
  <Link href="/admin/ver-pro"
  title="Ver Painel PRO"
  className={pathname.startsWith('/admin/ver-pro') ? 'adm-sidebar-pro adm-sidebar-pro-active' : 'adm-sidebar-pro'}

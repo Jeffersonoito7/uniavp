@@ -5,54 +5,34 @@ import { createBrowserClient } from '@supabase/ssr'
 
 const TEMAS = {
  pro: {
- bg: '#0a0a0f',
- glow1: 'rgba(34,197,94,0.12)',
- glow2: 'rgba(34,197,94,0.06)',
- cardBorder: 'rgba(34,197,94,0.2)',
+ cardBorder: 'rgba(34,197,94,0.25)',
  btn: '#22c55e',
- btnShadow: 'rgba(34,197,94,0.3)',
  linkColor: '#4ade80',
  badge: 'PRO',
- badgeIcon: '',
  badgeColor: '#22c55e',
  label: 'Painel PRO',
  },
  free: {
- bg: '#0a0a0f',
- glow1: 'rgba(59,130,246,0.12)',
- glow2: 'rgba(59,130,246,0.06)',
- cardBorder: 'rgba(59,130,246,0.2)',
+ cardBorder: 'rgba(59,130,246,0.25)',
  btn: '#3b82f6',
- btnShadow: 'rgba(59,130,246,0.3)',
  linkColor: '#60a5fa',
  badge: 'FREE',
- badgeIcon: '',
  badgeColor: '#60a5fa',
  label: 'Painel FREE',
  },
  adm: {
- bg: '#0a0a0f',
- glow1: 'rgba(99,102,241,0.1)',
- glow2: 'rgba(99,102,241,0.05)',
- cardBorder: 'rgba(99,102,241,0.2)',
+ cardBorder: 'rgba(79,70,229,0.25)',
  btn: '#4f46e5',
- btnShadow: 'rgba(99,102,241,0.3)',
  linkColor: '#818cf8',
  badge: 'Admin',
- badgeIcon: '',
  badgeColor: '#818cf8',
  label: 'Painel Admin',
  },
  default: {
- bg: '#0a0a0f',
- glow1: 'rgba(99,102,241,0.1)',
- glow2: 'rgba(34,197,94,0.06)',
- cardBorder: 'rgba(99,102,241,0.2)',
+ cardBorder: 'rgba(79,70,229,0.2)',
  btn: '#4f46e5',
- btnShadow: 'rgba(99,102,241,0.3)',
  linkColor: '#818cf8',
  badge: '',
- badgeIcon: '',
  badgeColor: '',
  label: '',
  },
@@ -111,28 +91,26 @@ function EntrarForm() {
  }
 
  const inp: React.CSSProperties = {
- width: '100%', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)',
- borderRadius: 12, padding: '14px 16px', color: '#fff', fontSize: 16, outline: 'none',
- boxSizing: 'border-box', fontFamily: 'Inter, sans-serif', transition: 'border 0.2s',
+ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+ borderRadius: 8, padding: '12px 14px', color: '#fff', fontSize: 15, outline: 'none',
+ boxSizing: 'border-box', fontFamily: 'Inter, sans-serif', transition: 'border-color 0.15s',
  }
 
  return (
  <div style={{
  minHeight: '100vh',
- background: tema.bg,
+ background: '#0a0a0f',
  display: 'flex', alignItems: 'center', justifyContent: 'center',
- fontFamily: 'Inter, sans-serif', padding: 20, position: 'relative', overflow: 'hidden',
+ fontFamily: 'Inter, sans-serif', padding: 20,
  }}>
- <div style={{ position: 'absolute', top: -100, right: -100, width: 400, height: 400, borderRadius: '50%', background: tema.glow1, filter: 'blur(80px)', pointerEvents: 'none' }} />
- <div style={{ position: 'absolute', bottom: -80, left: -80, width: 350, height: 350, borderRadius: '50%', background: tema.glow2, filter: 'blur(80px)', pointerEvents: 'none' }} />
 
- <div style={{ width: '100%', maxWidth: 420, position: 'relative', zIndex: 1 }}>
+ <div style={{ width: '100%', maxWidth: 400 }}>
 
  {/* Badge do painel */}
  {tema.badge && (
  <div style={{ textAlign: 'center', marginBottom: 16 }}>
- <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: `${tema.badgeColor}18`, border: `1px solid ${tema.badgeColor}40`, borderRadius: 100, padding: '5px 16px', fontSize: 12, fontWeight: 800, color: tema.badgeColor, letterSpacing: 1, textTransform: 'uppercase' }}>
- {tema.badgeIcon} {tema.label}
+ <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: `${tema.badgeColor}18`, border: `1px solid ${tema.badgeColor}35`, borderRadius: 6, padding: '4px 12px', fontSize: 11, fontWeight: 600, color: tema.badgeColor }}>
+ {tema.label}
  </span>
  </div>
  )}
@@ -155,11 +133,10 @@ function EntrarForm() {
 
  {/* Card */}
  <div style={{
- background: 'rgba(10,12,20,0.82)',
+ background: '#0f0f17',
  border: `1px solid ${tema.cardBorder}`,
- borderRadius: 20, padding: '36px 32px',
- backdropFilter: 'blur(12px)',
- boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+ borderRadius: 14, padding: '32px 28px',
+ boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
  }}>
  {erro && (
  <div className="alert alert-error" style={{ marginBottom: 20, textAlign: 'center', fontSize: 14 }}>
@@ -169,14 +146,14 @@ function EntrarForm() {
 
  <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
  <div>
- <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1.2 }}>E-mail</label>
+ <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 500, marginBottom: 8 }}>E-mail</label>
  <input type="email" autoComplete="email" placeholder="seu@email.com"
  value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
  required style={inp} />
  </div>
 
  <div>
- <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1.2 }}>Senha</label>
+ <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 500, marginBottom: 8 }}>Senha</label>
  <div style={{ position: 'relative' }}>
  <input type={verSenha ? 'text' : 'password'} autoComplete="current-password"
  placeholder="••••••••" value={form.password}
@@ -199,27 +176,27 @@ function EntrarForm() {
  </div>
 
  <button type="submit" disabled={loading}
- style={{ background: loading ? 'rgba(100,100,100,0.4)' : tema.btn, border: 'none', borderRadius: 12, padding: '15px', color: '#fff', fontWeight: 700, fontSize: 16, cursor: loading ? 'not-allowed' : 'pointer', marginTop: 4, transition: 'background 0.2s', width: '100%' }}>
- {loading ? 'Entrando...' : 'Entrar →'}
+ style={{ background: loading ? 'rgba(100,100,100,0.4)' : tema.btn, border: 'none', borderRadius: 8, padding: '12px', color: '#fff', fontWeight: 600, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', marginTop: 4, transition: 'opacity 0.15s', width: '100%', opacity: loading ? 0.7 : 1 }}>
+ {loading ? 'Entrando...' : 'Entrar'}
  </button>
  </form>
  </div>
 
  {/* Rodapé */}
  {!tema.badge && (
- <div style={{ display: 'flex', justifyContent: 'center', gap: 14, marginTop: 20, flexWrap: 'wrap' }}>
+ <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 20 }}>
  {[
- { icon: '🆓', label: 'FREE', color: '#60a5fa', href: '?p=free' },
- { icon: '', label: 'PRO', color: '#22c55e', href: '?p=pro' },
- { icon: '', label: 'Admin', color: '#818cf8', href: '?p=adm' },
+ { label: 'FREE', color: '#60a5fa', href: '?p=free' },
+ { label: 'PRO', color: '#4ade80', href: '?p=pro' },
+ { label: 'Admin', color: '#818cf8', href: '?p=adm' },
  ].map(b => (
- <a key={b.label} href={b.href} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: b.color, fontWeight: 600, opacity: 0.5, textDecoration: 'none' }}>
- <span>{b.icon}</span><span>{b.label}</span>
+ <a key={b.label} href={b.href} style={{ fontSize: 12, color: b.color, fontWeight: 500, opacity: 0.55, textDecoration: 'none' }}>
+ {b.label}
  </a>
  ))}
  </div>
  )}
- <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.18)', marginTop: 10 }}>
+ <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.15)', marginTop: 10 }}>
  Um único acesso para todos os painéis
  </p>
  </div>
