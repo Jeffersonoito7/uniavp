@@ -23,7 +23,7 @@ export async function PUT(req: NextRequest) {
   }
 
   const { error } = await adminClient.from('alunos')
-    .update({ nome: nome ?? aluno.nome, bio: bio ?? null, link_externo: link_externo ?? undefined })
+    .update({ nome: nome ?? aluno.nome, bio: bio ?? null, ...(link_externo !== undefined ? { link_externo } : {}) })
     .eq('id', aluno_id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
