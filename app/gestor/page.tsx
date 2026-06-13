@@ -132,7 +132,6 @@ export default async function GestorPage() {
  capaDefault={capaDefault}
  prosIndicados={prosIndicados ?? 0}
  limiteProGratuito={limiteProGratuito}
- cncpvHabilitado={siteConfig.cncpvHabilitado}
  documentos={documentosPro ?? []}
  podeCfgLink={podeCfgLink}
  />

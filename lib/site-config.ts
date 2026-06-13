@@ -22,7 +22,6 @@ export type SiteConfig = {
   dominioCustomizado: string
   planosAtivo: boolean
   isDominioMaster: boolean
-  cncpvHabilitado: boolean
 }
 
 import { DOMINIO_MASTER } from './constants'
@@ -46,7 +45,6 @@ const CONFIG_MASTER: SiteConfig = {
   dominioCustomizado: '',
   planosAtivo: false,
   isDominioMaster: true,
-  cncpvHabilitado: false,
 }
 
 export async function getSiteConfig(host?: string): Promise<SiteConfig> {
@@ -73,7 +71,7 @@ export async function getSiteConfig(host?: string): Promise<SiteConfig> {
       'logo_menu_url', 'logo_pagina_url', 'logo_favicon_url',
       'site_cor_primaria', 'site_cor_secundaria',
       'cor_fundo', 'cor_card', 'cor_borda', 'cor_texto', 'cor_sidebar',
-      'whatsapp_suporte', 'dominio_customizado', 'planos_ativo', 'cncpv_habilitado',
+      'whatsapp_suporte', 'dominio_customizado', 'planos_ativo',
     ])
 
   const map: Record<string, string> = {}
@@ -99,7 +97,6 @@ export async function getSiteConfig(host?: string): Promise<SiteConfig> {
     whatsappSuporte: map['whatsapp_suporte'] || '',
     dominioCustomizado: map['dominio_customizado'] || '',
     planosAtivo: map['planos_ativo'] === 'true',
-    cncpvHabilitado: map['cncpv_habilitado'] === 'true',
     isDominioMaster: false,
   }
 

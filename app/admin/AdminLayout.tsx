@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import {
  LayoutDashboard, BookOpen, Users, ShieldCheck,
  Trophy, Cog, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper, Star,
- Menu, X, ChevronLeft, ChevronRight, Link2, IdCard, FileText, ScrollText, Video, Activity, MessageSquare, Bot, HelpCircle, Library
+ Menu, X, ChevronLeft, ChevronRight, Link2, FileText, ScrollText, Video, Activity, MessageSquare, Bot, HelpCircle, Library
 } from 'lucide-react'
 import LogoutButton from '@/app/components/LogoutButton'
 import SupportChat from '@/app/components/SupportChat'
@@ -23,7 +23,6 @@ const navItems = [
  { href: '/admin/aulas-ao-vivo', label: 'Ao Vivo', icon: Video },
  { href: '/admin/noticias', label: 'Notícias', icon: Newspaper },
  { href: '/admin/captacao', label: 'Links de Captação', icon: Link2 },
- { href: '/admin/cncpv', label: 'CNCPV', icon: IdCard },
  { href: '/admin/contratos', label: 'Contratos', icon: ScrollText },
  { href: '/admin/documentos', label: 'Documentos', icon: FileText },
  { href: '/admin/ranking', label: 'Ranking', icon: Trophy },

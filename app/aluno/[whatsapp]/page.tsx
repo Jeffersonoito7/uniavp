@@ -374,13 +374,6 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  style={{ background: '#fbbf24', color: '#1a1a1a', borderRadius: 10, padding: '10px 20px', fontWeight: 700, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
  Carteira
  </Link>
- {siteConfig.cncpvHabilitado && (
- <Link href={`/cncpv?nome=${encodeURIComponent(aluno.nome)}&whatsapp=${aluno.whatsapp}&email=${encodeURIComponent(aluno.email ?? '')}&cpf=${encodeURIComponent(aluno.cpf ?? '')}`}
- className="btn btn-green"
- style={{ textDecoration: 'none', borderRadius: 10 }}>
- Carteira CNCPV
- </Link>
- )}
  {contratoHabilitado && (
  <Link href={`/contrato?nome=${encodeURIComponent(aluno.nome)}&whatsapp=${aluno.whatsapp}&email=${encodeURIComponent(aluno.email ?? '')}&cpf=${encodeURIComponent(aluno.cpf ?? '')}&aluno_id=${aluno.id}`}
  className="btn btn-primary"
@@ -410,23 +403,6 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  </Link>
  )}
 
- {/* ── CNCPV ── */}
- {!moduloAtivo && siteConfig.cncpvHabilitado && (
- <Link
- href={`/cncpv?nome=${encodeURIComponent(aluno.nome)}&whatsapp=${aluno.whatsapp}&email=${encodeURIComponent(aluno.email ?? '')}&cpf=${encodeURIComponent(aluno.cpf ?? '')}`}
- style={{ display: 'block', textDecoration: 'none', marginBottom: 20 }}>
- <div style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 16, padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}>
- <div style={{ width: 44, height: 44, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(34,197,94,0.1)', borderRadius: 10, border: '1px solid rgba(34,197,94,0.2)' }}>
- <svg width="22" height="22" fill="none" stroke="#22c55e" strokeWidth="1.8" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
- </div>
- <div style={{ flex: 1 }}>
- <p style={{ fontWeight: 700, fontSize: 16, color: 'var(--avp-text)', margin: '0 0 2px' }}>Carteira Nacional do Consultor — CNCPV</p>
- <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0 }}>Assine o contrato de conduta e emita sua credencial profissional oficial</p>
- </div>
- <div className="btn btn-green" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>Emitir →</div>
- </div>
- </Link>
- )}
 
  {/* ── DOCUMENTOS PARA DOWNLOAD ── */}
  {!moduloAtivo && documentosFree && documentosFree.length> 0 && (

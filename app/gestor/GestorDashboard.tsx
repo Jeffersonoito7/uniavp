@@ -14,7 +14,7 @@ import AgenteCard from './AgenteCard'
 import AgenteComercial from './AgenteComercial'
 
 // ── Componente de Perfil do Gestor ──────────────────────────────────────────
-function PerfilGestor({ gestor, onNomeAtualizado, onFotoAtualizada, cncpvHabilitado, podeCfgLink }: { gestor: Gestor; onNomeAtualizado: (n: string) => void; onFotoAtualizada?: (url: string | null) => void; cncpvHabilitado?: boolean; podeCfgLink?: boolean }) {
+function PerfilGestor({ gestor, onNomeAtualizado, onFotoAtualizada, podeCfgLink }: { gestor: Gestor; onNomeAtualizado: (n: string) => void; onFotoAtualizada?: (url: string | null) => void; podeCfgLink?: boolean }) {
  const [nome, setNome] = useState(gestor.nome)
  const [linkExterno, setLinkExterno] = useState(gestor.link_externo ?? '')
  const [fotoUrl, setFotoUrl] = useState<string | null>(gestor.foto_perfil ?? null)
@@ -155,22 +155,7 @@ function PerfilGestor({ gestor, onNomeAtualizado, onFotoAtualizada, cncpvHabilit
  </div>
  </div>
 
- {/* CNCPV */}
- {cncpvHabilitado !== false && (
- <a href={`/cncpv?nome=${encodeURIComponent(gestor.nome)}&whatsapp=${gestor.whatsapp}&email=${encodeURIComponent(gestor.email ?? '')}`}
- style={{ display: 'block', textDecoration: 'none', marginTop: 20 }}>
- <div style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 12, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }}>
- <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
- <div style={{ flex: 1 }}>
- <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--avp-text)', margin: '0 0 2px' }}>Carteira Nacional do Consultor — CNCPV</p>
- <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, margin: 0 }}>Assine o contrato e emita sua credencial profissional</p>
- </div>
- <div style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.25)', color: '#4ade80', borderRadius: 8, padding: '8px 16px', fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', flexShrink: 0 }}>
- Emitir
- </div>
- </div>
- </a>
- )}
+
  </div>
  </>
  )
@@ -276,9 +261,9 @@ function CardProGratuito({ prosIndicados, limite }: { prosIndicados: number; lim
 }
 
 export default function GestorDashboard({
- gestor, consultores, progressoMap, indicacoesMap, artesTemplatesIniciais, baseUrl, capaDefault, prosIndicados, limiteProGratuito, cncpvHabilitado, documentos, podeCfgLink,
+ gestor, consultores, progressoMap, indicacoesMap, artesTemplatesIniciais, baseUrl, capaDefault, prosIndicados, limiteProGratuito, documentos, podeCfgLink,
 }: {
- gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; indicacoesMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string; capaDefault?: string | null; prosIndicados?: number; limiteProGratuito?: number; cncpvHabilitado?: boolean; documentos?: { id: string; titulo: string; descricao: string | null; pdf_url: string }[]; podeCfgLink?: boolean
+ gestor: Gestor; consultores: Consultor[]; progressoMap: Record<string, number>; indicacoesMap: Record<string, number>; artesTemplatesIniciais: ArteTemplate[]; baseUrl: string; capaDefault?: string | null; prosIndicados?: number; limiteProGratuito?: number; documentos?: { id: string; titulo: string; descricao: string | null; pdf_url: string }[]; podeCfgLink?: boolean
 }) {
  const [aba, setAba] = useState('dashboard')
  const [fotoPerfilAtual, setFotoPerfilAtual] = useState<string | null>(gestor.foto_perfil ?? null)
@@ -1406,7 +1391,7 @@ export default function GestorDashboard({
 
  {/* ── PERFIL DO GESTOR ── */}
  {aba === 'perfil' && (
- <PerfilGestor gestor={gestor} onNomeAtualizado={() => {}} onFotoAtualizada={setFotoPerfilAtual} cncpvHabilitado={cncpvHabilitado} podeCfgLink={podeCfgLink} />
+ <PerfilGestor gestor={gestor} onNomeAtualizado={() => {}} onFotoAtualizada={setFotoPerfilAtual} podeCfgLink={podeCfgLink} />
  )}
 
  </GestorLayout>
