@@ -18,7 +18,7 @@ export default async function PerfilPage({ params }: { params: { whatsapp: strin
 
  const { data: cfg } = await adminClient.from('configuracoes')
  .select('valor').eq('chave', 'free_pode_configurar_link').maybeSingle()
- const podeCfgLink = cfg?.valor === 'true'
+ const podeCfgLink = cfg?.valor !== 'false'
 
  return <PerfilCliente aluno={aluno} email={user.email ?? ''} podeCfgLink={podeCfgLink} />
 }

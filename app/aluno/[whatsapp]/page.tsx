@@ -35,7 +35,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  const baseUrl = siteConfig.dominioCustomizado ? `https://${siteConfig.dominioCustomizado}` : `https://${host}`
 
  const { data: aluno } = await adminClient.from('alunos')
- .select('id, nome, whatsapp, email, cpf, status, numero_registro, streak_atual, maior_streak, tenant_id, setup_concluido, gestor_whatsapp, indicador_id')
+ .select('id, nome, whatsapp, email, cpf, status, numero_registro, streak_atual, maior_streak, tenant_id, setup_concluido, gestor_whatsapp, indicador_id, link_externo')
  .eq('user_id', user.id)
  .maybeSingle()
 
@@ -93,12 +93,12 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  redirect(`/contrato?${qs.toString()}`)
  }
 
- // Resolve link parceiro: PRO do aluno → FREE que indicou → global admin
- const { data: gestorLink } = aluno.gestor_whatsapp
+ // Resolve link parceiro: próprio aluno → PRO do aluno → FREE que indicou → global admin
+ const { data: gestorLink } = !aluno.link_externo && aluno.gestor_whatsapp
  ? await adminClient.from('gestores').select('link_externo').eq('whatsapp', aluno.gestor_whatsapp).maybeSingle()
  : { data: null }
 
- const { data: indicadorRow } = !gestorLink?.link_externo && aluno.indicador_id
+ const { data: indicadorRow } = !aluno.link_externo && !gestorLink?.link_externo && aluno.indicador_id
  ? await adminClient.from('indicadores').select('whatsapp').eq('id', aluno.indicador_id).maybeSingle()
  : { data: null }
 
@@ -106,7 +106,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  ? await adminClient.from('alunos').select('link_externo').eq('whatsapp', indicadorRow.whatsapp).maybeSingle()
  : { data: null }
 
- const setupLinkParceiro = gestorLink?.link_externo || indicadorAluno?.link_externo || certMap['captacao_link_externo'] || undefined
+ const setupLinkParceiro = aluno.link_externo || gestorLink?.link_externo || indicadorAluno?.link_externo || certMap['captacao_link_externo'] || undefined
 
  const { data: gestorAtivo } = await adminClient.from('gestores')
  .select('id')

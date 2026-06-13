@@ -72,7 +72,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  const [planoPROValor, setPlanoPROValor] = useState(get('plano_pro_valor') || '97')
  const [prosGratuitoLimite, setProsGratuitoLimite] = useState(get('pros_gratuito_limite') || '20')
- const [freePodeConfigurarLink, setFreePodeConfigurarLink] = useState(get('free_pode_configurar_link') === 'true')
+ const [freePodeConfigurarLink, setFreePodeConfigurarLink] = useState(get('free_pode_configurar_link') !== 'false')
  const [proPodeConfigurarLink, setProPodeConfigurarLink] = useState(get('pro_pode_configurar_link') === 'true')
  const [freeMaxModulos, setFreeMaxModulos] = useState(get('free_max_modulos') || '0')
  const [appIosUrl, setAppIosUrl] = useState(get('app_ios_url') || '')
