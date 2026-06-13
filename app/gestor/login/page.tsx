@@ -1,4 +1,4 @@
 import { redirect } from 'next/navigation'
 export default function GestorLoginRedirect() {
-  redirect('/entrar?p=pro')
+ redirect('/entrar?p=pro')
 }

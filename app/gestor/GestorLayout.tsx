@@ -6,278 +6,278 @@ import SupportChat from '@/app/components/SupportChat'
 import ThemeToggle from '@/app/components/ThemeToggle'
 
 const navItems = [
-  { id: 'dashboard',   label: 'Dashboard',  icon: LayoutDashboard },
-  { id: 'consultores', label: 'Minha Equipe', icon: Users },
-  { id: 'aulas',       label: 'Módulos',     icon: BookOpen },
-  { id: 'ao-vivo',     label: 'Ao Vivo',     icon: Video },
-  { id: 'eventos',     label: 'Eventos',     icon: Calendar },
-  { id: 'whatsapp',    label: 'WhatsApp',    icon: Smartphone },
-  { id: 'artes',       label: 'Artes',       icon: Palette },
-  { id: 'assistente',  label: 'Assistente',  icon: Bot },
-  { id: 'perfil',      label: 'Meu Perfil',  icon: UserCircle },
+ { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+ { id: 'consultores', label: 'Minha Equipe', icon: Users },
+ { id: 'aulas', label: 'Módulos', icon: BookOpen },
+ { id: 'ao-vivo', label: 'Ao Vivo', icon: Video },
+ { id: 'eventos', label: 'Eventos', icon: Calendar },
+ { id: 'whatsapp', label: 'WhatsApp', icon: Smartphone },
+ { id: 'artes', label: 'Artes', icon: Palette },
+ { id: 'assistente', label: 'Assistente', icon: Bot },
+ { id: 'perfil', label: 'Meu Perfil', icon: UserCircle },
 ]
 
 export default function GestorLayout({
-  children,
-  aba,
-  setAba,
-  nomeGestor,
-  fotoPerfil,
+ children,
+ aba,
+ setAba,
+ nomeGestor,
+ fotoPerfil,
 }: {
-  children: React.ReactNode
-  aba: string
-  setAba: (a: string) => void
-  nomeGestor: string
-  fotoPerfil?: string | null
+ children: React.ReactNode
+ aba: string
+ setAba: (a: string) => void
+ nomeGestor: string
+ fotoPerfil?: string | null
 }) {
-  const [siteNome, setSiteNome] = useState('')
-  const [siteLogoUrl, setSiteLogoUrl] = useState('')
-  const [logoError, setLogoError] = useState(false)
-  const [isMobile, setIsMobile] = useState<boolean | null>(null)
-  const [menuAberto, setMenuAberto] = useState(false)
-  const [colapsada, setColapsada] = useState(false)
+ const [siteNome, setSiteNome] = useState('')
+ const [siteLogoUrl, setSiteLogoUrl] = useState('')
+ const [logoError, setLogoError] = useState(false)
+ const [isMobile, setIsMobile] = useState<boolean | null>(null)
+ const [menuAberto, setMenuAberto] = useState(false)
+ const [colapsada, setColapsada] = useState(false)
 
-  useEffect(() => {
-    fetch('/api/site-config').then(r => r.json()).then(d => {
-      setSiteNome(d.nome)
-      setSiteLogoUrl(d.logoMenuUrl || d.logoUrl || '')
-      setLogoError(false)
-    }).catch(() => {})
-  }, [])
+ useEffect(() => {
+ fetch('/api/site-config').then(r => r.json()).then(d => {
+ setSiteNome(d.nome)
+ setSiteLogoUrl(d.logoMenuUrl || d.logoUrl || '')
+ setLogoError(false)
+ }).catch(() => {})
+ }, [])
 
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
+ useEffect(() => {
+ const check = () => setIsMobile(window.innerWidth < 768)
+ check()
+ window.addEventListener('resize', check)
+ return () => window.removeEventListener('resize', check)
+ }, [])
 
-  async function sair() {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    await supabase.auth.signOut()
-    window.location.href = '/entrar?p=pro'
-  }
+ async function sair() {
+ const supabase = createBrowserClient(
+ process.env.NEXT_PUBLIC_SUPABASE_URL!,
+ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+ )
+ await supabase.auth.signOut()
+ window.location.href = '/entrar?p=pro'
+ }
 
-  function handleNav(id: string) {
-    setAba(id)
-    if (isMobile) setMenuAberto(false)
-  }
+ function handleNav(id: string) {
+ setAba(id)
+ if (isMobile) setMenuAberto(false)
+ }
 
-  const logoMarkup = (small = false) => (
-    <button onClick={() => window.location.reload()}
-      title="Recarregar painel"
-      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}>
-      {siteLogoUrl && !logoError ? (
-        <img src={siteLogoUrl} alt={siteNome} className="logo-site"
-          style={{ maxHeight: small ? 36 : 52, maxWidth: small ? 140 : 180, objectFit: 'contain', display: 'block' }}
-          onError={() => setLogoError(true)} />
-      ) : (
-        <span style={{ fontWeight: 700, fontSize: small ? 16 : 15, color: 'var(--avp-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.01em' }}>
-          {siteNome || 'PRO'}
-        </span>
-      )}
-    </button>
-  )
+ const logoMarkup = (small = false) => (
+ <button onClick={() => window.location.reload()}
+ title="Recarregar painel"
+ style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}>
+ {siteLogoUrl && !logoError ? (
+ <img src={siteLogoUrl} alt={siteNome} className="logo-site"
+ style={{ maxHeight: small ? 36 : 52, maxWidth: small ? 140 : 180, objectFit: 'contain', display: 'block' }}
+ onError={() => setLogoError(true)} />
+ ) : (
+ <span style={{ fontWeight: 700, fontSize: small ? 16 : 15, color: 'var(--avp-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.01em' }}>
+ {siteNome || 'PRO'}
+ </span>
+ )}
+ </button>
+ )
 
-  const audioCtxRef = useRef<AudioContext | null>(null)
-  function playHover() {
-    try {
-      if (!audioCtxRef.current) audioCtxRef.current = new AudioContext()
-      const ctx = audioCtxRef.current
-      if (ctx.state === 'suspended') ctx.resume()
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.type = 'sine'
-      osc.frequency.setValueAtTime(880, ctx.currentTime)
-      osc.frequency.exponentialRampToValueAtTime(550, ctx.currentTime + 0.06)
-      gain.gain.setValueAtTime(0.05, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08)
-      osc.start(ctx.currentTime)
-      osc.stop(ctx.currentTime + 0.08)
-    } catch { /* AudioContext indisponível */ }
-  }
+ const audioCtxRef = useRef<AudioContext | null>(null)
+ function playHover() {
+ try {
+ if (!audioCtxRef.current) audioCtxRef.current = new AudioContext()
+ const ctx = audioCtxRef.current
+ if (ctx.state === 'suspended') ctx.resume()
+ const osc = ctx.createOscillator()
+ const gain = ctx.createGain()
+ osc.connect(gain)
+ gain.connect(ctx.destination)
+ osc.type = 'sine'
+ osc.frequency.setValueAtTime(880, ctx.currentTime)
+ osc.frequency.exponentialRampToValueAtTime(550, ctx.currentTime + 0.06)
+ gain.gain.setValueAtTime(0.05, ctx.currentTime)
+ gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08)
+ osc.start(ctx.currentTime)
+ osc.stop(ctx.currentTime + 0.08)
+ } catch { /* AudioContext indisponível */ }
+ }
 
-  const sidebarW = colapsada ? 56 : 220
-  const hoverCSS = `
-    .pro-nav-item:hover { background: rgba(34,197,94,0.18) !important; color: #4ade80 !important; }
-    .pro-nav-item { transition: background 0.18s, color 0.18s !important; }
-    .pro-nav-active { transition: background 0.18s, color 0.18s !important; }
-  `
+ const sidebarW = colapsada ? 56 : 220
+ const hoverCSS = `
+ .pro-nav-item:hover { background: rgba(34,197,94,0.18) !important; color: #4ade80 !important; }
+ .pro-nav-item { transition: background 0.18s, color 0.18s !important; }
+ .pro-nav-active { transition: background 0.18s, color 0.18s !important; }
+ `
 
-  return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
-      <style>{hoverCSS}</style>
-      <SupportChat painel="PRO" bottomOffset={isMobile ? 84 : 24} />
+ return (
+ <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
+ <style>{hoverCSS}</style>
+ <SupportChat painel="PRO" bottomOffset={isMobile ? 84 : 24} />
 
-      {/* ── Barra superior mobile ── */}
-      {isMobile && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 56, zIndex: 400, background: 'var(--avp-sidebar)', borderBottom: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', padding: '0 14px', gap: 12 }}>
-          <button onClick={() => setMenuAberto(m => !m)}
-            style={{ background: 'none', border: 'none', color: 'var(--avp-text)', cursor: 'pointer', padding: 4 }}>
-            {menuAberto ? <X size={22} /> : <Menu size={22} />}
-          </button>
-          {logoMarkup(true)}
-        </div>
-      )}
+ {/* ── Barra superior mobile ── */}
+ {isMobile && (
+ <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 56, zIndex: 400, background: 'var(--avp-sidebar)', borderBottom: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', padding: '0 14px', gap: 12 }}>
+ <button onClick={() => setMenuAberto(m => !m)}
+ style={{ background: 'none', border: 'none', color: 'var(--avp-text)', cursor: 'pointer', padding: 4 }}>
+ {menuAberto ? <X size={22} /> : <Menu size={22} />}
+ </button>
+ {logoMarkup(true)}
+ </div>
+ )}
 
-      {/* ── Overlay mobile ── */}
-      {isMobile && menuAberto && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 300 }}
-          onClick={() => setMenuAberto(false)} />
-      )}
+ {/* ── Overlay mobile ── */}
+ {isMobile && menuAberto && (
+ <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 300 }}
+ onClick={() => setMenuAberto(false)} />
+ )}
 
-      {/* ── Sidebar ── */}
-      <aside style={{
-        width: isMobile ? 220 : sidebarW,
-        flexShrink: 0,
-        background: 'var(--avp-sidebar)',
-        borderRight: '1px solid var(--avp-border)',
-        display: 'flex', flexDirection: 'column',
-        position: 'fixed', top: 0, bottom: 0, left: 0,
-        zIndex: 350,
-        transform: isMobile ? (menuAberto ? 'translateX(0)' : 'translateX(-100%)') : 'translateX(0)',
-        transition: 'transform 0.25s ease, width 0.2s ease',
-        overflowX: 'hidden',
-        overflowY: 'auto',
-      }}>
-        {/* Logo */}
-        <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: colapsada && !isMobile ? 'center' : 'space-between', padding: colapsada && !isMobile ? '0 12px' : '0 16px 0 20px', borderBottom: '1px solid var(--avp-border)', flexShrink: 0 }}>
-          {(!colapsada || isMobile) && logoMarkup()}
-          {!isMobile && (
-            <button onClick={() => setColapsada(c => !c)}
-              style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', padding: 4, display: 'flex', borderRadius: 6, flexShrink: 0 }}>
-              {colapsada ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-            </button>
-          )}
-        </div>
+ {/* ── Sidebar ── */}
+ <aside style={{
+ width: isMobile ? 220 : sidebarW,
+ flexShrink: 0,
+ background: 'var(--avp-sidebar)',
+ borderRight: '1px solid var(--avp-border)',
+ display: 'flex', flexDirection: 'column',
+ position: 'fixed', top: 0, bottom: 0, left: 0,
+ zIndex: 350,
+ transform: isMobile ? (menuAberto ? 'translateX(0)' : 'translateX(-100%)') : 'translateX(0)',
+ transition: 'transform 0.25s ease, width 0.2s ease',
+ overflowX: 'hidden',
+ overflowY: 'auto',
+ }}>
+ {/* Logo */}
+ <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: colapsada && !isMobile ? 'center' : 'space-between', padding: colapsada && !isMobile ? '0 12px' : '0 16px 0 20px', borderBottom: '1px solid var(--avp-border)', flexShrink: 0 }}>
+ {(!colapsada || isMobile) && logoMarkup()}
+ {!isMobile && (
+ <button onClick={() => setColapsada(c => !c)}
+ style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', padding: 4, display: 'flex', borderRadius: 6, flexShrink: 0 }}>
+ {colapsada ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+ </button>
+ )}
+ </div>
 
-        {/* Perfil do gestor — clicável para abrir aba Perfil */}
-        {(!colapsada || isMobile) && (
-          <button
-            onClick={() => { setAba('perfil'); if (isMobile) setMenuAberto(false) }}
-            style={{ padding: '14px 20px', borderBottom: '1px solid var(--avp-border)', flexShrink: 0, background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' as const }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'linear-gradient(135deg, #22c55e, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, border: '2px solid rgba(74,222,128,0.45)', boxShadow: '0 0 14px rgba(34,197,94,0.35), 0 0 6px rgba(79,70,229,0.25)' }}>
-                {fotoPerfil
-                  ? <img src={fotoPerfil} alt={nomeGestor} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <span style={{ color: '#fff' }}>{nomeGestor.charAt(0).toUpperCase()}</span>
-                }
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <p style={{ fontWeight: 600, fontSize: 13, color: 'var(--avp-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{nomeGestor}</p>
-                <p style={{ fontSize: 11, color: '#818cf8', margin: 0, fontWeight: 600, letterSpacing: '0.04em' }}>UNIAVP PRO</p>
-              </div>
-            </div>
-          </button>
-        )}
+ {/* Perfil do gestor — clicável para abrir aba Perfil */}
+ {(!colapsada || isMobile) && (
+ <button
+ onClick={() => { setAba('perfil'); if (isMobile) setMenuAberto(false) }}
+ style={{ padding: '14px 20px', borderBottom: '1px solid var(--avp-border)', flexShrink: 0, background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' as const }}
+>
+ <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+ <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'linear-gradient(135deg, #22c55e, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, border: '2px solid rgba(74,222,128,0.45)', boxShadow: '0 0 14px rgba(34,197,94,0.35), 0 0 6px rgba(79,70,229,0.25)' }}>
+ {fotoPerfil
+ ? <img src={fotoPerfil} alt={nomeGestor} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+ : <span style={{ color: '#fff' }}>{nomeGestor.charAt(0).toUpperCase()}</span>
+ }
+ </div>
+ <div style={{ minWidth: 0 }}>
+ <p style={{ fontWeight: 600, fontSize: 13, color: 'var(--avp-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{nomeGestor}</p>
+ <p style={{ fontSize: 11, color: '#818cf8', margin: 0, fontWeight: 600, letterSpacing: '0.04em' }}>UNIAVP PRO</p>
+ </div>
+ </div>
+ </button>
+ )}
 
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {navItems.map(item => {
-            const Icon = item.icon
-            const ativo = aba === item.id
-            return (
-              <button key={item.id} onClick={() => handleNav(item.id)}
-                onMouseEnter={() => playHover()}
-                className={ativo ? 'pro-nav-active' : 'pro-nav-item'}
-                title={colapsada && !isMobile ? item.label : undefined}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: colapsada && !isMobile ? 0 : 10,
-                  padding: colapsada && !isMobile ? '10px 0' : '10px 12px',
-                  justifyContent: colapsada && !isMobile ? 'center' : 'flex-start',
-                  borderRadius: 9, cursor: 'pointer',
-                  border: 'none',
-                  color: ativo ? undefined : 'var(--avp-text-dim)',
-                  fontWeight: ativo ? 700 : 400, fontSize: 14,
-                  width: '100%',
-                  transition: 'all 0.18s ease',
-                  background: ativo ? undefined : 'none',
-                }}
-              >
-                <Icon size={18} />
-                {(!colapsada || isMobile) && <span>{item.label}</span>}
-                {/* Badge WhatsApp desconectado */}
-                {item.id === 'whatsapp' && (!colapsada || isMobile) && (
-                  <span style={{ marginLeft: 'auto', fontSize: 10, background: '#25d36620', color: '#25d366', borderRadius: 10, padding: '2px 6px', fontWeight: 600 }}>ZAP</span>
-                )}
-              </button>
-            )
-          })}
-        </nav>
+ {/* Nav */}
+ <nav style={{ flex: 1, padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+ {navItems.map(item => {
+ const Icon = item.icon
+ const ativo = aba === item.id
+ return (
+ <button key={item.id} onClick={() => handleNav(item.id)}
+ onMouseEnter={() => playHover()}
+ className={ativo ? 'pro-nav-active' : 'pro-nav-item'}
+ title={colapsada && !isMobile ? item.label : undefined}
+ style={{
+ display: 'flex', alignItems: 'center', gap: colapsada && !isMobile ? 0 : 10,
+ padding: colapsada && !isMobile ? '10px 0' : '10px 12px',
+ justifyContent: colapsada && !isMobile ? 'center' : 'flex-start',
+ borderRadius: 9, cursor: 'pointer',
+ border: 'none',
+ color: ativo ? undefined : 'var(--avp-text-dim)',
+ fontWeight: ativo ? 700 : 400, fontSize: 14,
+ width: '100%',
+ transition: 'all 0.18s ease',
+ background: ativo ? undefined : 'none',
+ }}
+>
+ <Icon size={18} />
+ {(!colapsada || isMobile) && <span>{item.label}</span>}
+ {/* Badge WhatsApp desconectado */}
+ {item.id === 'whatsapp' && (!colapsada || isMobile) && (
+ <span style={{ marginLeft: 'auto', fontSize: 10, background: '#25d36620', color: '#25d366', borderRadius: 10, padding: '2px 6px', fontWeight: 600 }}>ZAP</span>
+ )}
+ </button>
+ )
+ })}
+ </nav>
 
-        {/* Rodapé */}
-        <div style={{ padding: '12px 8px', borderTop: '1px solid var(--avp-border)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+ {/* Rodapé */}
+ <div style={{ padding: '12px 8px', borderTop: '1px solid var(--avp-border)', display: 'flex', flexDirection: 'column', gap: 4 }}>
 
-          <ThemeToggle collapsed={colapsada && !isMobile} />
+ <ThemeToggle collapsed={colapsada && !isMobile} />
 
-          <button onClick={sair}
-            style={{
-              display: 'flex', alignItems: 'center', gap: colapsada && !isMobile ? 0 : 10,
-              justifyContent: colapsada && !isMobile ? 'center' : 'flex-start',
-              padding: colapsada && !isMobile ? '10px 0' : '10px 12px',
-              borderRadius: 8, cursor: 'pointer', border: 'none',
-              background: 'none', color: 'var(--avp-text-dim)', fontSize: 14, width: '100%',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#e6394615'; e.currentTarget.style.color = 'var(--avp-danger)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--avp-text-dim)' }}>
-            <span style={{ fontSize: 16 }}>⎋</span>
-            {(!colapsada || isMobile) && <span>Sair</span>}
-          </button>
-        </div>
-      </aside>
+ <button onClick={sair}
+ style={{
+ display: 'flex', alignItems: 'center', gap: colapsada && !isMobile ? 0 : 10,
+ justifyContent: colapsada && !isMobile ? 'center' : 'flex-start',
+ padding: colapsada && !isMobile ? '10px 0' : '10px 12px',
+ borderRadius: 8, cursor: 'pointer', border: 'none',
+ background: 'none', color: 'var(--avp-text-dim)', fontSize: 14, width: '100%',
+ }}
+ onMouseEnter={e => { e.currentTarget.style.background = '#e6394615'; e.currentTarget.style.color = 'var(--avp-danger)' }}
+ onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--avp-text-dim)' }}>
+ <span style={{ fontSize: 16 }}>⎋</span>
+ {(!colapsada || isMobile) && <span>Sair</span>}
+ </button>
+ </div>
+ </aside>
 
-      {/* ── Conteúdo ── */}
-      <main style={{
-        flex: 1,
-        marginLeft: isMobile ? 0 : sidebarW,
-        marginTop: isMobile ? 56 : 0,
-        marginBottom: isMobile ? 64 : 0,
-        padding: isMobile ? '16px 12px 24px' : '32px',
-        transition: 'margin-left 0.2s ease',
-        minWidth: 0,
-      }}>
-        {children}
-      </main>
+ {/* ── Conteúdo ── */}
+ <main style={{
+ flex: 1,
+ marginLeft: isMobile ? 0 : sidebarW,
+ marginTop: isMobile ? 56 : 0,
+ marginBottom: isMobile ? 64 : 0,
+ padding: isMobile ? '16px 12px 24px' : '32px',
+ transition: 'margin-left 0.2s ease',
+ minWidth: 0,
+ }}>
+ {children}
+ </main>
 
-      {/* ── Bottom nav mobile ── */}
-      {isMobile && (
-        <nav style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 400,
-          background: 'var(--avp-sidebar)', borderTop: '1px solid var(--avp-border)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-around',
-          height: 60, padding: '0 4px',
-        }}>
-          {navItems.map(item => {
-            const Icon = item.icon
-            const ativo = aba === item.id
-            return (
-              <button key={item.id} onClick={() => handleNav(item.id)}
-                style={{
-                  flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-                  justifyContent: 'center', gap: 3, background: 'none', border: 'none',
-                  cursor: 'pointer', padding: '8px 4px',
-                  color: ativo ? 'var(--avp-green)' : 'var(--avp-text-dim)',
-                }}>
-                <Icon size={20} strokeWidth={ativo ? 2.5 : 1.8} />
-                <span style={{ fontSize: 10, fontWeight: ativo ? 700 : 400, letterSpacing: 0.3 }}>
-                  {item.label}
-                </span>
-              </button>
-            )
-          })}
-          <button onClick={sair}
-            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, background: 'none', border: 'none', cursor: 'pointer', padding: '8px 4px', color: 'var(--avp-text-dim)' }}>
-            <span style={{ fontSize: 18 }}>⎋</span>
-            <span style={{ fontSize: 10 }}>Sair</span>
-          </button>
-        </nav>
-      )}
-    </div>
-  )
+ {/* ── Bottom nav mobile ── */}
+ {isMobile && (
+ <nav style={{
+ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 400,
+ background: 'var(--avp-sidebar)', borderTop: '1px solid var(--avp-border)',
+ display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+ height: 60, padding: '0 4px',
+ }}>
+ {navItems.map(item => {
+ const Icon = item.icon
+ const ativo = aba === item.id
+ return (
+ <button key={item.id} onClick={() => handleNav(item.id)}
+ style={{
+ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+ justifyContent: 'center', gap: 3, background: 'none', border: 'none',
+ cursor: 'pointer', padding: '8px 4px',
+ color: ativo ? 'var(--avp-green)' : 'var(--avp-text-dim)',
+ }}>
+ <Icon size={20} strokeWidth={ativo ? 2.5 : 1.8} />
+ <span style={{ fontSize: 10, fontWeight: ativo ? 700 : 400, letterSpacing: 0.3 }}>
+ {item.label}
+ </span>
+ </button>
+ )
+ })}
+ <button onClick={sair}
+ style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, background: 'none', border: 'none', cursor: 'pointer', padding: '8px 4px', color: 'var(--avp-text-dim)' }}>
+ <span style={{ fontSize: 18 }}>⎋</span>
+ <span style={{ fontSize: 10 }}>Sair</span>
+ </button>
+ </nav>
+ )}
+ </div>
+ )
 }

@@ -10,33 +10,33 @@ export const dynamic = 'force-dynamic'
 import { DOMINIO_MASTER } from '@/lib/constants'
 
 export default async function ConfiguracoesPage() {
-  const headersList = await headers()
-  const host = headersList.get('host')?.replace(/:\d+$/, '') ?? ''
-  const isMaster = host === DOMINIO_MASTER || host === 'localhost'
+ const headersList = await headers()
+ const host = headersList.get('host')?.replace(/:\d+$/, '') ?? ''
+ const isMaster = host === DOMINIO_MASTER || host === 'localhost'
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/entrar?p=adm')
-  const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await adminClient.from('admins').select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (!adminRecord) redirect('/entrar?p=adm')
-  const tid = adminRecord.tenant_id as string | null
+ const supabase = await createClient()
+ const { data: { user } } = await supabase.auth.getUser()
+ if (!user) redirect('/entrar?p=adm')
+ const adminClient = createServiceRoleClient()
+ const { data: adminRecord } = await adminClient.from('admins').select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+ if (!adminRecord) redirect('/entrar?p=adm')
+ const tid = adminRecord.tenant_id as string | null
 
-  let q = adminClient.from('configuracoes').select('chave, valor, descricao').order('chave')
-  if (tid) q = q.eq('tenant_id', tid)
-  const { data: rawConfigs } = await q
-  const configs = (rawConfigs ?? []).map(c => ({ ...c, valor: c.valor != null ? String(c.valor) : null }))
+ let q = adminClient.from('configuracoes').select('chave, valor, descricao').order('chave')
+ if (tid) q = q.eq('tenant_id', tid)
+ const { data: rawConfigs } = await q
+ const configs = (rawConfigs ?? []).map(c => ({ ...c, valor: c.valor != null ? String(c.valor) : null }))
 
-  return (
-    <AdminLayout>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Configurações</h1>
-        <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Configurações da plataforma</p>
-      </div>
-      <ConfiguracoesCliente configs={configs ?? []} isMaster={isMaster} />
-      <div style={{ marginTop: 24 }}>
-        <WhatsAppConectar />
-      </div>
-    </AdminLayout>
-  )
+ return (
+ <AdminLayout>
+ <div style={{ marginBottom: 24 }}>
+ <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Configurações</h1>
+ <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Configurações da plataforma</p>
+ </div>
+ <ConfiguracoesCliente configs={configs ?? []} isMaster={isMaster} />
+ <div style={{ marginTop: 24 }}>
+ <WhatsAppConectar />
+ </div>
+ </AdminLayout>
+ )
 }

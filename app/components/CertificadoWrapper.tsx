@@ -4,116 +4,116 @@ import CertificadoPopup from './CertificadoPopup'
 import CarteiraPopup from './CarteiraPopup'
 
 type Props = {
-  nomeAluno: string
-  templateUrl: string
-  whatsapp?: string
-  numRegistro?: string
-  nomeY?: number
-  nomeFontePct?: number
-  nomeCor?: string
-  nomeEstilo?: string
-  logoEsquerdaUrl?: string | null
-  logoDireitaUrl?: string | null
-  logoY?: number
-  logoTamPct?: number
-  assinaturaUrl?: string | null
-  assinaturaNome?: string
-  assinaturaCargo?: string
-  assinaturaY?: number
-  chaveStorage?: string
-  semCarteira?: boolean
+ nomeAluno: string
+ templateUrl: string
+ whatsapp?: string
+ numRegistro?: string
+ nomeY?: number
+ nomeFontePct?: number
+ nomeCor?: string
+ nomeEstilo?: string
+ logoEsquerdaUrl?: string | null
+ logoDireitaUrl?: string | null
+ logoY?: number
+ logoTamPct?: number
+ assinaturaUrl?: string | null
+ assinaturaNome?: string
+ assinaturaCargo?: string
+ assinaturaY?: number
+ chaveStorage?: string
+ semCarteira?: boolean
 }
 
 type Etapa = 'certificado' | 'carteira' | 'fechado'
 
 function jaViu(chave: string) {
-  try { return !!localStorage.getItem(`cert_visto_${chave}`) } catch { return false }
+ try { return !!localStorage.getItem(`cert_visto_${chave}`) } catch { return false }
 }
 
 function marcarVisto(chave: string) {
-  try { localStorage.setItem(`cert_visto_${chave}`, '1') } catch { /* */ }
+ try { localStorage.setItem(`cert_visto_${chave}`, '1') } catch { /* */ }
 }
 
 export default function CertificadoWrapper({ nomeAluno, templateUrl, whatsapp, numRegistro, nomeY, nomeFontePct, nomeCor, nomeEstilo, logoEsquerdaUrl, logoDireitaUrl, logoY, logoTamPct, assinaturaUrl, assinaturaNome, assinaturaCargo, assinaturaY, chaveStorage, semCarteira }: Props) {
-  const chave = chaveStorage ?? whatsapp ?? 'aluno'
-  // Começa sempre 'fechado' no servidor — ajusta no useEffect para evitar hydration mismatch
-  const [etapa, setEtapa] = useState<Etapa>('fechado')
+ const chave = chaveStorage ?? whatsapp ?? 'aluno'
+ // Começa sempre 'fechado' no servidor — ajusta no useEffect para evitar hydration mismatch
+ const [etapa, setEtapa] = useState<Etapa>('fechado')
 
-  useEffect(() => {
-    // Verifica localStorage apenas na montagem — chave não muda entre renders
-    if (!jaViu(chave)) setEtapa('certificado')
-  }, [chave])
+ useEffect(() => {
+ // Verifica localStorage apenas na montagem — chave não muda entre renders
+ if (!jaViu(chave)) setEtapa('certificado')
+ }, [chave])
 
-  useEffect(() => {
-    if (etapa !== 'certificado') return
-    try {
-      const ctx = new AudioContext()
-      // Gera 3 segundos de ruído branco suave (simulação de palmas)
-      function palma(quando: number) {
-        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.18, ctx.sampleRate)
-        const data = buf.getChannelData(0)
-        for (let i = 0; i < data.length; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 1.5)
-        }
-        const src = ctx.createBufferSource()
-        src.buffer = buf
-        const gain = ctx.createGain()
-        gain.gain.setValueAtTime(0.35, quando)
-        gain.gain.exponentialRampToValueAtTime(0.001, quando + 0.18)
-        src.connect(gain)
-        gain.connect(ctx.destination)
-        src.start(quando)
-      }
-      // Sequência rítmica de palmas
-      const batidas = [0, 0.22, 0.44, 0.62, 0.80, 0.95, 1.10, 1.22, 1.34, 1.44, 1.54, 1.63, 1.72, 1.80, 1.87]
-      batidas.forEach(t => palma(ctx.currentTime + t))
-    } catch { /* AudioContext não disponível */ }
-  }, [etapa])
+ useEffect(() => {
+ if (etapa !== 'certificado') return
+ try {
+ const ctx = new AudioContext()
+ // Gera 3 segundos de ruído branco suave (simulação de palmas)
+ function palma(quando: number) {
+ const buf = ctx.createBuffer(1, ctx.sampleRate * 0.18, ctx.sampleRate)
+ const data = buf.getChannelData(0)
+ for (let i = 0; i < data.length; i++) {
+ data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 1.5)
+ }
+ const src = ctx.createBufferSource()
+ src.buffer = buf
+ const gain = ctx.createGain()
+ gain.gain.setValueAtTime(0.35, quando)
+ gain.gain.exponentialRampToValueAtTime(0.001, quando + 0.18)
+ src.connect(gain)
+ gain.connect(ctx.destination)
+ src.start(quando)
+ }
+ // Sequência rítmica de palmas
+ const batidas = [0, 0.22, 0.44, 0.62, 0.80, 0.95, 1.10, 1.22, 1.34, 1.44, 1.54, 1.63, 1.72, 1.80, 1.87]
+ batidas.forEach(t => palma(ctx.currentTime + t))
+ } catch { /* AudioContext não disponível */ }
+ }, [etapa])
 
-  function fecharTudo() {
-    marcarVisto(chave)
-    setEtapa('fechado')
-  }
+ function fecharTudo() {
+ marcarVisto(chave)
+ setEtapa('fechado')
+ }
 
-  function irParaCarteira() {
-    setEtapa('carteira')
-  }
+ function irParaCarteira() {
+ setEtapa('carteira')
+ }
 
-  if (etapa === 'fechado') return null
+ if (etapa === 'fechado') return null
 
-  if (etapa === 'certificado') {
-    return (
-      <CertificadoPopup
-        nomeAluno={nomeAluno}
-        templateUrl={templateUrl}
-        nomeY={nomeY}
-        nomeFontePct={nomeFontePct}
-        nomeCor={nomeCor}
-        nomeEstilo={nomeEstilo as any}
-        logoEsquerdaUrl={logoEsquerdaUrl}
-        logoDireitaUrl={logoDireitaUrl}
-        logoY={logoY}
-        logoTamPct={logoTamPct}
-        assinaturaUrl={assinaturaUrl}
-        assinaturaNome={assinaturaNome}
-        assinaturaCargo={assinaturaCargo}
-        assinaturaY={assinaturaY}
-        onClose={fecharTudo}
-        onVerCarteira={!semCarteira && whatsapp && numRegistro ? irParaCarteira : undefined}
-      />
-    )
-  }
+ if (etapa === 'certificado') {
+ return (
+ <CertificadoPopup
+ nomeAluno={nomeAluno}
+ templateUrl={templateUrl}
+ nomeY={nomeY}
+ nomeFontePct={nomeFontePct}
+ nomeCor={nomeCor}
+ nomeEstilo={nomeEstilo as any}
+ logoEsquerdaUrl={logoEsquerdaUrl}
+ logoDireitaUrl={logoDireitaUrl}
+ logoY={logoY}
+ logoTamPct={logoTamPct}
+ assinaturaUrl={assinaturaUrl}
+ assinaturaNome={assinaturaNome}
+ assinaturaCargo={assinaturaCargo}
+ assinaturaY={assinaturaY}
+ onClose={fecharTudo}
+ onVerCarteira={!semCarteira && whatsapp && numRegistro ? irParaCarteira : undefined}
+ />
+ )
+ }
 
-  if (etapa === 'carteira' && whatsapp && numRegistro) {
-    return (
-      <CarteiraPopup
-        nomeAluno={nomeAluno}
-        numRegistro={numRegistro}
-        whatsapp={whatsapp}
-        onClose={fecharTudo}
-      />
-    )
-  }
+ if (etapa === 'carteira' && whatsapp && numRegistro) {
+ return (
+ <CarteiraPopup
+ nomeAluno={nomeAluno}
+ numRegistro={numRegistro}
+ whatsapp={whatsapp}
+ onClose={fecharTudo}
+ />
+ )
+ }
 
-  return null
+ return null
 }

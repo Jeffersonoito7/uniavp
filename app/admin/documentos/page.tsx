@@ -4,21 +4,21 @@ import AdminLayout from '../AdminLayout'
 import DocumentosCliente from './DocumentosCliente'
 
 export default async function DocumentosPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/entrar?p=adm')
-  const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await adminClient.from('admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (!adminRecord) redirect('/entrar?p=adm')
+ const supabase = await createClient()
+ const { data: { user } } = await supabase.auth.getUser()
+ if (!user) redirect('/entrar?p=adm')
+ const adminClient = createServiceRoleClient()
+ const { data: adminRecord } = await adminClient.from('admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+ if (!adminRecord) redirect('/entrar?p=adm')
 
-  const { data: documentos } = await adminClient.from('documentos_painel')
-    .select('*')
-    .order('ordem', { ascending: true })
-    .order('created_at', { ascending: false })
+ const { data: documentos } = await adminClient.from('documentos_painel')
+ .select('*')
+ .order('ordem', { ascending: true })
+ .order('created_at', { ascending: false })
 
-  return (
-    <AdminLayout>
-      <DocumentosCliente documentosIniciais={documentos ?? []} />
-    </AdminLayout>
-  )
+ return (
+ <AdminLayout>
+ <DocumentosCliente documentosIniciais={documentos ?? []} />
+ </AdminLayout>
+ )
 }

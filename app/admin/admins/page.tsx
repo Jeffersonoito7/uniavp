@@ -4,21 +4,21 @@ import AdminLayout from '../AdminLayout'
 import AdminsCliente from './AdminsCliente'
 
 export default async function AdminsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/entrar?p=adm')
+ const supabase = await createClient()
+ const { data: { user } } = await supabase.auth.getUser()
+ if (!user) redirect('/entrar?p=adm')
 
-  const adminClient = createServiceRoleClient()
-  const { data: adminRecord } = await adminClient.from('admins')
-    .select('id, role').eq('user_id', user.id).eq('ativo', true).maybeSingle()
-  if (!adminRecord) redirect('/entrar?p=adm')
+ const adminClient = createServiceRoleClient()
+ const { data: adminRecord } = await adminClient.from('admins')
+ .select('id, role').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+ if (!adminRecord) redirect('/entrar?p=adm')
 
-  const { data: admins } = await adminClient.from('admins')
-    .select('id, nome, email, role, ativo, created_at, user_id').order('created_at')
+ const { data: admins } = await adminClient.from('admins')
+ .select('id, nome, email, role, ativo, created_at, user_id').order('created_at')
 
-  return (
-    <AdminLayout>
-      <AdminsCliente adminsIniciais={admins ?? []} meuUserId={user.id} />
-    </AdminLayout>
-  )
+ return (
+ <AdminLayout>
+ <AdminsCliente adminsIniciais={admins ?? []} meuUserId={user.id} />
+ </AdminLayout>
+ )
 }

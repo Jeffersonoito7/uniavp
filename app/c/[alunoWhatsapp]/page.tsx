@@ -7,65 +7,65 @@ import FunilCaptacao from '@/app/components/FunilCaptacao'
 import { redirect } from 'next/navigation'
 
 function extrairIdYoutube(valor?: string | null): string | null {
-  if (!valor) return null
-  const v = String(valor).replace(/"/g, '').trim()
-  if (!v) return null
-  const match = v.match(/(?:v=|\/embed\/|youtu\.be\/|\/shorts\/)([a-zA-Z0-9_-]{11})/)
-  if (match) return match[1]
-  if (/^[a-zA-Z0-9_-]{11}$/.test(v)) return v
-  const fallback = v.match(/[a-zA-Z0-9_-]{11}/)
-  return fallback ? fallback[0] : null
+ if (!valor) return null
+ const v = String(valor).replace(/"/g, '').trim()
+ if (!v) return null
+ const match = v.match(/(?:v=|\/embed\/|youtu\.be\/|\/shorts\/)([a-zA-Z0-9_-]{11})/)
+ if (match) return match[1]
+ if (/^[a-zA-Z0-9_-]{11}$/.test(v)) return v
+ const fallback = v.match(/[a-zA-Z0-9_-]{11}/)
+ return fallback ? fallback[0] : null
 }
 
 export default async function FreeCaptacaoPage({
-  params,
-  searchParams,
+ params,
+ searchParams,
 }: {
-  params: { alunoWhatsapp: string }
-  searchParams?: { direto?: string; plano?: string }
+ params: { alunoWhatsapp: string }
+ searchParams?: { direto?: string; plano?: string }
 }) {
-  const host = (await headers()).get('host') ?? ''
-  const adminClient = createServiceRoleClient()
-  const config = await getSiteConfig(host)
+ const host = (await headers()).get('host') ?? ''
+ const adminClient = createServiceRoleClient()
+ const config = await getSiteConfig(host)
 
-  const { data: tenantRow } = await adminClient.from('tenant_domains')
-    .select('tenant_id').eq('domain', host.replace(/:\d+$/, '')).maybeSingle()
-  const tenantId = tenantRow?.tenant_id as string | null
+ const { data: tenantRow } = await adminClient.from('tenant_domains')
+ .select('tenant_id').eq('domain', host.replace(/:\d+$/, '')).maybeSingle()
+ const tenantId = tenantRow?.tenant_id as string | null
 
-  const tq = (q: any) => tenantId ? q.eq('tenant_id', tenantId) : q
+ const tq = (q: any) => tenantId ? q.eq('tenant_id', tenantId) : q
 
-  const { data: aluno } = await adminClient.from('alunos')
-    .select('nome, whatsapp, link_externo')
-    .eq('whatsapp', params.alunoWhatsapp)
-    .maybeSingle()
+ const { data: aluno } = await adminClient.from('alunos')
+ .select('nome, whatsapp, link_externo')
+ .eq('whatsapp', params.alunoWhatsapp)
+ .maybeSingle()
 
-  if (!aluno) redirect('/captacao')
+ if (!aluno) redirect('/captacao')
 
-  const { data: videoConfig } = await tq(adminClient.from('configuracoes')
-    .select('valor').eq('chave', 'captacao_video_id')).maybeSingle()
+ const { data: videoConfig } = await tq(adminClient.from('configuracoes')
+ .select('valor').eq('chave', 'captacao_video_id')).maybeSingle()
 
-  const { data: bloquearConfig } = await tq(adminClient.from('configuracoes')
-    .select('valor').eq('chave', 'free_bloquear_video')).maybeSingle()
-  const bloquearVideo = bloquearConfig?.valor !== 'false'
+ const { data: bloquearConfig } = await tq(adminClient.from('configuracoes')
+ .select('valor').eq('chave', 'free_bloquear_video')).maybeSingle()
+ const bloquearVideo = bloquearConfig?.valor !== 'false'
 
-  const valorRaw = videoConfig?.valor
-  const valorStr = typeof valorRaw === 'string' ? valorRaw : JSON.stringify(valorRaw ?? '')
-  const videoId = extrairIdYoutube(valorStr)
-  const direto = searchParams?.direto === '1'
-  const plano = searchParams?.plano === 'pro' ? 'pro' : undefined
+ const valorRaw = videoConfig?.valor
+ const valorStr = typeof valorRaw === 'string' ? valorRaw : JSON.stringify(valorRaw ?? '')
+ const videoId = extrairIdYoutube(valorStr)
+ const direto = searchParams?.direto === '1'
+ const plano = searchParams?.plano === 'pro' ? 'pro' : undefined
 
-  return (
-    <FunilCaptacao
-      gestorNome={aluno.nome}
-      siteNome={config.nome}
-      logoUrl={config.logoPaginaUrl || config.logoUrl}
-      corFundo={config.corFundo}
-      videoId={videoId}
-      direto={direto}
-      indicadorWhatsapp={aluno.whatsapp}
-      plano={plano}
-      linkExterno={aluno.link_externo ?? undefined}
-      bloquearVideo={bloquearVideo}
-    />
-  )
+ return (
+ <FunilCaptacao
+ gestorNome={aluno.nome}
+ siteNome={config.nome}
+ logoUrl={config.logoPaginaUrl || config.logoUrl}
+ corFundo={config.corFundo}
+ videoId={videoId}
+ direto={direto}
+ indicadorWhatsapp={aluno.whatsapp}
+ plano={plano}
+ linkExterno={aluno.link_externo ?? undefined}
+ bloquearVideo={bloquearVideo}
+ />
+ )
 }
