@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import { HelpCircle, AlertTriangle, CheckCircle2, ChevronUp, ChevronDown } from 'lucide-react'
 
 type Alternativa = { texto: string; correta: boolean }
 type Questao = { id: string; enunciado: string; alternativas: Alternativa[]; explicacao: string | null; ordem: number }
@@ -201,7 +202,7 @@ export default function QuestoesAula({
  <div style={{ marginTop: 14 }}>
  {semQuestoes && !aberto && (
  <div style={{ background: '#f59e0b15', border: '1px solid #f59e0b50', borderRadius: 8, padding: '10px 14px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
- <span style={{ fontSize: 18 }}></span>
+ <AlertTriangle size={18} color="#f59e0b" />
  <div style={{ flex: 1 }}>
  <p style={{ fontWeight: 700, fontSize: 13, color: '#f59e0b', marginBottom: 2 }}>Quiz sem perguntas</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>Esta aula não tem questões. O aluno não conseguirá concluí-la.</p>
@@ -218,7 +219,12 @@ export default function QuestoesAula({
  fontSize: 13, cursor: 'pointer', fontWeight: 700,
  display: 'flex', alignItems: 'center', gap: 8, width: '100%',
  }}>
- <span>{semQuestoes ? '' : tipoAtual?.id === 'sim_nao' ? '' : ''}</span>
+ {semQuestoes
+ ? <AlertTriangle size={15} />
+ : tipoAtual?.id === 'sim_nao'
+ ? <HelpCircle size={15} />
+ : <CheckCircle2 size={15} />
+ }
  <span style={{ flex: 1, textAlign: 'left' }}>
  {semQuestoes
  ? 'Clique aqui para configurar o quiz'
@@ -227,7 +233,7 @@ export default function QuestoesAula({
  : `Quiz: ${questoes.length} questão${questoes.length !== 1 ? 'ões' : ''} · Aprovação mínima: ${aprovacaoMinima}%`
  }
  </span>
- <span style={{ fontSize: 12, opacity: 0.7 }}>{aberto ? '▲ fechar' : '▼ abrir'}</span>
+ {aberto ? <ChevronUp size={14} style={{ opacity: 0.6 }} /> : <ChevronDown size={14} style={{ opacity: 0.6 }} />}
  </button>
 
  {aberto && (
