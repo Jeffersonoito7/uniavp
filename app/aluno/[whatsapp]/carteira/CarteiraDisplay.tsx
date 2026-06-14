@@ -14,7 +14,7 @@ type Props = {
  fotoUrl: string | null
  dataFormacao: string
  validade: string
- cargaHoraria: string
+ cpf: string
  turma: string
  whatsapp: string
  status: string
@@ -42,7 +42,7 @@ function Field({ label, value, flex, labelColor = '#1A7A50' }: { label: string; 
 }
 
 export default function CarteiraDisplay({
- nome, numRegistro, fotoUrl: fotoInicial, dataFormacao, validade, cargaHoraria, turma,
+ nome, numRegistro, fotoUrl: fotoInicial, dataFormacao, validade, cpf, turma,
  whatsapp, status, empresaNome = 'UNIVERSIDADE', empresaLogoUrl,
  logoEsquerdaUrl, logoDireitaUrl, assinaturaNome = 'Presidente', assinaturaCargo = 'PRESIDENTE',
  assinaturaEmpresa, assinaturaUrl, urlVerificacao = '', tagline = '', corPrimaria, corSecundaria,
@@ -190,7 +190,10 @@ export default function CarteiraDisplay({
  <Field label="Validade" value={validade} flex labelColor={GREEN_LABEL} />
  </div>
  <Field label="Curso de Formação" value={`Formação de Consultor ${empresaNome}`} labelColor={GREEN_LABEL} />
- <Field label="Turma" value={turma} labelColor={GREEN_LABEL} />
+ <div style={{ display: 'flex', gap: 10 }}>
+ <Field label="CPF" value={cpf} flex labelColor={GREEN_LABEL} />
+ <Field label="Turma" value={turma} flex labelColor={GREEN_LABEL} />
+ </div>
  </div>
  </div>
 

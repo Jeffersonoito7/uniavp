@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
+import { getTenantId } from '@/lib/tenant'
 import CarteiraDisplay from './CarteiraDisplay'
 
 export default async function CarteiraPage({ params }: { params: { whatsapp: string } }) {
@@ -11,7 +12,7 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
 
  const adminClient = createServiceRoleClient()
  const { data: aluno } = await adminClient.from('alunos')
- .select('id, nome, whatsapp, status, numero_registro, foto_perfil, data_formacao')
+ .select('id, nome, whatsapp, cpf, status, numero_registro, foto_perfil, data_formacao')
  .eq('user_id', user.id)
  .maybeSingle()
 
@@ -35,16 +36,21 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
  const turma = String(baseDate.getFullYear())
 
  const numRegistro = String(aluno.numero_registro ?? 1001).padStart(6, '0')
+ const cpfRaw = aluno.cpf?.replace(/\D/g, '') ?? ''
+ const cpf = cpfRaw.length === 11
+ ? `${cpfRaw.slice(0,3)}.${cpfRaw.slice(3,6)}.${cpfRaw.slice(6,9)}-${cpfRaw.slice(9)}`
+ : cpfRaw || '—'
 
  // Configurações da carteira
  const hdrs = await headers()
  const host = hdrs.get('host') || ''
- const siteConfig = await getSiteConfig(host)
+ const [siteConfig, tenantId] = await Promise.all([getSiteConfig(host), getTenantId(host)])
  const baseUrl = siteConfig.dominioCustomizado ? `https://${siteConfig.dominioCustomizado}` : `https://${host}`
 
- const { data: cfgRows } = await adminClient.from('configuracoes')
- .select('chave, valor')
- .in('chave', ['site_nome', 'site_logo_url', 'site_cor_primaria', 'site_cor_secundaria', 'carteira_assinatura_nome', 'carteira_assinatura_cargo', 'carteira_assinatura_empresa', 'carteira_url_verificacao', 'carteira_tagline', 'carteira_logo_esquerda', 'carteira_logo_direita', 'carteira_assinatura_url'])
+ const cfgQuery = adminClient.from('configuracoes')
+   .select('chave, valor')
+   .in('chave', ['site_nome', 'site_logo_url', 'site_cor_primaria', 'site_cor_secundaria', 'carteira_assinatura_nome', 'carteira_assinatura_cargo', 'carteira_assinatura_empresa', 'carteira_url_verificacao', 'carteira_tagline', 'carteira_logo_esquerda', 'carteira_logo_direita', 'carteira_assinatura_url'])
+ const { data: cfgRows } = await (tenantId ? cfgQuery.eq('tenant_id', tenantId) : cfgQuery)
  const cfg: Record<string, string> = {}
  for (const r of cfgRows ?? []) { try { cfg[r.chave] = JSON.parse(String(r.valor)) } catch { cfg[r.chave] = String(r.valor) } }
 
@@ -55,7 +61,7 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
  fotoUrl={aluno.foto_perfil ?? null}
  dataFormacao={dataFormacao}
  validade={validade}
- cargaHoraria={cargaHoraria}
+ cpf={cpf}
  turma={turma}
  whatsapp={aluno.whatsapp}
  status={aluno.status}
