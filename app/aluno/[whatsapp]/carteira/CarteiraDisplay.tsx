@@ -190,10 +190,7 @@ export default function CarteiraDisplay({
  <Field label="Validade" value={validade} flex labelColor={GREEN_LABEL} />
  </div>
  <Field label="Curso de Formação" value={`Formação de Consultor ${empresaNome}`} labelColor={GREEN_LABEL} />
- <div style={{ display: 'flex', gap: 10 }}>
- <Field label="Carga Horária" value={cargaHoraria} flex labelColor={GREEN_LABEL} />
- <Field label="Turma" value={turma} flex labelColor={GREEN_LABEL} />
- </div>
+ <Field label="Turma" value={turma} labelColor={GREEN_LABEL} />
  </div>
  </div>
 
