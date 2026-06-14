@@ -14,6 +14,7 @@ import SetupInicial from '@/app/components/SetupInicial'
 import AlunoHeader from './AlunoHeader'
 import AlunoStats from './AlunoStats'
 import ModulosGrid from './ModulosGrid'
+import LinkParceiroCard from './LinkParceiroCard'
 import AulasDoModulo from './AulasDoModulo'
 import type { TrilhaItem, ModuloComAulas } from './types'
 
@@ -54,7 +55,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  'contrato_habilitado', 'contrato_momento', 'carteira_quando', 'carteira_percentual_minimo',
  'passos_painel_habilitado',
  'captacao_mostrar_parceiro', 'captacao_bloquear_parceiro', 'captacao_parceiro_titulo',
- 'captacao_link_externo',
+ 'captacao_link_externo', 'free_pode_configurar_link',
  'captacao_mostrar_app', 'captacao_bloquear_app',
  'app_ios_url', 'app_android_url',
  ])
@@ -65,6 +66,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  const carteiraQuando = certMap['carteira_quando'] || 'concluido'
  const carteiraPercentualMinimo = parseInt(certMap['carteira_percentual_minimo'] || '50') || 50
  const passosPainelHabilitado = certMap['passos_painel_habilitado'] === 'true'
+ const freePodeCfgLink = certMap['free_pode_configurar_link'] !== 'false'
  const setupMostrarParceiro = certMap['captacao_mostrar_parceiro'] === 'true'
  const setupBloquearParceiro = certMap['captacao_bloquear_parceiro'] === 'true'
  const setupParceiroTitulo = certMap['captacao_parceiro_titulo'] || undefined
@@ -186,11 +188,15 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  .eq('whatsapp', aluno.whatsapp)
  .eq('tipo', 'consultor')
  .maybeSingle()
- const { count: totalIndicadosReal } = meuIndicador
- ? await adminClient.from('alunos')
- .select('id', { count: 'exact', head: true })
- .eq('indicador_id', meuIndicador.id)
- : { count: 0 }
+ const [{ count: totalIndicadosReal }, { data: ultimosIndicadosRows }] = await Promise.all([
+ meuIndicador
+ ? adminClient.from('alunos').select('id', { count: 'exact', head: true }).eq('indicador_id', meuIndicador.id)
+ : Promise.resolve({ count: 0, data: null, error: null }),
+ meuIndicador
+ ? adminClient.from('alunos').select('nome, created_at').eq('indicador_id', meuIndicador.id).order('created_at', { ascending: false }).limit(5)
+ : Promise.resolve({ data: null, count: null, error: null }),
+ ])
+ const ultimosIndicados = (ultimosIndicadosRows ?? []).map((r: { nome: string; created_at: string }) => ({ nome: r.nome, criado_em: r.created_at }))
 
  const nivel = calcularNivel(totalPontos)
  const progressoPct = nivel.prox ? Math.round(((nivel.atual - nivel.min) / (nivel.max - nivel.min)) * 100) : 100
@@ -284,7 +290,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  Olá, <span style={{ background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{aluno.nome.split(' ')[0]}</span>! 
  </h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>
- Continue sua jornada de formação em {siteConfig.nome}.
+ Bem-vindo à {siteConfig.nome}.
  </p>
  </div>
 
@@ -320,6 +326,9 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  medalhas={medalhas}
  mostrarCarteira={mostrarCarteira}
  />
+
+ {/* ── LINK PARCEIRO ── */}
+ <LinkParceiroCard alunoId={aluno.id} linkAtual={aluno.link_externo ?? null} />
 
  {/* ── AULAS AO VIVO ── */}
  {(aulasVivo ?? []).length> 0 && (
@@ -450,6 +459,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  <IndicacaoCard
  link={`${baseUrl}/c/${aluno.whatsapp}`}
  totalIndicados={totalIndicadosReal ?? 0}
+ ultimosIndicados={ultimosIndicados}
  />
  )}
 

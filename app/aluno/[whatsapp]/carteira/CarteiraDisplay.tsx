@@ -83,7 +83,7 @@ export default function CarteiraDisplay({
  }
 
  const CardFrente = () => (
- <div style={{ width: W, height: H, overflow: 'hidden', fontFamily: '"Arial","Helvetica",sans-serif', display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
+ <div className="card-face" style={{ width: W, height: H, overflow: 'hidden', fontFamily: '"Arial","Helvetica",sans-serif', display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
 
  {/* Cabeçalho */}
  <div className="carteira-navy" style={{ background: NAVY, height: 70, display: 'flex', alignItems: 'center', padding: '0 18px', gap: 12, flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
@@ -224,7 +224,7 @@ export default function CarteiraDisplay({
  )
 
  const CardVerso = () => (
- <div style={{ width: W, height: H, overflow: 'hidden', fontFamily: '"Arial","Helvetica",sans-serif', display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
+ <div className="card-face" style={{ width: W, height: H, overflow: 'hidden', fontFamily: '"Arial","Helvetica",sans-serif', display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
 
  {/* Cabeçalho */}
  <div className="carteira-navy" style={{ background: NAVY, height: 70, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
@@ -307,21 +307,67 @@ export default function CarteiraDisplay({
  )}
  <div className="print-container" style={{ minHeight: '100dvh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
  <style>{`
- @media print {
- @page { size: A4 landscape; margin: 10mm; }
- *, *::before, *::after {
- -webkit-print-color-adjust: exact !important;
- print-color-adjust: exact !important;
- color-adjust: exact !important;
- forced-color-adjust: none !important;
+ /* linear-gradient trick: garante impressão colorida mesmo com "gráficos de fundo" desativado */
+ .carteira-navy {
+   background: linear-gradient(${NAVY}, ${NAVY}) !important;
+   -webkit-print-color-adjust: exact;
+   print-color-adjust: exact;
  }
- html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
- .no-print { display: none !important; }
- .print-container { background: #fff !important; min-height: 0 !important; color: #000 !important; }
- .print-area { padding: 0 !important; max-width: 100% !important; display: flex !important; flex-direction: column !important; align-items: center !important; gap: 10mm !important; }
- .card-wrapper { page-break-inside: avoid !important; break-inside: avoid !important; }
- .carteira-navy { background-color: ${NAVY} !important; }
- .carteira-green { background-color: ${GREEN} !important; }
+ .carteira-green {
+   background: linear-gradient(${GREEN}, ${GREEN}) !important;
+   -webkit-print-color-adjust: exact;
+   print-color-adjust: exact;
+ }
+ @media print {
+   /* Página A4 landscape — 2 cartões lado a lado, cada um exatamente 8,5cm × 5,4cm */
+   @page { size: A4 landscape; margin: 12mm; }
+   *, *::before, *::after {
+     -webkit-print-color-adjust: exact !important;
+     print-color-adjust: exact !important;
+     color-adjust: exact !important;
+     forced-color-adjust: none !important;
+   }
+   html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+   .no-print { display: none !important; }
+   .print-container { background: #fff !important; min-height: 0 !important; color: #000 !important; padding: 0 !important; }
+   .print-area {
+     display: flex !important;
+     flex-direction: row !important;
+     align-items: center !important;
+     justify-content: center !important;
+     gap: 14mm !important;
+     padding: 0 !important;
+     margin: 0 auto !important;
+     width: 100% !important;
+     max-width: none !important;
+     height: calc(210mm - 24mm) !important;
+   }
+   .card-wrapper {
+     display: flex !important;
+     flex-direction: column !important;
+     align-items: center !important;
+     page-break-inside: avoid !important;
+     break-inside: avoid !important;
+   }
+   /* zoom 0.521 → 620px × 0.521 = 323px = 85,5mm | 390px × 0.521 = 203px = 53,9mm */
+   .card-face {
+     zoom: 0.521 !important;
+     box-shadow: none !important;
+     border-radius: 6px !important;
+     outline: 1px dashed #aaa !important;
+     outline-offset: 2mm !important;
+   }
+   .card-label {
+     display: block !important;
+     font-size: 7pt !important;
+     font-weight: 700 !important;
+     color: #999 !important;
+     letter-spacing: 2px !important;
+     text-transform: uppercase !important;
+     text-align: center !important;
+     margin-bottom: 2mm !important;
+     font-family: Arial, sans-serif !important;
+   }
  }
  `}</style>
 
@@ -359,11 +405,11 @@ export default function CarteiraDisplay({
 
  <div className="print-area" style={{ maxWidth: 700, margin: '0 auto', padding: '0 24px 60px', display: 'flex', flexDirection: 'column', gap: 32, alignItems: 'center' }}>
  <div className="card-wrapper">
- <p className="no-print" style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 10, textAlign: 'center' as const }}>FRENTE</p>
+ <p className="card-label" style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 10, textAlign: 'center' as const }}>FRENTE</p>
  <CardFrente />
  </div>
  <div className="card-wrapper">
- <p className="no-print" style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 10, textAlign: 'center' as const }}>VERSO</p>
+ <p className="card-label" style={{ color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 10, textAlign: 'center' as const }}>VERSO</p>
  <CardVerso />
  </div>
  </div>
