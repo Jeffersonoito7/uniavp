@@ -16,7 +16,10 @@ export async function GET() {
   }
 
   const nome = map['site_nome'] || 'UNIAVP'
-  const nomeAbrev = nome.length > 12 ? nome.split(' ').map((w: string) => w[0]).join('') : nome
+  const palavras = nome.split(' ').filter((w: string) => w.length > 0)
+  const nomeAbrev = nome.length <= 12
+    ? nome
+    : (palavras[0].slice(0, 3).toUpperCase() + palavras.slice(1).join('')).slice(0, 12)
   const corPrimaria = map['site_cor_primaria'] || '#02A153'
   const corFundo = '#08090d'
   const icone = map['logo_favicon_url'] || map['site_logo_url'] || '/logo.png'
