@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { HelpCircle, XCircle } from 'lucide-react'
 
 type Pergunta = {
  texto: string
@@ -18,10 +19,11 @@ const PERGUNTAS: Pergunta[] = [
 
 interface Props {
  gestorNome?: string
+ siteNome?: string
  onAprovado: () => void
 }
 
-export default function QualificacaoStep({ gestorNome, onAprovado }: Props) {
+export default function QualificacaoStep({ gestorNome, siteNome, onAprovado }: Props) {
  const [etapa, setEtapa] = useState<'intro' | 'perguntas' | 'reprovado'>('intro')
  const [perguntaIdx, setPerguntaIdx] = useState(0)
  const [selecionado, setSelecionado] = useState<number | null>(null)
@@ -46,14 +48,14 @@ export default function QualificacaoStep({ gestorNome, onAprovado }: Props) {
  if (etapa === 'intro') {
  return (
  <div style={{ textAlign: 'center', padding: '0 8px' }}>
- <div style={{ fontSize: 56, marginBottom: 16 }}></div>
+ <HelpCircle size={52} style={{ color: '#818cf8', marginBottom: 18 }} />
  <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', marginBottom: 12, lineHeight: 1.2 }}>
- Antes de continuar,<br />precisamos te conhecer melhor
+ Antes de continuar,<br />responda uma pergunta rápida
  </h2>
  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 15, lineHeight: 1.7, marginBottom: 32, maxWidth: 380, margin: '0 auto 32px' }}>
- {gestorNome
- ? `${gestorNome} está buscando pessoas com o perfil certo. Responda ${PERGUNTAS.length} pergunta${PERGUNTAS.length> 1 ? 's' : ''} rápida${PERGUNTAS.length> 1 ? 's' : ''} para ver se essa oportunidade é para você.`
- : `Responda ${PERGUNTAS.length} pergunta${PERGUNTAS.length> 1 ? 's' : ''} rápida${PERGUNTAS.length> 1 ? 's' : ''} para confirmar que essa oportunidade é para você.`
+ {(siteNome || gestorNome)
+ ? `${siteNome || gestorNome} está selecionando novos consultores.`
+ : `Responda ${PERGUNTAS.length} pergunta${PERGUNTAS.length> 1 ? 's' : ''} antes de continuar.`
  }
  </p>
  <button onClick={() => setEtapa('perguntas')} className="btn btn-primary btn-lg">
@@ -67,16 +69,16 @@ export default function QualificacaoStep({ gestorNome, onAprovado }: Props) {
  if (etapa === 'reprovado') {
  return (
  <div style={{ textAlign: 'center', padding: '0 8px' }}>
- <div style={{ fontSize: 56, marginBottom: 16 }}></div>
+ <XCircle size={52} style={{ color: '#f87171', marginBottom: 18 }} />
  <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', marginBottom: 12 }}>
- Obrigado pela honestidade!
+ Tudo bem!
  </h2>
  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 15, lineHeight: 1.8, marginBottom: 24, maxWidth: 380, margin: '0 auto 24px' }}>
- Nossa plataforma é voltada para quem quer construir uma carreira em vendas e consultoria. No momento, este conteúdo não é o ideal para o seu perfil.
+ Este conteúdo é voltado para quem trabalha ou quer trabalhar com vendas.
  </p>
  <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '16px 20px', maxWidth: 380, margin: '0 auto' }}>
  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 1.7 }}>
- Se mudar de ideia no futuro, estaremos aqui. Sucesso na sua jornada! 
+ Se mudar de ideia, o cadastro estará disponível.
  </p>
  </div>
  </div>

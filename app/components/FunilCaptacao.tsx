@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import VideoPlayer from './VideoPlayer'
 import PhoneInput from './PhoneInput'
 import { useRouter } from 'next/navigation'
+import { HelpCircle, Link2, Smartphone, CheckCircle2 } from 'lucide-react'
 
 type Etapa = 'pergunta1' | 'video' | 'pergunta2' | 'cadastro' | 'reprovado' | 'sucesso' | 'passo_parceiro' | 'passo_app'
 
@@ -110,9 +111,9 @@ export default function FunilCaptacao({
  <span style={{ color: '#4ade80' }}>a vender?</span>
  </h1>
  <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 16, marginBottom: 48, lineHeight: 1.7 }}>
- {gestorNome
- ? `${gestorNome} está buscando pessoas com o perfil certo para integrar sua equipe.`
- : 'Estamos buscando pessoas com o perfil certo para integrar nosso time.'}
+ {siteNome
+ ? `${siteNome} está selecionando novos consultores.`
+ : 'Estamos selecionando novos consultores.'}
  </p>
 
  <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 420, margin: '0 auto' }}>
@@ -197,13 +198,13 @@ export default function FunilCaptacao({
  return (
  <div style={{ minHeight: '100dvh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: '40px 20px' }}>
  <div style={{ maxWidth: 640, width: '100%', textAlign: 'center' }}>
- <div style={{ fontSize: 56, marginBottom: 24 }}></div>
+ <HelpCircle size={52} style={{ color: '#818cf8', marginBottom: 20 }} />
  <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2.2rem)', fontWeight: 900, color: '#fff', lineHeight: 1.25, marginBottom: 20 }}>
  Faz sentido para você começar o<br />
  <span style={{ color: '#818cf8' }}>processo de seleção e treinamento?</span>
  </h1>
  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 15, marginBottom: 48, lineHeight: 1.7 }}>
- Se você assistiu ao vídeo e se identificou com a oportunidade, avance para criar sua conta e dar o próximo passo.
+ Assistiu ao vídeo e quer fazer parte? Crie sua conta.
  </p>
 
  <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 420, margin: '0 auto' }}>
@@ -239,7 +240,7 @@ export default function FunilCaptacao({
  : <span style={{ color: '#fff', fontWeight: 900, fontSize: 28, letterSpacing: 2 }}>{siteNome}</span>}
  </div>
  <h2 style={{ fontSize: 26, fontWeight: 900, color: '#fff', marginBottom: 8 }}>Crie sua conta agora</h2>
- <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>É gratuito — você terá acesso imediato à plataforma</p>
+ <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>É gratuito. Acesso imediato.</p>
  </div>
 
  <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 20, padding: '32px 28px' }}>
@@ -317,11 +318,9 @@ export default function FunilCaptacao({
  return (
  <div style={{ minHeight: '100dvh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: 40 }}>
  <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
- <div style={{ fontSize: 56, marginBottom: 20 }}></div>
  <h2 style={{ fontSize: 24, fontWeight: 900, color: '#fff', marginBottom: 12 }}>Tudo bem!</h2>
  <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 16, lineHeight: 1.7, marginBottom: 28 }}>
- Obrigado pela honestidade. Se mudar de ideia no futuro, estaremos aqui.<br />
- Sucesso na sua jornada! 
+ Se mudar de ideia, o cadastro está disponível aqui.
  </p>
  <button onClick={() => setEtapa('pergunta1')} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.5)', borderRadius: 10, padding: '10px 24px', cursor: 'pointer', fontSize: 14 }}>
  ← Voltar
@@ -369,7 +368,7 @@ export default function FunilCaptacao({
  </div>
  )}
 
- <div style={{ fontSize: 56, marginBottom: 16 }}></div>
+ <Link2 size={48} style={{ color: '#02A153', marginBottom: 14 }} />
  <p style={{ fontSize: 12, fontWeight: 700, color: '#02A153', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
  {total> 1 ? `Passo ${atual} de ${total}` : 'Próximo passo'}
  </p>
@@ -431,7 +430,7 @@ export default function FunilCaptacao({
  </div>
  )}
 
- <div style={{ fontSize: 56, marginBottom: 16 }}></div>
+ <Smartphone size={48} style={{ color: '#6366f1', marginBottom: 14 }} />
  <p style={{ fontSize: 12, fontWeight: 700, color: '#6366f1', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
  {total> 1 ? `Passo ${atual} de ${total}` : 'Próximo passo'}
  </p>
@@ -475,7 +474,7 @@ export default function FunilCaptacao({
  return (
  <div style={{ minHeight: '100dvh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: 40 }}>
  <div style={{ textAlign: 'center', color: '#fff', maxWidth: 480, width: '100%' }}>
- <div style={{ fontSize: 72, marginBottom: 20 }}></div>
+ <CheckCircle2 size={64} style={{ color: '#02A153', marginBottom: 18 }} />
  <h2 style={{ fontSize: 28, fontWeight: 900, marginBottom: 12 }}>Tudo pronto!</h2>
  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, marginBottom: 28, lineHeight: 1.7 }}>
  Cadastro e configurações concluídos. Redirecionando para o login...
