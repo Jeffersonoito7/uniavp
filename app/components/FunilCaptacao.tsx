@@ -204,7 +204,7 @@ export default function FunilCaptacao({
  <span style={{ color: '#818cf8' }}>processo de seleção e treinamento?</span>
  </h1>
  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 15, marginBottom: 48, lineHeight: 1.7 }}>
- Assistiu ao vídeo e quer fazer parte? Crie sua conta.
+ {videoId ? 'Assistiu ao vídeo e quer fazer parte? Crie sua conta.' : 'Pronto para começar? Crie sua conta agora.'}
  </p>
 
  <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 420, margin: '0 auto' }}>
@@ -275,8 +275,8 @@ export default function FunilCaptacao({
  </div>
  </div>
 
- {/* Só aparece se não veio pelo link direto de um PRO */}
- {!gestorWhatsapp && (
+ {/* Só aparece se não veio pelo link direto de um PRO ou indicador já conhecido */}
+ {!gestorWhatsapp && !indicadorWhatsapp && (
  <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 16 }}>
  <label style={{ display: 'block', color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
  Quem te indicou? <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(opcional)</span>
@@ -290,7 +290,7 @@ export default function FunilCaptacao({
 
  {gestorNome && (
  <div style={{ background: 'rgba(2,161,83,0.1)', border: '1px solid rgba(2,161,83,0.3)', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
- <span style={{ fontSize: 18 }}></span>
+ <CheckCircle2 size={18} style={{ color: '#22c55e', flexShrink: 0 }} />
  <div>
  <p style={{ color: '#22c55e', fontSize: 12, fontWeight: 700, margin: 0 }}>Indicado por</p>
  <p style={{ color: '#fff', fontSize: 14, fontWeight: 600, margin: '2px 0 0' }}>{gestorNome}</p>
