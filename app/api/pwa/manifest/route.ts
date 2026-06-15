@@ -21,7 +21,7 @@ export async function GET() {
     ? nome
     : (palavras[0].slice(0, 3).toUpperCase() + palavras.slice(1).join('')).slice(0, 12)
   const corPrimaria = map['site_cor_primaria'] || '#02A153'
-  const corFundo = '#0d0f14'
+  const corFundo = corPrimaria
 
   const manifest = {
     name: nome,

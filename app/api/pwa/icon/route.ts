@@ -31,15 +31,14 @@ export async function GET(req: NextRequest) {
   const r = size * 0.18 // border-radius do quadrado
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  <rect width="${size}" height="${size}" rx="${r}" fill="#0d0f14"/>
-  <rect x="${size * 0.06}" y="${size * 0.06}" width="${size * 0.88}" height="${size * 0.88}" rx="${r * 0.8}" fill="${cor}" opacity="0.15"/>
+  <rect width="${size}" height="${size}" rx="${r}" fill="${cor}"/>
   <text
     x="${size / 2}"
     y="${size / 2 + fontSize * 0.36}"
     font-family="Arial Black, Arial, sans-serif"
     font-weight="900"
     font-size="${fontSize}"
-    fill="${cor}"
+    fill="#ffffff"
     text-anchor="middle"
     letter-spacing="-1"
   >${abrev}</text>
