@@ -62,17 +62,18 @@ export async function POST(req: NextRequest) {
     expira_em: expira.toISOString(),
   })
 
-  try {
-    const instancia = await getInstanciaTenant(tenantId, admin)
-    await enviarWhatsApp(
-      wpp,
-      `🔐 *Verificação de WhatsApp*\n\nSeu código de confirmação é:\n\n*${novoCodigo}*\n\n_Válido por 10 minutos. Não compartilhe com ninguém._`,
-      instancia
-    )
-    return NextResponse.json({ ok: true })
-  } catch {
+  const instancia = await getInstanciaTenant(tenantId, admin)
+  const enviado = await enviarWhatsApp(
+    wpp,
+    `*Verificação de WhatsApp*\n\nSeu código de confirmação é:\n\n*${novoCodigo}*\n\nVálido por 10 minutos. Não compartilhe com ninguém.`,
+    instancia
+  )
+
+  if (!enviado) {
     // WhatsApp indisponível — libera o pagamento sem verificação
     await admin.from('otp_whatsapp').update({ usado: true }).eq('whatsapp', wpp).eq('usado', false)
     return NextResponse.json({ ok: true, wppIndisponivel: true })
   }
+
+  return NextResponse.json({ ok: true })
 }
