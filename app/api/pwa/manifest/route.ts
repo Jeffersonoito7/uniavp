@@ -21,23 +21,23 @@ export async function GET() {
     ? nome
     : (palavras[0].slice(0, 3).toUpperCase() + palavras.slice(1).join('')).slice(0, 12)
   const corPrimaria = map['site_cor_primaria'] || '#02A153'
-  const corFundo = '#08090d'
-  const icone = map['logo_favicon_url'] || map['site_logo_url'] || '/logo.png'
+  const corFundo = '#0d0f14'
 
   const manifest = {
     name: nome,
     short_name: nomeAbrev,
-    description: `Plataforma de formação e treinamento — ${nome}`,
+    description: `Plataforma de formação e treinamento - ${nome}`,
     start_url: '/entrar',
     scope: '/',
     display: 'standalone',
     orientation: 'portrait-primary',
     background_color: corFundo,
-    theme_color: corPrimaria,
+    theme_color: corFundo,
     categories: ['education', 'business'],
     icons: [
-      { src: icone, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-      { src: icone, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+      { src: '/api/pwa/icon?size=192', sizes: '192x192', type: 'image/svg+xml', purpose: 'any' },
+      { src: '/api/pwa/icon?size=512', sizes: '512x512', type: 'image/svg+xml', purpose: 'any' },
+      { src: '/api/pwa/icon?size=512', sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' },
     ],
     shortcuts: [
       { name: 'Minhas Aulas', short_name: 'FREE', url: '/entrar', description: 'Painel FREE' },
