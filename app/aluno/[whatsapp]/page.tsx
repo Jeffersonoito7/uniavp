@@ -454,8 +454,8 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  </a>
  )}
 
- {/* ── INDICAÇÃO ── */}
- {!moduloAtivo && (
+ {/* ── INDICAÇÃO — só aparece após o aluno ser formado ── */}
+ {!moduloAtivo && aluno.status === 'concluido' && (
  <IndicacaoCard
  link={`${baseUrl}/c/${aluno.whatsapp}`}
  totalIndicados={totalIndicadosReal ?? 0}
