@@ -161,26 +161,42 @@ async function getTokenBoleto(): Promise<string> {
   return d.access_token
 }
 
-// Requisição simples (sem certificado — para API de boleto)
-function httpsRequestSimples(url: string, options: { method?: string; headers?: Record<string, string>; body?: string }): Promise<{ status: number; data: unknown }> {
+// Requisição simples (sem certificado — para API de boleto/cartão/assinaturas)
+// Segue redirects 301/302 automaticamente e define Content-Length no body
+function httpsRequestSimples(
+  url: string,
+  options: { method?: string; headers?: Record<string, string>; body?: string },
+  redirectsLeft = 5,
+): Promise<{ status: number; data: unknown }> {
   return new Promise((resolve, reject) => {
     const parsed = new URL(url)
-    const reqOptions = {
+    const bodyBuf = options.body ? Buffer.from(options.body, 'utf8') : null
+    const headers: Record<string, string | number> = { ...(options.headers || {}) }
+    if (bodyBuf) headers['Content-Length'] = bodyBuf.length
+    const req = https.request({
       hostname: parsed.hostname,
       path: parsed.pathname + parsed.search,
       method: options.method || 'GET',
-      headers: options.headers || {},
-    }
-    const req = https.request(reqOptions, res => {
+      headers,
+    }, res => {
+      const code = res.statusCode || 0
+      if ((code === 301 || code === 302 || code === 307 || code === 308) && res.headers.location && redirectsLeft > 0) {
+        res.resume()
+        const nextUrl = res.headers.location.startsWith('http')
+          ? res.headers.location
+          : `https://${parsed.hostname}${res.headers.location}`
+        resolve(httpsRequestSimples(nextUrl, options, redirectsLeft - 1))
+        return
+      }
       let raw = ''
       res.on('data', chunk => { raw += chunk })
       res.on('end', () => {
-        try { resolve({ status: res.statusCode || 0, data: JSON.parse(raw) }) }
-        catch { resolve({ status: res.statusCode || 0, data: raw }) }
+        try { resolve({ status: code, data: JSON.parse(raw) }) }
+        catch { resolve({ status: code, data: raw }) }
       })
     })
     req.on('error', reject)
-    if (options.body) req.write(options.body)
+    if (bodyBuf) req.write(bodyBuf)
     req.end()
   })
 }
