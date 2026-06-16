@@ -322,6 +322,14 @@ export async function consultarStatusCharge(chargeId: number): Promise<{ pago: b
   return { pago: d.data?.status === 'paid' }
 }
 
+export async function listarPlanosAssinatura(): Promise<unknown> {
+  const token = await getTokenBoleto()
+  const { data } = await httpsRequestSimples(`${BASE_BOLETO}/v1/plans`, {
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  })
+  return data
+}
+
 export async function consultarWebhook(): Promise<{ webhookUrl?: string; registrado: boolean; erro?: string }> {
   try {
     const token = await getToken()
