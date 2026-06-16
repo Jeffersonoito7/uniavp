@@ -53,5 +53,19 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, processados, erros, total: eventos?.length ?? 0 })
+  // Alerta admin se há webhooks travados em erro por mais de 30 min
+  const { count: travados } = await admin.from('webhook_events')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'erro')
+    .gte('tentativas', 3)
+    .gte('created_at', new Date(Date.now() - 30 * 60 * 1000).toISOString()) as { count: number | null }
+
+  if ((travados ?? 0) >= 2) {
+    captureException(new Error(`webhook_events: ${travados} pagamentos com erro permanente na última 30 min`), {
+      endpoint: 'cron/processar-webhooks',
+      extra: { travados },
+    })
+  }
+
+  return NextResponse.json({ ok: true, processados, erros, travados: travados ?? 0, total: eventos?.length ?? 0 })
 }

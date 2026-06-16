@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp } from '@/lib/whatsapp'
+import { captureException } from '@/lib/monitor'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -52,5 +53,18 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, enviados, erros, total: mensagens?.length ?? 0 })
+  // Alerta admin se há mensagens que esgotaram todas as tentativas
+  const { count: falhas } = await admin.from('fila_whatsapp')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'falhou')
+    .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString()) as { count: number | null }
+
+  if ((falhas ?? 0) >= 3) {
+    captureException(new Error(`fila_whatsapp: ${falhas} mensagens falharam na última hora`), {
+      endpoint: 'cron/processar-whatsapp',
+      extra: { falhas },
+    })
+  }
+
+  return NextResponse.json({ ok: true, enviados, erros, falhas: falhas ?? 0, total: mensagens?.length ?? 0 })
 }
