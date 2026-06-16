@@ -28,11 +28,10 @@ export async function POST(req: NextRequest) {
 
     const adminClient = createServiceRoleClient()
 
-    // Busca pagamento pelo charge_id (colunas adicionadas via migration SQL)
-    const { data: pag } = await (adminClient.from('gestor_pagamentos') as any)
+    const { data: pag } = await adminClient.from('gestor_pagamentos')
       .select('id, gestor_id, valor, plano_meses, status')
       .eq('charge_id', chargeId)
-      .maybeSingle() as { data: { id: string; gestor_id: string; valor: number; plano_meses: number; status: string } | null }
+      .maybeSingle()
 
     if (!pag || pag.status !== 'pendente') return NextResponse.json({ ok: true, motivo: 'ja_processado' })
 

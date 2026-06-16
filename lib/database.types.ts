@@ -1127,41 +1127,53 @@ export type Database = {
       }
       gestor_pagamentos: {
         Row: {
+          charge_id: number | null
           created_at: string | null
           gestor_id: string
           id: string
           pago_em: string | null
           pix_copia_cola: string | null
+          plano_meses: number | null
+          payment_url: string | null
           qrcode_base64: string | null
           status: string
           tenant_id: string | null
-          txid: string
+          tipo: string | null
+          txid: string | null
           valor: number
           vencimento: string | null
         }
         Insert: {
+          charge_id?: number | null
           created_at?: string | null
           gestor_id: string
           id?: string
           pago_em?: string | null
           pix_copia_cola?: string | null
+          plano_meses?: number | null
+          payment_url?: string | null
           qrcode_base64?: string | null
           status?: string
           tenant_id?: string | null
-          txid: string
+          tipo?: string | null
+          txid?: string | null
           valor?: number
           vencimento?: string | null
         }
         Update: {
+          charge_id?: number | null
           created_at?: string | null
           gestor_id?: string
           id?: string
           pago_em?: string | null
           pix_copia_cola?: string | null
+          plano_meses?: number | null
+          payment_url?: string | null
           qrcode_base64?: string | null
           status?: string
           tenant_id?: string | null
-          txid?: string
+          tipo?: string | null
+          txid?: string | null
           valor?: number
           vencimento?: string | null
         }

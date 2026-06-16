@@ -211,7 +211,7 @@ export async function POST(req: Request) {
           plano_meses: 12,
           vencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           ...(tenantId ? { tenant_id: tenantId } : {}),
-        } as any)
+        })
         .select()
         .single()
 
@@ -242,7 +242,7 @@ export async function POST(req: Request) {
         vencimento,
         plano_meses: 1,
         ...(tenantId ? { tenant_id: tenantId } : {}),
-      } as any)
+      })
       .select()
       .single()
 

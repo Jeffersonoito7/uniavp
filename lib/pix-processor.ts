@@ -139,10 +139,10 @@ export async function processarPixTxid(
   }
 
   // ── Mensalidade do gestor ─────────────────────────────────────────────────
-  const { data: pagGestor } = await (adminClient.from('gestor_pagamentos') as any)
+  const { data: pagGestor } = await adminClient.from('gestor_pagamentos')
     .select('id, gestor_id, valor, plano_meses')
     .eq('txid', txid)
-    .maybeSingle() as { data: { id: string; gestor_id: string; valor: number; plano_meses: number | null } | null }
+    .maybeSingle()
 
   if (pagGestor) {
     const { data: atualizadoGestor } = await adminClient.from('gestor_pagamentos')
