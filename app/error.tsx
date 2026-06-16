@@ -1,5 +1,6 @@
 'use client'
 import { useEffect } from 'react'
+import { AlertTriangle } from 'lucide-react'
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
  useEffect(() => {
@@ -9,7 +10,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
  return (
  <div style={{ minHeight: '100vh', background: '#0a0a0f', color: '#f1f5f9', fontFamily: 'Inter, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
  <div style={{ maxWidth: 600, width: '100%' }}>
- <p style={{ fontSize: 40, marginBottom: 16 }}></p>
+ <AlertTriangle size={40} style={{ color: '#f87171', marginBottom: 16 }} />
  <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 12, color: '#f87171' }}>Erro de aplicação</h1>
 
  {/* Mostra o erro real */}

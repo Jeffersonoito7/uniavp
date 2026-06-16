@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { Bell, BellOff } from 'lucide-react'
 
 function urlBase64ToUint8Array(base64String: string) {
  const padding = '='.repeat((4 - base64String.length % 4) % 4)
@@ -91,7 +92,7 @@ export default function PushButton() {
  opacity: status === 'loading' ? 0 : 1,
  }}
 >
- {isOn ? '' : ''}
+ {isOn ? <Bell size={15} /> : <BellOff size={15} />}
  </button>
  )
 }

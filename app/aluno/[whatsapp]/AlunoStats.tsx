@@ -1,3 +1,5 @@
+import { Flame, MessageSquare, ShoppingBag, UserCircle, CreditCard } from 'lucide-react'
+
 type Nivel = { nome: string; prox: number | null; atual: number; min: number; max: number }
 
 type Props = {
@@ -49,9 +51,10 @@ export default function AlunoStats({
  <div className="stat-card stat-card-base" style={{ position: 'relative', overflow: 'hidden' }}>
  {(streakAtual ?? 0)>= 3 && <div style={{ position: 'absolute', top: -24, right: -24, width: 80, height: 80, borderRadius: '50%', background: 'radial-gradient(circle, rgba(251,146,60,0.3) 0%, transparent 70%)', pointerEvents: 'none' }} />}
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>Sequência</p>
- <p style={{ fontSize: 26, fontWeight: 800, color: 'var(--avp-text)', marginBottom: 4, lineHeight: 1 }}>
- {(streakAtual ?? 0)>= 1 ? '' : ''} {streakAtual ?? 0}
- <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--avp-text-dim)', marginLeft: 4 }}>dias</span>
+ <p style={{ fontSize: 26, fontWeight: 800, color: 'var(--avp-text)', marginBottom: 4, lineHeight: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+ {(streakAtual ?? 0) >= 1 && <Flame size={22} style={{ color: '#f97316', flexShrink: 0 }} />}
+ {streakAtual ?? 0}
+ <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--avp-text-dim)', marginLeft: 2 }}>dias</span>
  </p>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 11 }}>Recorde: {maiorStreak ?? 0} dias</p>
  </div>
@@ -76,13 +79,16 @@ export default function AlunoStats({
  <div className="hide-desktop stat-card stat-card-base">
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>Acessar</p>
  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
- {[
- { href: `/aluno/${whatsapp}/forum`, label: ' Fórum' },
- { href: `/aluno/${whatsapp}/loja`, label: ' Loja' },
- { href: `/aluno/${whatsapp}/perfil`, label: ' Perfil' },
- ...(mostrarCarteira ? [{ href: `/aluno/${whatsapp}/carteira`, label: ' Carteira' }] : []),
- ].map(l => (
- <a key={l.href} href={l.href} style={{ color: 'var(--avp-text)', fontSize: 13, textDecoration: 'none', fontWeight: 600, padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--avp-border)' }}>{l.label}</a>
+ {([
+ { href: `/aluno/${whatsapp}/forum`, label: 'Fórum', Icon: MessageSquare },
+ { href: `/aluno/${whatsapp}/loja`, label: 'Loja', Icon: ShoppingBag },
+ { href: `/aluno/${whatsapp}/perfil`, label: 'Perfil', Icon: UserCircle },
+ ...(mostrarCarteira ? [{ href: `/aluno/${whatsapp}/carteira`, label: 'Carteira', Icon: CreditCard }] : []),
+ ] as { href: string; label: string; Icon: React.ElementType }[]).map(l => (
+ <a key={l.href} href={l.href} style={{ color: 'var(--avp-text)', fontSize: 13, textDecoration: 'none', fontWeight: 600, padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--avp-border)', display: 'flex', alignItems: 'center', gap: 8 }}>
+ <l.Icon size={14} style={{ flexShrink: 0, opacity: 0.7 }} />
+ {l.label}
+ </a>
  ))}
  </div>
  </div>

@@ -43,7 +43,7 @@ export default async function PlanoProPage() {
  { Icon: BookOpen, titulo: 'Conteúdo ilimitado', desc: 'Acesso a todos os módulos e aulas, incluindo conteúdos exclusivos marcados como PRO.' },
  { Icon: Award, titulo: 'Certificados e carteirinha', desc: 'Emita certificados de conclusão e carteirinha de formação para sua equipe completa.' },
  { Icon: Bell, titulo: 'Automação de reengajamento', desc: 'O sistema avisa você automaticamente sobre FREEs inativos para você agir antes de perdê-los.' },
- { Icon: Gift, titulo: 'PRO gratuito por rede', desc: 'Ative 20 PROs na sua rede e sua assinatura fica ZERO — sem pagar mensalidade enquanto mantiver.' },
+ { Icon: Gift, titulo: 'PRO gratuito por rede', desc: 'Ative 20 PROs na sua rede e sua assinatura fica ZERO, sem pagar mensalidade enquanto mantiver.' },
  { Icon: Zap, titulo: 'Alertas em tempo real', desc: 'Receba notificações por WhatsApp quando alguém entra na equipe, conclui módulo ou fica inativo.' },
  ]
 
@@ -87,7 +87,7 @@ export default async function PlanoProPage() {
  <span style={{ color: '#818cf8' }}>Cresça com método.</span>
  </h1>
  <p style={{ color: 'rgba(241,245,249,0.6)', fontSize: 'clamp(15px, 2.5vw, 18px)', lineHeight: 1.8, maxWidth: 580, margin: '0 auto 36px' }}>
- O <strong style={{ color: '#c4b5fd' }}>UNIAVP PRO</strong> é o painel completo para líderes que querem acompanhar, engajar e fazer crescer a sua equipe de FREEs — tudo em um só lugar.
+ O <strong style={{ color: '#c4b5fd' }}>UNIAVP PRO</strong> é o painel de gestão para quem lidera uma equipe de FREEs.
  </p>
 
  {/* Stats */}
@@ -113,7 +113,7 @@ export default async function PlanoProPage() {
  ) : null}
 
  <a href="/captacao?direto=1&plano=pro" className="btn btn-primary btn-lg" style={{ textDecoration: 'none', marginBottom: 12, fontSize: 18, borderRadius: 14, padding: '18px 52px' }}>
- Começar agora — R${Number(valorPro).toFixed(2).replace('.', ',')}/mês
+ Quero ser PRO — R${Number(valorPro).toFixed(2).replace('.', ',')}/mês
  </a>
  <p style={{ fontSize: 12, color: 'rgba(241,245,249,0.4)', marginTop: 12 }}>
  Pagamento via PIX • Acesso imediato • Cancele quando quiser
@@ -125,7 +125,7 @@ export default async function PlanoProPage() {
  <Gift size={32} style={{ color: '#c4b5fd', margin: '0 auto 8px', display: 'block' }} />
  <p style={{ fontWeight: 900, fontSize: 20, color: '#c4b5fd', marginBottom: 8 }}>Sua assinatura pode ser ZERO</p>
  <p style={{ color: 'rgba(241,245,249,0.6)', fontSize: 15, maxWidth: 500, margin: '0 auto', lineHeight: 1.7 }}>
- Indique <strong style={{ color: '#fff' }}>20 PROs ativos</strong> para a plataforma e sua mensalidade fica <strong style={{ color: '#4ade80' }}>completamente gratuita</strong> — enquanto eles mantiverem o plano.
+ Indique <strong style={{ color: '#fff' }}>20 PROs ativos</strong> para a plataforma e sua mensalidade fica <strong style={{ color: '#4ade80' }}>gratuita</strong> enquanto eles mantiverem o plano.
  </p>
  <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 20, flexWrap: 'wrap' }}>
  <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '10px 20px', fontSize: 13 }}>
@@ -207,9 +207,9 @@ export default async function PlanoProPage() {
 
  {/* CTA final */}
  <div style={{ textAlign: 'center', background: 'rgba(79,70,229,0.06)', border: '1px solid rgba(79,70,229,0.2)', borderRadius: 24, padding: 'clamp(36px, 6vw, 64px) 24px' }}>
- <p style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 700, marginBottom: 12 }}>Pronto para liderar?</p>
+ <p style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 700, marginBottom: 12 }}>Assine o UNIAVP PRO</p>
  <p style={{ color: 'rgba(241,245,249,0.55)', fontSize: 15, marginBottom: 32, maxWidth: 440, margin: '0 auto 32px' }}>
- Junte-se a quem já usa o UNIAVP PRO para gerenciar e crescer sua equipe com método.
+ Gerencie sua equipe de FREEs com painel, relatórios e ferramentas de engajamento.
  </p>
  <a href="/captacao?direto=1&plano=pro" className="btn btn-primary" style={{ textDecoration: 'none', marginBottom: 16, fontSize: 20, borderRadius: 14, padding: '20px 60px' }}>
  Quero ser PRO — R${Number(valorPro).toFixed(2).replace('.', ',')}/mês

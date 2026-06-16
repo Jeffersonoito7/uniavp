@@ -46,11 +46,10 @@ export default function ProTeaser({ totalIndicados }: { totalIndicados: number }
  {/* Header */}
  <div style={{ padding: '18px 24px 14px', borderBottom: '1px solid rgba(99,102,241,0.2)' }}>
  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
- <span style={{ fontSize: 20 }}></span>
  <div>
- <p style={{ fontWeight: 800, fontSize: 15, margin: 0 }}>Veja o painel PRO que aguarda você</p>
+ <p style={{ fontWeight: 800, fontSize: 15, margin: 0 }}>Painel PRO</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
- Desbloqueie gestão completa da sua equipe
+ Gerencie sua equipe com o plano PRO
  </p>
  </div>
  </div>

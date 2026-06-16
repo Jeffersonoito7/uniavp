@@ -1,18 +1,21 @@
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
+import { getTenantId } from '@/lib/tenant'
 import { headers } from 'next/headers'
+import { CheckCircle, Clock, XCircle } from 'lucide-react'
 
 export default async function VerificarPage({ params }: { params: { registro: string } }) {
  const host = (await headers()).get('host') ?? ''
  const adminClient = createServiceRoleClient()
- const config = await getSiteConfig(host)
+ const [config, tenantId] = await Promise.all([getSiteConfig(host), getTenantId(host)])
 
  const numBusca = parseInt(params.registro.replace(/^0+/, '') || '0')
 
- const { data: aluno } = await adminClient.from('alunos')
- .select('nome, status, numero_registro, data_formacao')
- .eq('numero_registro', numBusca)
- .maybeSingle()
+ let query = adminClient.from('alunos')
+   .select('nome, status, numero_registro, data_formacao')
+   .eq('numero_registro', numBusca)
+ if (tenantId) query = query.eq('tenant_id', tenantId)
+ const { data: aluno } = await query.maybeSingle()
 
  const valido = aluno?.status === 'concluido' && aluno?.data_formacao
  const dataFormacao = aluno?.data_formacao ? new Date(aluno.data_formacao + 'T12:00:00') : null
@@ -23,10 +26,10 @@ export default async function VerificarPage({ params }: { params: { registro: st
  const status = !aluno ? 'nao_encontrado' : !valido ? 'invalido' : !dentro_validade ? 'expirado' : 'valido'
 
  const cores = {
- valido: { bg: '#02A15315', border: '#02A153', text: '#02A153', icone: '' },
- expirado: { bg: '#f59e0b15', border: '#f59e0b', text: '#f59e0b', icone: '' },
- invalido: { bg: '#e6394615', border: '#e63946', text: '#e63946', icone: '' },
- nao_encontrado:{ bg: '#e6394615', border: '#e63946', text: '#e63946', icone: '' },
+ valido:        { bg: '#02A15315', border: '#02A153', text: '#02A153', Icone: CheckCircle },
+ expirado:      { bg: '#f59e0b15', border: '#f59e0b', text: '#f59e0b', Icone: Clock },
+ invalido:      { bg: '#e6394615', border: '#e63946', text: '#e63946', Icone: XCircle },
+ nao_encontrado:{ bg: '#e6394615', border: '#e63946', text: '#e63946', Icone: XCircle },
  }
  const c = cores[status]
 
@@ -55,7 +58,7 @@ export default async function VerificarPage({ params }: { params: { registro: st
 
  {/* Status banner */}
  <div style={{ background: c.bg, borderBottom: `1px solid ${c.border}`, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 14 }}>
- <span style={{ fontSize: 40 }}>{c.icone}</span>
+ <c.Icone size={40} style={{ color: c.text, flexShrink: 0 }} />
  <div>
  <p style={{ fontWeight: 800, fontSize: 16, color: c.text, margin: 0 }}>{msgs[status]}</p>
  <p style={{ color: '#888', fontSize: 13, margin: '4px 0 0' }}>Nº de Registro: <strong style={{ color: '#fff' }}>{params.registro}</strong></p>

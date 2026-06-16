@@ -4,6 +4,7 @@ import { Shield, Lock, FileText, Link2, UserPlus, Users, Gift, BookOpen } from '
 import { TogglePill } from '@/app/components/TogglePill'
 import { createBrowserClient } from '@supabase/ssr'
 import GestorLayout from './GestorLayout'
+import LinkParceiroCardGestor from './LinkParceiroCardGestor'
 import LiberacoesPendentes from './LiberacoesPendentes'
 import WhatsAppConectar from '@/app/components/WhatsAppConectar'
 import PhoneInput from '@/app/components/PhoneInput'
@@ -135,7 +136,7 @@ function PerfilGestor({ gestor, onNomeAtualizado, onFotoAtualizada, podeCfgLink 
  </div>
  <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 4, borderTop: '1px solid var(--avp-border)' }}>
  <button type="submit" disabled={salvando} className="btn btn-green btn-sm">
- {salvando ? 'Salvando...' : ' Salvar'}
+ {salvando ? 'Salvando...' : 'Salvar'}
  </button>
  </div>
  </div>
@@ -661,6 +662,9 @@ export default function GestorDashboard({
  <p className={inativos7d.length> 0 ? 'stat-value-violet' : 'stat-value-text'} style={{ fontSize: 32, fontWeight: 900, margin: 0, lineHeight: 1 }}>{inativos7d.length}</p>
  </div>
  </div>
+
+ {/* Link da plataforma parceira */}
+ <LinkParceiroCardGestor linkAtual={gestor.link_externo ?? null} />
 
  {/* Card do Assistente IA */}
  <AgenteCard />

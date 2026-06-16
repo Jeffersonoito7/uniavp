@@ -890,11 +890,11 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* ── Passo 1: Sistema parceiro ── */}
  <div style={{ background: 'var(--avp-black)', border: `1px solid ${captacaoMostrarParceiro ? 'rgba(2,161,83,0.4)' : 'var(--avp-border)'}`, borderRadius: 12, padding: '16px 18px' }}>
- <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: captacaoMostrarParceiro ? 16 : 0 }}>
+ <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
  <div>
  <p style={{ fontWeight: 700, fontSize: 14, margin: 0, display: 'flex', alignItems: 'center', gap: 7 }}><ChevronRight size={14} style={{ opacity: 0.6, flexShrink: 0 }} />Passo 1 — Cadastro no sistema parceiro</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>
- Exibe tela pedindo que o consultor acesse o link configurado no perfil do gestor
+ Exibe tela pedindo que o consultor acesse o link da plataforma parceira antes de entrar no painel
  </p>
  </div>
  <button type="button" onClick={() => setCaptacaoMostrarParceiro(v => !v)}
@@ -903,8 +903,22 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  </button>
  </div>
 
- {captacaoMostrarParceiro && (
+ {/* Link sempre visível — independente do toggle estar ligado ou desligado */}
  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+ <div>
+ <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 5, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>
+ Link do sistema parceiro (global)
+ </label>
+ <input value={captacaoLinkExterno} onChange={e => setCaptacaoLinkExterno(e.target.value)}
+ placeholder="https://... cole o link da plataforma parceira aqui"
+ style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 13px', color: 'var(--avp-text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' as const }} />
+ <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>
+ Este link aparece nos links genéricos (<code style={{ background: 'var(--avp-card)', padding: '1px 4px', borderRadius: 3 }}>/captacao</code>). Quando o consultor acessa via link do gestor (<code style={{ background: 'var(--avp-card)', padding: '1px 4px', borderRadius: 3 }}>/g/whatsapp</code>), o link do perfil do gestor tem prioridade.
+ </p>
+ </div>
+
+ {captacaoMostrarParceiro && (
+ <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 6, borderTop: '1px solid var(--avp-border)' }}>
  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 14px', background: captacaoBloquearParceiro ? 'rgba(230,57,70,0.06)' : 'rgba(255,255,255,0.03)', border: `1px solid ${captacaoBloquearParceiro ? 'rgba(230,57,70,0.3)' : 'var(--avp-border)'}`, borderRadius: 8, cursor: 'pointer' }}>
  <div>
  <p style={{ fontWeight: 600, fontSize: 13, margin: 0 }}>Obrigatório — bloquear avanço até clicar</p>
@@ -916,24 +930,14 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  </button>
  </label>
  <div>
- <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.8 }}>Texto do botão (opcional)</label>
+ <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 5, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>Texto do botão (opcional)</label>
  <input value={captacaoParceiroTitulo} onChange={e => setCaptacaoParceiroTitulo(e.target.value)}
  placeholder="Cadastrar no sistema parceiro"
  style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 13px', color: 'var(--avp-text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' as const }} />
  </div>
- <div>
- <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.8 }}>
- Link global do sistema parceiro
- </label>
- <input value={captacaoLinkExterno} onChange={e => setCaptacaoLinkExterno(e.target.value)}
- placeholder="https://... — usado nos links genéricos (/captacao). Links /g/gestor usam o link do gestor automaticamente."
- style={{ width: '100%', background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 13px', color: 'var(--avp-text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' as const }} />
- <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>
- Para links com gestor (<code style={{ background: 'var(--avp-card)', padding: '1px 4px', borderRadius: 3 }}>/g/whatsapp</code>), usa o link externo do perfil do gestor.
- </p>
- </div>
  </div>
  )}
+ </div>
  </div>
 
  {/* ── Passo 2: Baixar app ── */}

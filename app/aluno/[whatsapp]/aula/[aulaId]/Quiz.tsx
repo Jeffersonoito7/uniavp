@@ -69,7 +69,7 @@ export default function Quiz({ aulaId, questoes, aprovacaoMinima, jaAprovado, te
 
  if (simNaoRecusado) {
  const mensagemNao = perguntaAtual?.nao_mensagem?.trim()
- || 'Quando estiver pronto para assumir esse compromisso, volte aqui e responda Sim para continuar.'
+ || 'Quando estiver pronto, volte aqui e responda Sim para continuar.'
  return (
  <div style={{ background: '#e6394610', border: '1px solid rgba(230,57,70,0.3)', borderRadius: 12, padding: 28, textAlign: 'center' }}>
  <div style={{ fontSize: 40, marginBottom: 16 }}>🙏</div>

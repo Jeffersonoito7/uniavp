@@ -2,6 +2,7 @@ import { getSiteConfig } from '@/lib/site-config'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
+import { BookOpen, Award, UserPlus, Smartphone, MessageCircle, Play, Check, X } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,12 +29,30 @@ export default async function PlanoFreePage() {
  const valorPro = Math.max(1, parseFloat(String(valorCfg?.valor ?? '').replace(/"/g, '')) || 97)
 
  const beneficios = [
- { icon: '', titulo: 'Acesso à plataforma de ensino', desc: 'Entre na universidade e comece a aprender com conteúdo de qualidade.' },
- { icon: '', titulo: 'Módulos de treinamento', desc: 'Aulas organizadas por módulos para facilitar seu aprendizado.' },
- { icon: '', titulo: 'Certificado de conclusão', desc: 'Ao concluir os módulos, receba seu certificado de formação.' },
- { icon: '', titulo: 'Indique e ganhe', desc: 'Indique amigos para a plataforma e acompanhe seu progresso.' },
- { icon: '', titulo: 'Acesso pelo celular', desc: 'Estude onde quiser, no celular ou computador.' },
- { icon: '', titulo: 'Suporte pelo WhatsApp', desc: 'Tire dúvidas diretamente com o suporte da plataforma.' },
+ { Icon: BookOpen, titulo: 'Acesso à plataforma de ensino', desc: 'Entre na universidade e comece a aprender com conteúdo de qualidade.' },
+ { Icon: Play, titulo: 'Módulos de treinamento', desc: 'Aulas organizadas por módulos para facilitar seu aprendizado.' },
+ { Icon: Award, titulo: 'Certificado de conclusão', desc: 'Ao concluir os módulos, receba seu certificado de formação.' },
+ { Icon: UserPlus, titulo: 'Indique e ganhe', desc: 'Indique amigos para a plataforma e acompanhe seu progresso.' },
+ { Icon: Smartphone, titulo: 'Acesso pelo celular', desc: 'Estude onde quiser, no celular ou computador.' },
+ { Icon: MessageCircle, titulo: 'Suporte pelo WhatsApp', desc: 'Tire dúvidas diretamente com o suporte da plataforma.' },
+ ]
+
+ const freeItems: { label: string; ok: boolean }[] = [
+ { label: 'Acesso aos módulos de treinamento', ok: true },
+ { label: 'Certificado de conclusão', ok: true },
+ { label: 'Indicar novos membros', ok: true },
+ { label: 'Painel de gestão de equipe', ok: false },
+ { label: 'Relatórios e métricas', ok: false },
+ { label: 'Templates de arte personalizados', ok: false },
+ ]
+
+ const proItems = [
+ 'Tudo do FREE, mais:',
+ 'Painel completo de gestão',
+ 'Relatórios da equipe',
+ 'Templates de arte',
+ 'Links de captação exclusivos',
+ 'WhatsApp direto para equipe',
  ]
 
  return (
@@ -63,11 +82,11 @@ export default async function PlanoFreePage() {
  {/* Hero */}
  <div style={{ textAlign: 'center', marginBottom: 56 }}>
  <h1 style={{ fontSize: 'clamp(2rem, 6vw, 3.4rem)', fontWeight: 900, lineHeight: 1.15, marginBottom: 20 }}>
- Comece sua jornada<br />
- <span style={{ color: '#4ade80' }}>100% de graça</span>
+ Acesso gratuito,<br />
+ <span style={{ color: '#4ade80' }}>comece agora</span>
  </h1>
  <p style={{ color: 'rgba(241,245,249,0.6)', fontSize: 'clamp(15px, 2.5vw, 18px)', lineHeight: 1.8, maxWidth: 540, margin: '0 auto 32px' }}>
- A <strong style={{ color: '#f1f5f9' }}>{config.nome} FREE</strong> é para quem quer aprender, crescer e desenvolver habilidades — sem pagar nada para começar.
+ A <strong style={{ color: '#f1f5f9' }}>{config.nome} FREE</strong> é para quem quer aprender e se desenvolver. Sem custo.
  </p>
  <a href="/captacao?direto=1" className="btn btn-green" style={{ textDecoration: 'none', fontSize: 18, borderRadius: 14, padding: '18px 48px' }}>
  Quero meu acesso grátis →
@@ -81,7 +100,9 @@ export default async function PlanoFreePage() {
  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
  {beneficios.map(b => (
  <div key={b.titulo} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
- <span style={{ fontSize: 28, flexShrink: 0, lineHeight: 1 }}>{b.icon}</span>
+ <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+ <b.Icon size={16} style={{ color: '#4ade80' }} />
+ </div>
  <div>
  <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{b.titulo}</p>
  <p style={{ fontSize: 13, color: 'rgba(241,245,249,0.55)', lineHeight: 1.6 }}>{b.desc}</p>
@@ -98,16 +119,12 @@ export default async function PlanoFreePage() {
  <div style={{ display: 'inline-block', background: 'rgba(2,161,83,0.2)', borderRadius: 100, padding: '4px 14px', fontSize: 11, fontWeight: 700, color: '#4ade80', marginBottom: 14, letterSpacing: 1 }}>VOCÊ AGORA</div>
  <p style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.5)', marginBottom: 8 }}>FREE</p>
  <p style={{ fontSize: 32, fontWeight: 900, color: '#4ade80', marginBottom: 20 }}>Grátis</p>
- {[
- ['', 'Acesso aos módulos de treinamento'],
- ['', 'Certificado de conclusão'],
- ['', 'Indicar novos membros'],
- ['', 'Painel de gestão de equipe'],
- ['', 'Relatórios e métricas'],
- ['', 'Templates de arte personalizados'],
- ].map(([ic, txt]) => (
- <p key={txt} style={{ fontSize: 13, marginBottom: 8, display: 'flex', gap: 8, alignItems: 'flex-start', color: ic === '' ? 'rgba(241,245,249,0.3)' : 'rgba(241,245,249,0.85)' }}>
- <span style={{ flexShrink: 0 }}>{ic === '' ? '—' : ''}</span>{txt}
+ {freeItems.map(({ label, ok }) => (
+ <p key={label} style={{ fontSize: 13, marginBottom: 8, display: 'flex', gap: 8, alignItems: 'center', color: ok ? 'rgba(241,245,249,0.85)' : 'rgba(241,245,249,0.3)' }}>
+ {ok
+ ? <Check size={13} style={{ color: '#4ade80', flexShrink: 0 }} />
+ : <X size={13} style={{ flexShrink: 0 }} />}
+ {label}
  </p>
  ))}
  </div>
@@ -120,15 +137,9 @@ export default async function PlanoFreePage() {
  <p style={{ fontSize: 13, fontWeight: 700, color: '#818cf8', marginBottom: 8 }}>PRO</p>
  <p style={{ fontSize: 32, fontWeight: 900, color: '#818cf8', marginBottom: 4 }}>R${valorPro}<span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(241,245,249,0.4)' }}>/mês</span></p>
  <p style={{ fontSize: 11, color: 'rgba(241,245,249,0.4)', marginBottom: 16 }}>ou GRÁTIS com 20 PROs na rede</p>
- {[
- 'Tudo do FREE, mais:',
- ' Painel completo de gestão',
- ' Relatórios da equipe',
- ' Templates de arte',
- ' Links de captação exclusivos',
- ' WhatsApp direto para equipe',
- ].map(txt => (
- <p key={txt} style={{ fontSize: 13, marginBottom: 8, color: txt.startsWith('') ? '#c4b5fd' : 'rgba(241,245,249,0.5)', fontWeight: txt === 'Tudo do FREE, mais:' ? 600 : 400 }}>
+ {proItems.map((txt, i) => (
+ <p key={txt} style={{ fontSize: 13, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 7, color: i === 0 ? 'rgba(241,245,249,0.5)' : '#c4b5fd', fontWeight: i === 0 ? 600 : 400 }}>
+ {i > 0 && <Check size={12} style={{ color: '#818cf8', flexShrink: 0 }} />}
  {txt}
  </p>
  ))}
