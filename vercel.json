@@ -10,7 +10,7 @@
     { "path": "/api/cron/lembretes-ao-vivo",       "schedule": "*/30 * * * *" },
     { "path": "/api/cron/verificar-pagamentos",    "schedule": "*/1 * * * *"  },
     { "path": "/api/cron/processar-pdfs",          "schedule": "*/2 * * * *"  },
-    { "path": "/api/cron/processar-webhooks",      "schedule": "*/5 * * * *"  },
+    { "path": "/api/cron/processar-webhooks",      "schedule": "*/1 * * * *"  },
     { "path": "/api/cron/limpar-sessoes",          "schedule": "0 3 * * *"    }
   ]
 }
