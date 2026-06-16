@@ -243,57 +243,6 @@ export type Database = {
           },
         ]
       }
-      biblioteca: {
-        Row: {
-          ativo: boolean | null
-          autor: string | null
-          capa_url: string | null
-          categoria: string | null
-          created_at: string | null
-          descricao: string | null
-          duracao: string | null
-          id: string
-          ordem: number | null
-          plano: string | null
-          tenant_id: string | null
-          tipo: string | null
-          titulo: string
-          url: string
-        }
-        Insert: {
-          ativo?: boolean | null
-          autor?: string | null
-          capa_url?: string | null
-          categoria?: string | null
-          created_at?: string | null
-          descricao?: string | null
-          duracao?: string | null
-          id?: string
-          ordem?: number | null
-          plano?: string | null
-          tenant_id?: string | null
-          tipo?: string | null
-          titulo: string
-          url: string
-        }
-        Update: {
-          ativo?: boolean | null
-          autor?: string | null
-          capa_url?: string | null
-          categoria?: string | null
-          created_at?: string | null
-          descricao?: string | null
-          duracao?: string | null
-          id?: string
-          ordem?: number | null
-          plano?: string | null
-          tenant_id?: string | null
-          tipo?: string | null
-          titulo?: string
-          url?: string
-        }
-        Relationships: []
-      }
       agente_pacotes: {
         Row: {
           ativo: boolean
@@ -1058,6 +1007,65 @@ export type Database = {
           },
         ]
       }
+      biblioteca: {
+        Row: {
+          ativo: boolean | null
+          autor: string | null
+          capa_url: string | null
+          categoria: string | null
+          created_at: string | null
+          descricao: string | null
+          duracao: string | null
+          id: string
+          ordem: number | null
+          plano: string | null
+          tenant_id: string | null
+          tipo: string | null
+          titulo: string
+          url: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          autor?: string | null
+          capa_url?: string | null
+          categoria?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          duracao?: string | null
+          id?: string
+          ordem?: number | null
+          plano?: string | null
+          tenant_id?: string | null
+          tipo?: string | null
+          titulo: string
+          url: string
+        }
+        Update: {
+          ativo?: boolean | null
+          autor?: string | null
+          capa_url?: string | null
+          categoria?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          duracao?: string | null
+          id?: string
+          ordem?: number | null
+          plano?: string | null
+          tenant_id?: string | null
+          tipo?: string | null
+          titulo?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "biblioteca_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clientes: {
         Row: {
           ativo: boolean | null
@@ -1640,7 +1648,7 @@ export type Database = {
           status?: string
           tenant_id?: string | null
           tipo?: string | null
-          txid?: string
+          txid?: string | null
           valor?: number
           vencimento?: string | null
         }
@@ -1848,6 +1856,41 @@ export type Database = {
         }
         Relationships: []
       }
+      mensagens_log: {
+        Row: {
+          chave: string
+          created_at: string | null
+          destinatario: string
+          enviado_em: string
+          id: string
+          tenant_id: string | null
+        }
+        Insert: {
+          chave: string
+          created_at?: string | null
+          destinatario: string
+          enviado_em?: string
+          id?: string
+          tenant_id?: string | null
+        }
+        Update: {
+          chave?: string
+          created_at?: string | null
+          destinatario?: string
+          enviado_em?: string
+          id?: string
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensagens_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mensagens_template: {
         Row: {
           chave: string
@@ -1882,33 +1925,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      mensagens_log: {
-        Row: {
-          chave: string
-          created_at: string | null
-          destinatario: string
-          enviado_em: string
-          id: string
-          tenant_id: string | null
-        }
-        Insert: {
-          chave: string
-          created_at?: string | null
-          destinatario: string
-          enviado_em?: string
-          id?: string
-          tenant_id?: string | null
-        }
-        Update: {
-          chave?: string
-          created_at?: string | null
-          destinatario?: string
-          enviado_em?: string
-          id?: string
-          tenant_id?: string | null
-        }
-        Relationships: []
       }
       modulos: {
         Row: {
