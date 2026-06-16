@@ -149,7 +149,7 @@ DROP POLICY IF EXISTS "deny_direct_access" ON contratos;
 
 CREATE POLICY "contratos_read" ON contratos FOR SELECT USING (
   tenant_id = auth_admin_tenant_id()
-  OR gestor_id = auth_gestor_id()
+  OR aluno_id = auth_aluno_id()
 );
 CREATE POLICY "contratos_write" ON contratos FOR INSERT WITH CHECK (
   tenant_id = auth_admin_tenant_id()
