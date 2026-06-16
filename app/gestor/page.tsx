@@ -91,10 +91,10 @@ export default async function GestorPage() {
  const artesTemplates = (templatesRaw ?? []).filter((t: any) => !t.gestor_id || t.gestor_id === gestor.id)
 
  const host = (await headers()).get('host') ?? ''
- const [siteConfig, appUrl] = [await getSiteConfig(host), await getAppUrl()]
+ const siteConfig = await getSiteConfig(host)
  const baseUrl = siteConfig.dominioCustomizado
  ? `https://${siteConfig.dominioCustomizado}`
- : appUrl
+ : await getAppUrl(gestor.tenant_id)
 
  const { data: capaCfg } = await adminClient.from('configuracoes')
  .select('valor').eq('chave', 'modulo_capa_padrao').maybeSingle()

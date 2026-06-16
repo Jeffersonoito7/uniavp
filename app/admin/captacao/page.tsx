@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
+import { getAppUrl } from '@/lib/get-app-url'
 import AdminLayout from '../AdminLayout'
 import CaptacaoCliente from './CaptacaoCliente'
 
@@ -14,7 +15,7 @@ export default async function CaptacaoPage() {
 
  const adminClient = createServiceRoleClient()
  const { data: adminRecord } = await adminClient.from('admins')
- .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+ .select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
  if (!adminRecord) redirect('/entrar?p=adm')
 
  const { data: gestores } = await adminClient.from('gestores')
@@ -25,7 +26,7 @@ export default async function CaptacaoPage() {
  const siteConfig = await getSiteConfig(host)
  const baseUrl = siteConfig.dominioCustomizado
  ? `https://${siteConfig.dominioCustomizado}`
- : `https://${host.replace(/^adm\./, 'uniavp.')}`
+ : await getAppUrl(adminRecord.tenant_id)
 
  return (
  <AdminLayout>
