@@ -19,12 +19,30 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Campos obrigatórios: nome, email, whatsapp, senha' }, { status: 400 })
   }
 
-  const { data: authUser, error: authError } = await adminClient.auth.admin.createUser({
+  let { data: authUser, error: authError } = await adminClient.auth.admin.createUser({
     email,
     password: senha,
     email_confirm: true,
   })
-  if (authError || !authUser.user) {
+
+  if (authError?.message?.toLowerCase().includes('already')) {
+    // Email já existe em auth.users — tenta reutilizar
+    const { data: list } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 })
+    const existing = list?.users?.find(u => u.email === email)
+    if (!existing) {
+      return NextResponse.json({ error: 'Email já cadastrado' }, { status: 400 })
+    }
+    const { data: gestorExistente } = await adminClient.from('gestores')
+      .select('id').eq('user_id', existing.id).maybeSingle()
+    if (gestorExistente) {
+      return NextResponse.json({ error: 'Este email já pertence a um gestor cadastrado' }, { status: 400 })
+    }
+    await adminClient.auth.admin.updateUserById(existing.id, { password: senha })
+    authUser = { user: existing } as typeof authUser
+    authError = null
+  }
+
+  if (authError || !authUser?.user) {
     return NextResponse.json({ error: authError?.message ?? 'Erro ao criar usuário' }, { status: 400 })
   }
 
