@@ -94,6 +94,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/super/login') ||
     pathname.startsWith('/convite') ||
     pathname.startsWith('/g/') ||
+    pathname.startsWith('/c/') ||
     pathname.startsWith('/planos') ||
     pathname.startsWith('/api/') ||
     pathname.startsWith('/verificar/') ||

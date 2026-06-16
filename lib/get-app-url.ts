@@ -28,9 +28,12 @@ async function resolve(tenantId?: string | null): Promise<string> {
       .eq('chave', 'dominio_customizado')
       .maybeSingle()
 
-    const custom = cfg?.valor
-      ? String(JSON.parse(String(cfg.valor))).replace(/^https?:\/\//, '')
-      : ''
+    const raw = cfg?.valor != null ? String(cfg.valor) : ''
+    let resolved = raw
+    if (raw) {
+      try { resolved = String(JSON.parse(raw)) } catch { /* raw já é string */ }
+    }
+    const custom = resolved.replace(/"/g, '').replace(/^https?:\/\//, '').trim()
     if (custom) return `https://${custom}`
 
     // 2. Domínio base do cliente → padrão free.dominio
