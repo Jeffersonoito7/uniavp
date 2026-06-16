@@ -4,7 +4,7 @@ import { URL } from 'url'
 
 const BASE = process.env.EFI_SANDBOX === 'true'
   ? 'https://sandbox.gerencianet.com.br'
-  : 'https://api.efipay.com.br'
+  : 'https://api.gerencianet.com.br'
 
 function rawRequest(
   url: string,

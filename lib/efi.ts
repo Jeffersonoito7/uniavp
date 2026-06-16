@@ -16,10 +16,11 @@ const BASE = process.env.EFI_SANDBOX === 'true'
   ? 'https://pix-h.api.efipay.com.br'
   : 'https://pix.api.efipay.com.br'
 
-// Base separada para boleto (API de cobranças — não usa certificado)
+// Base separada para boleto/cartão/assinaturas (API legada — não usa certificado)
+// api.efipay.com.br redireciona para a documentação; o domínio legado correto é gerencianet.com.br
 const BASE_BOLETO = process.env.EFI_SANDBOX === 'true'
   ? 'https://sandbox.gerencianet.com.br'
-  : 'https://api.efipay.com.br'
+  : 'https://api.gerencianet.com.br'
 
 function getAgent() {
   const certBase64 = process.env.EFI_CERT_BASE64!.replace(/\s/g, '')
