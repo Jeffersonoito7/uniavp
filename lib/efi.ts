@@ -288,32 +288,31 @@ export async function criarLinkCartaoAnual(params: {
 }): Promise<{ paymentUrl: string; chargeId: number }> {
   const token = await getTokenBoleto()
 
-  // 1. Cria a cobrança com notification_url
+  // 1. Cria a cobrança
   const { data: charge } = await httpsRequestSimples(`${BASE_BOLETO}/v1/charge`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      items: [{
-        name: params.descricao || 'Assinatura Anual PRO',
-        value: Math.round(params.valor * 100),
-        amount: 1,
-      }],
-      notification_url: params.notificationUrl,
+      items: [{ name: params.descricao || 'Assinatura Anual PRO', value: Math.round(params.valor * 100), amount: 1 }],
     }),
   })
   const c = charge as EfiChargeResponse
   if (!c.data?.charge_id) throw new Error(`Efí charge: ${JSON.stringify(c)}`)
   const chargeId = c.data.charge_id
 
-  // 2. Gera link de pagamento (Efí hospeda a página do cartão)
+  // 2. Define notification_url via metadata (campo não aceito no body da cobrança)
+  await httpsRequestSimples(`${BASE_BOLETO}/v1/charge/${chargeId}/metadata`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ notification_url: params.notificationUrl }),
+  })
+
+  // 3. Gera link de pagamento cartão (Efí hospeda a página)
   const expire = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   const { data: link } = await httpsRequestSimples(`${BASE_BOLETO}/v1/charge/${chargeId}/link`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      payment_method: 'credit_card',
-      expire_at: expire,
-    }),
+    body: JSON.stringify({ payment_method: 'credit_card', expire_at: expire, message: params.descricao || 'Assinatura Anual PRO', request_delivery_address: false }),
   })
   const l = link as EfiLinkResponse
   const paymentUrl = l.data?.payment_url || l.data?.link || ''
