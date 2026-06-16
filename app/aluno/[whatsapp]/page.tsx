@@ -196,7 +196,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  ? adminClient.from('alunos').select('nome, created_at').eq('indicador_id', meuIndicador.id).order('created_at', { ascending: false }).limit(5)
  : Promise.resolve({ data: null, count: null, error: null }),
  ])
- const ultimosIndicados = (ultimosIndicadosRows ?? []).map((r: { nome: string; created_at: string }) => ({ nome: r.nome, criado_em: r.created_at }))
+ const ultimosIndicados = (ultimosIndicadosRows ?? []).map((r: { nome: string; created_at: string | null }) => ({ nome: r.nome, criado_em: r.created_at ?? '' }))
 
  const nivel = calcularNivel(totalPontos)
  const progressoPct = nivel.prox ? Math.round(((nivel.atual - nivel.min) / (nivel.max - nivel.min)) * 100) : 100
