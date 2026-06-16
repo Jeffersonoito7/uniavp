@@ -254,6 +254,74 @@ export async function criarBoleto(params: {
   }
 }
 
+// ── LINK DE PAGAMENTO CARTÃO ANUAL ────────────────────────────────────────
+
+type EfiLinkResponse = { data?: { payment_url?: string; link?: string; charge_id?: number } }
+type EfiNotifResponse = { data?: Array<{ status?: { current?: string }; identifiers?: { charge_id?: number }; value?: number }> }
+type EfiChargeGetResponse = { data?: { status?: string; charge_id?: number } }
+
+export async function criarLinkCartaoAnual(params: {
+  valor: number
+  descricao?: string
+  notificationUrl: string
+}): Promise<{ paymentUrl: string; chargeId: number }> {
+  const token = await getTokenBoleto()
+
+  // 1. Cria a cobrança com notification_url
+  const { data: charge } = await httpsRequestSimples(`${BASE_BOLETO}/v1/charge`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      items: [{
+        name: params.descricao || 'Assinatura Anual PRO',
+        value: Math.round(params.valor * 100),
+        amount: 1,
+      }],
+      notification_url: params.notificationUrl,
+    }),
+  })
+  const c = charge as EfiChargeResponse
+  if (!c.data?.charge_id) throw new Error(`Efí charge: ${JSON.stringify(c)}`)
+  const chargeId = c.data.charge_id
+
+  // 2. Gera link de pagamento (Efí hospeda a página do cartão)
+  const expire = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const { data: link } = await httpsRequestSimples(`${BASE_BOLETO}/v1/charge/${chargeId}/link`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      payment_method: 'credit_card',
+      expire_at: expire,
+    }),
+  })
+  const l = link as EfiLinkResponse
+  const paymentUrl = l.data?.payment_url || l.data?.link || ''
+  if (!paymentUrl) throw new Error(`Efí link: ${JSON.stringify(link)}`)
+
+  return { paymentUrl, chargeId }
+}
+
+export async function consultarNotificacaoCartao(notificationToken: string): Promise<{ chargeId: number | null; pago: boolean }> {
+  const token = await getTokenBoleto()
+  const { data } = await httpsRequestSimples(`${BASE_BOLETO}/v1/notification/${notificationToken}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const n = data as EfiNotifResponse
+  const item = n.data?.[0]
+  const chargeId = item?.identifiers?.charge_id ?? null
+  const pago = item?.status?.current === 'paid'
+  return { chargeId, pago }
+}
+
+export async function consultarStatusCharge(chargeId: number): Promise<{ pago: boolean }> {
+  const token = await getTokenBoleto()
+  const { data } = await httpsRequestSimples(`${BASE_BOLETO}/v1/charge/${chargeId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const d = data as EfiChargeGetResponse
+  return { pago: d.data?.status === 'paid' }
+}
+
 export async function consultarWebhook(): Promise<{ webhookUrl?: string; registrado: boolean; erro?: string }> {
   try {
     const token = await getToken()

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import { criarCobrancaPix } from '@/lib/efi'
+import { criarCobrancaPix, criarLinkCartaoAnual } from '@/lib/efi'
 import { randomUUID } from 'crypto'
 import { verificarPROGratuito, contarPROsAtivosIndicados, getLimitePROGratuito } from '@/lib/pros-indicados'
 import { captureException } from '@/lib/monitor'
@@ -27,6 +27,17 @@ async function getValorPlano(adminClient: any, tenantId: string | null): Promise
   return isNaN(parsed) ? 97 : Math.max(1, parsed)
 }
 
+async function getValorAnual(adminClient: any, tenantId: string | null, valorMensal: number): Promise<number> {
+  if (tenantId) {
+    const { data } = await adminClient.from('configuracoes')
+      .select('valor').eq('chave', 'plano_pro_valor_anual').eq('tenant_id', tenantId).maybeSingle()
+    const parsed = parseFloat(String(data?.valor ?? '').replace(/"/g, ''))
+    if (!isNaN(parsed) && parsed > 0) return parsed
+  }
+  // Padrão: ~17,5% de desconto no anual
+  return Math.round(valorMensal * 12 * 0.824)
+}
+
 async function getModoCobranca(adminClient: any, tenantId: string | null): Promise<string> {
   if (!tenantId) return 'individual'
   const { data } = await adminClient.from('configuracoes')
@@ -45,6 +56,7 @@ export async function GET() {
   const tenantIdGet: string | null = alunoCtxGet?.tenant_id ?? null
 
   const valorPlano = await getValorPlano(adminClient, tenantIdGet)
+  const valorAnual = await getValorAnual(adminClient, tenantIdGet, valorPlano)
 
   // Verifica se já tem gestor ativo (já é PRO)
   const { data: gestorAtivo } = await adminClient.from('gestores')
@@ -58,7 +70,7 @@ export async function GET() {
       getLimitePROGratuito(adminClient, tenantIdGet),
     ])
     const modoCobranca = await getModoCobranca(adminClient, tenantIdGet)
-    return NextResponse.json({ jaEhPro: true, valorPlano, prosIndicados, limiteGratuito, modoCobranca })
+    return NextResponse.json({ jaEhPro: true, valorPlano, valorAnual, prosIndicados, limiteGratuito, modoCobranca })
   }
 
   // Verifica pagamento pendente
@@ -68,7 +80,7 @@ export async function GET() {
   let ultimoPag = null
   if (gestorPendente) {
     const { data: pag } = await adminClient.from('gestor_pagamentos')
-      .select('pix_copia_cola, qrcode_base64, vencimento, status')
+      .select('pix_copia_cola, qrcode_base64, vencimento, status, tipo, payment_url')
       .eq('gestor_id', gestorPendente.id)
       .eq('status', 'pendente')
       .order('created_at', { ascending: false })
@@ -82,13 +94,16 @@ export async function GET() {
   let nomeSite = 'Universidade'
   try { nomeSite = JSON.parse(String(siteNomeCfg?.valor ?? '')) || nomeSite } catch { /* */ }
 
-  return NextResponse.json({ jaEhPro: false, valorPlano, ultimoPagamento: ultimoPag, whatsapp: aluno.whatsapp, nomeSite })
+  return NextResponse.json({ jaEhPro: false, valorPlano, valorAnual, ultimoPagamento: ultimoPag, whatsapp: aluno.whatsapp, nomeSite })
 }
 
-export async function POST() {
+export async function POST(req: Request) {
   const ctx = await getAluno()
   if (!ctx) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
   const { aluno, user, adminClient } = ctx
+
+  let tipo: 'pix' | 'cartao' = 'pix'
+  try { const b = await req.json(); tipo = b?.tipo === 'cartao' ? 'cartao' : 'pix' } catch { /* */ }
 
   // Busca tenant do aluno para contexto de cobrança
   const { data: alunoCtx } = await adminClient.from('alunos')
@@ -96,6 +111,7 @@ export async function POST() {
   const tenantIdCtx: string | null = alunoCtx?.tenant_id ?? null
 
   const valorPlano = await getValorPlano(adminClient, tenantIdCtx)
+  const valorAnual = await getValorAnual(adminClient, tenantIdCtx, valorPlano)
 
   // Verifica se já é PRO
   const { data: gestorAtivo } = await adminClient.from('gestores')
@@ -173,11 +189,38 @@ export async function POST() {
     }, { status: 403 })
   }
 
-  // Gera PIX
-  const vencimento = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  const txid = randomUUID().replace(/-/g, '').substring(0, 35)
-
   try {
+    // ── CARTÃO ANUAL ─────────────────────────────────────────────────
+    if (tipo === 'cartao') {
+      const notifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/efi/cartao?token=${process.env.EFI_WEBHOOK_TOKEN}`
+      const { paymentUrl, chargeId } = await criarLinkCartaoAnual({
+        valor: valorAnual,
+        descricao: 'Assinatura Anual PRO',
+        notificationUrl: notifyUrl,
+      })
+
+      const { data: pagamento } = await adminClient.from('gestor_pagamentos')
+        .insert({
+          gestor_id: gestorId,
+          valor: valorAnual,
+          status: 'pendente',
+          tipo: 'cartao',
+          payment_url: paymentUrl,
+          charge_id: chargeId,
+          plano_meses: 12,
+          vencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          ...(tenantId ? { tenant_id: tenantId } : {}),
+        } as any)
+        .select()
+        .single()
+
+      return NextResponse.json({ ok: true, tipo: 'cartao', pagamento, paymentUrl })
+    }
+
+    // ── PIX MENSAL ───────────────────────────────────────────────────
+    const vencimento = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    const txid = randomUUID().replace(/-/g, '').substring(0, 35)
+
     const { pixCopiaECola, qrcodeBase64 } = await criarCobrancaPix({
       txid,
       valor: valorPlano,
@@ -192,11 +235,13 @@ export async function POST() {
         txid,
         valor: valorPlano,
         status: 'pendente',
+        tipo: 'pix',
         pix_copia_cola: pixCopiaECola,
         qrcode_base64: qrcodeBase64,
         vencimento,
+        plano_meses: 1,
         ...(tenantId ? { tenant_id: tenantId } : {}),
-      })
+      } as any)
       .select()
       .single()
 
@@ -204,10 +249,9 @@ export async function POST() {
       .update({ pix_txid: txid })
       .eq('id', gestorId)
 
-    return NextResponse.json({ ok: true, pagamento })
+    return NextResponse.json({ ok: true, tipo: 'pix', pagamento })
   } catch (e: any) {
     const raw: string = e.message ?? ''
-    // Loga apenas o tipo do erro — evita expor tokens ou respostas brutas da API
     captureException(e, { endpoint: 'consultor/assinar-pro', extra: { tipo: e.constructor?.name ?? 'Error' } })
     const msgUsuario = raw.includes('invalid_client') || raw.includes('credentials')
       ? 'Erro na integração de pagamento. Entre em contato com o suporte.'
