@@ -1,12 +1,11 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { BookOpen, Users, Link2, BarChart2, MessageCircle, Image as ImageIcon, Repeat2, Award, QrCode, Smartphone, CheckCircle } from 'lucide-react'
+import { QrCode, CheckCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 type Info = {
  jaEhPro: boolean
  valorPlano: number
- whatsapp: string | null
  nomeSite?: string
  ultimoPagamento: { pix_copia_cola: string; qrcode_base64: string; vencimento: string; status: string } | null
 }
@@ -16,14 +15,6 @@ export default function AssinarProPage() {
  const [gerando, setGerando] = useState(false)
  const [copiado, setCopiado] = useState(false)
  const [msg, setMsg] = useState('')
-
- // ── Verificação WhatsApp PRO ─────────────────────────────────────
- const [wppVerificado, setWppVerificado] = useState(false)
- const [wppCodigoEnviado, setWppCodigoEnviado] = useState(false)
- const [wppCodigo, setWppCodigo] = useState('')
- const [wppCarregando, setWppCarregando] = useState(false)
- const [wppErro, setWppErro] = useState('')
-
  const router = useRouter()
 
  useEffect(() => {
@@ -35,7 +26,7 @@ export default function AssinarProPage() {
  if (info?.ultimoPagamento?.status !== 'pendente') return
  let tentativas = 0
  const id = setInterval(async () => {
- if (++tentativas> 120) { clearInterval(id); return }
+ if (++tentativas > 120) { clearInterval(id); return }
  try {
  const r = await fetch('/api/consultor/assinar-pro')
  const d = await r.json()
@@ -44,44 +35,6 @@ export default function AssinarProPage() {
  }, 5000)
  return () => clearInterval(id)
  }, [info?.ultimoPagamento?.status, router])
-
- async function enviarCodigoWpp() {
- if (!info?.whatsapp) return
- setWppCarregando(true); setWppErro('')
- const res = await fetch('/api/verificar-whatsapp', {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ whatsapp: info.whatsapp }),
- })
- const data = await res.json()
- if (data.wppIndisponivel) {
- setWppVerificado(true) // WhatsApp fora — libera direto
- } else if (data.ok) {
- setWppCodigoEnviado(true)
- } else {
- setWppErro(data.error ?? 'Erro ao enviar código.')
- }
- setWppCarregando(false)
- }
-
- async function confirmarCodigoWpp() {
- if (wppCodigo.length < 6 || !info?.whatsapp) return
- setWppCarregando(true); setWppErro('')
- const res = await fetch('/api/verificar-whatsapp', {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ whatsapp: info.whatsapp, codigo: wppCodigo }),
- })
- const data = await res.json()
- if (data.verificado) {
- setWppVerificado(true)
- setWppCodigoEnviado(false)
- } else {
- setWppErro(data.error ?? 'Código incorreto.')
- setWppCodigo('')
- }
- setWppCarregando(false)
- }
 
  async function gerarPix() {
  setGerando(true); setMsg('')
@@ -112,11 +65,6 @@ export default function AssinarProPage() {
  const valor = info?.valorPlano ?? 97
  const nomeSite = info?.nomeSite || 'Universidade'
  const nomePro = `${nomeSite} PRO`
- const wppFormatado = info?.whatsapp
- ? info.whatsapp.replace(/(\d{2})(\d{2})(\d{4,5})(\d{4})/, '+$1 ($2) $3-$4')
- : null
-
- // PIX pendente anterior não exige re-verificação
  const temPixPendente = pag?.status === 'pendente'
 
  return (
@@ -173,12 +121,14 @@ export default function AssinarProPage() {
  </div>
  </div>
 
- {/* PIX pendente → mostra direto sem precisar verificar de novo */}
+ {/* PIX pendente */}
  {temPixPendente ? (
  <div style={{ background: '#181b24', border: '1px solid #252836', borderRadius: 14, padding: '24px', textAlign: 'center' }}>
- <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}><QrCode size={16} style={{ opacity: 0.7, flexShrink: 0 }} />Pague via PIX e ative agora</p>
+ <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+ <QrCode size={16} style={{ opacity: 0.7, flexShrink: 0 }} />Pague via PIX e ative agora
+ </p>
  <p style={{ color: '#8a8fa3', fontSize: 13, marginBottom: 20 }}>
- Vence em: {pag!.vencimento ? new Date(pag!.vencimento + 'T12:00:00').toLocaleDateString('pt-BR') : '—'}
+ Vence em: {pag!.vencimento ? new Date(pag!.vencimento + 'T12:00:00').toLocaleDateString('pt-BR') : ''}
  </p>
  {qrSrc && (
  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
@@ -195,77 +145,11 @@ export default function AssinarProPage() {
  </div>
  </div>
  ) : (
- /* ── Verificação WhatsApp + Botão PIX ── */
+ /* Botão direto para gerar PIX */
  <div style={{ background: '#181b24', border: '1px solid #252836', borderRadius: 14, padding: '24px' }}>
-
- {!wppVerificado ? (
- /* Etapa 1: verificar WhatsApp */
- <div>
- <div style={{ textAlign: 'center', marginBottom: 20 }}>
- <Smartphone size={40} style={{ color: '#818cf8', margin: '0 auto 10px', display: 'block' }} />
- <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 6 }}>Confirme seu WhatsApp</p>
- <p style={{ color: '#8a8fa3', fontSize: 13, lineHeight: 1.6 }}>
- Para garantir que as notificações da sua equipe cheguem no lugar certo, precisamos confirmar seu número.
- </p>
- </div>
-
- {wppFormatado && (
- <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 10, padding: '12px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
- <Smartphone size={18} style={{ color: '#818cf8', flexShrink: 0 }} />
- <div>
- <p style={{ fontSize: 11, color: '#818cf8', fontWeight: 700, margin: 0 }}>Número cadastrado</p>
- <p style={{ fontSize: 15, fontWeight: 800, margin: 0 }}>{wppFormatado}</p>
- </div>
- </div>
- )}
-
- {!wppCodigoEnviado ? (
- <>
- <button onClick={enviarCodigoWpp} disabled={wppCarregando} className="btn btn-wpp btn-full" style={{ fontSize: 15 }}>
- {wppCarregando ? 'Enviando...' : 'Enviar código de verificação'}
- </button>
- {wppErro && <p style={{ color: '#f87171', fontSize: 13, marginTop: 8, textAlign: 'center' }}>{wppErro}</p>}
- </>
- ) : (
- <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
- <p style={{ fontSize: 13, color: '#8a8fa3', textAlign: 'center', margin: 0 }}>
- Código enviado! Abra seu WhatsApp e digite os 6 dígitos:
- </p>
- <div style={{ display: 'flex', gap: 8 }}>
- <input
- type="text" inputMode="numeric" maxLength={6}
- placeholder="000000"
- value={wppCodigo}
- onChange={e => setWppCodigo(e.target.value.replace(/\D/g, ''))}
- onKeyDown={e => e.key === 'Enter' && confirmarCodigoWpp()}
- style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, padding: '14px 12px', color: '#fff', fontSize: 24, fontWeight: 900, textAlign: 'center', letterSpacing: 12, outline: 'none' }}
- />
- <button onClick={confirmarCodigoWpp}
- disabled={wppCarregando || wppCodigo.length < 6}
- className="btn btn-green" style={{ padding: '0 18px', borderRadius: 10, whiteSpace: 'nowrap' }}>
- {wppCarregando ? '...' : 'OK'}
- </button>
- </div>
- {wppErro && <p style={{ color: '#f87171', fontSize: 13, textAlign: 'center', margin: 0 }}>{wppErro}</p>}
- <button onClick={enviarCodigoWpp} disabled={wppCarregando}
- style={{ background: 'none', border: 'none', color: '#8a8fa3', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
- Reenviar código →
- </button>
- </div>
- )}
- </div>
- ) : (
- /* Etapa 2: WhatsApp verificado → gerar PIX */
- <div>
- <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#22c55e', fontSize: 14, fontWeight: 700, marginBottom: 20 }}>
- <CheckCircle size={20} style={{ color: '#22c55e', flexShrink: 0 }} /> WhatsApp verificado!
- </div>
  <button onClick={gerarPix} disabled={gerando} className="btn btn-primary btn-full btn-lg" style={{ fontSize: 18 }}>
  {gerando ? 'Gerando PIX...' : `Assinar ${nomePro} — R$ ${valor.toFixed(2).replace('.', ',')} /mês`}
  </button>
- </div>
- )}
-
  {msg && <p style={{ color: '#f87171', fontSize: 13, marginTop: 10, textAlign: 'center' }}>{msg}</p>}
  </div>
  )}
