@@ -16,7 +16,7 @@ export default async function TesteCarteira() {
  fotoUrl={null}
  dataFormacao="13/05/2025"
  validade="13/05/2027"
- cargaHoraria="8h 30min"
+ cpf="000.000.000-00"
  turma="2025"
  whatsapp="5500000000000"
  status="concluido"
