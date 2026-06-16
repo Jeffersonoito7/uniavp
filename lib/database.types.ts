@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       admins: {
@@ -54,6 +79,402 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "admins_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agente_argumentos: {
+        Row: {
+          argumento: string
+          ativo: boolean
+          categoria: string
+          created_at: string | null
+          id: string
+          ordem: number
+          tenant_id: string | null
+        }
+        Insert: {
+          argumento: string
+          ativo?: boolean
+          categoria: string
+          created_at?: string | null
+          id?: string
+          ordem?: number
+          tenant_id?: string | null
+        }
+        Update: {
+          argumento?: string
+          ativo?: boolean
+          categoria?: string
+          created_at?: string | null
+          id?: string
+          ordem?: number
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agente_argumentos_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agente_config: {
+        Row: {
+          ativo: boolean
+          created_at: string | null
+          creditos_boas_vindas: number
+          id: string
+          instancia_whatsapp: string | null
+          modelo: string
+          nome_assistente: string
+          prompt_extra: string | null
+          tenant_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string | null
+          creditos_boas_vindas?: number
+          id?: string
+          instancia_whatsapp?: string | null
+          modelo?: string
+          nome_assistente?: string
+          prompt_extra?: string | null
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string | null
+          creditos_boas_vindas?: number
+          id?: string
+          instancia_whatsapp?: string | null
+          modelo?: string
+          nome_assistente?: string
+          prompt_extra?: string | null
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agente_config_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agente_config_global: {
+        Row: {
+          ativo: boolean
+          creditos_boas_vindas_padrao: number
+          criado_por: string | null
+          id: string
+          modelo_padrao: string
+          nome_assistente: string
+          prompt_base: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          creditos_boas_vindas_padrao?: number
+          criado_por?: string | null
+          id?: string
+          modelo_padrao?: string
+          nome_assistente?: string
+          prompt_base?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          creditos_boas_vindas_padrao?: number
+          criado_por?: string | null
+          id?: string
+          modelo_padrao?: string
+          nome_assistente?: string
+          prompt_base?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      agente_creditos: {
+        Row: {
+          gestor_id: string
+          id: string
+          saldo: number
+          tenant_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          gestor_id: string
+          id?: string
+          saldo?: number
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          gestor_id?: string
+          id?: string
+          saldo?: number
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agente_creditos_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: true
+            referencedRelation: "gestores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agente_creditos_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      biblioteca: {
+        Row: {
+          ativo: boolean | null
+          autor: string | null
+          capa_url: string | null
+          categoria: string | null
+          created_at: string | null
+          descricao: string | null
+          duracao: string | null
+          id: string
+          ordem: number | null
+          plano: string | null
+          tenant_id: string | null
+          tipo: string | null
+          titulo: string
+          url: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          autor?: string | null
+          capa_url?: string | null
+          categoria?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          duracao?: string | null
+          id?: string
+          ordem?: number | null
+          plano?: string | null
+          tenant_id?: string | null
+          tipo?: string | null
+          titulo: string
+          url: string
+        }
+        Update: {
+          ativo?: boolean | null
+          autor?: string | null
+          capa_url?: string | null
+          categoria?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          duracao?: string | null
+          id?: string
+          ordem?: number | null
+          plano?: string | null
+          tenant_id?: string | null
+          tipo?: string | null
+          titulo?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      agente_pacotes: {
+        Row: {
+          ativo: boolean
+          created_at: string | null
+          creditos: number
+          id: string
+          nome: string
+          ordem: number
+          tenant_id: string | null
+          valor: number
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string | null
+          creditos: number
+          id?: string
+          nome: string
+          ordem?: number
+          tenant_id?: string | null
+          valor: number
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string | null
+          creditos?: number
+          id?: string
+          nome?: string
+          ordem?: number
+          tenant_id?: string | null
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agente_pacotes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agente_recargas: {
+        Row: {
+          created_at: string | null
+          creditos: number
+          gestor_id: string
+          id: string
+          pacote_id: string | null
+          pago_em: string | null
+          status: string
+          tenant_id: string | null
+          txid: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string | null
+          creditos: number
+          gestor_id: string
+          id?: string
+          pacote_id?: string | null
+          pago_em?: string | null
+          status?: string
+          tenant_id?: string | null
+          txid: string
+          valor: number
+        }
+        Update: {
+          created_at?: string | null
+          creditos?: number
+          gestor_id?: string
+          id?: string
+          pacote_id?: string | null
+          pago_em?: string | null
+          status?: string
+          tenant_id?: string | null
+          txid?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agente_recargas_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: false
+            referencedRelation: "gestores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agente_recargas_pacote_id_fkey"
+            columns: ["pacote_id"]
+            isOneToOne: false
+            referencedRelation: "agente_pacotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agente_recargas_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agente_sessoes: {
+        Row: {
+          created_at: string | null
+          dados: Json
+          estado: string
+          expires_at: string
+          gestor_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          dados?: Json
+          estado: string
+          expires_at: string
+          gestor_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          dados?: Json
+          estado?: string
+          expires_at?: string
+          gestor_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agente_sessoes_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: true
+            referencedRelation: "gestores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agente_transacoes: {
+        Row: {
+          cobranca_id: string | null
+          created_at: string | null
+          creditos: number
+          descricao: string
+          gestor_id: string
+          id: string
+          tenant_id: string | null
+          tipo: string
+          valor_pago: number | null
+        }
+        Insert: {
+          cobranca_id?: string | null
+          created_at?: string | null
+          creditos: number
+          descricao: string
+          gestor_id: string
+          id?: string
+          tenant_id?: string | null
+          tipo: string
+          valor_pago?: number | null
+        }
+        Update: {
+          cobranca_id?: string | null
+          created_at?: string | null
+          creditos?: number
+          descricao?: string
+          gestor_id?: string
+          id?: string
+          tenant_id?: string | null
+          tipo?: string
+          valor_pago?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agente_transacoes_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: false
+            referencedRelation: "gestores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agente_transacoes_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "clientes"
@@ -324,6 +745,56 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          acao: string
+          created_at: string
+          dados_anteriores: Json | null
+          dados_novos: Json | null
+          entidade: string
+          entidade_id: string | null
+          id: string
+          ip: string | null
+          tenant_id: string | null
+          usuario_id: string | null
+          usuario_tipo: string | null
+        }
+        Insert: {
+          acao: string
+          created_at?: string
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          entidade: string
+          entidade_id?: string | null
+          id?: string
+          ip?: string | null
+          tenant_id?: string | null
+          usuario_id?: string | null
+          usuario_tipo?: string | null
+        }
+        Update: {
+          acao?: string
+          created_at?: string
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          entidade?: string
+          entidade_id?: string | null
+          id?: string
+          ip?: string | null
+          tenant_id?: string | null
+          usuario_id?: string | null
+          usuario_tipo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aula_arquivos: {
         Row: {
           aula_id: string
@@ -586,57 +1057,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      biblioteca: {
-        Row: {
-          ativo: boolean | null
-          autor: string | null
-          capa_url: string | null
-          categoria: string | null
-          created_at: string | null
-          descricao: string | null
-          duracao: string | null
-          id: string
-          ordem: number | null
-          plano: string | null
-          tenant_id: string | null
-          tipo: string | null
-          titulo: string
-          url: string
-        }
-        Insert: {
-          ativo?: boolean | null
-          autor?: string | null
-          capa_url?: string | null
-          categoria?: string | null
-          created_at?: string | null
-          descricao?: string | null
-          duracao?: string | null
-          id?: string
-          ordem?: number | null
-          plano?: string | null
-          tenant_id?: string | null
-          tipo?: string | null
-          titulo: string
-          url: string
-        }
-        Update: {
-          ativo?: boolean | null
-          autor?: string | null
-          capa_url?: string | null
-          categoria?: string | null
-          created_at?: string | null
-          descricao?: string | null
-          duracao?: string | null
-          id?: string
-          ordem?: number | null
-          plano?: string | null
-          tenant_id?: string | null
-          tipo?: string | null
-          titulo?: string
-          url?: string
-        }
-        Relationships: []
       }
       clientes: {
         Row: {
@@ -1051,6 +1471,53 @@ export type Database = {
           },
         ]
       }
+      fila_whatsapp: {
+        Row: {
+          created_at: string
+          erro: string | null
+          id: string
+          instancia: string | null
+          mensagem: string
+          numero: string
+          processado_em: string | null
+          status: string
+          tenant_id: string | null
+          tentativas: number
+        }
+        Insert: {
+          created_at?: string
+          erro?: string | null
+          id?: string
+          instancia?: string | null
+          mensagem: string
+          numero: string
+          processado_em?: string | null
+          status?: string
+          tenant_id?: string | null
+          tentativas?: number
+        }
+        Update: {
+          created_at?: string
+          erro?: string | null
+          id?: string
+          instancia?: string | null
+          mensagem?: string
+          numero?: string
+          processado_em?: string | null
+          status?: string
+          tenant_id?: string | null
+          tentativas?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fila_whatsapp_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forum_respostas: {
         Row: {
           aluno_id: string | null
@@ -1132,9 +1599,9 @@ export type Database = {
           gestor_id: string
           id: string
           pago_em: string | null
+          payment_url: string | null
           pix_copia_cola: string | null
           plano_meses: number | null
-          payment_url: string | null
           qrcode_base64: string | null
           status: string
           tenant_id: string | null
@@ -1149,9 +1616,9 @@ export type Database = {
           gestor_id: string
           id?: string
           pago_em?: string | null
+          payment_url?: string | null
           pix_copia_cola?: string | null
           plano_meses?: number | null
-          payment_url?: string | null
           qrcode_base64?: string | null
           status?: string
           tenant_id?: string | null
@@ -1166,14 +1633,14 @@ export type Database = {
           gestor_id?: string
           id?: string
           pago_em?: string | null
+          payment_url?: string | null
           pix_copia_cola?: string | null
           plano_meses?: number | null
-          payment_url?: string | null
           qrcode_base64?: string | null
           status?: string
           tenant_id?: string | null
           tipo?: string | null
-          txid?: string | null
+          txid?: string
           valor?: number
           vencimento?: string | null
         }
@@ -1381,6 +1848,68 @@ export type Database = {
         }
         Relationships: []
       }
+      mensagens_template: {
+        Row: {
+          chave: string
+          created_at: string
+          id: string
+          tenant_id: string | null
+          texto: string
+          updated_at: string
+        }
+        Insert: {
+          chave: string
+          created_at?: string
+          id?: string
+          tenant_id?: string | null
+          texto: string
+          updated_at?: string
+        }
+        Update: {
+          chave?: string
+          created_at?: string
+          id?: string
+          tenant_id?: string | null
+          texto?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensagens_template_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mensagens_log: {
+        Row: {
+          chave: string
+          created_at: string | null
+          destinatario: string
+          enviado_em: string
+          id: string
+          tenant_id: string | null
+        }
+        Insert: {
+          chave: string
+          created_at?: string | null
+          destinatario: string
+          enviado_em?: string
+          id?: string
+          tenant_id?: string | null
+        }
+        Update: {
+          chave?: string
+          created_at?: string | null
+          destinatario?: string
+          enviado_em?: string
+          id?: string
+          tenant_id?: string | null
+        }
+        Relationships: []
+      }
       modulos: {
         Row: {
           capa_url: string | null
@@ -1521,6 +2050,122 @@ export type Database = {
           id?: string
           usado?: boolean | null
           whatsapp?: string
+        }
+        Relationships: []
+      }
+      pdf_jobs: {
+        Row: {
+          contrato_id: string | null
+          created_at: string
+          erro: string | null
+          id: string
+          processado_em: string | null
+          status: string
+          tenant_id: string | null
+          tentativas: number
+        }
+        Insert: {
+          contrato_id?: string | null
+          created_at?: string
+          erro?: string | null
+          id?: string
+          processado_em?: string | null
+          status?: string
+          tenant_id?: string | null
+          tentativas?: number
+        }
+        Update: {
+          contrato_id?: string | null
+          created_at?: string
+          erro?: string | null
+          id?: string
+          processado_em?: string | null
+          status?: string
+          tenant_id?: string | null
+          tentativas?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pdf_jobs_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      perfis: {
+        Row: {
+          ativo: boolean | null
+          atualizado_em: string | null
+          obs_admin: string | null
+          pode_cnpj: boolean | null
+          pode_cpf: boolean | null
+          pode_lote: boolean | null
+          pode_placa: boolean | null
+          saldo_consultas: number
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          atualizado_em?: string | null
+          obs_admin?: string | null
+          pode_cnpj?: boolean | null
+          pode_cpf?: boolean | null
+          pode_lote?: boolean | null
+          pode_placa?: boolean | null
+          saldo_consultas?: number
+          user_id: string
+        }
+        Update: {
+          ativo?: boolean | null
+          atualizado_em?: string | null
+          obs_admin?: string | null
+          pode_cnpj?: boolean | null
+          pode_cpf?: boolean | null
+          pode_lote?: boolean | null
+          pode_placa?: boolean | null
+          saldo_consultas?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      planos_recarga: {
+        Row: {
+          ativo: boolean | null
+          consultas: number
+          created_at: string | null
+          descricao: string | null
+          destaque: boolean | null
+          economia_texto: string | null
+          id: string
+          nome: string
+          ordem: number | null
+          preco: number
+        }
+        Insert: {
+          ativo?: boolean | null
+          consultas: number
+          created_at?: string | null
+          descricao?: string | null
+          destaque?: boolean | null
+          economia_texto?: string | null
+          id?: string
+          nome: string
+          ordem?: number | null
+          preco: number
+        }
+        Update: {
+          ativo?: boolean | null
+          consultas?: number
+          created_at?: string | null
+          descricao?: string | null
+          destaque?: boolean | null
+          economia_texto?: string | null
+          id?: string
+          nome?: string
+          ordem?: number | null
+          preco?: number
         }
         Relationships: []
       }
@@ -1893,6 +2538,42 @@ export type Database = {
           },
         ]
       }
+      transacoes_pix: {
+        Row: {
+          consultas: number
+          criado_em: string | null
+          id: string
+          pago_em: string | null
+          plano_id: string
+          status: string
+          txid: string
+          user_id: string | null
+          valor: number
+        }
+        Insert: {
+          consultas: number
+          criado_em?: string | null
+          id?: string
+          pago_em?: string | null
+          plano_id: string
+          status?: string
+          txid: string
+          user_id?: string | null
+          valor: number
+        }
+        Update: {
+          consultas?: number
+          criado_em?: string | null
+          id?: string
+          pago_em?: string | null
+          plano_id?: string
+          status?: string
+          txid?: string
+          user_id?: string | null
+          valor?: number
+        }
+        Relationships: []
+      }
       verificacao_otp: {
         Row: {
           canal: string | null
@@ -1923,202 +2604,40 @@ export type Database = {
         }
         Relationships: []
       }
-      audit_log: {
-        Row: {
-          id: string
-          acao: string
-          entidade: string
-          entidade_id: string | null
-          tenant_id: string | null
-          usuario_id: string | null
-          usuario_tipo: string | null
-          dados_anteriores: Json | null
-          dados_novos: Json | null
-          ip: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          acao: string
-          entidade: string
-          entidade_id?: string | null
-          tenant_id?: string | null
-          usuario_id?: string | null
-          usuario_tipo?: string | null
-          dados_anteriores?: Json | null
-          dados_novos?: Json | null
-          ip?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          acao?: string
-          entidade?: string
-          entidade_id?: string | null
-          tenant_id?: string | null
-          usuario_id?: string | null
-          usuario_tipo?: string | null
-          dados_anteriores?: Json | null
-          dados_novos?: Json | null
-          ip?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      pdf_jobs: {
-        Row: {
-          id: string
-          contrato_id: string | null
-          tenant_id: string | null
-          status: string
-          tentativas: number
-          erro: string | null
-          created_at: string
-          processado_em: string | null
-        }
-        Insert: {
-          id?: string
-          contrato_id?: string | null
-          tenant_id?: string | null
-          status?: string
-          tentativas?: number
-          erro?: string | null
-          created_at?: string
-          processado_em?: string | null
-        }
-        Update: {
-          id?: string
-          contrato_id?: string | null
-          tenant_id?: string | null
-          status?: string
-          tentativas?: number
-          erro?: string | null
-          created_at?: string
-          processado_em?: string | null
-        }
-        Relationships: []
-      }
-      mensagens_template: {
-        Row: {
-          id: string
-          tenant_id: string | null
-          chave: string
-          texto: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          tenant_id?: string | null
-          chave: string
-          texto: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          tenant_id?: string | null
-          chave?: string
-          texto?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       webhook_events: {
         Row: {
-          id: string
+          created_at: string
+          erro: string | null
           fonte: string
-          txid: string
+          id: string
           payload: Json
+          processado_em: string | null
           status: string
           tentativas: number
-          erro: string | null
-          created_at: string
-          processado_em: string | null
+          txid: string
         }
         Insert: {
-          id?: string
+          created_at?: string
+          erro?: string | null
           fonte?: string
-          txid: string
+          id?: string
           payload: Json
+          processado_em?: string | null
           status?: string
           tentativas?: number
-          erro?: string | null
-          created_at?: string
-          processado_em?: string | null
+          txid: string
         }
         Update: {
-          id?: string
+          created_at?: string
+          erro?: string | null
           fonte?: string
-          txid?: string
+          id?: string
           payload?: Json
+          processado_em?: string | null
           status?: string
           tentativas?: number
-          erro?: string | null
-          created_at?: string
-          processado_em?: string | null
+          txid?: string
         }
-        Relationships: []
-      }
-      agente_config: {
-        Row: { id: string; tenant_id: string | null; nome_assistente: string; instancia_whatsapp: string | null; prompt_extra: string | null; modelo: string; creditos_boas_vindas: number; ativo: boolean; created_at: string; updated_at: string }
-        Insert: { id?: string; tenant_id?: string | null; nome_assistente?: string; instancia_whatsapp?: string | null; prompt_extra?: string | null; modelo?: string; creditos_boas_vindas?: number; ativo?: boolean; created_at?: string; updated_at?: string }
-        Update: { id?: string; tenant_id?: string | null; nome_assistente?: string; instancia_whatsapp?: string | null; prompt_extra?: string | null; modelo?: string; creditos_boas_vindas?: number; ativo?: boolean; updated_at?: string }
-        Relationships: []
-      }
-      agente_argumentos: {
-        Row: { id: string; tenant_id: string | null; categoria: string; argumento: string; ordem: number; ativo: boolean; created_at: string }
-        Insert: { id?: string; tenant_id?: string | null; categoria: string; argumento: string; ordem?: number; ativo?: boolean; created_at?: string }
-        Update: { id?: string; tenant_id?: string | null; categoria?: string; argumento?: string; ordem?: number; ativo?: boolean }
-        Relationships: []
-      }
-      agente_pacotes: {
-        Row: { id: string; tenant_id: string | null; nome: string; creditos: number; valor: number; ordem: number; ativo: boolean; created_at: string }
-        Insert: { id?: string; tenant_id?: string | null; nome: string; creditos: number; valor: number; ordem?: number; ativo?: boolean; created_at?: string }
-        Update: { id?: string; tenant_id?: string | null; nome?: string; creditos?: number; valor?: number; ordem?: number; ativo?: boolean }
-        Relationships: []
-      }
-      agente_creditos: {
-        Row: { id: string; gestor_id: string; tenant_id: string | null; saldo: number; updated_at: string }
-        Insert: { id?: string; gestor_id: string; tenant_id?: string | null; saldo?: number; updated_at?: string }
-        Update: { id?: string; gestor_id?: string; tenant_id?: string | null; saldo?: number; updated_at?: string }
-        Relationships: []
-      }
-      agente_transacoes: {
-        Row: { id: string; gestor_id: string; tenant_id: string | null; tipo: string; creditos: number; valor_pago: number | null; cobranca_id: string | null; descricao: string; created_at: string }
-        Insert: { id?: string; gestor_id: string; tenant_id?: string | null; tipo: string; creditos: number; valor_pago?: number | null; cobranca_id?: string | null; descricao: string; created_at?: string }
-        Update: { id?: string; tipo?: string; creditos?: number; valor_pago?: number | null; cobranca_id?: string | null; descricao?: string }
-        Relationships: []
-      }
-      agente_recargas: {
-        Row: { id: string; gestor_id: string; tenant_id: string | null; pacote_id: string | null; creditos: number; valor: number; txid: string; status: string; created_at: string; pago_em: string | null }
-        Insert: { id?: string; gestor_id: string; tenant_id?: string | null; pacote_id?: string | null; creditos: number; valor: number; txid: string; status?: string; created_at?: string; pago_em?: string | null }
-        Update: { id?: string; status?: string; pago_em?: string | null }
-        Relationships: []
-      }
-      agente_sessoes: {
-        Row: { id: string; gestor_id: string; estado: string; dados: Json; expires_at: string; created_at: string }
-        Insert: { id?: string; gestor_id: string; estado: string; dados?: Json; expires_at: string; created_at?: string }
-        Update: { id?: string; gestor_id?: string; estado?: string; dados?: Json; expires_at?: string }
-        Relationships: []
-      }
-      agente_config_global: {
-        Row: { id: string; nome_assistente: string; prompt_base: string | null; modelo_padrao: string; creditos_boas_vindas_padrao: number; ativo: boolean; criado_por: string | null; updated_at: string }
-        Insert: { id?: string; nome_assistente?: string; prompt_base?: string | null; modelo_padrao?: string; creditos_boas_vindas_padrao?: number; ativo?: boolean; criado_por?: string | null; updated_at?: string }
-        Update: { nome_assistente?: string; prompt_base?: string | null; modelo_padrao?: string; creditos_boas_vindas_padrao?: number; ativo?: boolean; criado_por?: string | null; updated_at?: string }
-        Relationships: []
-      }
-      mensagens_log: {
-        Row: { id: string; destinatario: string; chave: string; tenant_id: string | null; enviado_em: string; created_at: string }
-        Insert: { id?: string; destinatario: string; chave: string; tenant_id?: string | null; enviado_em?: string; created_at?: string }
-        Update: { destinatario?: string; chave?: string; tenant_id?: string | null; enviado_em?: string }
-        Relationships: []
-      }
-      fila_whatsapp: {
-        Row: { id: string; numero: string; mensagem: string; instancia: string | null; tenant_id: string | null; status: string; tentativas: number; erro: string | null; created_at: string; processado_em: string | null }
-        Insert: { id?: string; numero: string; mensagem: string; instancia?: string | null; tenant_id?: string | null; status?: string; tentativas?: number; erro?: string | null; created_at?: string; processado_em?: string | null }
-        Update: { numero?: string; mensagem?: string; instancia?: string | null; tenant_id?: string | null; status?: string; tentativas?: number; erro?: string | null; processado_em?: string | null }
         Relationships: []
       }
     }
@@ -2274,6 +2793,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
