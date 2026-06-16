@@ -5,6 +5,7 @@ import { getAppUrl } from '@/lib/get-app-url'
 import { contarPROsAtivosIndicados, getLimitePROGratuito } from '@/lib/pros-indicados'
 import { alertarDiscord } from '@/lib/discord'
 import { getMensagem } from '@/lib/mensagem'
+import { vencimentoMeses } from '@/lib/date-utils'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -117,7 +118,7 @@ export async function GET(req: NextRequest) {
     const total = await contarPROsAtivosIndicados(g.id, admin)
     if (total >= LIMITE) {
       // Reativa gratuitamente
-      const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      const vencimento = vencimentoMeses(1)
       await admin.from('gestores')
         .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento })
         .eq('id', g.id)

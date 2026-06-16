@@ -6,6 +6,7 @@ import { getAppUrl } from '@/lib/get-app-url'
 import { getMensagem } from '@/lib/mensagem'
 import { audit } from '@/lib/audit'
 import { captureException } from '@/lib/monitor'
+import { vencimentoMeses } from '@/lib/date-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     // Calcula vencimento conforme plano (padrão 1 mês, anual = 12 meses)
     const meses = pag.plano_meses ?? 1
-    const vencimento = new Date(Date.now() + meses * 30 * 24 * 60 * 60 * 1000).toISOString()
+    const vencimento = vencimentoMeses(meses)
 
     const { data: gestor } = await adminClient.from('gestores')
       .select('id, nome, whatsapp, ativo, status_assinatura, tenant_id')

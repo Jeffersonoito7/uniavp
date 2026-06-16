@@ -4,6 +4,7 @@ import { criarCobrancaPix, criarLinkCartaoAnual } from '@/lib/efi'
 import { randomUUID } from 'crypto'
 import { verificarPROGratuito, contarPROsAtivosIndicados, getLimitePROGratuito } from '@/lib/pros-indicados'
 import { captureException } from '@/lib/monitor'
+import { vencimentoMeses } from '@/lib/date-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -160,7 +161,7 @@ export async function POST(req: Request) {
   // ── Modo incluso / ganho ──────────────────────────────────────────
   const modoCobranca = await getModoCobranca(adminClient, tenantId)
   if (modoCobranca === 'incluso') {
-    const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    const vencimento = vencimentoMeses(1)
     await adminClient.from('gestores')
       .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
       .eq('id', gestorId)
@@ -173,7 +174,7 @@ export async function POST(req: Request) {
       getLimitePROGratuito(adminClient, tenantId),
     ])
     if (totalIndicados >= limiteGratuito) {
-      const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      const vencimento = vencimentoMeses(1)
       await adminClient.from('gestores')
         .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
         .eq('id', gestorId)

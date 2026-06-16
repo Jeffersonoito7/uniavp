@@ -4,6 +4,7 @@ import { criarCobrancaPix } from '@/lib/efi'
 import { randomUUID } from 'crypto'
 import { verificarPROGratuito, contarPROsAtivosIndicados, getLimitePROGratuito } from '@/lib/pros-indicados'
 import { captureException } from '@/lib/monitor'
+import { vencimentoMeses } from '@/lib/date-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,7 +40,7 @@ export async function POST() {
   const modo = modoCfg.data?.valor ? String(modoCfg.data.valor).replace(/"/g, '') : 'individual'
 
   if (modo === 'incluso') {
-    const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    const vencimento = vencimentoMeses(1)
     await adminClient.from('gestores')
       .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
       .eq('id', gestor.id)
@@ -54,7 +55,7 @@ export async function POST() {
   ])
 
   if (ehGratuito) {
-    const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    const vencimento = vencimentoMeses(1)
     await adminClient.from('gestores')
       .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento })
       .eq('id', gestor.id)

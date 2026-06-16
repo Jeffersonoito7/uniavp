@@ -37,6 +37,7 @@ function httpsRequest(url: string, options: { method?: string; headers?: Record<
       method: options.method || 'GET',
       headers: options.headers || {},
       agent: getAgent(),
+      timeout: 15000,
     }
     const req = https.request(reqOptions, res => {
       let raw = ''
@@ -46,6 +47,7 @@ function httpsRequest(url: string, options: { method?: string; headers?: Record<
         catch { resolve({ status: res.statusCode || 0, data: raw }) }
       })
     })
+    req.on('timeout', () => req.destroy(new Error('Timeout Efí PIX (15s)')))
     req.on('error', reject)
     if (options.body) req.write(options.body)
     req.end()
@@ -178,6 +180,7 @@ function httpsRequestSimples(
       path: parsed.pathname + parsed.search,
       method: options.method || 'GET',
       headers,
+      timeout: 15000,
     }, res => {
       const code = res.statusCode || 0
       if ((code === 301 || code === 302 || code === 307 || code === 308) && res.headers.location && redirectsLeft > 0) {
@@ -195,6 +198,7 @@ function httpsRequestSimples(
         catch { resolve({ status: code, data: raw }) }
       })
     })
+    req.on('timeout', () => req.destroy(new Error('Timeout Efí (15s)')))
     req.on('error', reject)
     if (bodyBuf) req.write(bodyBuf)
     req.end()

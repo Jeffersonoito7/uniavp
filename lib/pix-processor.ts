@@ -11,6 +11,7 @@ import { audit } from '@/lib/audit'
 import { getMensagem } from '@/lib/mensagem'
 import { createLogger } from '@/lib/logger'
 import { creditarCreditos, garantirRegistroCredito } from '@/lib/agente-creditos'
+import { vencimentoMeses } from '@/lib/date-utils'
 
 const log = createLogger('pix-processor')
 
@@ -138,10 +139,10 @@ export async function processarPixTxid(
   }
 
   // ── Mensalidade do gestor ─────────────────────────────────────────────────
-  const { data: pagGestor } = await adminClient.from('gestor_pagamentos')
-    .select('id, gestor_id, valor')
+  const { data: pagGestor } = await (adminClient.from('gestor_pagamentos') as any)
+    .select('id, gestor_id, valor, plano_meses')
     .eq('txid', txid)
-    .maybeSingle()
+    .maybeSingle() as { data: { id: string; gestor_id: string; valor: number; plano_meses: number | null } | null }
 
   if (pagGestor) {
     const { data: atualizadoGestor } = await adminClient.from('gestor_pagamentos')
@@ -151,7 +152,7 @@ export async function processarPixTxid(
       .select('id')
     if (!atualizadoGestor?.length) return { processado: true, motivo: 'ja_processado' }
 
-    const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    const vencimento = vencimentoMeses(pagGestor.plano_meses ?? 1)
     const { data: gestor } = await adminClient.from('gestores')
       .select('id, nome, whatsapp, ativo, status_assinatura, tenant_id')
       .eq('id', pagGestor.gestor_id)
