@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
+import { processarPixTxid } from '@/lib/pix-processor'
+import { captureException } from '@/lib/monitor'
 import type { Json } from '@/lib/database.types'
 
 export const dynamic = 'force-dynamic'
@@ -24,18 +26,36 @@ export async function POST(req: NextRequest) {
 
   const adminClient = createServiceRoleClient()
 
-  // Salva cada TXID em webhook_events e retorna 200 imediatamente.
-  // O processamento real acontece no cron /api/cron/processar-webhooks (a cada 1min).
-  // ignoreDuplicates garante idempotência: mesmo txid não entra duas vezes.
   for (const pag of pagamentos) {
     const txid = pag.txid
     if (!txid) continue
 
-    await adminClient.from('webhook_events')
+    // Upsert com ignoreDuplicates: garante idempotência.
+    // Se o txid já existe em webhook_events, retorna null e pulamos (já foi processado).
+    const { data: evento } = await adminClient.from('webhook_events')
       .upsert(
         { fonte: 'efi', txid, payload: pag as unknown as Json, status: 'pendente' },
         { onConflict: 'fonte,txid', ignoreDuplicates: true }
       )
+      .select('id')
+      .single()
+      .then(r => r, () => ({ data: null }))
+
+    if (!evento?.id) continue
+
+    // Processa imediatamente — acesso liberado na hora para o aluno.
+    // Em caso de falha, o cron /processar-webhooks retenta até 3x a cada 1min.
+    try {
+      await processarPixTxid(txid, adminClient)
+      await adminClient.from('webhook_events')
+        .update({ status: 'processado', processado_em: new Date().toISOString() })
+        .eq('id', evento.id)
+    } catch (e: any) {
+      captureException(e, { endpoint: 'webhook/pix', extra: { txid } })
+      await adminClient.from('webhook_events')
+        .update({ status: 'erro', erro: e?.message ?? String(e), tentativas: 1 })
+        .eq('id', evento.id)
+    }
   }
 
   return NextResponse.json({ ok: true })
