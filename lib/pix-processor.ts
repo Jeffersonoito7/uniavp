@@ -4,7 +4,7 @@
  */
 
 import { createServiceRoleClient } from '@/lib/supabase-server'
-import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
+import { enviarWhatsAppComFila, getInstanciaTenant } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
 import { consultarPagamento } from '@/lib/efi'
 import { audit } from '@/lib/audit'
@@ -121,7 +121,7 @@ export async function processarPixTxid(
               const msgOnboarding = await getMensagem('onboarding_novo_cliente', {
                 contatoNome: cliente.contato_nome || cliente.nome, linkSenha, linkFree,
               }, adminClient) + avisodominio
-              await enviarWhatsApp(cliente.contato_whatsapp, msgOnboarding)
+              await enviarWhatsAppComFila(cliente.contato_whatsapp, msgOnboarding, null, adminClient, cliente.id)
             }
           }
         }
@@ -131,8 +131,11 @@ export async function processarPixTxid(
       }
     } else if (cliente?.contato_whatsapp) {
       const valor = Number(cobranca.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-      await enviarWhatsApp(cliente.contato_whatsapp,
-        await getMensagem('pagamento_cliente_confirmado', { clienteNome: cliente.nome, valor }, adminClient))
+      await enviarWhatsAppComFila(
+        cliente.contato_whatsapp,
+        await getMensagem('pagamento_cliente_confirmado', { clienteNome: cliente.nome, valor }, adminClient),
+        null, adminClient, cliente.id,
+      )
     }
 
     return { processado: true }
@@ -179,7 +182,7 @@ export async function processarPixTxid(
         const instancia = await getInstanciaTenant(gestor.tenant_id, adminClient)
         const chave = eraUpgrade ? 'pagamento_gestor_upgrade' : 'pagamento_gestor_renovacao'
         const msg = await getMensagem(chave, { gestorNome: gestor.nome, valor, appUrl }, adminClient, gestor.tenant_id)
-        await enviarWhatsApp(gestor.whatsapp, msg, instancia)
+        await enviarWhatsAppComFila(gestor.whatsapp, msg, instancia, adminClient, gestor.tenant_id)
       }
 
       // Concede créditos de boas-vindas na primeira ativação do PRO
@@ -226,10 +229,10 @@ export async function processarPixTxid(
 
     if (gestor?.whatsapp) {
       const instancia = await getInstanciaTenant(gestor.tenant_id ?? null, adminClient)
-      await enviarWhatsApp(
+      await enviarWhatsAppComFila(
         gestor.whatsapp,
         `✅ *Recarga confirmada!*\n\n*+${recarga.creditos} créditos* adicionados à sua conta.\n\nSaldo atual: *${novoSaldo} créditos*\n\n_Use o assistente à vontade!_`,
-        instancia
+        instancia, adminClient, gestor.tenant_id,
       )
     }
 

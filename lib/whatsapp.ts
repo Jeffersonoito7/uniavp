@@ -53,6 +53,34 @@ export async function enviarWhatsApp(numero: string, mensagem: string, instancia
   return false
 }
 
+/**
+ * Envia WhatsApp com fallback para fila persistente.
+ * Se os 3 retries inline falharem, salva em fila_whatsapp para o cron retentar.
+ */
+export async function enviarWhatsAppComFila(
+  numero: string,
+  mensagem: string,
+  instancia: string | null | undefined,
+  adminClient: AdminClient,
+  tenantId?: string | null,
+): Promise<void> {
+  const enviado = await enviarWhatsApp(numero, mensagem, instancia)
+  if (enviado) return
+
+  // Falha persistente — salva na fila para retry posterior via cron
+  try {
+    await adminClient.from('fila_whatsapp').insert({
+      numero,
+      mensagem,
+      instancia: instancia ?? null,
+      status: 'pendente',
+      ...(tenantId ? { tenant_id: tenantId } : {}),
+    })
+  } catch (e) {
+    log.error('falha ao salvar mensagem na fila_whatsapp', { numero, err: String(e) })
+  }
+}
+
 export async function getInstanciaTenant(tenantId: string | null | undefined, adminClient: AdminClient): Promise<string | null> {
   if (!tenantId) return null
   const { data } = await adminClient.from('admins')

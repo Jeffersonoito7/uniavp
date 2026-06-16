@@ -11,6 +11,7 @@
     { "path": "/api/cron/verificar-pagamentos",    "schedule": "*/1 * * * *"  },
     { "path": "/api/cron/processar-pdfs",          "schedule": "*/2 * * * *"  },
     { "path": "/api/cron/processar-webhooks",      "schedule": "*/1 * * * *"  },
-    { "path": "/api/cron/limpar-sessoes",          "schedule": "0 3 * * *"    }
+    { "path": "/api/cron/limpar-sessoes",          "schedule": "0 3 * * *"    },
+    { "path": "/api/cron/processar-whatsapp",     "schedule": "*/2 * * * *"  }
   ]
 }

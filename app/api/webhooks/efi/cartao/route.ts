@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { consultarNotificacaoCartao } from '@/lib/efi'
-import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
+import { enviarWhatsAppComFila, getInstanciaTenant } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
 import { getMensagem } from '@/lib/mensagem'
 import { audit } from '@/lib/audit'
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
         const valor = Number(pag.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
         const chave = eraUpgrade ? 'pagamento_gestor_upgrade' : 'pagamento_gestor_renovacao'
         const msg = await getMensagem(chave, { gestorNome: gestor.nome, valor, appUrl }, adminClient, gestor.tenant_id)
-        await enviarWhatsApp(gestor.whatsapp, msg, instancia)
+        await enviarWhatsAppComFila(gestor.whatsapp, msg, instancia, adminClient, gestor.tenant_id)
       } catch { /* notificação não crítica */ }
     }
 

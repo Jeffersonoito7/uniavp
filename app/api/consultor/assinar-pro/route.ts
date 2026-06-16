@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto'
 import { verificarPROGratuito, contarPROsAtivosIndicados, getLimitePROGratuito } from '@/lib/pros-indicados'
 import { captureException } from '@/lib/monitor'
 import { vencimentoMeses } from '@/lib/date-utils'
+import { getCfgNum, getCfg } from '@/lib/cfg'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,29 +22,18 @@ async function getAluno() {
 }
 
 async function getValorPlano(adminClient: any, tenantId: string | null): Promise<number> {
-  if (!tenantId) return 97
-  const { data } = await adminClient.from('configuracoes')
-    .select('valor').eq('chave', 'plano_pro_valor').eq('tenant_id', tenantId).maybeSingle()
-  const parsed = parseFloat(String(data?.valor ?? '').replace(/"/g, ''))
-  return isNaN(parsed) ? 97 : Math.max(1, parsed)
+  return getCfgNum('plano_pro_valor', tenantId, adminClient, 97)
 }
 
 async function getValorAnual(adminClient: any, tenantId: string | null, valorMensal: number): Promise<number> {
-  if (tenantId) {
-    const { data } = await adminClient.from('configuracoes')
-      .select('valor').eq('chave', 'plano_pro_valor_anual').eq('tenant_id', tenantId).maybeSingle()
-    const parsed = parseFloat(String(data?.valor ?? '').replace(/"/g, ''))
-    if (!isNaN(parsed) && parsed > 0) return parsed
-  }
-  // Padrão: ~17,5% de desconto no anual
-  return Math.round(valorMensal * 12 * 0.824)
+  const anual = await getCfgNum('plano_pro_valor_anual', tenantId, adminClient, 0)
+  return anual > 0 ? anual : Math.round(valorMensal * 12 * 0.824)
 }
 
 async function getModoCobranca(adminClient: any, tenantId: string | null): Promise<string> {
   if (!tenantId) return 'individual'
-  const { data } = await adminClient.from('configuracoes')
-    .select('valor').eq('chave', 'pro_cobranca_modo').eq('tenant_id', tenantId).maybeSingle()
-  return data?.valor ? String(data.valor).replace(/"/g, '') : 'individual'
+  const val = await getCfg('pro_cobranca_modo', tenantId, adminClient)
+  return val || 'individual'
 }
 
 export async function GET() {

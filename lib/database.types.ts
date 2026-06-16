@@ -2115,6 +2115,12 @@ export type Database = {
         Update: { destinatario?: string; chave?: string; tenant_id?: string | null; enviado_em?: string }
         Relationships: []
       }
+      fila_whatsapp: {
+        Row: { id: string; numero: string; mensagem: string; instancia: string | null; tenant_id: string | null; status: string; tentativas: number; erro: string | null; created_at: string; processado_em: string | null }
+        Insert: { id?: string; numero: string; mensagem: string; instancia?: string | null; tenant_id?: string | null; status?: string; tentativas?: number; erro?: string | null; created_at?: string; processado_em?: string | null }
+        Update: { numero?: string; mensagem?: string; instancia?: string | null; tenant_id?: string | null; status?: string; tentativas?: number; erro?: string | null; processado_em?: string | null }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
