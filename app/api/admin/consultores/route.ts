@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
@@ -33,7 +34,7 @@ export async function PUT(req: NextRequest) {
   let putQuery = adminClient.from('alunos').update(updates).eq('id', id)
   if (ctx.tenantId) putQuery = putQuery.eq('tenant_id', ctx.tenantId)
   const { data: aluno, error } = await putQuery.select('*').single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   const authUserId = aluno.user_id ?? user_id
   if (authUserId) {
@@ -87,7 +88,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   const { error } = await adminClient.from('alunos').delete().eq('id', id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
 
   // Deleta o usuário do auth para liberar o e-mail
   if (aluno?.user_id) {

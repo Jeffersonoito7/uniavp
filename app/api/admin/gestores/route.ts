@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (authError || !authUser?.user) {
-    return NextResponse.json({ error: authError?.message ?? 'Erro ao criar usuário' }, { status: 400 })
+    return NextResponse.json({ error: authError ? traduzirErro(authError) : 'Erro ao criar usuário' }, { status: 400 })
   }
 
   const trialExpira = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -99,7 +100,7 @@ export async function PUT(request: NextRequest) {
   let updateQuery = adminClient.from('gestores').update(updates).eq('id', id)
   if (ctx.tenantId) updateQuery = updateQuery.eq('tenant_id', ctx.tenantId)
   const { data: gestor, error } = await updateQuery.select('*').single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   if (gestor.user_id) {
     const authUpdates: Record<string, unknown> = {}
@@ -144,7 +145,7 @@ export async function PATCH(request: NextRequest) {
   if (!gestor?.user_id) return NextResponse.json({ error: 'Gestor não encontrado' }, { status: 404 })
 
   const { error } = await adminClient.auth.admin.updateUserById(gestor.user_id, { password: senha })
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   return NextResponse.json({ ok: true })
 }
@@ -168,7 +169,7 @@ export async function DELETE(request: NextRequest) {
   let deleteQuery = adminClient.from('gestores').delete().eq('id', id)
   if (ctx.tenantId) deleteQuery = deleteQuery.eq('tenant_id', ctx.tenantId)
   const { error } = await deleteQuery
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
 
   if (gestor?.user_id) {
     await adminClient.auth.admin.deleteUser(gestor.user_id).catch(() => {})

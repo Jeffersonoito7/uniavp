@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
@@ -20,7 +21,7 @@ export async function PUT(req: NextRequest) {
   if (link_externo !== undefined) updates.link_externo = link_externo || null
 
   const { error } = await adminClient.from('gestores').update(updates).eq('id', gestor.id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   return NextResponse.json({ ok: true })
 }

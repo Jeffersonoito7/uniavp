@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp } from '@/lib/whatsapp'
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
   const { data: evento, error } = await adminClient.from('eventos')
     .insert({ titulo, descricao: descricao || '', cidade: cidade || '', data_hora, gestor_id: gestor.id })
     .select().single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
 
   if (notificar) {
     const { data: consultores } = await adminClient.from('alunos')

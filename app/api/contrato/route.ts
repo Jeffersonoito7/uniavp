@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
@@ -118,7 +119,7 @@ export async function POST(req: NextRequest) {
     ip, numero_registro, clausulas_aceitas: clausulasPayload, hash_contrato,
     pdf_status: 'pendente',
   })
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
 
   // Busca configs da contratante
   const [siteConfig, { data: cfgs }] = await Promise.all([

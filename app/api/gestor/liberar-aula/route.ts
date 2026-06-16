@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarPushParaAluno } from '@/lib/push'
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
     .select('aluno_id, aula_id')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   // Notifica o aluno via push
   if (data?.aluno_id) {

@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { consultarVeiculo } from '@/lib/providers'
@@ -36,6 +37,6 @@ export async function POST(req: NextRequest) {
       data,
     })
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return NextResponse.json({ error: traduzirErro(err) }, { status: 500 })
   }
 }

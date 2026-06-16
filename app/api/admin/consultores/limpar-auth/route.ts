@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
 import { audit, getIp } from '@/lib/audit'
+import { traduzirErro } from '@/lib/erros'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest) {
 
   // Orphan confirmado — deleta o auth user
   const { error } = await adminClient.auth.admin.deleteUser(authUser.id)
-  if (error) return NextResponse.json({ error: `Falha ao deletar auth: ${error.message}` }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
 
   await audit({
     acao: 'auth.orfao_deletado',

@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
     .from('artes')
     .createSignedUploadUrl(path)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
 
   const { data: { publicUrl } } = adminClient.storage.from('artes').getPublicUrl(path)
 

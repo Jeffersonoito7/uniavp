@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
     .eq('aula_id', aulaId)
     .order('ordem')
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   return NextResponse.json({ questoes: questoes ?? [] })
 }
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
     .select('*')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   return NextResponse.json({ questao })
 }
@@ -101,7 +102,7 @@ export async function PUT(req: NextRequest) {
     .select('*')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   return NextResponse.json({ questao })
 }
@@ -119,7 +120,7 @@ export async function DELETE(req: NextRequest) {
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
   const { error } = await adminClient.from('questoes').delete().eq('id', id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   return NextResponse.json({ ok: true })
 }

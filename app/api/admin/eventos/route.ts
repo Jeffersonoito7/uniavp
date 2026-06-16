@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
     .insert({ titulo, descricao: descricao || '', cidade: cidade || '', data_hora, imagem_url: imagem_url || '' })
     .select().single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
 
   if (notificar) {
     let q = adminClient.from('alunos').select('whatsapp, nome').eq('status', 'ativo')

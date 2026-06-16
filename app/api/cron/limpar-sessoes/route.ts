@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest) {
     .delete({ count: 'exact' })
     .lt('expires_at', new Date().toISOString())
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
 
   return NextResponse.json({ ok: true, removidas: count ?? 0 })
 }

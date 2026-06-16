@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
@@ -35,7 +36,7 @@ export async function PUT(req: NextRequest) {
   if (ctx.tenantId) updateQuery = updateQuery.eq('tenant_id', ctx.tenantId)
   const { data: aula, error } = await updateQuery.select('*').single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   return NextResponse.json({ aula })
 }
@@ -65,7 +66,7 @@ export async function PATCH(req: NextRequest) {
     .select('quiz_tipo, quiz_sim_nao_pergunta, quiz_sim_nao_nao_mensagem, quiz_sim_nao_perguntas')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
   return NextResponse.json({ ok: true, aula })
 }
 
@@ -84,7 +85,7 @@ export async function DELETE(req: NextRequest) {
   let deleteQuery = adminClient.from('aulas').delete().eq('id', id)
   if (ctx.tenantId) deleteQuery = deleteQuery.eq('tenant_id', ctx.tenantId)
   const { error } = await deleteQuery
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   return NextResponse.json({ ok: true })
 }

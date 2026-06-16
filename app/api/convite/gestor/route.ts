@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { getTenantId } from '@/lib/tenant'
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
     email_confirm: true,
   })
   if (authError || !authUser.user) {
-    return NextResponse.json({ error: authError?.message ?? 'Erro ao criar conta.' }, { status: 400 })
+    return NextResponse.json({ error: authError ? traduzirErro(authError) : 'Erro ao criar conta.' }, { status: 400 })
   }
 
   const { error: gestorError } = await adminClient.from('gestores')

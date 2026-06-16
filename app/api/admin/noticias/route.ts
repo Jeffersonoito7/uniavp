@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await adminClient.from('noticias')
     .insert({ titulo: body.titulo, conteudo: body.conteudo || '', imagem_url: body.imagem_url || '', publicado: true })
     .select().single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
   return NextResponse.json(data)
 }
 

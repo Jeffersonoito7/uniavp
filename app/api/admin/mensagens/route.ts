@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
@@ -23,7 +24,7 @@ export async function PUT(req: NextRequest) {
       { onConflict: ctx.tenantId ? 'chave,tenant_id' : 'chave' }
     )
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
 
   await audit({
     acao: 'admin.configuracao_alterada',
@@ -56,7 +57,7 @@ export async function DELETE(req: NextRequest) {
   else q = q.is('tenant_id', null)
 
   const { error } = await q
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
 
   return NextResponse.json({ ok: true })
 }

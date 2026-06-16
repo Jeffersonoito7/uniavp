@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
     gestor_id: gestor_id || null,
   }).select().single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
   return NextResponse.json(data)
 }
 
@@ -89,7 +90,7 @@ export async function PATCH(req: NextRequest) {
 
   const adminClient = createServiceRoleClient()
   const { data, error } = await aulasTable(adminClient).update(campos).eq('id', id).select().single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
   return NextResponse.json(data)
 }
 

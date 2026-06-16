@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     .select('id, categoria, argumento, ordem, ativo')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
   return NextResponse.json({ ok: true, argumento: data })
 }
 
@@ -46,7 +47,7 @@ export async function PUT(req: NextRequest) {
   if (ativo !== undefined) updates.ativo = ativo
 
   const { error } = await adminClient.from('agente_argumentos').update(updates).eq('id', id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
   return NextResponse.json({ ok: true })
 }
 
@@ -63,6 +64,6 @@ export async function DELETE(req: NextRequest) {
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
   const { error } = await adminClient.from('agente_argumentos').delete().eq('id', id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
   return NextResponse.json({ ok: true })
 }

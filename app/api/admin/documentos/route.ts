@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
     .insert({ titulo, descricao: descricao || null, pdf_url, painel: painel || 'ambos', ordem: ordem || 0 })
     .select().single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
   return NextResponse.json(data)
 }
 
@@ -48,7 +49,7 @@ export async function PUT(req: NextRequest) {
     .eq('id', id)
     .select().single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
   return NextResponse.json(data)
 }
 
@@ -61,6 +62,6 @@ export async function DELETE(req: NextRequest) {
   if (!id) return NextResponse.json({ error: 'ID obrigatório' }, { status: 400 })
 
   const { error } = await adminClient.from('documentos_painel').delete().eq('id', id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
   return NextResponse.json({ ok: true })
 }

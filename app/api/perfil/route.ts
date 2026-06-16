@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
@@ -26,7 +27,7 @@ export async function PUT(req: NextRequest) {
     .update({ nome: nome ?? aluno.nome, bio: bio ?? null, ...(link_externo !== undefined ? { link_externo } : {}) })
     .eq('id', aluno_id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   return NextResponse.json({ ok: true })
 }

@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
     .insert({ titulo, descricao: descricao ?? null, capa_url: capa_url ?? null, ordem, publicado: false, perfis_permitidos: body.perfis_permitidos ?? ['consultor', 'gestor'], ...(ctx.tenantId ? { tenant_id: ctx.tenantId } : {}) })
     .select('*').single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
   return NextResponse.json({ modulo })
 }
 
@@ -58,7 +59,7 @@ export async function PUT(req: NextRequest) {
   if (ctx.tenantId) q = q.eq('tenant_id', ctx.tenantId)
   const { data: modulo, error } = await q.select('*').single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
   return NextResponse.json({ modulo })
 }
 
@@ -77,6 +78,6 @@ export async function DELETE(req: NextRequest) {
   let q = adminClient.from('modulos').delete().eq('id', id)
   if (ctx.tenantId) q = q.eq('tenant_id', ctx.tenantId)
   const { error } = await q
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
   return NextResponse.json({ ok: true })
 }

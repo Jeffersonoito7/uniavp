@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest, { params }: { params: { moduloId: s
     .select('*')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   return NextResponse.json({ aula })
 }
@@ -89,7 +90,7 @@ export async function PUT(req: NextRequest, { params }: { params: { moduloId: st
   if (ctx.tenantId) putQuery = putQuery.eq('tenant_id', ctx.tenantId)
   const { data: aula, error } = await putQuery.select('*').single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   return NextResponse.json({ aula })
 }

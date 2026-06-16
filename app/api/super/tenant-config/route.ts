@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
@@ -25,6 +26,6 @@ export async function POST(req: NextRequest) {
   const { error } = await adminClient.from('configuracoes')
     .upsert({ tenant_id, chave, valor: valorJson }, { onConflict: 'tenant_id,chave' })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
   return NextResponse.json({ ok: true })
 }

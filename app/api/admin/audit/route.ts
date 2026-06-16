@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
@@ -31,7 +32,7 @@ export async function GET(req: NextRequest) {
   if (busca) q = q.ilike('entidade_id', `%${busca}%`)
 
   const { data, count, error } = await q
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
 
   return NextResponse.json({ logs: data ?? [], total: count ?? 0, page, perPage })
 }

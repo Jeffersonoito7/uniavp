@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
@@ -18,7 +19,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'user_id e nova_senha (mín. 6 caracteres) são obrigatórios' }, { status: 400 })
 
   const { error } = await adminClient.auth.admin.updateUserById(user_id, { password: nova_senha })
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   return NextResponse.json({ ok: true })
 }

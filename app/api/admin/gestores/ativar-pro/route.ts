@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
   if (ctx.tenantId) q = q.eq('tenant_id', ctx.tenantId)
 
   const { data: gestor, error } = await q.select('id, nome, whatsapp').single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   // Notifica o gestor via WhatsApp (fire-and-forget)
   if (gestor?.whatsapp) {

@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { gerarPDFContrato } from '@/lib/contrato-pdf'
@@ -51,7 +52,7 @@ export async function PUT(req: NextRequest) {
     pdf_status: 'pendente',
   }).eq('id', contrato.id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
 
   // Salva assinatura do aditivo no storage
   if (assinatura_base64) {

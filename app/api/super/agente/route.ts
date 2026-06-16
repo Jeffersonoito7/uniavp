@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
@@ -120,7 +121,7 @@ export async function PUT(req: NextRequest) {
       ativo: Boolean(body.ativo ?? true),
       updated_at: new Date().toISOString(),
     }).eq('id', existing.id)
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
   } else {
     const { error } = await admin.from('agente_config_global').insert({
       nome_assistente: String(body.nome_assistente ?? 'Assistente'),
@@ -129,7 +130,7 @@ export async function PUT(req: NextRequest) {
       creditos_boas_vindas_padrao: Number(body.creditos_boas_vindas_padrao ?? 50),
       ativo: Boolean(body.ativo ?? true),
     })
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
   }
 
   return NextResponse.json({ ok: true })

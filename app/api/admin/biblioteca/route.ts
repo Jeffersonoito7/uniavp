@@ -1,3 +1,4 @@
+import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
     ordem: body.ordem || 0,
     ativo: true,
   }).select().single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
   return NextResponse.json({ item: data })
 }
 
@@ -49,7 +50,7 @@ export async function PUT(req: NextRequest) {
   const { id, ...rest } = body
   const { data, error } = await ctx.admin.from('biblioteca')
     .update(rest).eq('id', id).eq('tenant_id', ctx.tenantId ?? '').select().single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
   return NextResponse.json({ item: data })
 }
 
