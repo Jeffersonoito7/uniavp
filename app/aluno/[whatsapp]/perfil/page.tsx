@@ -9,7 +9,7 @@ export default async function PerfilPage({ params }: { params: { whatsapp: strin
 
  const adminClient = createServiceRoleClient()
  const { data: aluno } = await adminClient.from('alunos')
- .select('id, nome, whatsapp, email, foto_url, bio, status, numero_registro, data_formacao, link_externo')
+ .select('id, nome, whatsapp, email, foto_url, bio, status, numero_registro, data_formacao, link_externo, indicador_id, indicador:indicadores(nome, whatsapp)')
  .eq('user_id', user.id)
  .maybeSingle()
 
@@ -20,5 +20,5 @@ export default async function PerfilPage({ params }: { params: { whatsapp: strin
  .select('valor').eq('chave', 'free_pode_configurar_link').maybeSingle()
  const podeCfgLink = cfg?.valor !== 'false'
 
- return <PerfilCliente aluno={aluno} email={user.email ?? ''} podeCfgLink={podeCfgLink} />
+ return <PerfilCliente aluno={aluno} email={user.email ?? ''} podeCfgLink={podeCfgLink} indicador={(aluno as { indicador?: { nome: string; whatsapp: string } | null }).indicador ?? null} />
 }

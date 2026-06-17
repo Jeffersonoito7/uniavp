@@ -1,7 +1,8 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { Link2, Lock, GraduationCap } from 'lucide-react'
+import { Link2, Lock, GraduationCap, UserCheck } from 'lucide-react'
 import ImageCropModal from '@/app/components/ImageCropModal'
+import PhoneInput from '@/app/components/PhoneInput'
 
 type Aluno = {
  id: string
@@ -14,6 +15,7 @@ type Aluno = {
  numero_registro?: number | null
  data_formacao?: string | null
  link_externo?: string | null
+ indicador_id?: string | null
 }
 
 const STATUS_LABEL: Record<string, { label: string; color: string; bg: string }> = {
@@ -23,7 +25,7 @@ const STATUS_LABEL: Record<string, { label: string; color: string; bg: string }>
  desligado: { label: 'Desligado', color: '#ef4444', bg: '#ef444415' },
 }
 
-export default function PerfilCliente({ aluno, email, podeCfgLink }: { aluno: Aluno; email: string; podeCfgLink?: boolean }) {
+export default function PerfilCliente({ aluno, email, podeCfgLink, indicador }: { aluno: Aluno; email: string; podeCfgLink?: boolean; indicador?: { nome: string; whatsapp: string } | null }) {
  const [siteNome, setSiteNome] = useState('')
  useEffect(() => {
  fetch('/api/site-config').then(r => r.json()).then(d => setSiteNome(d.nome)).catch(() => {})
@@ -32,6 +34,10 @@ export default function PerfilCliente({ aluno, email, podeCfgLink }: { aluno: Al
  const [nome, setNome] = useState(aluno.nome)
  const [bio, setBio] = useState(aluno.bio ?? '')
  const [linkExterno, setLinkExterno] = useState(aluno.link_externo ?? '')
+ const [indWpp, setIndWpp] = useState('')
+ const [salvandoInd, setSalvandoInd] = useState(false)
+ const [msgInd, setMsgInd] = useState<{ tipo: 'ok' | 'err'; texto: string } | null>(null)
+ const [indicadorSalvo, setIndicadorSalvo] = useState<{ nome: string; whatsapp: string } | null>(indicador ?? null)
  const [fotoUrl, setFotoUrl] = useState<string | null>(aluno.foto_url)
  const [salvando, setSalvando] = useState(false)
  const [uploadando, setUploadando] = useState(false)
@@ -62,6 +68,30 @@ export default function PerfilCliente({ aluno, email, podeCfgLink }: { aluno: Al
  else setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao salvar foto.' })
  setUploadando(false)
  setTimeout(() => setMsg(null), 4000)
+ }
+
+ async function salvarIndicador(e: React.FormEvent) {
+ e.preventDefault()
+ const wpp = indWpp.replace(/\D/g, '')
+ if (!wpp || wpp.length < 10) { setMsgInd({ tipo: 'err', texto: 'Informe um WhatsApp válido.' }); return }
+ if (wpp === aluno.whatsapp.replace(/\D/g, '')) { setMsgInd({ tipo: 'err', texto: 'Você não pode se indicar.' }); return }
+ setSalvandoInd(true)
+ setMsgInd(null)
+ const res = await fetch('/api/perfil', {
+ method: 'PUT',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ aluno_id: aluno.id, indicador_whatsapp: wpp }),
+ })
+ const data = await res.json()
+ if (data.ok) {
+ setIndicadorSalvo(data.indicador ?? { nome: 'Indicador', whatsapp: wpp })
+ setIndWpp('')
+ setMsgInd({ tipo: 'ok', texto: 'Indicador registrado com sucesso!' })
+ } else {
+ setMsgInd({ tipo: 'err', texto: data.error ?? 'Erro ao registrar indicador.' })
+ }
+ setSalvandoInd(false)
+ setTimeout(() => setMsgInd(null), 5000)
  }
 
  async function salvar(e: React.FormEvent) {
@@ -242,6 +272,49 @@ export default function PerfilCliente({ aluno, email, podeCfgLink }: { aluno: Al
  </a>
  </div>
  </div>
+
+ {/* Indicador */}
+ <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, overflow: 'hidden', marginTop: 20 }}>
+ <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--avp-border)' }}>
+ <h2 style={{ fontWeight: 800, fontSize: 16, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+ <UserCheck size={14} style={{ opacity: 0.6, flexShrink: 0 }} />Quem te indicou?
+ </h2>
+ <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: '4px 0 0' }}>
+ Informe o WhatsApp de quem te convidou para a plataforma
+ </p>
+ </div>
+ <div style={{ padding: '20px 24px' }}>
+ {msgInd && (
+ <div style={{ padding: '10px 14px', background: msgInd.tipo === 'ok' ? '#02A15320' : '#e6394620', border: `1px solid ${msgInd.tipo === 'ok' ? 'var(--avp-green)' : 'var(--avp-danger)'}`, borderRadius: 8, color: msgInd.tipo === 'ok' ? 'var(--avp-green)' : 'var(--avp-danger)', fontSize: 13, marginBottom: 16 }}>
+ {msgInd.texto}
+ </div>
+ )}
+ {indicadorSalvo ? (
+ <div style={{ background: '#02A15315', border: '1px solid #02A15340', borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+ <UserCheck size={22} style={{ color: 'var(--avp-green)', flexShrink: 0 }} />
+ <div>
+ <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-green)', margin: 0 }}>Você foi indicado por</p>
+ <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--avp-text)', margin: '2px 0 0' }}>{indicadorSalvo.nome}</p>
+ <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>{indicadorSalvo.whatsapp}</p>
+ </div>
+ </div>
+ ) : (
+ <form onSubmit={salvarIndicador} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+ <div style={{ flex: 1, minWidth: 220 }}>
+ <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+ WhatsApp de quem te indicou
+ </label>
+ <PhoneInput value={indWpp} onChange={setIndWpp} style={{ background: 'var(--avp-black)', borderRadius: 10 }} />
+ </div>
+ <button type="submit" disabled={salvandoInd || !indWpp}
+ style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 22px', fontWeight: 700, cursor: salvandoInd || !indWpp ? 'not-allowed' : 'pointer', fontSize: 14, opacity: salvandoInd || !indWpp ? 0.6 : 1 }}>
+ {salvandoInd ? 'Salvando...' : 'Salvar'}
+ </button>
+ </form>
+ )}
+ </div>
+ </div>
+
  </div>
  </div>
 
