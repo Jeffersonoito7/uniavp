@@ -15,21 +15,49 @@ export async function PUT(req: NextRequest) {
   const ctx = await getAdminContext(user.id, adminClient)
   if (!ctx) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
-  const { id, nome, email, whatsapp, status, gestor_nome, gestor_whatsapp, nova_senha, user_id } = await req.json()
+  const { id, nome, email, whatsapp, status, gestor_nome, gestor_whatsapp, nova_senha, user_id, indicador_whatsapp } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
   // Captura estado anterior para o audit
   let dadosAnteriores: Record<string, unknown> | null = null
-  const { data: anterior } = await adminClient.from('alunos').select('nome,email,whatsapp,status,gestor_nome,gestor_whatsapp').eq('id', id).maybeSingle()
+  const { data: anterior } = await adminClient.from('alunos').select('nome,email,whatsapp,status,gestor_nome,gestor_whatsapp,indicador_id').eq('id', id).maybeSingle()
   if (anterior) dadosAnteriores = anterior as Record<string, unknown>
 
-  const updates: { nome?: string; email?: string; whatsapp?: string; status?: string; gestor_nome?: string | null; gestor_whatsapp?: string | null } = {}
+  const updates: { nome?: string; email?: string; whatsapp?: string; status?: string; gestor_nome?: string | null; gestor_whatsapp?: string | null; indicador_id?: string | null } = {}
   if (nome !== undefined) updates.nome = nome
   if (email !== undefined) updates.email = email
   if (whatsapp !== undefined) updates.whatsapp = whatsapp
   if (status !== undefined) updates.status = status
   if (gestor_nome !== undefined) updates.gestor_nome = gestor_nome
   if (gestor_whatsapp !== undefined) updates.gestor_whatsapp = gestor_whatsapp
+
+  if (indicador_whatsapp !== undefined) {
+    if (!indicador_whatsapp) {
+      updates.indicador_id = null
+    } else {
+      const wpp = String(indicador_whatsapp).replace(/\D/g, '')
+      let indQuery = adminClient.from('indicadores').select('id').eq('whatsapp', wpp)
+      if (ctx.tenantId) indQuery = indQuery.eq('tenant_id', ctx.tenantId)
+      const { data: indExistente } = await indQuery.maybeSingle()
+
+      if (indExistente) {
+        updates.indicador_id = indExistente.id
+      } else {
+        let alunoIndQuery = adminClient.from('alunos').select('id, nome').eq('whatsapp', wpp)
+        if (ctx.tenantId) alunoIndQuery = alunoIndQuery.eq('tenant_id', ctx.tenantId)
+        const { data: alunoInd } = await alunoIndQuery.maybeSingle()
+
+        if (alunoInd) {
+          const { data: novoInd } = await adminClient.from('indicadores')
+            .insert({ whatsapp: wpp, nome: alunoInd.nome, tipo: 'aluno', ...(ctx.tenantId ? { tenant_id: ctx.tenantId } : {}) })
+            .select('id').single()
+          if (novoInd) updates.indicador_id = novoInd.id
+        } else {
+          return NextResponse.json({ error: 'Indicador não encontrado com este WhatsApp' }, { status: 400 })
+        }
+      }
+    }
+  }
 
   let putQuery = adminClient.from('alunos').update(updates).eq('id', id)
   if (ctx.tenantId) putQuery = putQuery.eq('tenant_id', ctx.tenantId)

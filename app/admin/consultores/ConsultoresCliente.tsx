@@ -34,9 +34,9 @@ type Consultor = {
  status: string
  created_at: string | null
  user_id: string | null
- indicador: { nome: string } | null
- gestor_nome?: string
- gestor_whatsapp?: string
+ indicador: { nome: string; whatsapp: string | null } | null
+ gestor_nome?: string | null
+ gestor_whatsapp?: string | null
 }
 
 const statusColor: Record<string, string> = {
@@ -53,7 +53,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  const [showImport, setShowImport] = useState(false)
  const [showCadastro, setShowCadastro] = useState(false)
  const [editando, setEditando] = useState<Consultor | null>(null)
- const [editForm, setEditForm] = useState({ nome: '', whatsapp: '', email: '', status: 'ativo', gestor_nome: '', gestor_whatsapp: '', nova_senha: '' })
+ const [editForm, setEditForm] = useState({ nome: '', whatsapp: '', email: '', status: 'ativo', gestor_nome: '', gestor_whatsapp: '', indicador_whatsapp: '', nova_senha: '' })
  const [busca, setBusca] = useState('')
  const [form, setForm] = useState<typeof formVazio>(formVazio)
  const [salvando, setSalvando] = useState(false)
@@ -61,7 +61,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  const [verSenha, setVerSenha] = useState(false)
 
  function abrirEdicao(c: Consultor) {
- setEditForm({ nome: c.nome, whatsapp: c.whatsapp, email: c.email, status: c.status, gestor_nome: c.gestor_nome ?? '', gestor_whatsapp: c.gestor_whatsapp ?? '', nova_senha: '' })
+ setEditForm({ nome: c.nome, whatsapp: c.whatsapp, email: c.email, status: c.status, gestor_nome: c.gestor_nome ?? '', gestor_whatsapp: c.gestor_whatsapp ?? '', indicador_whatsapp: c.indicador?.whatsapp ?? '', nova_senha: '' })
  setEditando(c)
  }
 
@@ -81,6 +81,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  status: editForm.status,
  gestor_nome: editForm.gestor_nome || null,
  gestor_whatsapp: editForm.gestor_whatsapp.replace(/\D/g, '') || null,
+ indicador_whatsapp: editForm.indicador_whatsapp.replace(/\D/g, '') || null,
  nova_senha: editForm.nova_senha || null,
  }),
  })
@@ -202,12 +203,16 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  </select>
  </div>
  <div>
- <label style={labelStyle}>Nome do PRO</label>
- <input style={inputStyle} value={editForm.gestor_nome} onChange={e => setEditForm(p => ({ ...p, gestor_nome: e.target.value }))} placeholder="Nome do gestor" />
+ <label style={labelStyle}>Nome do Captador</label>
+ <input style={inputStyle} value={editForm.gestor_nome} onChange={e => setEditForm(p => ({ ...p, gestor_nome: e.target.value }))} placeholder="Nome do captador" />
  </div>
  <div>
- <label style={labelStyle}>WhatsApp do PRO</label>
+ <label style={labelStyle}>WhatsApp do Captador</label>
  <PhoneInput value={editForm.gestor_whatsapp} onChange={v => setEditForm(p => ({ ...p, gestor_whatsapp: v }))} style={{ background: 'var(--avp-black)', borderRadius: 8 }} />
+ </div>
+ <div>
+ <label style={labelStyle}>WhatsApp do Indicador</label>
+ <PhoneInput value={editForm.indicador_whatsapp} onChange={v => setEditForm(p => ({ ...p, indicador_whatsapp: v }))} style={{ background: 'var(--avp-black)', borderRadius: 8 }} />
  </div>
  </div>
  <div>
@@ -257,11 +262,11 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  <div style={{ position: 'relative' }}><input type={verSenha ? 'text' : 'password'} style={{ ...inputStyle, paddingRight: 44 }} value={form.senha} onChange={e => setForm(p => ({ ...p, senha: e.target.value }))} required placeholder="Mínimo 6 caracteres" minLength={6} /><button type="button" onClick={() => setVerSenha(v => !v)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--avp-text-dim)', padding: 0, display: 'flex' }}>{verSenha ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>}</button></div>
  </div>
  <div>
- <label style={labelStyle}>Nome do PRO (opcional)</label>
- <input style={inputStyle} value={form.gestor_nome} onChange={e => setForm(p => ({ ...p, gestor_nome: e.target.value }))} placeholder="Nome do gestor" />
+ <label style={labelStyle}>Nome do Captador (opcional)</label>
+ <input style={inputStyle} value={form.gestor_nome} onChange={e => setForm(p => ({ ...p, gestor_nome: e.target.value }))} placeholder="Nome do captador" />
  </div>
  <div>
- <label style={labelStyle}>WhatsApp do PRO (opcional)</label>
+ <label style={labelStyle}>WhatsApp do Captador (opcional)</label>
  <PhoneInput value={form.gestor_whatsapp} onChange={v => setForm(p => ({ ...p, gestor_whatsapp: v }))} style={{ background: 'var(--avp-black)', borderRadius: 8 }} />
  </div>
  </div>
