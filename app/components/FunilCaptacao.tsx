@@ -41,7 +41,7 @@ export default function FunilCaptacao({
  const [etapa, setEtapa] = useState<Etapa>(direto ? 'cadastro' : 'pergunta1')
  const [videoAssistido, setVideoAssistido] = useState(false)
  const btnContinuarRef = useRef<HTMLDivElement>(null)
- const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', senha: '', gestor_nome: '', gestor_whatsapp: '' })
+ const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', senha: '', gestor_nome: '', gestor_whatsapp: '', indicador_whatsapp: '' })
 
  useEffect(() => {
  if (etapa !== 'video') window.scrollTo({ top: 0, behavior: 'instant' })
@@ -72,7 +72,7 @@ export default function FunilCaptacao({
  senha: form.senha,
  gestor_nome: gestorWhatsapp ? (gestorNome ?? '') : (form.gestor_nome || ''),
  gestor_whatsapp: gestorWhatsapp ? gestorWhatsapp : (form.gestor_whatsapp.replace(/\D/g, '') || ''),
- indicador_whatsapp: indicadorWhatsapp ?? undefined,
+ indicador_whatsapp: indicadorWhatsapp ?? (form.indicador_whatsapp.replace(/\D/g, '') || undefined),
  }),
  })
  const data = await res.json()
@@ -275,15 +275,15 @@ export default function FunilCaptacao({
  </div>
  </div>
 
- {/* Só aparece se não veio pelo link direto de um PRO ou indicador já conhecido */}
- {!gestorWhatsapp && !indicadorWhatsapp && (
+ {/* Campo indicador — aparece quando não veio pelo link de indicação de alguém */}
+ {!indicadorWhatsapp && (
  <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 16 }}>
  <label style={{ display: 'block', color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
  Quem te indicou? <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(opcional)</span>
  </label>
- <PhoneInput value={form.gestor_whatsapp} onChange={v => setForm(p => ({ ...p, gestor_whatsapp: v }))} placeholder="WhatsApp de quem te indicou" />
+ <PhoneInput value={form.indicador_whatsapp} onChange={v => setForm(p => ({ ...p, indicador_whatsapp: v }))} placeholder="WhatsApp de quem te indicou" />
  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 6 }}>
- Se alguém te indicou, informe o WhatsApp dessa pessoa
+ Se alguém te indicou para entrar aqui, informe o WhatsApp dessa pessoa
  </p>
  </div>
  )}
