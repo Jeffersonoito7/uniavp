@@ -5,6 +5,7 @@ import { createServiceRoleClient } from '@/lib/supabase-server'
 import AdminLayout from './AdminLayout'
 import LiberacoesPendentes from './LiberacoesPendentes'
 import LinksTeste from './LinksTeste'
+import ReparadorGestores from './ReparadorGestores'
 
 import { DOMINIO_MASTER } from '@/lib/constants'
 
@@ -75,6 +76,7 @@ export default async function AdminDashboard() {
 
  {isMaster && <LinksTeste />}
 
+ <ReparadorGestores />
  <LiberacoesPendentes />
 
  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 28 }}>
