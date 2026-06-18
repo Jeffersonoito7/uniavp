@@ -20,7 +20,10 @@ export async function processarPixTxid(
   adminClient: ReturnType<typeof createServiceRoleClient>
 ): Promise<{ processado: boolean; motivo?: string }> {
   const { pago } = await consultarPagamento(txid)
-  if (!pago) return { processado: false, motivo: 'pagamento_nao_confirmado' }
+  // Lança para que o webhook_event fique como 'erro' e seja reprocessado pelo cron.
+  // O cron verificar-pagamentos também tem sua própria varredura, mas manter
+  // webhook_events consistente facilita o diagnóstico de falhas.
+  if (!pago) throw new Error('pagamento_nao_confirmado')
 
   // ── Cobrança SaaS ─────────────────────────────────────────────────────────
   const { data: cobranca } = await adminClient.from('cobrancas')
@@ -143,17 +146,27 @@ export async function processarPixTxid(
 
   // ── Mensalidade do gestor ─────────────────────────────────────────────────
   const { data: pagGestor } = await adminClient.from('gestor_pagamentos')
-    .select('id, gestor_id, valor, plano_meses')
+    .select('id, gestor_id, valor, plano_meses, status')
     .eq('txid', txid)
     .maybeSingle()
 
   if (pagGestor) {
-    const { data: atualizadoGestor } = await adminClient.from('gestor_pagamentos')
-      .update({ status: 'pago', pago_em: new Date().toISOString() })
-      .eq('id', pagGestor.id)
-      .eq('status', 'pendente')
-      .select('id')
-    if (!atualizadoGestor?.length) return { processado: true, motivo: 'ja_processado' }
+    // Tenta marcar o pagamento como pago (idempotente: só atualiza se ainda pendente).
+    // Não retorna imediatamente se já estava pago — precisa garantir que o gestor
+    // também foi ativado, pois uma falha entre as duas updates deixaria o usuário preso.
+    let pagamentoJaMarcado = pagGestor.status === 'pago'
+
+    if (!pagamentoJaMarcado) {
+      const { data: atualizadoGestor } = await adminClient.from('gestor_pagamentos')
+        .update({ status: 'pago', pago_em: new Date().toISOString() })
+        .eq('id', pagGestor.id)
+        .eq('status', 'pendente')
+        .select('id')
+      if (!atualizadoGestor?.length) {
+        // Outra instância atualizou antes de nós — assume marcado
+        pagamentoJaMarcado = true
+      }
+    }
 
     const vencimento = vencimentoMeses(pagGestor.plano_meses ?? 1)
     const { data: gestor } = await adminClient.from('gestores')
@@ -161,18 +174,31 @@ export async function processarPixTxid(
       .eq('id', pagGestor.gestor_id)
       .maybeSingle()
 
-    if (gestor) {
+    if (!gestor) {
+      log.error('gestor nao encontrado para pagamento', { gestor_id: pagGestor.gestor_id, txid })
+      return { processado: pagamentoJaMarcado, motivo: 'gestor_nao_encontrado' }
+    }
+
+    // Ativa o gestor sempre que ele ainda não estiver ativo, mesmo que o pagamento
+    // já tenha sido marcado. Isso cobre o cenário de crash entre as duas updates.
+    const precisaAtivar = !gestor.ativo || gestor.status_assinatura !== 'ativo'
+
+    if (precisaAtivar) {
       const eraUpgrade = !gestor.ativo || gestor.status_assinatura === 'pendente_upgrade'
-      await adminClient.from('gestores')
+
+      const { error: updateErr } = await adminClient.from('gestores')
         .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
         .eq('id', gestor.id)
+
+      // Falha no update → lança para que o cron reprocesse
+      if (updateErr) throw new Error(`Falha ao ativar gestor ${gestor.id}: ${updateErr.message}`)
 
       await audit({
         acao: 'pagamento.confirmado',
         entidade: 'gestor_pagamentos',
         entidade_id: String(pagGestor.id),
         usuario_tipo: 'sistema',
-        dados_novos: { txid, valor: pagGestor.valor, gestor_id: pagGestor.gestor_id },
+        dados_novos: { txid, valor: pagGestor.valor, gestor_id: pagGestor.gestor_id, recuperado: pagamentoJaMarcado },
       })
 
       const appUrl = await getAppUrl(gestor.tenant_id)
@@ -185,7 +211,6 @@ export async function processarPixTxid(
         await enviarWhatsAppComFila(gestor.whatsapp, msg, instancia, adminClient, gestor.tenant_id)
       }
 
-      // Concede créditos de boas-vindas na primeira ativação do PRO
       if (eraUpgrade) {
         try {
           const { concederCreditosBoasVindas } = await import('@/lib/pro-agente')
@@ -196,7 +221,7 @@ export async function processarPixTxid(
       }
     }
 
-    return { processado: true }
+    return { processado: true, motivo: precisaAtivar ? undefined : 'ja_processado' }
   }
 
   // ── Recarga de créditos do agente IA ─────────────────────────────────────
