@@ -35,13 +35,15 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  const siteConfig = await getSiteConfig(host)
  const baseUrl = siteConfig.dominioCustomizado ? `https://${siteConfig.dominioCustomizado}` : `https://${host}`
 
- // Modo preview: admin pode visualizar painel de qualquer aluno sem trocar de sessao
+ // Modo preview: admin (tenant ou super) pode visualizar painel de qualquer aluno sem trocar de sessao
  const isPreview = searchParams?.preview === '1'
  let isAdminPreview = false
  if (isPreview) {
- const { data: adminRecord } = await adminClient.from('admins')
- .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
- isAdminPreview = !!adminRecord
+ const [{ data: adminRecord }, { data: superRecord }] = await Promise.all([
+ adminClient.from('admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle(),
+ adminClient.from('super_admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle(),
+ ])
+ isAdminPreview = !!(adminRecord || superRecord)
  }
 
  const { data: aluno } = await adminClient.from('alunos')
