@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import {
  LayoutDashboard, BookOpen, Users, ShieldCheck,
  Trophy, Cog, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper, Star,
- Menu, X, ChevronLeft, ChevronRight, Link2, FileText, ScrollText, Video, Activity, MessageSquare, Bot, HelpCircle, Library
+ Menu, X, ChevronLeft, ChevronRight, Link2, FileText, ScrollText, Video, Activity, MessageSquare, Bot, HelpCircle, Library, UserPlus
 } from 'lucide-react'
 import LogoutButton from '@/app/components/LogoutButton'
 import SupportChat from '@/app/components/SupportChat'
@@ -16,6 +16,7 @@ const navItems = [
  { href: '/admin/configuracoes', label: 'Configurações', icon: Cog },
  { href: '/admin/consultores', label: 'FREE', icon: Users },
  { href: '/admin/gestores', label: 'PRO', icon: UserCog },
+ { href: '/admin/vincular-alunos', label: 'Vincular Alunos', icon: UserPlus },
  { href: '/admin/admins', label: 'Gerentes', icon: ShieldCheck },
  { href: '/admin/crm', label: 'CRM', icon: BarChart3 },
  { href: '/admin/modulos', label: 'Módulos', icon: BookOpen },

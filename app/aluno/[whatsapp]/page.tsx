@@ -88,7 +88,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  const setupAppIos = certMap['app_ios_url'] || undefined
  const setupAppAndroid = certMap['app_android_url'] || undefined
 
- if (!aluno) redirect('/entrar?p=free')
+ if (!aluno) redirect(isAdminPreview ? '/admin/ver-free' : '/entrar?p=free')
  if (!isAdminPreview && aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
  // Verifica se o aluno já assinou o contrato (necessário para lógica de bloqueio)

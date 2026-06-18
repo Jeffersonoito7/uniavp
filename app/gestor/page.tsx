@@ -31,7 +31,7 @@ export default async function GestorPage({ searchParams }: { searchParams?: { pr
  .eq(isAdminPreview ? 'whatsapp' : 'user_id', isAdminPreview ? searchParams!.wpp! : user.id)
  .eq('ativo', true)
  .maybeSingle()
- if (!gestor) redirect('/entrar?p=pro')
+ if (!gestor) redirect(isAdminPreview ? '/admin/ver-pro' : '/entrar?p=pro')
 
  // Se trial sem data de expiração → auto-concede 7 dias (bug da migration DEFAULT)
  if (!isAdminPreview && gestor.status_assinatura === 'trial' && !gestor.trial_expira_em) {
@@ -50,9 +50,16 @@ export default async function GestorPage({ searchParams }: { searchParams?: { pr
 
  const gestorFoto: string | null = gestor.foto_perfil ?? null
 
+ // Normaliza variações de DDI: alunos antigos podem ter sido registrados
+ // com ou sem o prefixo 55, enquanto o gestor pode ter whatsapp em formato diferente
+ const wpp = gestor.whatsapp
+ const wppSemDDI = wpp.startsWith('55') && wpp.length > 11 ? wpp.slice(2) : wpp
+ const wppComDDI = wpp.startsWith('55') ? wpp : `55${wpp}`
+ const variacoesWpp = [...new Set([wpp, wppSemDDI, wppComDDI])]
+
  const { data: consultores } = await adminClient.from('alunos')
  .select('id, nome, whatsapp, email, status, created_at, ultimo_estudo_em, streak_atual')
- .eq('gestor_whatsapp', gestor.whatsapp)
+ .in('gestor_whatsapp', variacoesWpp)
  .order('created_at', { ascending: false })
 
  const { count: totalAulas } = await adminClient.from('aulas')

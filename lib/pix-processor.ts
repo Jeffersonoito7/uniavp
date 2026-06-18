@@ -15,6 +15,42 @@ import { vencimentoMeses } from '@/lib/date-utils'
 
 const log = createLogger('pix-processor')
 
+/**
+ * Ao virar PRO, busca alunos que eram do gestor no FREE e estao com whatsapp em formato diferente.
+ * Ex: gestor_whatsapp='11999999999' mas PRO tem whatsapp='5511999999999'.
+ * Atualiza gestor_whatsapp e gestor_nome para o formato canonico do PRO.
+ */
+export async function vincularAlunosDoGestorNoFree(
+  gestorWhatsapp: string,
+  gestorNome: string,
+  adminClient: ReturnType<typeof createServiceRoleClient>
+): Promise<{ atualizados: number }> {
+  const wpp = gestorWhatsapp
+  const wppSemDDI = wpp.startsWith('55') && wpp.length > 11 ? wpp.slice(2) : null
+  const wppComDDI = !wpp.startsWith('55') ? `55${wpp}` : null
+  const variacoes = [wppSemDDI, wppComDDI].filter(Boolean) as string[]
+
+  if (variacoes.length === 0) return { atualizados: 0 }
+
+  const { data: alunosErrados } = await adminClient
+    .from('alunos')
+    .select('id')
+    .in('gestor_whatsapp', variacoes)
+
+  if (!alunosErrados?.length) return { atualizados: 0 }
+
+  const ids = alunosErrados.map(a => a.id)
+  const { error } = await adminClient
+    .from('alunos')
+    .update({ gestor_whatsapp: wpp, gestor_nome: gestorNome })
+    .in('id', ids)
+
+  if (error) throw new Error(error.message)
+
+  log.info('alunos do free vinculados ao PRO', { gestorWhatsapp: wpp, atualizados: ids.length })
+  return { atualizados: ids.length }
+}
+
 export async function processarPixTxid(
   txid: string,
   adminClient: ReturnType<typeof createServiceRoleClient>
@@ -217,6 +253,14 @@ export async function processarPixTxid(
           await concederCreditosBoasVindas(gestor.id, gestor.tenant_id ?? null, adminClient)
         } catch (e) {
           log.error('falha ao conceder créditos boas-vindas', { err: String(e), gestorId: gestor.id })
+        }
+
+        // Puxa automaticamente alunos que eram do gestor no FREE mas com whatsapp em formato diferente.
+        // Caso comum: gestor tinha alunos com gestor_whatsapp='11999999999' e agora é PRO com '5511999999999'.
+        try {
+          await vincularAlunosDoGestorNoFree(gestor.whatsapp, gestor.nome, adminClient)
+        } catch (e) {
+          log.error('falha ao vincular alunos do free no upgrade', { err: String(e), gestorId: gestor.id })
         }
       }
     }

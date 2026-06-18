@@ -134,18 +134,25 @@ export async function criarCobrancaPix(params: {
 
 export async function consultarPagamento(txid: string): Promise<{ status: string; pago: boolean }> {
   const token = await getToken()
-  // Tenta cobv (com vencimento) primeiro; se não achar, tenta cob (simples, sem CPF/CNPJ)
-  const { data: dataCobv } = await httpsRequest(`${BASE}/v2/cobv/${txid}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  const cobv = dataCobv as EfiStatusResponse
-  if (cobv.status) return { status: cobv.status, pago: cobv.status === 'CONCLUIDA' }
 
-  const { data: dataCob } = await httpsRequest(`${BASE}/v2/cob/${txid}`, {
+  // Tenta cobv (com vencimento) primeiro; se não achar, tenta cob (simples, sem CPF/CNPJ)
+  const { status: httpCobv, data: dataCobv } = await httpsRequest(`${BASE}/v2/cobv/${txid}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
-  const cob = dataCob as EfiStatusResponse
-  return { status: cob.status ?? 'DESCONHECIDO', pago: cob.status === 'CONCLUIDA' }
+  // EFI retorna { status: 404 } (número) quando a cobv não existe — só aceita string
+  const cobvStatus = (dataCobv as any)?.status
+  console.log(`[efi] cobv/${txid} http=${httpCobv} status=${JSON.stringify(cobvStatus)}`)
+  if (cobvStatus && typeof cobvStatus === 'string') {
+    return { status: cobvStatus, pago: cobvStatus === 'CONCLUIDA' }
+  }
+
+  const { status: httpCob, data: dataCob } = await httpsRequest(`${BASE}/v2/cob/${txid}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const cobStatus = (dataCob as any)?.status
+  const statusStr = typeof cobStatus === 'string' ? cobStatus : 'DESCONHECIDO'
+  console.log(`[efi] cob/${txid} http=${httpCob} status=${JSON.stringify(cobStatus)} => ${statusStr}`)
+  return { status: statusStr, pago: statusStr === 'CONCLUIDA' }
 }
 
 // ── BOLETO ────────────────────────────────────────────────────────────────

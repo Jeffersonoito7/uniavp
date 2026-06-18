@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import { vencimentoMeses } from '@/lib/date-utils'
+import { vincularAlunosDoGestorNoFree } from '@/lib/pix-processor'
 import AdminLayout from '../AdminLayout'
 
 export const dynamic = 'force-dynamic'
@@ -21,77 +21,97 @@ export default async function RepararPage() {
 
   const tid = adminRec?.tenant_id ?? null
 
-  // Busca pagamentos marcados como pago cujo gestor ainda está inativo
-  let pagQuery = adminClient.from('gestor_pagamentos')
-    .select('id, gestor_id, valor, plano_meses, pago_em, txid')
-    .eq('status', 'pago')
-    .order('pago_em', { ascending: false })
-    .limit(50)
+  // Reparo de pagamentos (fase 1: travados, fase 2: pendentes na EFI)
+  const reparo = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? ''}/api/admin/reparar-gestores`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${process.env.CRON_SECRET ?? ''}` },
+  }).then(r => r.json()).catch(() => ({ ok: false, reparados: 0, detalhes: [], mensagem: 'Erro ao chamar reparo.' }))
 
-  const { data: pagamentos } = await pagQuery
+  const reparados: string[] = (reparo.detalhes ?? []).filter((d: string) => d.startsWith('OK')).map((d: string) => d.replace(/^OK /, ''))
+  const erros: string[] = (reparo.detalhes ?? []).filter((d: string) => d.startsWith('ERRO')).map((d: string) => d.replace(/^ERRO /, ''))
 
-  const gestorIds = (pagamentos ?? []).map((p: any) => p.gestor_id)
+  // Conta pendentes para informar
+  const { count: totalPendentes } = await adminClient.from('gestor_pagamentos')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'pendente')
+    .not('txid', 'is', null)
 
-  let gestoresInativos: any[] = []
-  if (gestorIds.length > 0) {
-    let gq = adminClient.from('gestores')
-      .select('id, nome, whatsapp, ativo, status_assinatura, tenant_id, plano_vencimento')
-      .in('id', gestorIds)
-      .eq('ativo', false)
-    if (tid) gq = gq.eq('tenant_id', tid)
-    const { data } = await gq
-    gestoresInativos = data ?? []
-  }
+  // Normalizacao de whatsapp: puxa alunos do FREE para o painel PRO correto
+  let gq = adminClient.from('gestores').select('id, nome, whatsapp, ativo')
+  if (tid) gq = gq.eq('tenant_id', tid)
+  const { data: gestores } = await gq
 
-  // Ativa os gestores presos
-  const reparados: string[] = []
-  const erros: string[] = []
+  let alunosVinculados = 0
+  const vinculosDetalhes: string[] = []
 
-  for (const gestor of gestoresInativos) {
-    const pag = (pagamentos ?? []).find((p: any) => p.gestor_id === gestor.id)
-    if (!pag) continue
-    const vencimento = vencimentoMeses(pag.plano_meses ?? 1)
-    const { error } = await adminClient.from('gestores')
-      .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
-      .eq('id', gestor.id)
-    if (error) {
-      erros.push(`${gestor.nome}: ${error.message}`)
-    } else {
-      reparados.push(`${gestor.nome} (${gestor.whatsapp})`)
-    }
+  for (const gestor of gestores ?? []) {
+    try {
+      const { atualizados } = await vincularAlunosDoGestorNoFree(gestor.whatsapp, gestor.nome, adminClient)
+      if (atualizados > 0) {
+        alunosVinculados += atualizados
+        vinculosDetalhes.push(`${gestor.nome}: ${atualizados} aluno(s) vinculados`)
+      }
+    } catch { /* silencioso */ }
   }
 
   return (
     <AdminLayout>
       <div style={{ maxWidth: 600 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Reparar Pagamentos</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Reparar Sistema</h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 28 }}>
-          Verifica e ativa PROs que pagaram mas nao migraram por falha tecnica.
+          Verifica e corrige pagamentos travados e alunos desvinculados de PROs.
         </p>
+
+        {/* Secao: pagamentos */}
+        <p style={{ fontWeight: 700, fontSize: 13, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>Pagamentos PRO</p>
 
         {reparados.length > 0 ? (
           <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: '20px 24px', marginBottom: 20 }}>
-            <p style={{ color: '#4ade80', fontWeight: 800, fontSize: 16, marginBottom: 12 }}>
+            <p style={{ color: '#4ade80', fontWeight: 800, fontSize: 15, marginBottom: 10 }}>
               {reparados.length} conta{reparados.length > 1 ? 's reparadas' : ' reparada'}
             </p>
             {reparados.map((r, i) => (
-              <p key={i} style={{ color: '#4ade80', fontSize: 14, margin: '4px 0' }}>✓ {r}</p>
+              <p key={i} style={{ color: '#4ade80', fontSize: 13, margin: '3px 0' }}>{r}</p>
             ))}
           </div>
         ) : (
-          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '20px 24px', marginBottom: 20 }}>
-            <p style={{ color: 'var(--avp-text-dim)', fontSize: 15 }}>
-              Nenhum pagamento confirmado com gestor inativo encontrado.
+          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '16px 20px', marginBottom: 20 }}>
+            <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>
+              {(totalPendentes ?? 0) > 0
+                ? `Nenhum caso detectado. ${totalPendentes} pagamento(s) ainda nao confirmados pela EFI.`
+                : 'Nenhum pagamento pendente. Tudo certo.'}
             </p>
           </div>
         )}
 
         {erros.length > 0 && (
-          <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.3)', borderRadius: 12, padding: '20px 24px', marginBottom: 20 }}>
-            <p style={{ color: '#f87171', fontWeight: 700, marginBottom: 8 }}>Erros:</p>
+          <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.3)', borderRadius: 12, padding: '16px 20px', marginBottom: 20 }}>
+            <p style={{ color: '#f87171', fontWeight: 700, marginBottom: 6 }}>Erros nos pagamentos:</p>
             {erros.map((e, i) => (
-              <p key={i} style={{ color: '#f87171', fontSize: 14, margin: '4px 0' }}>{e}</p>
+              <p key={i} style={{ color: '#f87171', fontSize: 13, margin: '3px 0' }}>{e}</p>
             ))}
+          </div>
+        )}
+
+        {/* Secao: alunos do FREE → PRO */}
+        <p style={{ fontWeight: 700, fontSize: 13, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, marginTop: 28 }}>
+          Alunos do FREE para o PRO
+        </p>
+
+        {alunosVinculados > 0 ? (
+          <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: '20px 24px', marginBottom: 20 }}>
+            <p style={{ color: '#4ade80', fontWeight: 800, fontSize: 15, marginBottom: 10 }}>
+              {alunosVinculados} aluno{alunosVinculados > 1 ? 's corrigidos' : ' corrigido'} e vinculado{alunosVinculados > 1 ? 's' : ''} ao PRO correto
+            </p>
+            {vinculosDetalhes.map((d, i) => (
+              <p key={i} style={{ color: '#4ade80', fontSize: 13, margin: '3px 0' }}>{d}</p>
+            ))}
+          </div>
+        ) : (
+          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '16px 20px', marginBottom: 20 }}>
+            <p style={{ color: 'var(--avp-text-dim)', fontSize: 14 }}>
+              Nenhum aluno com formato de whatsapp incorreto encontrado. Todos vinculados corretamente.
+            </p>
           </div>
         )}
 
