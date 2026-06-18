@@ -3,14 +3,15 @@ import { useState, useEffect } from 'react'
 import PhoneInput from './PhoneInput'
 
 type Props = {
-  alunoId: string
-  alunoWhatsapp: string
+  entityId: string
+  entityWhatsapp: string
+  tipo: 'aluno' | 'gestor'
 }
 
 const STORAGE_KEY = 'indicador_popup_adiado'
 const ADIADO_HORAS = 24
 
-export default function IndicadorPopup({ alunoId, alunoWhatsapp }: Props) {
+export default function IndicadorPopup({ entityId, entityWhatsapp, tipo }: Props) {
   const [visivel, setVisivel] = useState(false)
   const [wpp, setWpp] = useState('')
   const [salvando, setSalvando] = useState(false)
@@ -41,10 +42,15 @@ export default function IndicadorPopup({ alunoId, alunoWhatsapp }: Props) {
     }
     setSalvando(true)
     try {
-      const res = await fetch('/api/perfil', {
+      const endpoint = tipo === 'gestor' ? '/api/gestor/indicador' : '/api/perfil'
+      const body = tipo === 'gestor'
+        ? { gestor_id: entityId, indicador_whatsapp: digits }
+        : { aluno_id: entityId, indicador_whatsapp: digits }
+
+      const res = await fetch(endpoint, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ aluno_id: alunoId, indicador_whatsapp: digits }),
+        body: JSON.stringify(body),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -68,27 +74,25 @@ export default function IndicadorPopup({ alunoId, alunoWhatsapp }: Props) {
     >
       <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 18, width: '100%', maxWidth: 460, overflow: 'hidden', boxShadow: '0 24px 60px rgba(0,0,0,0.6)' }}>
 
-        {/* Topo colorido */}
         <div style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #818cf8 100%)', padding: '28px 28px 22px', position: 'relative' }}>
           <button
             onClick={adiar}
             style={{ position: 'absolute', top: 14, right: 14, background: 'rgba(0,0,0,0.25)', border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', color: '#fff', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >×</button>
+          >x</button>
           <div style={{ fontSize: 36, marginBottom: 10 }}>🤝</div>
           <h2 style={{ color: '#fff', fontSize: 20, fontWeight: 900, margin: '0 0 6px', lineHeight: 1.2 }}>
-            Alguém te indicou?
+            Alguem te indicou?
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.82)', fontSize: 14, margin: 0, lineHeight: 1.5 }}>
-            Informe o WhatsApp de quem te trouxe até aqui. Essa pessoa merece o reconhecimento pela indicação.
+            Informe o WhatsApp de quem te trouxe ate aqui. Essa pessoa merece o reconhecimento pela indicacao.
           </p>
         </div>
 
-        {/* Corpo */}
         <div style={{ padding: '22px 28px 26px', display: 'flex', flexDirection: 'column', gap: 14 }}>
           {concluido ? (
             <div style={{ textAlign: 'center', padding: '12px 0' }}>
               <div style={{ fontSize: 40, marginBottom: 10 }}>✅</div>
-              <p style={{ color: 'var(--avp-text)', fontWeight: 700, fontSize: 16, margin: 0 }}>Indicação registrada!</p>
+              <p style={{ color: 'var(--avp-text)', fontWeight: 700, fontSize: 16, margin: 0 }}>Indicacao registrada!</p>
               <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 6 }}>Obrigado por reconhecer quem te indicou.</p>
             </div>
           ) : (
@@ -117,7 +121,7 @@ export default function IndicadorPopup({ alunoId, alunoWhatsapp }: Props) {
                 className="btn btn-primary btn-full"
                 style={{ fontSize: 15, opacity: salvando ? 0.7 : 1 }}
               >
-                {salvando ? 'Salvando...' : 'Registrar indicação'}
+                {salvando ? 'Salvando...' : 'Registrar indicacao'}
               </button>
 
               <button

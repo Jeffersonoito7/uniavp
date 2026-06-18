@@ -5,6 +5,8 @@ import { headers } from 'next/headers'
 import { getLimitePROGratuito } from '@/lib/pros-indicados'
 import { getAppUrl } from '@/lib/get-app-url'
 import GestorDashboard from './GestorDashboard'
+import IndicadorPopup from '@/app/components/IndicadorPopup'
+import InactivityReload from '@/app/components/InactivityReload'
 
 export default async function GestorPage() {
  const supabase = await createClient()
@@ -14,7 +16,7 @@ export default async function GestorPage() {
  const adminClient = createServiceRoleClient()
 
  const { data: gestor } = await adminClient.from('gestores')
- .select('id, nome, email, whatsapp, foto_perfil, status_assinatura, trial_expira_em, plano_vencimento, tenant_id')
+ .select('id, nome, email, whatsapp, foto_perfil, status_assinatura, trial_expira_em, plano_vencimento, tenant_id, indicado_por_gestor_id')
  .eq('user_id', user.id)
  .eq('ativo', true)
  .maybeSingle()
@@ -122,6 +124,11 @@ export default async function GestorPage() {
  ])
 
  return (
+ <>
+ <InactivityReload />
+ {!gestor.indicado_por_gestor_id && (
+ <IndicadorPopup entityId={gestor.id} entityWhatsapp={gestor.whatsapp} tipo="gestor" />
+ )}
  <GestorDashboard
  gestor={{ ...gestor, foto_perfil: gestorFoto }}
  consultores={consultores ?? []}
@@ -135,5 +142,6 @@ export default async function GestorPage() {
  documentos={documentosPro ?? []}
  podeCfgLink={podeCfgLink}
  />
+ </>
  )
 }

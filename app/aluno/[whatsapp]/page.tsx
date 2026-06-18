@@ -10,6 +10,7 @@ import RankingWidget from '@/app/components/RankingWidget'
 import RetomarPopup from '@/app/components/RetomarPopup'
 import IndicacaoCard from '@/app/components/IndicacaoCard'
 import IndicadorPopup from '@/app/components/IndicadorPopup'
+import InactivityReload from '@/app/components/InactivityReload'
 import ProTeaser from '@/app/components/ProTeaser'
 import SetupInicial from '@/app/components/SetupInicial'
 import AlunoHeader from './AlunoHeader'
@@ -277,9 +278,10 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  appAndroidUrl={setupAppAndroid}
  />
  )}
+ <InactivityReload />
  <SupportChat painel="Consultor" />
  {!aluno.indicador_id && !aluno.gestor_whatsapp && !isAdminPreview && (
- <IndicadorPopup alunoId={aluno.id} alunoWhatsapp={aluno.whatsapp} />
+ <IndicadorPopup entityId={aluno.id} entityWhatsapp={aluno.whatsapp} tipo="aluno" />
  )}
  {aulaAtual && !moduloSelecionadoId && (
  <RetomarPopup
