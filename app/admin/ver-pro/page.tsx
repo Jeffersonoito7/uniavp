@@ -41,7 +41,7 @@ export default async function VerProPage() {
  </p>
  </div>
  <a
- href={`/api/admin/login-como?whatsapp=${g.whatsapp}&tipo=pro`}
+ href={`/gestor?preview=1&wpp=${g.whatsapp}`}
  target="_blank"
  rel="noopener noreferrer"
  style={{ flexShrink: 0, background: 'var(--grad-brand)', color: '#fff', borderRadius: 8, padding: '8px 18px', fontSize: 13, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}

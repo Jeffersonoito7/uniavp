@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
 
   const adminClient = createServiceRoleClient()
   const { data: me } = await adminClient.from('admins')
-    .select('id, role').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+    .select('id, role, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!me) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const { nome, email, senha } = await req.json()
@@ -23,9 +23,9 @@ export async function POST(req: NextRequest) {
   })
   if (authErr) return NextResponse.json({ error: authErr.message }, { status: 400 })
 
-  // Inserir na tabela admins
+  // Inserir na tabela admins herdando o tenant do admin que criou
   const { data: novo, error: dbErr } = await adminClient.from('admins')
-    .insert({ user_id: authUser.user!.id, nome, email, ativo: true, role: 'admin' })
+    .insert({ user_id: authUser.user!.id, nome, email, ativo: true, role: 'admin', tenant_id: me.tenant_id ?? null })
     .select('id, nome, email, role, ativo, created_at').single()
   if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 400 })
 

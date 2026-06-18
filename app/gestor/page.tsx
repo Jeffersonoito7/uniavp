@@ -8,22 +8,33 @@ import GestorDashboard from './GestorDashboard'
 import IndicadorPopup from '@/app/components/IndicadorPopup'
 import InactivityReload from '@/app/components/InactivityReload'
 
-export default async function GestorPage() {
+export default async function GestorPage({ searchParams }: { searchParams?: { preview?: string; wpp?: string } }) {
  const supabase = await createClient()
  const { data: { user } } = await supabase.auth.getUser()
  if (!user) redirect('/entrar?p=pro')
 
  const adminClient = createServiceRoleClient()
 
+ // Modo preview: admin (tenant ou super) visualiza painel PRO sem trocar de sessao
+ const isPreview = searchParams?.preview === '1' && !!searchParams?.wpp
+ let isAdminPreview = false
+ if (isPreview) {
+ const [{ data: adminRec }, { data: superRec }] = await Promise.all([
+ adminClient.from('admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle(),
+ adminClient.from('super_admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle(),
+ ])
+ isAdminPreview = !!(adminRec || superRec)
+ }
+
  const { data: gestor } = await adminClient.from('gestores')
  .select('id, nome, email, whatsapp, foto_perfil, status_assinatura, trial_expira_em, plano_vencimento, tenant_id, indicado_por_gestor_id')
- .eq('user_id', user.id)
+ .eq(isAdminPreview ? 'whatsapp' : 'user_id', isAdminPreview ? searchParams!.wpp! : user.id)
  .eq('ativo', true)
  .maybeSingle()
  if (!gestor) redirect('/entrar?p=pro')
 
  // Se trial sem data de expiração → auto-concede 7 dias (bug da migration DEFAULT)
- if (gestor.status_assinatura === 'trial' && !gestor.trial_expira_em) {
+ if (!isAdminPreview && gestor.status_assinatura === 'trial' && !gestor.trial_expira_em) {
  const trialExpira = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
  await adminClient.from('gestores')
  .update({ trial_expira_em: trialExpira })
@@ -35,7 +46,7 @@ export default async function GestorPage() {
  const agora = new Date()
  const trialAtivo = gestor.status_assinatura === 'trial' && gestor.trial_expira_em && new Date(gestor.trial_expira_em)> agora
  const planoAtivo = gestor.status_assinatura === 'ativo' && (!gestor.plano_vencimento || new Date(gestor.plano_vencimento)> agora)
- if (!trialAtivo && !planoAtivo) redirect('/gestor/assinar')
+ if (!isAdminPreview && !trialAtivo && !planoAtivo) redirect('/gestor/assinar')
 
  const gestorFoto: string | null = gestor.foto_perfil ?? null
 
@@ -125,9 +136,15 @@ export default async function GestorPage() {
 
  return (
  <>
- <InactivityReload />
- {!gestor.indicado_por_gestor_id && (
+ {!isAdminPreview && <InactivityReload />}
+ {!isAdminPreview && !gestor.indicado_por_gestor_id && (
  <IndicadorPopup entityId={gestor.id} entityWhatsapp={gestor.whatsapp} tipo="gestor" />
+ )}
+ {isAdminPreview && (
+ <div style={{ background: '#f59e0b', color: '#000', padding: '8px 20px', fontSize: 13, fontWeight: 700, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+ Modo Preview Admin: {gestor.nome} ({gestor.whatsapp})
+ <a href="/admin/ver-pro" style={{ color: '#000', textDecoration: 'underline', fontWeight: 600 }}>Voltar ao admin</a>
+ </div>
  )}
  <GestorDashboard
  gestor={{ ...gestor, foto_perfil: gestorFoto }}
