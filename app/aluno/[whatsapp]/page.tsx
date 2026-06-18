@@ -9,6 +9,7 @@ import SupportChat from '@/app/components/SupportChat'
 import RankingWidget from '@/app/components/RankingWidget'
 import RetomarPopup from '@/app/components/RetomarPopup'
 import IndicacaoCard from '@/app/components/IndicacaoCard'
+import IndicadorPopup from '@/app/components/IndicadorPopup'
 import ProTeaser from '@/app/components/ProTeaser'
 import SetupInicial from '@/app/components/SetupInicial'
 import AlunoHeader from './AlunoHeader'
@@ -277,6 +278,9 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  />
  )}
  <SupportChat painel="Consultor" />
+ {!aluno.indicador_id && !aluno.gestor_whatsapp && !isAdminPreview && (
+ <IndicadorPopup alunoId={aluno.id} alunoWhatsapp={aluno.whatsapp} />
+ )}
  {aulaAtual && !moduloSelecionadoId && (
  <RetomarPopup
  whatsapp={aluno.whatsapp}
