@@ -55,7 +55,7 @@ export default async function VerFreePage() {
  </div>
  <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
  <a
- href={`/api/admin/login-como?whatsapp=${a.whatsapp}`}
+ href={`/aluno/${a.whatsapp}?preview=1`}
  target="_blank"
  rel="noopener noreferrer"
  style={{ background: 'var(--grad-brand)', color: '#fff', borderRadius: 8, padding: '8px 18px', fontSize: 13, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}

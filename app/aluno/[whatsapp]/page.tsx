@@ -24,7 +24,7 @@ function calcularNivel(pontos: number) {
  return { nome: 'Iniciante', prox: 100, atual: pontos, min: 0, max: 100 }
 }
 
-export default async function AlunoHomePage({ params, searchParams }: { params: { whatsapp: string }; searchParams?: { modulo?: string } }) {
+export default async function AlunoHomePage({ params, searchParams }: { params: { whatsapp: string }; searchParams?: { modulo?: string; preview?: string } }) {
  const supabase = await createClient()
  const { data: { user } } = await supabase.auth.getUser()
  if (!user) redirect('/entrar?p=free')
@@ -35,9 +35,18 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  const siteConfig = await getSiteConfig(host)
  const baseUrl = siteConfig.dominioCustomizado ? `https://${siteConfig.dominioCustomizado}` : `https://${host}`
 
+ // Modo preview: admin pode visualizar painel de qualquer aluno sem trocar de sessao
+ const isPreview = searchParams?.preview === '1'
+ let isAdminPreview = false
+ if (isPreview) {
+ const { data: adminRecord } = await adminClient.from('admins')
+ .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+ isAdminPreview = !!adminRecord
+ }
+
  const { data: aluno } = await adminClient.from('alunos')
  .select('id, nome, whatsapp, email, cpf, status, numero_registro, streak_atual, maior_streak, tenant_id, setup_concluido, gestor_whatsapp, indicador_id, link_externo')
- .eq('user_id', user.id)
+ .eq(isAdminPreview ? 'whatsapp' : 'user_id', isAdminPreview ? params.whatsapp : user.id)
  .maybeSingle()
 
  const tid = aluno?.tenant_id as string | null
@@ -76,7 +85,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  const setupAppAndroid = certMap['app_android_url'] || undefined
 
  if (!aluno) redirect('/entrar?p=free')
- if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
+ if (!isAdminPreview && aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
  // Verifica se o aluno já assinou o contrato (necessário para lógica de bloqueio)
  const { data: contratoAssinado } = contratoMomento !== 'desativado'
@@ -115,7 +124,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  .eq('user_id', user.id)
  .eq('ativo', true)
  .maybeSingle()
- if (gestorAtivo) redirect('/pro')
+ if (gestorAtivo && !isAdminPreview) redirect('/pro')
 
  const { data: limiteRow } = await adminClient.from('configuracoes')
  .select('valor').eq('chave', 'free_max_modulos').maybeSingle()
@@ -277,6 +286,12 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  totalModulos={modulos.length}
  totalAulas={trilha.length}
  />
+ )}
+ {isAdminPreview && (
+ <div style={{ background: '#f59e0b', color: '#000', padding: '8px 20px', fontSize: 13, fontWeight: 700, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+ Modo Preview Admin: {aluno.nome} ({aluno.whatsapp})
+ <a href="/admin/ver-free" style={{ color: '#000', textDecoration: 'underline', fontWeight: 600 }}>Voltar ao admin</a>
+ </div>
  )}
  <div style={{ minHeight: '100vh', background: 'var(--avp-black)', color: 'var(--avp-text)', fontFamily: 'Inter, sans-serif' }}>
 
