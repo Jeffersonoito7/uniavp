@@ -54,15 +54,34 @@ export async function GET(req: NextRequest) {
     options: { redirectTo },
   })
 
+  const debug = req.nextUrl.searchParams.get('debug') === '1'
+
   if (error || !linkData?.properties?.action_link) {
     return new NextResponse(`<html><body style="font-family:sans-serif;padding:40px;background:#0a0a0f;color:#fff">
       <h2>Erro ao gerar link</h2>
       <p style="color:#f87171">${error?.message ?? 'Erro desconhecido'}</p>
+      <p style="color:#94a3b8;font-size:13px">host: ${host} | baseDomain: ${baseDomain} | appBase: ${appBase}</p>
+      <p style="color:#94a3b8;font-size:13px">redirectTo: ${redirectTo}</p>
       <a href="javascript:history.back()" style="color:#6366f1">← Voltar</a>
     </body></html>`, { headers: { 'Content-Type': 'text/html' } })
   }
 
   const link = linkData.properties.action_link
+
+  if (debug) {
+    return new NextResponse(`<html><body style="font-family:monospace;padding:40px;background:#0a0a0f;color:#f1f5f9;font-size:13px">
+      <h2 style="font-family:sans-serif">Debug: Entrar como ${nome}</h2>
+      <p><b>host:</b> ${host}</p>
+      <p><b>baseDomain:</b> ${baseDomain}</p>
+      <p><b>appBase:</b> ${appBase}</p>
+      <p><b>redirectTo:</b> <span style="color:#6ee7b7">${redirectTo}</span></p>
+      <p><b>action_link:</b> <span style="color:#93c5fd;word-break:break-all">${link}</span></p>
+      <br>
+      <a href="${link}" style="background:#6366f1;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-family:sans-serif;font-weight:700">Abrir magic link</a>
+      &nbsp;
+      <a href="javascript:history.back()" style="color:#6366f1;font-family:sans-serif">← Voltar</a>
+    </body></html>`, { headers: { 'Content-Type': 'text/html; charset=utf-8' } })
+  }
 
   // Redireciona direto para o magic link — o auth do Supabase processa e cai no painel do aluno
   return NextResponse.redirect(link)
