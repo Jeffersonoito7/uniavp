@@ -4,11 +4,33 @@ import { Link2, Lock, GraduationCap, UserCheck } from 'lucide-react'
 import ImageCropModal from '@/app/components/ImageCropModal'
 import PhoneInput from '@/app/components/PhoneInput'
 
+function validarCPF(cpf: string): boolean {
+  const d = cpf.replace(/\D/g, '')
+  if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false
+  let sum = 0
+  for (let i = 0; i < 9; i++) sum += parseInt(d[i]) * (10 - i)
+  let r = (sum * 10) % 11; if (r === 10 || r === 11) r = 0
+  if (r !== parseInt(d[9])) return false
+  sum = 0
+  for (let i = 0; i < 10; i++) sum += parseInt(d[i]) * (11 - i)
+  r = (sum * 10) % 11; if (r === 10 || r === 11) r = 0
+  return r === parseInt(d[10])
+}
+
+function formatarCPF(valor: string): string {
+  const d = valor.replace(/\D/g, '').slice(0, 11)
+  if (d.length <= 3) return d
+  if (d.length <= 6) return `${d.slice(0,3)}.${d.slice(3)}`
+  if (d.length <= 9) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`
+  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`
+}
+
 type Aluno = {
  id: string
  nome: string
  whatsapp: string
  email: string
+ cpf?: string | null
  foto_url: string | null
  bio: string | null
  status: string
@@ -25,7 +47,7 @@ const STATUS_LABEL: Record<string, { label: string; color: string; bg: string }>
  desligado: { label: 'Desligado', color: '#ef4444', bg: '#ef444415' },
 }
 
-export default function PerfilCliente({ aluno, email, podeCfgLink, indicador }: { aluno: Aluno; email: string; podeCfgLink?: boolean; indicador?: { nome: string; whatsapp: string } | null }) {
+export default function PerfilCliente({ aluno, email, podeCfgLink, indicador, avisoCpf }: { aluno: Aluno; email: string; podeCfgLink?: boolean; indicador?: { nome: string; whatsapp: string } | null; avisoCpf?: boolean }) {
  const [siteNome, setSiteNome] = useState('')
  useEffect(() => {
  fetch('/api/site-config').then(r => r.json()).then(d => setSiteNome(d.nome)).catch(() => {})
@@ -33,6 +55,12 @@ export default function PerfilCliente({ aluno, email, podeCfgLink, indicador }: 
 
  const [nome, setNome] = useState(aluno.nome)
  const [bio, setBio] = useState(aluno.bio ?? '')
+ const cpfInicial = aluno.cpf ? formatarCPF(aluno.cpf) : ''
+ const [cpf, setCpf] = useState(cpfInicial)
+ const [salvandoCpf, setSalvandoCpf] = useState(false)
+ const [msgCpf, setMsgCpf] = useState<{ tipo: 'ok' | 'err'; texto: string } | null>(null)
+ const cpfLimpo = cpf.replace(/\D/g, '')
+ const cpfValido = validarCPF(cpf)
  const [linkExterno, setLinkExterno] = useState(aluno.link_externo ?? '')
  const [indWpp, setIndWpp] = useState('')
  const [salvandoInd, setSalvandoInd] = useState(false)
@@ -107,6 +135,23 @@ export default function PerfilCliente({ aluno, email, podeCfgLink, indicador }: 
  else setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao salvar.' })
  setSalvando(false)
  setTimeout(() => setMsg(null), 4000)
+ }
+
+ async function salvarCpf(e: React.FormEvent) {
+ e.preventDefault()
+ if (!cpfValido) { setMsgCpf({ tipo: 'err', texto: 'CPF inválido. Verifique os números.' }); return }
+ setSalvandoCpf(true)
+ setMsgCpf(null)
+ const res = await fetch('/api/perfil', {
+ method: 'PUT',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ aluno_id: aluno.id, cpf }),
+ })
+ const data = await res.json()
+ if (data.ok) { setMsgCpf({ tipo: 'ok', texto: 'CPF salvo com sucesso!' }) }
+ else { setMsgCpf({ tipo: 'err', texto: data.error ?? 'Erro ao salvar.' }) }
+ setSalvandoCpf(false)
+ setTimeout(() => setMsgCpf(null), 5000)
  }
 
  const inp: React.CSSProperties = {
@@ -255,6 +300,52 @@ export default function PerfilCliente({ aluno, email, podeCfgLink, indicador }: 
  </div>
  </div>
  </form>
+
+ {/* CPF */}
+ <div style={{ background: avisoCpf && !aluno.cpf ? 'rgba(248,113,113,0.06)' : 'var(--avp-card)', border: `1px solid ${avisoCpf && !aluno.cpf ? 'rgba(248,113,113,0.4)' : 'var(--avp-border)'}`, borderRadius: 16, overflow: 'hidden', marginTop: 20 }}>
+ <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--avp-border)' }}>
+ <h2 style={{ fontWeight: 800, fontSize: 16, margin: 0 }}>CPF</h2>
+ {avisoCpf && !aluno.cpf && (
+ <p style={{ color: '#f87171', fontSize: 13, margin: '4px 0 0', fontWeight: 600 }}>
+ Preencha o CPF para acessar sua carteira digital.
+ </p>
+ )}
+ {!avisoCpf && (
+ <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: '4px 0 0' }}>Obrigatório para emissão da carteira digital</p>
+ )}
+ </div>
+ <div style={{ padding: '20px 24px' }}>
+ {msgCpf && (
+ <div style={{ padding: '10px 14px', background: msgCpf.tipo === 'ok' ? '#02A15320' : '#e6394620', border: `1px solid ${msgCpf.tipo === 'ok' ? 'var(--avp-green)' : 'var(--avp-danger)'}`, borderRadius: 8, color: msgCpf.tipo === 'ok' ? 'var(--avp-green)' : 'var(--avp-danger)', fontSize: 13, marginBottom: 16 }}>
+ {msgCpf.texto}
+ </div>
+ )}
+ <form onSubmit={salvarCpf} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+ <div style={{ flex: 1, minWidth: 220 }}>
+ <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+ CPF *
+ {cpfLimpo.length === 11 && (
+ <span style={{ color: cpfValido ? '#22c55e' : '#f87171', textTransform: 'none' }}>
+ {cpfValido ? 'valido' : 'invalido'}
+ </span>
+ )}
+ </label>
+ <input
+ type="text"
+ inputMode="numeric"
+ placeholder="000.000.000-00"
+ value={cpf}
+ onChange={e => setCpf(formatarCPF(e.target.value))}
+ style={{ ...inp, borderColor: cpfLimpo.length === 11 && !cpfValido ? 'rgba(248,113,113,0.6)' : undefined }}
+ />
+ </div>
+ <button type="submit" disabled={salvandoCpf || !cpfValido}
+ style={{ background: cpfValido ? 'var(--avp-green)' : 'var(--avp-border)', color: cpfValido ? '#fff' : 'var(--avp-text-dim)', border: 'none', borderRadius: 10, padding: '10px 22px', fontWeight: 700, cursor: salvandoCpf || !cpfValido ? 'not-allowed' : 'pointer', fontSize: 14, opacity: salvandoCpf ? 0.7 : 1, whiteSpace: 'nowrap' }}>
+ {salvandoCpf ? 'Salvando...' : 'Salvar CPF'}
+ </button>
+ </form>
+ </div>
+ </div>
 
  {/* Segurança */}
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, overflow: 'hidden', marginTop: 20 }}>

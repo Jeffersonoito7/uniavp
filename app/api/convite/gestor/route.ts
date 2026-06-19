@@ -6,9 +6,9 @@ import { getTenantId } from '@/lib/tenant'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
-  const { nome, email, whatsapp, senha } = await req.json()
-  if (!nome || !email || !whatsapp || !senha) {
-    return NextResponse.json({ error: 'Preencha todos os campos.' }, { status: 400 })
+  const { nome, email, whatsapp, senha, cpf } = await req.json()
+  if (!nome || !email || !whatsapp || !senha || !cpf) {
+    return NextResponse.json({ error: 'Preencha todos os campos, incluindo o CPF.' }, { status: 400 })
   }
   if (senha.length < 6) {
     return NextResponse.json({ error: 'Senha deve ter pelo menos 6 caracteres.' }, { status: 400 })
@@ -36,7 +36,13 @@ export async function POST(req: NextRequest) {
       whatsapp: whatsapp.replace(/\D/g, ''),
       ativo: false,
       ...(tenantId ? { tenant_id: tenantId } : {}),
-    })
+    } as any)
+
+  // Salva CPF separado apos insert (coluna nao esta nos tipos gerados ainda)
+  if (!gestorError && cpf) {
+    await adminClient.from('gestores').update({ cpf: cpf.replace(/\D/g, '') } as any)
+      .eq('user_id', authUser.user.id)
+  }
 
   if (gestorError) {
     await adminClient.auth.admin.deleteUser(authUser.user.id)

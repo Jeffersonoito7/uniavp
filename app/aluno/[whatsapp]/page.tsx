@@ -13,6 +13,7 @@ import IndicadorPopup from '@/app/components/IndicadorPopup'
 import InactivityReload from '@/app/components/InactivityReload'
 import ProTeaser from '@/app/components/ProTeaser'
 import SetupInicial from '@/app/components/SetupInicial'
+import CpfAlertPopup from '@/app/components/CpfAlertPopup'
 import AlunoHeader from './AlunoHeader'
 import AlunoStats from './AlunoStats'
 import ModulosGrid from './ModulosGrid'
@@ -265,6 +266,9 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
 
  return (
  <>
+ {!aluno.cpf && !isAdminPreview && (
+ <CpfAlertPopup tipo="aluno" alunoId={aluno.id} />
+ )}
  {precisaSetup && (
  <SetupInicial
  whatsapp={aluno.whatsapp}

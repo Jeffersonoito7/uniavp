@@ -45,8 +45,12 @@ export default function CadastroPage() {
  e.preventDefault()
  setErro('')
  setSucesso('')
- // Valida CPF se preenchido
- if (form.cpf.replace(/\D/g, '').length> 0 && !validarCPF(form.cpf)) {
+ const cpfLimpo = form.cpf.replace(/\D/g, '')
+ if (!cpfLimpo || cpfLimpo.length !== 11) {
+ setErro('CPF é obrigatório. Preencha todos os 11 dígitos.')
+ return
+ }
+ if (!validarCPF(form.cpf)) {
  setErro('CPF inválido. Verifique os números e tente novamente.')
  return
  }
@@ -129,13 +133,12 @@ export default function CadastroPage() {
  </div>
  <div>
  <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 8 }}>
- CPF
+ CPF *
  {form.cpf.replace(/\D/g, '').length === 11 && (
  <span style={{ fontSize: 12, color: validarCPF(form.cpf) ? '#22c55e' : '#f87171', fontWeight: 700 }}>
  {validarCPF(form.cpf) ? ' válido' : ' inválido'}
  </span>
  )}
- <span style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 400 }}>(opcional)</span>
  </label>
  <input
  type="text"

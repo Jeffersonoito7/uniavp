@@ -10,7 +10,7 @@ export async function PUT(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const { aluno_id, nome, bio, link_externo, indicador_whatsapp } = await req.json()
+  const { aluno_id, nome, bio, link_externo, indicador_whatsapp, cpf } = await req.json()
 
   if (!aluno_id) return NextResponse.json({ error: 'aluno_id obrigatório' }, { status: 400 })
 
@@ -72,7 +72,7 @@ export async function PUT(req: NextRequest) {
   }
 
   const { error } = await adminClient.from('alunos')
-    .update({ nome: nome ?? aluno.nome, bio: bio ?? null, ...(link_externo !== undefined ? { link_externo } : {}) })
+    .update({ nome: nome ?? aluno.nome, bio: bio ?? null, ...(link_externo !== undefined ? { link_externo } : {}), ...(cpf !== undefined ? { cpf: cpf?.replace(/\D/g, '') || null } : {}) })
     .eq('id', aluno_id)
 
   if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })

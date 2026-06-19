@@ -18,6 +18,7 @@ export default async function CarteiraPage({ params }: { params: { whatsapp: str
 
  if (!aluno) redirect('/entrar?p=free')
  if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}/carteira`)
+ if (!aluno.cpf) redirect(`/aluno/${aluno.whatsapp}/perfil?aviso=cpf`)
 
  // Carga horária total dos cursos publicados
  const { data: aulas } = await adminClient.from('aulas')

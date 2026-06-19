@@ -14,13 +14,14 @@ export async function PUT(req: NextRequest) {
     .select('id').eq('user_id', user.id).maybeSingle()
   if (!gestor) return NextResponse.json({ error: 'Não encontrado' }, { status: 404 })
 
-  const { nome, link_externo } = await req.json()
+  const { nome, link_externo, cpf } = await req.json()
 
-  const updates: { nome?: string; link_externo?: string | null } = {}
+  const updates: { nome?: string; link_externo?: string | null; cpf?: string | null } = {}
   if (nome !== undefined) updates.nome = nome
   if (link_externo !== undefined) updates.link_externo = link_externo || null
+  if (cpf !== undefined) updates.cpf = cpf?.replace(/\D/g, '') || null
 
-  const { error } = await adminClient.from('gestores').update(updates).eq('id', gestor.id)
+  const { error } = await adminClient.from('gestores').update(updates as any).eq('id', gestor.id)
   if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   return NextResponse.json({ ok: true })
