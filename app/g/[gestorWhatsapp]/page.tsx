@@ -45,6 +45,7 @@ export default async function GestorCaptacaoPage({ params, searchParams }: { par
  .in('chave', [
  'free_bloquear_video',
  'captacao_mostrar_parceiro', 'captacao_bloquear_parceiro', 'captacao_parceiro_titulo',
+ 'captacao_link_externo',
  'captacao_mostrar_app', 'captacao_bloquear_app',
  'app_ios_url', 'app_android_url',
  ])
@@ -78,7 +79,7 @@ export default async function GestorCaptacaoPage({ params, searchParams }: { par
  direto={direto}
  indicadorWhatsapp={ref}
  plano={plano}
- linkExterno={gestor.link_externo ?? undefined}
+ linkExterno={gestor.link_externo || cfgMap['captacao_link_externo'] || undefined}
  bloquearVideo={bloquearVideo}
  captacaoMostrarParceiro={captacaoMostrarParceiro}
  captacaoBloquearParceiro={captacaoBloquearParceiro}
