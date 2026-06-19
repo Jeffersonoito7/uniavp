@@ -878,6 +878,23 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  </div>
  )
  })()}
+
+ {/* Toggle bloquear avanco do video de captacao */}
+ <div style={{ background: 'var(--avp-black)', border: `1px solid ${freeBloquearVideo ? 'rgba(2,161,83,0.35)' : 'var(--avp-border)'}`, borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+ <div>
+ <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>Bloquear avanço do vídeo</p>
+ <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '3px 0 0' }}>
+ Quando ativado, o candidato não pode pular partes — precisa assistir do início ao fim.
+ </p>
+ </div>
+ <button
+ type="button"
+ onClick={() => setFreeBloquearVideo(v => !v)}
+ style={{ flexShrink: 0, width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: freeBloquearVideo ? 'var(--avp-green)' : '#ef4444', position: 'relative', transition: 'background 0.2s' }}
+ >
+ <span style={{ position: 'absolute', top: 3, left: freeBloquearVideo ? 25 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+ </button>
+ </div>
  </div>
 
  {/* FLUXO PÓS-CADASTRO — passos obrigatórios */}
