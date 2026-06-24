@@ -11,9 +11,11 @@ export default async function VerFreePage() {
  if (!user) redirect('/entrar?p=adm')
 
  const adminClient = createServiceRoleClient()
- const { data: adminRecord } = await adminClient.from('admins')
- .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
- if (!adminRecord) redirect('/entrar?p=adm')
+ const [{ data: adminRecord }, { data: superRecord }] = await Promise.all([
+ adminClient.from('admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle(),
+ adminClient.from('super_admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle(),
+ ])
+ if (!adminRecord && !superRecord) redirect('/entrar?p=adm')
 
  // Busca user_ids dos gestores ativos para excluir da lista FREE
  const { data: gestoresAtivos } = await adminClient.from('gestores')

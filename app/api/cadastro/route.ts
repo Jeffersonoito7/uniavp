@@ -29,6 +29,7 @@ const schema = z.object({
   gestor_nome: z.string().optional().default(''),
   gestor_whatsapp: z.string().optional().default(''),
   indicador_whatsapp: z.string().optional(),
+  especialista: z.boolean().optional().default(false),
 })
 
 export async function POST(req: NextRequest) {
@@ -73,7 +74,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.errors[0]?.message ?? 'Dados inválidos' }, { status: 400 })
   }
 
-  const { nome, whatsapp, email, cpf, senha, indicador_whatsapp } = parsed.data
+  const { nome, whatsapp, email, cpf, senha, indicador_whatsapp, especialista } = parsed.data
   let { gestor_nome, gestor_whatsapp } = parsed.data
 
   const whatsappLimpo = whatsapp.replace(/\D/g, '')
@@ -182,7 +183,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const { data: aluno, error: alunoErr } = await adminClient.from('alunos')
+  const { data: aluno, error: alunoErr } = await (adminClient.from('alunos') as any)
     .insert({
       user_id: authUser.user.id,
       nome: nome.trim(),
@@ -193,6 +194,7 @@ export async function POST(req: NextRequest) {
       gestor_nome: gestor_nome.trim(),
       gestor_whatsapp: gestor_whatsapp.replace(/\D/g, ''),
       tenant_id: tenantId,
+      especialista: especialista ?? false,
     })
     .select('*')
     .single()

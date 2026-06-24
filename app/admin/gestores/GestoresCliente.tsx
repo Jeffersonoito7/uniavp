@@ -12,6 +12,7 @@ type Gestor = {
  status_assinatura?: string | null
  plano_vencimento?: string | null
  trial_expira_em?: string | null
+ cpf?: string | null
 }
 
 function LinkCopiavel({ label, url, desc }: { label: string; url: string; desc: string }) {
@@ -66,7 +67,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
  const [verNovaSenha, setVerNovaSenha] = useState(false)
  const [resetando, setResetando] = useState(false)
  const [editando, setEditando] = useState<Gestor | null>(null)
- const [editForm, setEditForm] = useState({ nome: '', email: '', whatsapp: '', nova_senha: '' })
+ const [editForm, setEditForm] = useState({ nome: '', email: '', whatsapp: '', nova_senha: '', cpf: '' })
  // Ativação manual PRO
  const [ativandoPro, setAtivandoPro] = useState<Gestor | null>(null)
  const [diasPro, setDiasPro] = useState('30')
@@ -88,7 +89,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
 
  async function salvarEdicao(e: React.FormEvent) {
  e.preventDefault(); if (!editando) return; setSalvando(true)
- const res = await fetch('/api/admin/gestores', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editando.id, nome: editForm.nome, email: editForm.email, whatsapp: editForm.whatsapp.replace(/\D/g, ''), nova_senha: editForm.nova_senha || null }) })
+ const res = await fetch('/api/admin/gestores', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editando.id, nome: editForm.nome, email: editForm.email, whatsapp: editForm.whatsapp.replace(/\D/g, ''), nova_senha: editForm.nova_senha || null, cpf: editForm.cpf || null }) })
  const data = await res.json()
  if (data.gestor) { setGestores(prev => prev.map(g => g.id === editando.id ? { ...g, ...data.gestor } : g)); setEditando(null); flash('ok', `${editForm.nome} atualizado!`) }
  else flash('err', data.error ?? 'Erro ao salvar.')
@@ -190,6 +191,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
  <div><label style={lbl}>E-mail *</label><input type="email" style={inp} value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} required /></div>
  <div><label style={lbl}>WhatsApp *</label><PhoneInput value={editForm.whatsapp} onChange={v => setEditForm(p => ({ ...p, whatsapp: v }))} required style={{ background: 'var(--avp-black)', borderRadius: 8 }} /></div>
  <div><label style={lbl}>Nova senha <span style={{ fontWeight: 400 }}>(em branco = não alterar)</span></label><input type="password" style={inp} value={editForm.nova_senha} onChange={e => setEditForm(p => ({ ...p, nova_senha: e.target.value }))} placeholder="Mínimo 6 caracteres" /></div>
+ <div><label style={lbl}>CPF <span style={{ fontWeight: 400 }}>(somente números)</span></label><input style={inp} value={editForm.cpf} onChange={e => setEditForm(p => ({ ...p, cpf: e.target.value }))} placeholder="000.000.000-00" maxLength={14} /></div>
  <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
  <button type="button" onClick={() => setEditando(null)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
  <button type="submit" disabled={salvando} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, cursor: 'pointer', fontSize: 14, opacity: salvando ? 0.6 : 1 }}>{salvando ? 'Salvando...' : 'Salvar'}</button>
@@ -308,7 +310,7 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
  style={{ background: 'rgba(2,161,83,0.15)', color: 'var(--avp-green)', border: '1px solid rgba(2,161,83,0.4)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap' }}>
  Ativar PRO
  </button>
- <button onClick={() => { setEditForm({ nome: g.nome, email: g.email, whatsapp: g.whatsapp, nova_senha: '' }); setEditando(g) }}
+ <button onClick={() => { setEditForm({ nome: g.nome, email: g.email, whatsapp: g.whatsapp, nova_senha: '', cpf: g.cpf ?? '' }); setEditando(g) }}
  style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Editar</button>
  <button onClick={() => toggleAtivo(g)}
  style={{ background: g.ativo ? '#e6394620' : '#02A15320', color: g.ativo ? 'var(--avp-danger)' : 'var(--avp-green)', border: `1px solid ${g.ativo ? '#e6394640' : '#02A15340'}`, borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>

@@ -60,7 +60,7 @@ export default function DocumentosCliente({ documentosIniciais }: { documentosIn
  setForm(p => ({ ...p, pdf_url: data.url }))
  setMsg('PDF enviado com sucesso!')
  } else {
- setMsg('Erro no upload: ' + (data.error || 'tente novamente'))
+ setMsg('Erro no upload: ' + (data._debug || data.error || 'tente novamente'))
  }
  } catch {
  setMsg('Erro ao enviar o PDF')

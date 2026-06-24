@@ -14,8 +14,8 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
  if (!user) redirect('/entrar?p=free')
 
  const adminClient = createServiceRoleClient()
- const { data: aluno } = await adminClient.from('alunos')
- .select('id, nome, whatsapp').eq('user_id', user.id).maybeSingle()
+ const { data: aluno } = await (adminClient.from('alunos') as any)
+ .select('id, nome, whatsapp, especialista').eq('user_id', user.id).maybeSingle()
  if (!aluno) redirect('/entrar?p=free')
  if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
@@ -112,6 +112,8 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
  .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
  const isPro = !!gestorRow
 
+ const isEspecialista = !!(aluno as any).especialista
+
  const quizObrigatorioGlobal = isPro
  ? regras['pro_quiz_obrigatorio'] !== 'false'
  : regras['free_quiz_obrigatorio'] !== 'false'
@@ -119,10 +121,11 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
  ? regras['pro_bloquear_video'] !== 'false'
  : regras['free_bloquear_video'] !== 'false'
 
- // Aplica regra global: se quiz obrigatório, força tipo 'obrigatorio'; senão mantém o da aula
- const quizTipoEfetivo = (quizObrigatorioGlobal ? 'obrigatorio' : (aula.quiz_tipo ?? 'indicativo')) as 'obrigatorio' | 'indicativo' | 'sim_nao'
- // Aplica regra global: bloquear vídeo substitui config da aula
- const bloquearAvancarEfetivo = bloquearVideoGlobal || !!aula.bloquear_avancar
+ // Especialista bypassa bloqueio de video e quiz obrigatorio
+ const quizTipoEfetivo = isEspecialista
+ ? ((aula.quiz_tipo ?? 'indicativo') as 'obrigatorio' | 'indicativo' | 'sim_nao')
+ : ((quizObrigatorioGlobal ? 'obrigatorio' : (aula.quiz_tipo ?? 'indicativo')) as 'obrigatorio' | 'indicativo' | 'sim_nao')
+ const bloquearAvancarEfetivo = isEspecialista ? false : (bloquearVideoGlobal || !!aula.bloquear_avancar)
 
  // Quiz
  const { data: questoesRaw } = await adminClient.from('questoes')

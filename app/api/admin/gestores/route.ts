@@ -88,7 +88,7 @@ export async function PUT(request: NextRequest) {
   if (!ctx) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
   const body = await request.json()
-  const { id, ativo, nome, email, whatsapp, nova_senha } = body
+  const { id, ativo, nome, email, whatsapp, nova_senha, cpf } = body
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
   const updates: { ativo?: boolean; nome?: string; email?: string; whatsapp?: string } = {}
@@ -101,6 +101,11 @@ export async function PUT(request: NextRequest) {
   if (ctx.tenantId) updateQuery = updateQuery.eq('tenant_id', ctx.tenantId)
   const { data: gestor, error } = await updateQuery.select('*').single()
   if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
+
+  if (cpf !== undefined) {
+    const cpfLimpo = cpf ? String(cpf).replace(/\D/g, '') || null : null
+    await (adminClient.from('gestores') as any).update({ cpf: cpfLimpo }).eq('id', id)
+  }
 
   if (gestor.user_id) {
     const authUpdates: Record<string, unknown> = {}

@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     contentType: file.type,
   })
 
-  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 500 })
+  if (error) return NextResponse.json({ error: traduzirErro(error), _debug: error.message }, { status: 500 })
 
   const { data: { publicUrl } } = adminClient.storage.from(bucket).getPublicUrl(path)
   // Cache-buster: força CDN a servir a versão recém-enviada em vez da cacheada

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
-import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,15 +75,6 @@ export async function POST(req: NextRequest) {
   }
 
   const link = data.properties.action_link
-
-  // Envia email via Supabase nativo (usa SMTP configurado no projeto Supabase)
-  try {
-    const anonClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    await anonClient.auth.resetPasswordForEmail(email, { redirectTo: dest })
-  } catch { /* não bloqueia */ }
 
   // Busca contexto do usuário para WhatsApp
   const ctx = await buscarWhatsAppPorEmail(email, adminClient)

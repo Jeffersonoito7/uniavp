@@ -9,12 +9,15 @@ export default async function ConsultoresPage() {
  const { data: { user } } = await supabase.auth.getUser()
  if (!user) redirect('/entrar?p=adm')
  const adminClient = createServiceRoleClient()
- const { data: adminRecord } = await adminClient.from('admins').select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
- if (!adminRecord) redirect('/entrar?p=adm')
- const tid = adminRecord.tenant_id as string | null
+ const [{ data: adminRecord }, { data: superRecord }] = await Promise.all([
+ adminClient.from('admins').select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle(),
+ adminClient.from('super_admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle(),
+ ])
+ if (!adminRecord && !superRecord) redirect('/entrar?p=adm')
+ const tid = (adminRecord?.tenant_id ?? null) as string | null
 
- let q = adminClient.from('alunos')
- .select('id, nome, whatsapp, email, status, created_at, user_id, gestor_nome, gestor_whatsapp, indicador:indicadores(nome, whatsapp)')
+ let q = (adminClient.from('alunos') as any)
+ .select('id, nome, whatsapp, email, status, created_at, user_id, gestor_nome, gestor_whatsapp, cpf, especialista, indicador:indicadores(nome, whatsapp)')
  .order('created_at', { ascending: false })
  if (tid) q = q.eq('tenant_id', tid)
  const { data: consultores } = await q

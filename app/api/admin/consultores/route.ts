@@ -15,7 +15,7 @@ export async function PUT(req: NextRequest) {
   const ctx = await getAdminContext(user.id, adminClient)
   if (!ctx) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
-  const { id, nome, email, whatsapp, status, gestor_nome, gestor_whatsapp, nova_senha, user_id, indicador_whatsapp } = await req.json()
+  const { id, nome, email, whatsapp, status, gestor_nome, gestor_whatsapp, nova_senha, user_id, indicador_whatsapp, cpf, especialista } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
   // Captura estado anterior para o audit
@@ -30,7 +30,6 @@ export async function PUT(req: NextRequest) {
   if (status !== undefined) updates.status = status
   if (gestor_nome !== undefined) updates.gestor_nome = gestor_nome
   if (gestor_whatsapp !== undefined) updates.gestor_whatsapp = gestor_whatsapp
-
   if (indicador_whatsapp !== undefined) {
     if (!indicador_whatsapp) {
       updates.indicador_id = null
@@ -64,13 +63,27 @@ export async function PUT(req: NextRequest) {
   const { data: aluno, error } = await putQuery.select('*').single()
   if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
+  // Salva CPF e especialista separado (colunas adicionadas via migration, podem não estar nos tipos gerados)
+  const extraUpdates: Record<string, unknown> = {}
+  if (cpf !== undefined) extraUpdates.cpf = cpf ? String(cpf).replace(/\D/g, '') || null : null
+  if (especialista !== undefined) extraUpdates.especialista = !!especialista
+  if (Object.keys(extraUpdates).length > 0) {
+    await (adminClient.from('alunos') as any).update(extraUpdates).eq('id', id)
+  }
+
   const authUserId = aluno.user_id ?? user_id
+  if (nova_senha && nova_senha.length >= 6 && !authUserId) {
+    return NextResponse.json({ error: 'Este consultor ainda não tem conta ativa. Use "Reenviar Acesso" primeiro para criar a conta, depois redefina a senha.' }, { status: 400 })
+  }
   if (authUserId) {
     const authUpdates: Record<string, unknown> = {}
     if (email) authUpdates.email = email
     if (nova_senha && nova_senha.length >= 6) authUpdates.password = nova_senha
     if (Object.keys(authUpdates).length > 0) {
-      await adminClient.auth.admin.updateUserById(authUserId, authUpdates).catch(() => {})
+      const { error: authError } = await adminClient.auth.admin.updateUserById(authUserId, authUpdates)
+      if (authError && nova_senha) {
+        return NextResponse.json({ error: 'Dados salvos, mas falha ao alterar a senha: ' + authError.message }, { status: 500 })
+      }
     }
   }
 

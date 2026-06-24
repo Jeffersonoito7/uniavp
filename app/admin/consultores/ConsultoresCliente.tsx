@@ -5,22 +5,40 @@ import PhoneInput from '@/app/components/PhoneInput'
 
 function LinkFreeCard() {
  const [copiado, setCopiado] = useState(false)
- const [url, setUrl] = useState('/captacao?direto=1')
- useEffect(() => { setUrl(`${window.location.origin}/captacao?direto=1`) }, [])
- function copiar() { navigator.clipboard.writeText(url); setCopiado(true); setTimeout(() => setCopiado(false), 2000) }
+ const [copiadoEsp, setCopiadoEsp] = useState(false)
+ const [urlFree, setUrlFree] = useState('/captacao?direto=1')
+ const [urlEsp, setUrlEsp] = useState('/captacao?direto=1&modo=especialista')
+ useEffect(() => {
+ setUrlFree(`${window.location.origin}/captacao?direto=1`)
+ setUrlEsp(`${window.location.origin}/captacao?direto=1&modo=especialista`)
+ }, [])
+ function copiar() { navigator.clipboard.writeText(urlFree); setCopiado(true); setTimeout(() => setCopiado(false), 2000) }
+ function copiarEsp() { navigator.clipboard.writeText(urlEsp); setCopiadoEsp(true); setTimeout(() => setCopiadoEsp(false), 2000) }
  return (
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, marginBottom: 20 }}>
- <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>Link de Cadastro FREE</p>
- <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 14 }}>Envie este link para novos membros FREE se cadastrarem na plataforma.</p>
+ <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>Links de Cadastro</p>
+ <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 14 }}>Envie o link adequado para cada tipo de membro.</p>
+ <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
  <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
  <div style={{ flex: 1, minWidth: 0 }}>
- <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>Cadastro FREE (sem funil)</p>
- <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 4 }}>Link direto para cadastro FREE sem vídeo de apresentação.</p>
- <p style={{ fontSize: 12, color: 'var(--avp-blue)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{url}</p>
+ <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>Cadastro FREE (padrao)</p>
+ <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 4 }}>Fluxo normal: video obrigatorio, quiz e bloqueios ativos.</p>
+ <p style={{ fontSize: 12, color: 'var(--avp-blue)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{urlFree}</p>
  </div>
  <button onClick={copiar} style={{ background: copiado ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
  {copiado ? 'Copiado' : 'Copiar'}
  </button>
+ </div>
+ <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, border: '1px solid #02A15330' }}>
+ <div style={{ flex: 1, minWidth: 0 }}>
+ <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 2, color: '#02A153' }}>Cadastro Especialista</p>
+ <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 4 }}>Para profissionais do mercado: sem bloqueio de video e sem quiz obrigatorio.</p>
+ <p style={{ fontSize: 12, color: '#02A153', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{urlEsp}</p>
+ </div>
+ <button onClick={copiarEsp} style={{ background: copiadoEsp ? 'var(--avp-blue)' : '#02A153', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+ {copiadoEsp ? 'Copiado' : 'Copiar'}
+ </button>
+ </div>
  </div>
  </div>
  )
@@ -37,6 +55,8 @@ type Consultor = {
  indicador: { nome: string; whatsapp: string | null } | null
  gestor_nome?: string | null
  gestor_whatsapp?: string | null
+ cpf?: string | null
+ especialista?: boolean | null
 }
 
 const statusColor: Record<string, string> = {
@@ -53,7 +73,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  const [showImport, setShowImport] = useState(false)
  const [showCadastro, setShowCadastro] = useState(false)
  const [editando, setEditando] = useState<Consultor | null>(null)
- const [editForm, setEditForm] = useState({ nome: '', whatsapp: '', email: '', status: 'ativo', gestor_nome: '', gestor_whatsapp: '', indicador_whatsapp: '', nova_senha: '' })
+ const [editForm, setEditForm] = useState({ nome: '', whatsapp: '', email: '', status: 'ativo', gestor_nome: '', gestor_whatsapp: '', indicador_whatsapp: '', nova_senha: '', cpf: '', especialista: false })
  const [busca, setBusca] = useState('')
  const [form, setForm] = useState<typeof formVazio>(formVazio)
  const [salvando, setSalvando] = useState(false)
@@ -61,7 +81,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  const [verSenha, setVerSenha] = useState(false)
 
  function abrirEdicao(c: Consultor) {
- setEditForm({ nome: c.nome, whatsapp: c.whatsapp, email: c.email, status: c.status, gestor_nome: c.gestor_nome ?? '', gestor_whatsapp: c.gestor_whatsapp ?? '', indicador_whatsapp: c.indicador?.whatsapp ?? '', nova_senha: '' })
+ setEditForm({ nome: c.nome, whatsapp: c.whatsapp, email: c.email, status: c.status, gestor_nome: c.gestor_nome ?? '', gestor_whatsapp: c.gestor_whatsapp ?? '', indicador_whatsapp: c.indicador?.whatsapp ?? '', nova_senha: '', cpf: c.cpf ?? '', especialista: c.especialista ?? false })
  setEditando(c)
  }
 
@@ -83,6 +103,8 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  gestor_whatsapp: editForm.gestor_whatsapp.replace(/\D/g, '') || null,
  indicador_whatsapp: editForm.indicador_whatsapp.replace(/\D/g, '') || null,
  nova_senha: editForm.nova_senha || null,
+ cpf: editForm.cpf.replace(/\D/g, '') || null,
+ especialista: editForm.especialista,
  }),
  })
  const data = await res.json()
@@ -216,6 +238,27 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  </div>
  </div>
  <div>
+ <label style={labelStyle}>CPF <span style={{ color: 'var(--avp-text-dim)', fontWeight: 400 }}>(somente números)</span></label>
+ <input style={inputStyle} value={editForm.cpf} onChange={e => setEditForm(p => ({ ...p, cpf: e.target.value }))} placeholder="000.000.000-00" maxLength={14} />
+ </div>
+ <div style={{ gridColumn: '1 / -1' }}>
+ <div
+ onClick={() => setEditForm(p => ({ ...p, especialista: !p.especialista }))}
+ style={{ display: 'flex', alignItems: 'center', gap: 12, background: editForm.especialista ? '#02A15310' : 'var(--avp-black)', border: `1px solid ${editForm.especialista ? 'var(--avp-green)' : 'var(--avp-border)'}`, borderRadius: 10, padding: '12px 16px', cursor: 'pointer', transition: 'all 0.2s' }}>
+ <div style={{ width: 42, height: 24, borderRadius: 12, background: editForm.especialista ? '#02A153' : '#444', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+ <div style={{ position: 'absolute', top: 3, left: editForm.especialista ? 21 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+ </div>
+ <div>
+ <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: editForm.especialista ? 'var(--avp-green)' : 'var(--avp-text)' }}>
+ {editForm.especialista ? 'Especialista ativo' : 'Modo Especialista'}
+ </p>
+ <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--avp-text-dim)' }}>
+ Profissional do mercado: acessa aulas sem bloqueio de video e sem quiz obrigatorio
+ </p>
+ </div>
+ </div>
+ </div>
+ <div>
  <label style={labelStyle}>Nova senha <span style={{ color: 'var(--avp-text-dim)', fontWeight: 400 }}>(deixe em branco para não alterar)</span></label>
  <input type="password" style={inputStyle} value={editForm.nova_senha} onChange={e => setEditForm(p => ({ ...p, nova_senha: e.target.value }))} placeholder="Mínimo 6 caracteres" minLength={6} />
  </div>
@@ -330,7 +373,14 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  <tbody>
  {filtrados.map(c => (
  <tr key={c.id} style={{ borderBottom: '1px solid var(--avp-border)' }}>
- <td style={{ padding: '14px 16px', color: 'var(--avp-text)', fontWeight: 600, fontSize: 14 }}>{c.nome}</td>
+ <td style={{ padding: '14px 16px', color: 'var(--avp-text)', fontWeight: 600, fontSize: 14 }}>
+ {c.nome}
+ {c.especialista && (
+ <span style={{ display: 'inline-block', marginLeft: 6, background: '#02A15320', color: '#02A153', border: '1px solid #02A15340', borderRadius: 6, padding: '1px 6px', fontSize: 10, fontWeight: 700 }}>
+ Especialista
+ </span>
+ )}
+ </td>
  <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 14 }}>{c.whatsapp}</td>
  <td style={{ padding: '14px 16px', fontSize: 14 }}>
  <span style={{ color: 'var(--avp-text-dim)' }}>{c.email}</span>

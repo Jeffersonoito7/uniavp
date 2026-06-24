@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
  LayoutDashboard, BookOpen, Users, ShieldCheck,
  Trophy, Cog, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper, Star,
@@ -95,47 +95,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
  </button>
  )
 
- const audioCtxRef = useRef<AudioContext | null>(null)
- function getAudioCtx() {
- if (!audioCtxRef.current) audioCtxRef.current = new AudioContext()
- if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume()
- return audioCtxRef.current
- }
- function playHover() {
- try {
- const ctx = getAudioCtx()
- const t = ctx.currentTime
-
- // ── Clique (transiente agudo, 8ms) ────────────────────────────
- const clickBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.008), ctx.sampleRate)
- const clickData = clickBuf.getChannelData(0)
- for (let i = 0; i < clickData.length; i++) {
- const decay = 1 - i / clickData.length
- clickData[i] = (Math.random() * 2 - 1) * decay
- }
- const clickSrc = ctx.createBufferSource()
- clickSrc.buffer = clickBuf
- const clickGain = ctx.createGain()
- clickGain.gain.setValueAtTime(0.18, t)
- clickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.008)
- clickSrc.connect(clickGain)
- clickGain.connect(ctx.destination)
- clickSrc.start(t)
-
- // ── Batida grave (corpo da tecla, 30ms) ───────────────────────
- const osc = ctx.createOscillator()
- const oscGain = ctx.createGain()
- osc.type = 'sine'
- osc.frequency.setValueAtTime(120, t)
- osc.frequency.exponentialRampToValueAtTime(60, t + 0.03)
- oscGain.gain.setValueAtTime(0.09, t)
- oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.03)
- osc.connect(oscGain)
- oscGain.connect(ctx.destination)
- osc.start(t)
- osc.stop(t + 0.03)
- } catch { /* AudioContext indisponível */ }
- }
 
  const sidebarW = colapsada ? 56 : 240
  const hoverCSS = `
@@ -229,7 +188,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
  <Link key={href} href={href}
  className={active ? 'adm-nav-active' : 'adm-nav-item'}
  onClick={() => isMobile && setMenuAberto(false)}
- onMouseEnter={() => playHover()}
  title={colapsada ? label : undefined}
  style={{
  display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 10,

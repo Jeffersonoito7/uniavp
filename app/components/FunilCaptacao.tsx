@@ -28,6 +28,7 @@ type Props = {
  captacaoBloquearApp?: boolean
  appIosUrl?: string
  appAndroidUrl?: string
+ modoEspecialista?: boolean
 }
 
 export default function FunilCaptacao({
@@ -35,7 +36,7 @@ export default function FunilCaptacao({
  linkExterno, bloquearVideo = true,
  captacaoMostrarParceiro = false, captacaoBloquearParceiro = false, captacaoParceiroTitulo,
  captacaoMostrarApp = false, captacaoBloquearApp = false,
- appIosUrl, appAndroidUrl,
+ appIosUrl, appAndroidUrl, modoEspecialista = false,
 }: Props) {
  const router = useRouter()
  const [etapa, setEtapa] = useState<Etapa>(direto ? 'cadastro' : 'pergunta1')
@@ -73,6 +74,7 @@ export default function FunilCaptacao({
  gestor_nome: gestorWhatsapp ? (gestorNome ?? '') : (form.gestor_nome || ''),
  gestor_whatsapp: gestorWhatsapp ? gestorWhatsapp : (form.gestor_whatsapp.replace(/\D/g, '') || ''),
  indicador_whatsapp: indicadorWhatsapp ?? (form.indicador_whatsapp.replace(/\D/g, '') || undefined),
+ ...(modoEspecialista ? { especialista: true } : {}),
  }),
  })
  const data = await res.json()
