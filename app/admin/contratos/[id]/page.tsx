@@ -47,11 +47,15 @@ export default function DetalheContratoPage() {
 
   async function cancelar() {
     if (!confirm('Cancelar este contrato? Os links de assinatura deixarao de funcionar.')) return
-    await fetch(`/api/admin/contratos-digitais/${id}`, {
+    const res = await fetch(`/api/admin/contratos-digitais/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ cancelar: true }),
     })
+    if (!res.ok) {
+      alert('Erro ao cancelar o contrato. Tente novamente.')
+      return
+    }
     setContrato(prev => prev ? { ...prev, status: 'cancelado' } : prev)
   }
 

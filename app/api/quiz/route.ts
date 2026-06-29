@@ -26,13 +26,20 @@ export async function POST(req: NextRequest) {
 
   // Sem quiz, indicativo ou sim_nao — aluno pulou ou aula sem quiz (video terminou sem questões)
   if (pular && (!aula.quiz_tipo || aula.quiz_tipo === 'indicativo' || aula.quiz_tipo === 'sim_nao')) {
+    // Idempotencia: ignora se já existe progresso aprovado para esta aula
+    const { data: jaExiste } = await adminClient.from('progresso')
+      .select('id').eq('aluno_id', aluno.id).eq('aula_id', aula_id).eq('aprovado', true).limit(1).maybeSingle()
+    if (jaExiste) return NextResponse.json({ ok: true, pulado: true, aprovado: true })
+
     const liberada_em = new Date(Date.now() + (aula.espera_horas ?? 0) * 3600000).toISOString()
-    await adminClient.from('progresso').insert({
+    const { error: errInsert } = await adminClient.from('progresso').insert({
       aluno_id: aluno.id, aula_id,
       tentativa_numero: 1, acertos: 0, total_questoes: 0,
       percentual: 0, aprovado: true, respostas: {},
       proxima_aula_liberada_em: liberada_em, pendente_liberacao: false,
     })
+    if (errInsert) return NextResponse.json({ error: 'Erro ao salvar progresso.' }, { status: 500 })
+
     await adminClient.from('aluno_pontos').insert({
       aluno_id: aluno.id, quantidade: 5, motivo: `Quiz indicativo visto - aula ${aula_id}`,
     })
@@ -70,7 +77,7 @@ export async function POST(req: NextRequest) {
     ? new Date(Date.now() + aula.espera_horas * 3600000).toISOString()
     : null
 
-  await adminClient.from('progresso').insert({
+  const { error: errProgresso } = await adminClient.from('progresso').insert({
     aluno_id: aluno.id,
     aula_id,
     tentativa_numero,
@@ -82,6 +89,7 @@ export async function POST(req: NextRequest) {
     proxima_aula_liberada_em,
     pendente_liberacao,
   })
+  if (errProgresso) return NextResponse.json({ error: 'Erro ao salvar progresso.' }, { status: 500 })
 
   // Notifica gestor/admin sobre liberação pendente
   if (pendente_liberacao) {

@@ -51,6 +51,7 @@ export default function AulaInterativa({
  const router = useRouter()
  const [videoTerminou, setVideoTerminou] = useState(false)
  const [mostrarCelebracao, setMostrarCelebracao] = useState(false)
+ const [salvandoProgresso, setSalvandoProgresso] = useState(false)
  const [linkClicado, setLinkClicado] = useState(() => {
  try { return !!localStorage.getItem(`link_ext_${aulaId}`) } catch { return false }
  })
@@ -74,13 +75,19 @@ export default function AulaInterativa({
 
  async function handleVideoEnd() {
  setVideoTerminou(true)
+ // Guard contra duplo disparo (Safari iOS pode chamar onEnded duas vezes)
+ if (salvandoProgresso) return
  if (!temQuiz && !jaAprovado) {
- // Aula sem quiz: salva progresso automaticamente no banco antes de liberar a próxima
+ setSalvandoProgresso(true)
+ try {
  await fetch('/api/quiz', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify({ aula_id: aulaId, pular: true }),
  })
+ } finally {
+ setSalvandoProgresso(false)
+ }
  dispararCelebracao()
  } else if (jaAprovado) {
  dispararCelebracao()
