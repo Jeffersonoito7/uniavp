@@ -86,9 +86,10 @@ export async function rateLimit(
 
 // Limites pre-configurados para cada endpoint critico
 export const LIMITS = {
-  cadastro:  { limit: 5,  windowSeconds: 60 },  // 5 cadastros/min por IP
-  contrato:  { limit: 3,  windowSeconds: 60 },  // 3 contratos/min por IP
-  quiz:      { limit: 30, windowSeconds: 60 },  // 30 respostas/min por usuario
-  login:     { limit: 10, windowSeconds: 60 },  // 10 tentativas/min por IP
-  otp:       { limit: 3,  windowSeconds: 300 }, // 3 OTPs por 5 min por usuario
+  cadastro:       { limit: 5,  windowSeconds: 60 },  // 5 cadastros/min por IP
+  contrato:       { limit: 3,  windowSeconds: 60 },  // 3 contratos/min por IP
+  quiz:           { limit: 30, windowSeconds: 60 },  // 30 respostas/min por usuario
+  assinar:        { limit: 5,  windowSeconds: 60 },  // 5 tentativas de assinatura/min por token
+  login:          { limit: 10, windowSeconds: 60 },  // 10 tentativas/min por IP
+  otp:            { limit: 3,  windowSeconds: 300 }, // 3 OTPs por 5 min por usuario
 }

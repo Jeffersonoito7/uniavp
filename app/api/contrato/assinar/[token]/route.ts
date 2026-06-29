@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { atualizarStatusContrato } from '@/lib/contrato-digital'
 import { getIp } from '@/lib/audit'
+import { rateLimit, LIMITS } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,8 +38,11 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
 }
 
 export async function POST(req: NextRequest, { params }: { params: { token: string } }) {
-  const adminClient = createServiceRoleClient()
   const ip = getIp(req)
+  const rl = await rateLimit(`assinar:${params.token}:${ip}`, LIMITS.assinar)
+  if (!rl.allowed) return NextResponse.json({ error: 'Muitas tentativas. Aguarde um momento.' }, { status: 429 })
+
+  const adminClient = createServiceRoleClient()
 
   const { data: assinante } = await adminClient
     .from('contrato_assinantes')

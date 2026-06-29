@@ -4,6 +4,7 @@ import { enviarWhatsApp, getInstanciaGestorPorNome } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
 import { getMensagem } from '@/lib/mensagem'
 import { dispararGatilhoContrato } from '@/lib/contrato-gatilho'
+import { rateLimit, LIMITS } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,6 +12,9 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+
+  const rl = await rateLimit(`quiz:${user.id}`, LIMITS.quiz)
+  if (!rl.allowed) return NextResponse.json({ error: 'Muitas requisições. Aguarde um momento.' }, { status: 429 })
 
   const adminClient = createServiceRoleClient()
   const { data: aluno } = await adminClient.from('alunos').select('id, tenant_id').eq('user_id', user.id).maybeSingle()
