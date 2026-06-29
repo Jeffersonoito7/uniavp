@@ -8,7 +8,8 @@ export const dynamic = 'force-dynamic'
 export async function GET(_req: NextRequest, { params }: { params: { token: string } }) {
   const adminClient = createServiceRoleClient()
 
-  const { data: assinante } = await (adminClient.from('contrato_assinantes' as any) as any)
+  const { data: assinante } = await adminClient
+    .from('contrato_assinantes')
     .select('id, nome, email, papel, status, token_expira_em, contrato_id')
     .eq('token_acesso', params.token)
     .maybeSingle()
@@ -19,7 +20,8 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
     return NextResponse.json({ error: 'Este link expirou. Solicite um novo link ao administrador.' }, { status: 410 })
   }
 
-  const { data: contrato } = await (adminClient.from('contratos_digitais' as any) as any)
+  const { data: contrato } = await adminClient
+    .from('contratos_digitais')
     .select('id, titulo, numero_registro, corpo_renderizado, status, assinatura_avp_url, assinado_avp_em')
     .eq('id', assinante.contrato_id)
     .maybeSingle()
@@ -27,10 +29,8 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
   if (!contrato) return NextResponse.json({ error: 'Contrato não encontrado.' }, { status: 404 })
   if (contrato.status === 'cancelado') return NextResponse.json({ error: 'Este contrato foi cancelado.' }, { status: 410 })
 
-  // Marca como visualizado se ainda pendente
   if (assinante.status === 'pendente') {
-    await (adminClient.from('contrato_assinantes' as any) as any)
-      .update({ status: 'visualizado' }).eq('id', assinante.id)
+    await adminClient.from('contrato_assinantes').update({ status: 'visualizado' }).eq('id', assinante.id)
   }
 
   return NextResponse.json({ assinante, contrato })
@@ -40,7 +40,8 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
   const adminClient = createServiceRoleClient()
   const ip = getIp(req)
 
-  const { data: assinante } = await (adminClient.from('contrato_assinantes' as any) as any)
+  const { data: assinante } = await adminClient
+    .from('contrato_assinantes')
     .select('id, nome, papel, status, token_expira_em, contrato_id')
     .eq('token_acesso', params.token)
     .maybeSingle()
@@ -49,9 +50,9 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
   if (assinante.token_expira_em && new Date(assinante.token_expira_em) < new Date()) {
     return NextResponse.json({ error: 'Link expirado.' }, { status: 410 })
   }
+
   const { assinatura_url } = await req.json()
   if (!assinatura_url) return NextResponse.json({ error: 'Assinatura obrigatória.' }, { status: 400 })
-  // Limite de 500KB para o payload de assinatura (base64 de um canvas 680x200)
   if (typeof assinatura_url === 'string' && assinatura_url.length > 600_000) {
     return NextResponse.json({ error: 'Assinatura inválida.' }, { status: 400 })
   }
@@ -59,7 +60,6 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
     return NextResponse.json({ error: 'Formato de assinatura inválido.' }, { status: 400 })
   }
 
-  // Salva assinatura no Storage — falha bloqueia o fluxo (nao salva base64 no banco)
   let urlFinal: string
   try {
     const base64 = assinatura_url.replace('data:image/png;base64,', '')
@@ -74,8 +74,8 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
     return NextResponse.json({ error: 'Falha ao salvar assinatura. Tente novamente.' }, { status: 500 })
   }
 
-  // UPDATE atomico: so grava se ainda nao estiver assinado (evita race condition de duplo POST)
-  const { data: updated } = await (adminClient.from('contrato_assinantes' as any) as any)
+  const { data: updated } = await adminClient
+    .from('contrato_assinantes')
     .update({
       status: 'assinado',
       assinatura_url: urlFinal,
@@ -90,7 +90,6 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
     return NextResponse.json({ error: 'Voce já assinou este contrato.' }, { status: 409 })
   }
 
-  // Atualiza status geral do contrato
   await atualizarStatusContrato(adminClient, assinante.contrato_id)
 
   return NextResponse.json({ ok: true, mensagem: 'Assinatura registrada com sucesso!' })

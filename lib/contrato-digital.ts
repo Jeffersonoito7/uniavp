@@ -12,7 +12,7 @@ export async function gerarNumeroContrato(
   adminClient: ReturnType<typeof createServiceRoleClient>,
   _tenantId: string | null
 ): Promise<string> {
-  const { data, error } = await adminClient.rpc('gerar_numero_contrato' as any)
+  const { data, error } = await adminClient.rpc('gerar_numero_contrato')
   if (error || !data) throw new Error(`Falha ao gerar numero de contrato: ${error?.message}`)
   return data as string
 }
@@ -31,7 +31,6 @@ export function gerarTokenAssinante(): { token: string; expira: Date } {
 
 // ── Envia link de assinatura via WhatsApp ─────────────────────────────────
 export async function enviarLinkAssinatura({
-  adminClient,
   nome,
   whatsapp,
   token,
@@ -52,7 +51,7 @@ export async function enviarLinkAssinatura({
   await enviarWhatsApp(whatsapp, mensagem, instancia).catch(() => {})
 }
 
-// ── Envia link de assinatura via e-mail (usando Evolution API se disponivel) ─
+// ── Envia link de assinatura via e-mail ───────────────────────────────────
 export async function enviarLinkAssinaturaEmail({
   nome,
   email,
@@ -67,8 +66,6 @@ export async function enviarLinkAssinaturaEmail({
   appUrl: string
 }): Promise<void> {
   const link = `${appUrl}/contrato/assinar/${token}`
-  // Envia via Supabase Edge Function ou servico de email configurado
-  // Por ora registra apenas (implementar com Resend/SMTP conforme disponivel)
   console.log(`[contrato-digital] Link para ${email}: ${link}`)
 }
 
@@ -77,18 +74,17 @@ export async function atualizarStatusContrato(
   adminClient: ReturnType<typeof createServiceRoleClient>,
   contratoId: string
 ): Promise<void> {
-  const { data: assinantes } = await (adminClient as any)
+  const { data: assinantes } = await adminClient
     .from('contrato_assinantes')
     .select('status, papel')
     .eq('contrato_id', contratoId)
 
   if (!assinantes || assinantes.length === 0) return
 
-  // AVP ja e considerada assinada (pre-assinada); exclui do calculo
-  const pendentes = (assinantes as any[]).filter((a: any) => a.papel !== 'avp' && a.status !== 'assinado')
-  const algumAssinado = (assinantes as any[]).some((a: any) => a.status === 'assinado')
+  const pendentes = assinantes.filter(a => a.papel !== 'avp' && a.status !== 'assinado')
+  const algumAssinado = assinantes.some(a => a.status === 'assinado')
 
-  let novoStatus: string
+  let novoStatus: 'enviado' | 'parcialmente_assinado' | 'concluido'
   if (pendentes.length === 0) {
     novoStatus = 'concluido'
   } else if (algumAssinado) {
@@ -98,26 +94,26 @@ export async function atualizarStatusContrato(
   }
 
   if (novoStatus === 'concluido') {
-    const { data: contrato } = await (adminClient as any)
+    const { data: contrato } = await adminClient
       .from('contratos_digitais')
       .select('corpo_renderizado, numero_registro')
       .eq('id', contratoId)
       .maybeSingle()
 
     const conteudoFinal = JSON.stringify({
-      numero: (contrato as any)?.numero_registro,
-      corpo: (contrato as any)?.corpo_renderizado,
-      assinantes: (assinantes as any[]).map((a: any) => ({ papel: a.papel, status: a.status })),
+      numero: contrato?.numero_registro,
+      corpo: contrato?.corpo_renderizado,
+      assinantes: assinantes.map(a => ({ papel: a.papel, status: a.status })),
       concluido_em: new Date().toISOString(),
     })
     const hash = calcularHash(conteudoFinal)
 
-    await (adminClient as any)
+    await adminClient
       .from('contratos_digitais')
       .update({ status: novoStatus, hash_final: hash })
       .eq('id', contratoId)
   } else {
-    await (adminClient as any)
+    await adminClient
       .from('contratos_digitais')
       .update({ status: novoStatus })
       .eq('id', contratoId)

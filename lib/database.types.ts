@@ -507,6 +507,7 @@ export type Database = {
           data_conclusao: string | null
           data_formacao: string | null
           email: string
+          especialista: boolean
           foto_perfil: string | null
           foto_url: string | null
           gestor_nome: string | null
@@ -534,6 +535,7 @@ export type Database = {
           data_conclusao?: string | null
           data_formacao?: string | null
           email: string
+          especialista?: boolean
           foto_perfil?: string | null
           foto_url?: string | null
           gestor_nome?: string | null
@@ -561,6 +563,7 @@ export type Database = {
           data_conclusao?: string | null
           data_formacao?: string | null
           email?: string
+          especialista?: boolean
           foto_perfil?: string | null
           foto_url?: string | null
           gestor_nome?: string | null
@@ -1066,6 +1069,48 @@ export type Database = {
           },
         ]
       }
+      cache_placas: {
+        Row: {
+          ano_fab: string | null
+          ano_mod: string | null
+          atualizado_em: string
+          chassi: string | null
+          codigo_fipe: string | null
+          combustivel: string | null
+          cor: string | null
+          marca: string | null
+          modelo: string | null
+          placa: string
+          renavam: string | null
+        }
+        Insert: {
+          ano_fab?: string | null
+          ano_mod?: string | null
+          atualizado_em?: string
+          chassi?: string | null
+          codigo_fipe?: string | null
+          combustivel?: string | null
+          cor?: string | null
+          marca?: string | null
+          modelo?: string | null
+          placa: string
+          renavam?: string | null
+        }
+        Update: {
+          ano_fab?: string | null
+          ano_mod?: string | null
+          atualizado_em?: string
+          chassi?: string | null
+          codigo_fipe?: string | null
+          combustivel?: string | null
+          cor?: string | null
+          marca?: string | null
+          modelo?: string | null
+          placa?: string
+          renavam?: string | null
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           ativo: boolean | null
@@ -1337,6 +1382,216 @@ export type Database = {
           },
         ]
       }
+      consultas: {
+        Row: {
+          created_at: string
+          custo: number | null
+          descricao: string | null
+          documento: string
+          email: string
+          id: string
+          plano: string
+          resultado: Json | null
+          status: string
+          tenant_id: string | null
+          tipo: string
+        }
+        Insert: {
+          created_at?: string
+          custo?: number | null
+          descricao?: string | null
+          documento: string
+          email: string
+          id?: string
+          plano?: string
+          resultado?: Json | null
+          status?: string
+          tenant_id?: string | null
+          tipo?: string
+        }
+        Update: {
+          created_at?: string
+          custo?: number | null
+          descricao?: string | null
+          documento?: string
+          email?: string
+          id?: string
+          plano?: string
+          resultado?: Json | null
+          status?: string
+          tenant_id?: string | null
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consultas_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contrato_assinantes: {
+        Row: {
+          assinado_em: string | null
+          assinatura_url: string | null
+          contrato_id: string
+          cpf: string | null
+          created_at: string
+          email: string | null
+          id: string
+          ip_assinatura: string | null
+          nome: string
+          ordem: number
+          papel: string
+          status: string
+          token_acesso: string | null
+          token_expira_em: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          assinado_em?: string | null
+          assinatura_url?: string | null
+          contrato_id: string
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          ip_assinatura?: string | null
+          nome: string
+          ordem?: number
+          papel?: string
+          status?: string
+          token_acesso?: string | null
+          token_expira_em?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          assinado_em?: string | null
+          assinatura_url?: string | null
+          contrato_id?: string
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          ip_assinatura?: string | null
+          nome?: string
+          ordem?: number
+          papel?: string
+          status?: string
+          token_acesso?: string | null
+          token_expira_em?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contrato_assinantes_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos_digitais"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contrato_gatilhos: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          ref_id: string | null
+          template_id: string
+          tenant_id: string | null
+          tipo: string
+          variaveis_fixas: Json
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          ref_id?: string | null
+          template_id: string
+          tenant_id?: string | null
+          tipo?: string
+          variaveis_fixas?: Json
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          ref_id?: string | null
+          template_id?: string
+          tenant_id?: string | null
+          tipo?: string
+          variaveis_fixas?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contrato_gatilhos_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "contrato_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contrato_gatilhos_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contrato_templates: {
+        Row: {
+          arquivado: boolean
+          ativo: boolean
+          corpo_html: string
+          created_at: string
+          criado_por: string | null
+          descricao: string | null
+          id: string
+          nome: string
+          tenant_id: string | null
+          updated_at: string
+          variaveis: Json
+        }
+        Insert: {
+          arquivado?: boolean
+          ativo?: boolean
+          corpo_html?: string
+          created_at?: string
+          criado_por?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          tenant_id?: string | null
+          updated_at?: string
+          variaveis?: Json
+        }
+        Update: {
+          arquivado?: boolean
+          ativo?: boolean
+          corpo_html?: string
+          created_at?: string
+          criado_por?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          tenant_id?: string | null
+          updated_at?: string
+          variaveis?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contrato_templates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contratos: {
         Row: {
           aluno_id: string | null
@@ -1398,6 +1653,94 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "contratos_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contratos_digitais: {
+        Row: {
+          assinado_avp_em: string | null
+          assinatura_avp_url: string | null
+          contrato_base_id: string | null
+          corpo_renderizado: string
+          created_at: string
+          criado_por: string | null
+          gatilho_ref_id: string | null
+          gatilho_tipo: string | null
+          hash_final: string | null
+          id: string
+          numero_registro: string
+          pdf_url: string | null
+          status: string
+          template_id: string | null
+          tenant_id: string | null
+          tipo: string
+          titulo: string
+          updated_at: string
+          variaveis_usadas: Json
+        }
+        Insert: {
+          assinado_avp_em?: string | null
+          assinatura_avp_url?: string | null
+          contrato_base_id?: string | null
+          corpo_renderizado?: string
+          created_at?: string
+          criado_por?: string | null
+          gatilho_ref_id?: string | null
+          gatilho_tipo?: string | null
+          hash_final?: string | null
+          id?: string
+          numero_registro: string
+          pdf_url?: string | null
+          status?: string
+          template_id?: string | null
+          tenant_id?: string | null
+          tipo?: string
+          titulo: string
+          updated_at?: string
+          variaveis_usadas?: Json
+        }
+        Update: {
+          assinado_avp_em?: string | null
+          assinatura_avp_url?: string | null
+          contrato_base_id?: string | null
+          corpo_renderizado?: string
+          created_at?: string
+          criado_por?: string | null
+          gatilho_ref_id?: string | null
+          gatilho_tipo?: string | null
+          hash_final?: string | null
+          id?: string
+          numero_registro?: string
+          pdf_url?: string | null
+          status?: string
+          template_id?: string | null
+          tenant_id?: string | null
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+          variaveis_usadas?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contratos_digitais_contrato_base_id_fkey"
+            columns: ["contrato_base_id"]
+            isOneToOne: false
+            referencedRelation: "contratos_digitais"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_digitais_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "contrato_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_digitais_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "clientes"
@@ -2120,6 +2463,8 @@ export type Database = {
           pode_lote: boolean | null
           pode_placa: boolean | null
           saldo_consultas: number
+          tenant_id: string | null
+          tenant_role: string | null
           user_id: string
         }
         Insert: {
@@ -2131,6 +2476,8 @@ export type Database = {
           pode_lote?: boolean | null
           pode_placa?: boolean | null
           saldo_consultas?: number
+          tenant_id?: string | null
+          tenant_role?: string | null
           user_id: string
         }
         Update: {
@@ -2142,9 +2489,19 @@ export type Database = {
           pode_lote?: boolean | null
           pode_placa?: boolean | null
           saldo_consultas?: number
+          tenant_id?: string | null
+          tenant_role?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "perfis_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       planos_recarga: {
         Row: {
@@ -2554,6 +2911,69 @@ export type Database = {
           },
         ]
       }
+      tenants: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          cor_primaria: string
+          cor_secundaria: string
+          cor_texto: string
+          criado_em: string
+          dominio: string | null
+          email_contato: string | null
+          id: string
+          logo_url: string | null
+          nome: string
+          nome_fantasia: string | null
+          preco_cpf: number | null
+          preco_veiculo: number | null
+          saldo_cpf: number
+          saldo_veiculo: number
+          slug: string
+          telefone: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          cor_primaria?: string
+          cor_secundaria?: string
+          cor_texto?: string
+          criado_em?: string
+          dominio?: string | null
+          email_contato?: string | null
+          id?: string
+          logo_url?: string | null
+          nome: string
+          nome_fantasia?: string | null
+          preco_cpf?: number | null
+          preco_veiculo?: number | null
+          saldo_cpf?: number
+          saldo_veiculo?: number
+          slug: string
+          telefone?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          cor_primaria?: string
+          cor_secundaria?: string
+          cor_texto?: string
+          criado_em?: string
+          dominio?: string | null
+          email_contato?: string | null
+          id?: string
+          logo_url?: string | null
+          nome?: string
+          nome_fantasia?: string | null
+          preco_cpf?: number | null
+          preco_veiculo?: number | null
+          saldo_cpf?: number
+          saldo_veiculo?: number
+          slug?: string
+          telefone?: string | null
+        }
+        Relationships: []
+      }
       transacoes_pix: {
         Row: {
           consultas: number
@@ -2661,6 +3081,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      auth_admin_tenant_id: { Args: never; Returns: string }
+      auth_aluno_id: { Args: never; Returns: string }
+      auth_gestor_id: { Args: never; Returns: string }
+      gerar_numero_contrato: { Args: { p_tenant_id?: string }; Returns: string }
+      gerar_numero_registro_aluno: { Args: never; Returns: number }
       obter_trilha_aluno: {
         Args: { p_aluno_id: string }
         Returns: {

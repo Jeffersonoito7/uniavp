@@ -19,7 +19,8 @@ export default async function ContratosPage() {
   const tid = (adminRecord?.tenant_id ?? null) as string | null
 
   // Busca contratos digitais
-  let q = (adminClient.from('contratos_digitais' as any) as any)
+  let q = adminClient
+    .from('contratos_digitais')
     .select('id, titulo, numero_registro, status, tipo, created_at, contrato_base_id')
     .order('created_at', { ascending: false })
     .limit(50)
@@ -27,7 +28,8 @@ export default async function ContratosPage() {
   const { data: contratos } = await q
 
   // Busca templates
-  let tq = (adminClient.from('contrato_templates' as any) as any)
+  let tq = adminClient
+    .from('contrato_templates')
     .select('id, nome, ativo', { count: 'exact' })
     .eq('arquivado', false)
   if (tid) tq = tq.eq('tenant_id', tid)
