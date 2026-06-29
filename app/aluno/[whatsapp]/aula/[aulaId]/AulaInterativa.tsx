@@ -72,13 +72,20 @@ export default function AulaInterativa({
  }
  }
 
- function handleVideoEnd() {
+ async function handleVideoEnd() {
  setVideoTerminou(true)
- // Se não tem quiz ou quiz já estava aprovado antes: pode disparar celebração agora
- // Se tem quiz pendente: apenas exibe o quiz (videoTerminou = true já faz isso)
- if (!temQuiz || jaAprovado) {
+ if (!temQuiz && !jaAprovado) {
+ // Aula sem quiz: salva progresso automaticamente no banco antes de liberar a próxima
+ await fetch('/api/quiz', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ aula_id: aulaId, pular: true }),
+ })
+ dispararCelebracao()
+ } else if (jaAprovado) {
  dispararCelebracao()
  }
+ // Se tem quiz pendente: videoTerminou = true já exibe o quiz automaticamente
  }
 
  function handleQuizAprovado() {
