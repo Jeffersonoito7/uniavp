@@ -49,27 +49,33 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
   if (assinante.token_expira_em && new Date(assinante.token_expira_em) < new Date()) {
     return NextResponse.json({ error: 'Link expirado.' }, { status: 410 })
   }
-  if (assinante.status === 'assinado') {
-    return NextResponse.json({ error: 'Voce já assinou este contrato.' }, { status: 409 })
-  }
-
   const { assinatura_url } = await req.json()
   if (!assinatura_url) return NextResponse.json({ error: 'Assinatura obrigatória.' }, { status: 400 })
+  // Limite de 500KB para o payload de assinatura (base64 de um canvas 680x200)
+  if (typeof assinatura_url === 'string' && assinatura_url.length > 600_000) {
+    return NextResponse.json({ error: 'Assinatura inválida.' }, { status: 400 })
+  }
+  if (typeof assinatura_url !== 'string' || !assinatura_url.startsWith('data:image/png;base64,')) {
+    return NextResponse.json({ error: 'Formato de assinatura inválido.' }, { status: 400 })
+  }
 
-  // Salva assinatura no Storage
-  let urlFinal = assinatura_url
+  // Salva assinatura no Storage — falha bloqueia o fluxo (nao salva base64 no banco)
+  let urlFinal: string
   try {
-    if (assinatura_url.startsWith('data:image/png;base64,')) {
-      const base64 = assinatura_url.replace('data:image/png;base64,', '')
-      const buffer = Buffer.from(base64, 'base64')
-      const path = `contratos-digitais/${assinante.contrato_id}/${assinante.id}.png`
-      await adminClient.storage.from('documentos').upload(path, buffer, { contentType: 'image/png', upsert: true })
-      const { data: pubUrl } = adminClient.storage.from('documentos').getPublicUrl(path)
-      urlFinal = pubUrl.publicUrl
-    }
-  } catch { /* usa base64 direto se storage falhar */ }
+    const base64 = assinatura_url.replace('data:image/png;base64,', '')
+    const buffer = Buffer.from(base64, 'base64')
+    const path = `contratos-digitais/${assinante.contrato_id}/${assinante.id}.png`
+    const { error: uploadError } = await adminClient.storage.from('documentos').upload(path, buffer, { contentType: 'image/png', upsert: true })
+    if (uploadError) throw uploadError
+    const { data: pubUrl } = adminClient.storage.from('documentos').getPublicUrl(path)
+    urlFinal = pubUrl.publicUrl
+  } catch (e) {
+    console.error('[assinar-contrato] falha no upload da assinatura:', e)
+    return NextResponse.json({ error: 'Falha ao salvar assinatura. Tente novamente.' }, { status: 500 })
+  }
 
-  await (adminClient.from('contrato_assinantes' as any) as any)
+  // UPDATE atomico: so grava se ainda nao estiver assinado (evita race condition de duplo POST)
+  const { data: updated } = await (adminClient.from('contrato_assinantes' as any) as any)
     .update({
       status: 'assinado',
       assinatura_url: urlFinal,
@@ -77,6 +83,12 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
       assinado_em: new Date().toISOString(),
     })
     .eq('id', assinante.id)
+    .neq('status', 'assinado')
+    .select('id')
+
+  if (!updated || (Array.isArray(updated) && updated.length === 0)) {
+    return NextResponse.json({ error: 'Voce já assinou este contrato.' }, { status: 409 })
+  }
 
   // Atualiza status geral do contrato
   await atualizarStatusContrato(adminClient, assinante.contrato_id)

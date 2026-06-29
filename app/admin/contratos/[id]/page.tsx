@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import AdminLayout from '../../AdminLayout'
 import Link from 'next/link'
+import DOMPurify from 'isomorphic-dompurify'
 
 type Assinante = { id: string; nome: string; email: string | null; whatsapp: string | null; papel: string; status: string; assinado_em: string | null; token_acesso: string }
 type Contrato = {
@@ -159,7 +160,7 @@ export default function DetalheContratoPage() {
         <div style={{ ...card, marginTop: 0 }}>
           <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Conteudo do contrato</p>
           <div style={{ background: '#fff', borderRadius: 10, padding: '28px 32px', color: '#111', fontSize: 14, lineHeight: 1.8 }}
-            dangerouslySetInnerHTML={{ __html: contrato.corpo_renderizado }} />
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(contrato.corpo_renderizado) }} />
         </div>
       )}
     </AdminLayout>

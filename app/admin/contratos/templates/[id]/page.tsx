@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import AdminLayout from '../../../AdminLayout'
 import Link from 'next/link'
+import DOMPurify from 'isomorphic-dompurify'
 
 const inputStyle: React.CSSProperties = { background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', width: '100%' }
 const labelStyle: React.CSSProperties = { display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 6 }
@@ -86,7 +87,7 @@ export default function EditarTemplatePage() {
 
       {preview ? (
         <div style={{ background: '#fff', borderRadius: 12, padding: 40, color: '#111', fontSize: 14, lineHeight: 1.7, minHeight: 400 }}
-          dangerouslySetInnerHTML={{ __html: renderPreview() }} />
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(renderPreview()) }} />
       ) : (
         <form onSubmit={salvar} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>

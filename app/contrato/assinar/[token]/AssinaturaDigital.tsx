@@ -1,5 +1,6 @@
 'use client'
 import { useRef, useState, useEffect } from 'react'
+import DOMPurify from 'isomorphic-dompurify'
 
 type Props = {
   token: string
@@ -140,7 +141,7 @@ export default function AssinaturaDigital({ token, nomeAssinante, tituloContrato
             </div>
 
             <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: '32px 36px', marginBottom: 24, fontSize: 14, lineHeight: 1.8, color: '#1e293b' }}
-              dangerouslySetInnerHTML={{ __html: corpoHtml }} />
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(corpoHtml) }} />
 
             <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 20, marginBottom: 20 }}>
               <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, cursor: 'pointer' }}>

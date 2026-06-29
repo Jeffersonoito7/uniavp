@@ -33,12 +33,18 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
  const trilhaStatus = trilha.find(t => t.aula_id === params.aulaId)
  if (trilhaStatus?.status === 'bloqueada') redirect(`/aluno/${params.whatsapp}`)
 
+ // ── Verifica se o aluno é também gestor (PRO) — precisa ser antes do check de módulo PRO ──
+ const { data: gestorRowEarly } = await adminClient.from('gestores')
+ .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+ const isPro = !!gestorRowEarly
+
  // ── Verificação de permissão do módulo (PRO exclusivo) ──
  const { data: moduloPerm } = await adminClient.from('modulos')
  .select('perfis_permitidos').eq('id', aula.modulo_id).maybeSingle()
  const perfisPermitidos: string[] = moduloPerm?.perfis_permitidos ?? ['consultor', 'gestor']
  const moduloApenasProPermissao = !perfisPermitidos.includes('consultor') && perfisPermitidos.includes('gestor')
- if (moduloApenasProPermissao) redirect(`/upgrade`)
+ // Gestor PRO ativo tem acesso a módulos exclusivos — só redireciona quem não é PRO
+ if (moduloApenasProPermissao && !isPro) redirect(`/upgrade`)
 
  // Trilha do módulo para sidebar
  const aulasModulo = trilha
@@ -106,11 +112,6 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
  .in('chave', ['free_quiz_obrigatorio', 'free_bloquear_video', 'pro_quiz_obrigatorio', 'pro_bloquear_video'])
  const regras: Record<string, string> = {}
  for (const r of regrasRaw ?? []) regras[r.chave] = String(r.valor)
-
- // Verifica se o aluno é também gestor (PRO)
- const { data: gestorRow } = await adminClient.from('gestores')
- .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
- const isPro = !!gestorRow
 
  const isEspecialista = !!(aluno as any).especialista
 

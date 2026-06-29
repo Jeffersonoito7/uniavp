@@ -16,9 +16,12 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   const ctx = await getAdminContext(user.id, adminClient)
   if (!ctx) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
-  const { data: contrato } = await (adminClient.from('contratos_digitais' as any) as any)
+  // Filtra por tenant_id para garantir isolamento multi-tenant
+  let q = (adminClient.from('contratos_digitais' as any) as any)
     .select(`*, assinantes:contrato_assinantes(*), aditivos:contratos_digitais!contrato_base_id(id, titulo, numero_registro, status)`)
-    .eq('id', params.id).maybeSingle()
+    .eq('id', params.id)
+  if (ctx.tenantId) q = q.eq('tenant_id', ctx.tenantId)
+  const { data: contrato } = await q.maybeSingle()
 
   if (!contrato) return NextResponse.json({ error: 'Contrato não encontrado' }, { status: 404 })
   return NextResponse.json({ contrato })
@@ -39,36 +42,55 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   const body = await req.json()
 
-  // Cancelar contrato
+  // Cancelar contrato — filtra por tenant para isolar
   if (body.cancelar) {
-    await (adminClient.from('contratos_digitais' as any) as any).update({ status: 'cancelado' }).eq('id', params.id)
+    let q = (adminClient.from('contratos_digitais' as any) as any)
+      .update({ status: 'cancelado' }).eq('id', params.id)
+    if (ctx.tenantId) q = q.eq('tenant_id', ctx.tenantId)
+    const { error } = await q
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true })
   }
 
-  // Reenviar link para assinante especifico
+  // Reenviar link para assinante — verifica que o contrato pertence ao tenant
   if (body.reenviar_assinante_id) {
-    const { data: contrato } = await (adminClient.from('contratos_digitais' as any) as any)
-      .select('titulo').eq('id', params.id).maybeSingle()
+    let qc = (adminClient.from('contratos_digitais' as any) as any)
+      .select('titulo').eq('id', params.id)
+    if (ctx.tenantId) qc = qc.eq('tenant_id', ctx.tenantId)
+    const { data: contrato } = await qc.maybeSingle()
+    if (!contrato) return NextResponse.json({ error: 'Contrato não encontrado' }, { status: 404 })
+
+    // Verifica que o assinante pertence a este contrato
     const { data: assinante } = await (adminClient.from('contrato_assinantes' as any) as any)
-      .select('nome, whatsapp, token_acesso').eq('id', body.reenviar_assinante_id).maybeSingle()
+      .select('nome, whatsapp, token_acesso')
+      .eq('id', body.reenviar_assinante_id)
+      .eq('contrato_id', params.id)
+      .maybeSingle()
 
     if (assinante?.whatsapp && assinante.token_acesso) {
       const instancia = await getInstanciaTenant(ctx.tenantId, adminClient)
       if (instancia) {
         const link = `${appUrl}/contrato/assinar/${assinante.token_acesso}`
-        const msg = `Ola, ${assinante.nome}! Seu contrato *${contrato?.titulo}* ainda aguarda sua assinatura:\n${link}`
+        const msg = `Ola, ${assinante.nome}! Seu contrato *${contrato.titulo}* ainda aguarda sua assinatura:\n${link}`
         await enviarWhatsApp(assinante.whatsapp, msg, instancia).catch(() => {})
       }
     }
     return NextResponse.json({ ok: true })
   }
 
-  // Gerar novo token para assinante (token expirado)
+  // Renovar token — verifica que o assinante pertence ao contrato do tenant
   if (body.renovar_token_assinante_id) {
+    let qc = (adminClient.from('contratos_digitais' as any) as any)
+      .select('id').eq('id', params.id)
+    if (ctx.tenantId) qc = qc.eq('tenant_id', ctx.tenantId)
+    const { data: contratoCheck } = await qc.maybeSingle()
+    if (!contratoCheck) return NextResponse.json({ error: 'Contrato não encontrado' }, { status: 404 })
+
     const { token, expira } = gerarTokenAssinante()
     await (adminClient.from('contrato_assinantes' as any) as any)
       .update({ token_acesso: token, token_expira_em: expira.toISOString() })
       .eq('id', body.renovar_token_assinante_id)
+      .eq('contrato_id', params.id)
     return NextResponse.json({ ok: true, token })
   }
 

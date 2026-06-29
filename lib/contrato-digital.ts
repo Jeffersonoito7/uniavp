@@ -7,18 +7,14 @@ export function renderizarTemplate(corpo: string, variaveis: Record<string, stri
   return corpo.replace(/\{\{(\w+)\}\}/g, (_, chave) => variaveis[chave] ?? `{{${chave}}}`)
 }
 
-// ── Gera numero de registro sequencial por tenant ──────────────────────────
+// ── Gera numero de registro sequencial via sequence atomica do Postgres ────
 export async function gerarNumeroContrato(
   adminClient: ReturnType<typeof createServiceRoleClient>,
-  tenantId: string | null
+  _tenantId: string | null
 ): Promise<string> {
-  let q = (adminClient as any).from('contratos_digitais').select('numero_registro').order('created_at', { ascending: false }).limit(1)
-  if (tenantId) q = q.eq('tenant_id', tenantId)
-  const { data } = await q.maybeSingle()
-  const ultimo = data?.numero_registro ? parseInt(data.numero_registro.replace(/\D/g, '')) || 0 : 0
-  const proximo = ultimo + 1
-  const ano = new Date().getFullYear()
-  return `CD${ano}${String(proximo).padStart(4, '0')}`
+  const { data, error } = await adminClient.rpc('gerar_numero_contrato' as any)
+  if (error || !data) throw new Error(`Falha ao gerar numero de contrato: ${error?.message}`)
+  return data as string
 }
 
 // ── Calcula hash SHA-256 do contrato finalizado ────────────────────────────

@@ -198,15 +198,14 @@ export async function POST(req: NextRequest) {
         if (medalhaGraduado) {
           await adminClient.from('aluno_medalhas').upsert({ aluno_id: aluno.id, medalha_id: medalhaGraduado.id }, { onConflict: 'aluno_id,medalha_id' })
         }
-        // Verifica se já tem numero_registro antes de atribuir
+        // Verifica se já tem numero_registro antes de atribuir (idempotente)
         const { data: alunoAtual } = await adminClient.from('alunos')
           .select('numero_registro').eq('id', aluno.id).maybeSingle()
         let proximoNumero = alunoAtual?.numero_registro
         if (!proximoNumero) {
-          const { data: maxRow } = await adminClient.from('alunos')
-            .select('numero_registro').not('numero_registro', 'is', null)
-            .order('numero_registro', { ascending: false }).limit(1).maybeSingle()
-          proximoNumero = (maxRow?.numero_registro ?? 1000) + 1
+          // Usa sequence atomica do Postgres para evitar race condition
+          const { data: seq } = await adminClient.rpc('gerar_numero_registro_aluno' as any)
+          proximoNumero = seq as number
         }
         await adminClient.from('alunos')
           .update({
