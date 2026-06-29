@@ -80,11 +80,12 @@ export default function AulaInterativa({
  if (!temQuiz && !jaAprovado) {
  setSalvandoProgresso(true)
  try {
- await fetch('/api/quiz', {
+ const res = await fetch('/api/quiz', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify({ aula_id: aulaId, pular: true }),
  })
+ if (!res.ok) return
  } finally {
  setSalvandoProgresso(false)
  }

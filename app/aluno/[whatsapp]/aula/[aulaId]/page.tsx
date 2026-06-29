@@ -14,13 +14,13 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
  if (!user) redirect('/entrar?p=free')
 
  const adminClient = createServiceRoleClient()
- const { data: aluno } = await (adminClient.from('alunos') as any)
+ const { data: aluno } = await adminClient.from('alunos')
  .select('id, nome, whatsapp, especialista').eq('user_id', user.id).maybeSingle()
  if (!aluno) redirect('/entrar?p=free')
  if (aluno.whatsapp !== params.whatsapp) redirect(`/aluno/${aluno.whatsapp}`)
 
  const { data: aula } = await adminClient.from('aulas')
- .select('*, modulo:modulos(titulo)').eq('id', params.aulaId).single()
+ .select('*, modulo:modulos(titulo)').eq('id', params.aulaId).maybeSingle()
  if (!aula || !aula.publicado) redirect(`/aluno/${params.whatsapp}`)
 
  // ── Verificação server-side: aula bloqueada? ──
