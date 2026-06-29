@@ -3,6 +3,7 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp, getInstanciaGestorPorNome } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
 import { getMensagem } from '@/lib/mensagem'
+import { dispararGatilhoContrato } from '@/lib/contrato-gatilho'
 
 export const dynamic = 'force-dynamic'
 
@@ -273,6 +274,15 @@ export async function POST(req: NextRequest) {
               instanciaGestor)
             await enviarWhatsApp(alunoAtualizado.whatsapp,
               await getMensagem('modulo_concluido_aluno', varsModulo, adminClient, aluno.tenant_id))
+
+            // Dispara gatilhos de contrato configurados para este modulo
+            dispararGatilhoContrato({
+              tipo: 'modulo',
+              refId: aulaAtual.modulo_id,
+              alunoId: aluno.id,
+              tenantId: aluno.tenant_id,
+              appUrl,
+            }).catch(() => {})
           }
         }
       }
@@ -299,6 +309,15 @@ export async function POST(req: NextRequest) {
         await enviarWhatsApp(alunoAtualizado.whatsapp,
           await getMensagem('formacao_concluida_aluno', varsFormacao, adminClient, aluno.tenant_id))
       }
+
+      // Dispara gatilhos de contrato configurados para conclusao geral
+      dispararGatilhoContrato({
+        tipo: 'curso_completo',
+        refId: null,
+        alunoId: aluno.id,
+        tenantId: aluno.tenant_id,
+        appUrl,
+      }).catch(() => {})
     }
   }
 

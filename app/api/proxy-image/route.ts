@@ -2,9 +2,28 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+// Dominios permitidos para o proxy. Adicione aqui se precisar de mais fontes.
+const ALLOWED_HOSTS = new Set([
+  new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co').hostname,
+  'i.ytimg.com',
+  'img.youtube.com',
+  'lh3.googleusercontent.com',
+])
+
 export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get('url')
   if (!url) return new NextResponse('url obrigatória', { status: 400 })
+
+  let parsed: URL
+  try {
+    parsed = new URL(url)
+  } catch {
+    return new NextResponse('url inválida', { status: 400 })
+  }
+
+  if (!ALLOWED_HOSTS.has(parsed.hostname)) {
+    return new NextResponse('domínio não permitido', { status: 403 })
+  }
 
   try {
     // Tenta buscar com o service role key se for URL do Supabase

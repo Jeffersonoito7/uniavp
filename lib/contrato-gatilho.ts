@@ -41,11 +41,23 @@ export async function dispararGatilhoContrato({
   const instancia = await getInstanciaTenant(tenantId, adminClient)
 
   for (const gatilho of gatilhos) {
-    // Verifica se ja existe contrato gerado por este gatilho para este aluno
-    const { count } = await (adminClient.from('contratos_digitais' as any) as any)
-      .select('id', { count: 'exact', head: true })
+    // Verifica se ja existe contrato gerado por este gatilho para este aluno (idempotencia)
+    let contratoExisteQ = (adminClient.from('contratos_digitais' as any) as any)
+      .select('id')
       .eq('gatilho_tipo', tipo)
-      .eq(tipo === 'modulo' ? 'gatilho_ref_id' : 'id', tipo === 'modulo' ? refId : 'id')
+      .limit(200)
+    if (tenantId) contratoExisteQ = contratoExisteQ.eq('tenant_id', tenantId)
+    if (tipo === 'modulo' && refId) contratoExisteQ = contratoExisteQ.eq('gatilho_ref_id', refId)
+    const { data: contratosGatilho } = await contratoExisteQ
+
+    if (contratosGatilho && contratosGatilho.length > 0) {
+      const idsGatilho = contratosGatilho.map((c: { id: string }) => c.id)
+      const { count: assinanteCount } = await (adminClient.from('contrato_assinantes' as any) as any)
+        .select('id', { count: 'exact', head: true })
+        .in('contrato_id', idsGatilho)
+        .eq('whatsapp', aluno.whatsapp)
+      if ((assinanteCount ?? 0) > 0) continue
+    }
 
     // Busca template
     const { data: template } = await (adminClient.from('contrato_templates' as any) as any)

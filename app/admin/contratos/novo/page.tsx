@@ -1,23 +1,27 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import AdminLayout from '../../AdminLayout'
 import PhoneInput from '@/app/components/PhoneInput'
 import Link from 'next/link'
 
 type Template = { id: string; nome: string; variaveis: string[] }
 type Assinante = { papel: string; nome: string; email: string; whatsapp: string; cpf: string }
+type ContratoBase = { id: string; titulo: string; numero_registro: string }
 
 const inputStyle: React.CSSProperties = { background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', width: '100%' }
 const labelStyle: React.CSSProperties = { display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 6 }
-const papelLabel: Record<string, string> = { destinatario: 'Destinatario (parte principal)', terceiro: 'Terceiro (ex: responsavel pela nota fiscal)' }
 
 export default function NovoContratoPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const baseId = searchParams.get('base')
+
   const [templates, setTemplates] = useState<Template[]>([])
   const [templateId, setTemplateId] = useState('')
   const [titulo, setTitulo] = useState('')
-  const [tipo, setTipo] = useState<'principal' | 'aditivo'>('principal')
+  const [tipo, setTipo] = useState<'principal' | 'aditivo'>(baseId ? 'aditivo' : 'principal')
+  const [contratoBase, setContratoBase] = useState<ContratoBase | null>(null)
   const [variaveis, setVariaveis] = useState<Record<string, string>>({})
   const [assinantes, setAssinantes] = useState<Assinante[]>([{ papel: 'destinatario', nome: '', email: '', whatsapp: '', cpf: '' }])
   const [salvando, setSalvando] = useState(false)
@@ -28,6 +32,24 @@ export default function NovoContratoPage() {
       .then(r => r.json())
       .then(d => setTemplates(d.templates ?? []))
   }, [])
+
+  useEffect(() => {
+    if (!baseId) return
+    fetch(`/api/admin/contratos-digitais/${baseId}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.contrato) {
+          setContratoBase(d.contrato)
+          setTitulo(`Aditivo — ${d.contrato.titulo}`)
+          // Pre-popula assinantes do contrato original
+          if (d.contrato.assinantes?.length > 0) {
+            setAssinantes(d.contrato.assinantes.map((a: { papel: string; nome: string; email: string | null; whatsapp: string | null; cpf?: string }) => ({
+              papel: a.papel, nome: a.nome, email: a.email ?? '', whatsapp: a.whatsapp ?? '', cpf: a.cpf ?? '',
+            })))
+          }
+        }
+      })
+  }, [baseId])
 
   const templateSelecionado = templates.find(t => t.id === templateId)
 
@@ -53,6 +75,7 @@ export default function NovoContratoPage() {
         template_id: templateId || null,
         titulo,
         tipo,
+        contrato_base_id: baseId || null,
         variaveis_usadas: variaveis,
         assinantes: assinantes.map(a => ({ ...a, whatsapp: a.whatsapp.replace(/\D/g, '') })),
       }),
@@ -69,10 +92,20 @@ export default function NovoContratoPage() {
   return (
     <AdminLayout>
       <div style={{ marginBottom: 24 }}>
-        <Link href="/admin/contratos" style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none' }}>← Contratos</Link>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--avp-text)', marginTop: 6 }}>Novo Contrato</h1>
+        <Link href={contratoBase ? `/admin/contratos/${contratoBase.id}` : '/admin/contratos'} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none' }}>
+          {contratoBase ? `← ${contratoBase.titulo}` : '← Contratos'}
+        </Link>
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--avp-text)', marginTop: 6 }}>
+          {contratoBase ? 'Novo Aditivo' : 'Novo Contrato'}
+        </h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Preencha os dados e envie os links de assinatura automaticamente por WhatsApp.</p>
       </div>
+
+      {contratoBase && (
+        <div style={{ background: '#3b82f620', border: '1px solid #3b82f640', borderRadius: 10, padding: '12px 18px', marginBottom: 20, fontSize: 14 }}>
+          Aditivo vinculado ao contrato: <strong>{contratoBase.titulo}</strong> <span style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--avp-text-dim)' }}>N. {contratoBase.numero_registro}</span>
+        </div>
+      )}
 
       {msg && (
         <div style={{ padding: '12px 16px', background: '#e6394620', border: '1px solid var(--avp-danger)', borderRadius: 8, color: 'var(--avp-danger)', fontSize: 14, marginBottom: 20 }}>
