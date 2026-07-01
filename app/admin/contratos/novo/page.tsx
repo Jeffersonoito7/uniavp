@@ -25,10 +25,10 @@ const ESTRUTURA_PADRAO = `<div style="font-family: Arial, sans-serif; max-width:
   </h3>
 
   <p style="margin-bottom:6px;"><strong>CONTRATANTE:</strong></p>
-  <p style="margin-bottom:4px;"><strong>Razão Social:</strong> AUTOVALE PREVENCOES LTDA</p>
-  <p style="margin-bottom:4px;"><strong>CNPJ:</strong> XX.XXX.XXX/XXXX-XX</p>
-  <p style="margin-bottom:4px;"><strong>Endereço:</strong> Rua Exemplo, 123 — Bairro, Cidade — UF, CEP 00000-000</p>
-  <p style="margin-bottom:20px;"><strong>Representante Legal:</strong> Nome do Responsável</p>
+  <p style="margin-bottom:4px;"><strong>Razão Social:</strong> {{contratante_razao_social}}</p>
+  <p style="margin-bottom:4px;"><strong>CNPJ:</strong> {{contratante_cnpj}}</p>
+  <p style="margin-bottom:4px;"><strong>Endereço:</strong> {{contratante_endereco}}</p>
+  <p style="margin-bottom:20px;"><strong>Representante Legal:</strong> {{contratante_representante}}</p>
 
   <p style="margin-bottom:6px;"><strong>CONTRATADO(A):</strong></p>
   <p style="margin-bottom:4px;"><strong>Nome:</strong> {{nome}}</p>

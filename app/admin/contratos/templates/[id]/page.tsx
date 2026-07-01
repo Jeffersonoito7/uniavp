@@ -22,10 +22,10 @@ const ESTRUTURA_PADRAO = `<div style="font-family: Arial, sans-serif; max-width:
   </h3>
 
   <p style="margin-bottom:6px;"><strong>CONTRATANTE:</strong></p>
-  <p style="margin-bottom:4px;"><strong>Razão Social:</strong> AUTOVALE PREVENCOES LTDA</p>
-  <p style="margin-bottom:4px;"><strong>CNPJ:</strong> XX.XXX.XXX/XXXX-XX</p>
-  <p style="margin-bottom:4px;"><strong>Endereço:</strong> Rua Exemplo, 123 — Bairro, Cidade — UF, CEP 00000-000</p>
-  <p style="margin-bottom:20px;"><strong>Representante Legal:</strong> Nome do Responsável</p>
+  <p style="margin-bottom:4px;"><strong>Razão Social:</strong> {{contratante_razao_social}}</p>
+  <p style="margin-bottom:4px;"><strong>CNPJ:</strong> {{contratante_cnpj}}</p>
+  <p style="margin-bottom:4px;"><strong>Endereço:</strong> {{contratante_endereco}}</p>
+  <p style="margin-bottom:20px;"><strong>Representante Legal:</strong> {{contratante_representante}}</p>
 
   <p style="margin-bottom:6px;"><strong>CONTRATADO(A):</strong></p>
   <p style="margin-bottom:4px;"><strong>Nome:</strong> {{nome}}</p>
@@ -110,6 +110,8 @@ export default function EditarTemplatePage() {
       nome: 'João da Silva', cpf: '000.000.000-00', data: new Date().toLocaleDateString('pt-BR'),
       cargo: 'Consultor', empresa: 'AutoVale Prevencoes', cnpj: '00.000.000/0001-00',
       email: 'joao@email.com', whatsapp: '(11) 99999-9999', endereco: 'Rua Exemplo, 123',
+      contratante_razao_social: 'AutoVale Prevencoes Ltda', contratante_cnpj: '00.000.000/0001-00',
+      contratante_endereco: 'Rua Exemplo, 123, Cidade — UF', contratante_representante: 'Nome Representante',
     }
     let html = form.corpo_html
     for (const v of variaveis) {

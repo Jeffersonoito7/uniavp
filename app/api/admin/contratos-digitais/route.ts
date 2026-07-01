@@ -63,6 +63,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'titulo e assinantes obrigatorios' }, { status: 400 })
   }
 
+  // Busca dados da contratante para mesclar nas variaveis
+  const cfgChaves = ['contratante_razao_social', 'contratante_cnpj', 'contratante_endereco', 'contratante_representante']
+  const cfgCQ = adminClient.from('configuracoes').select('chave, valor').in('chave', cfgChaves)
+  const { data: cfgCRows } = await (ctx.tenantId ? cfgCQ.eq('tenant_id', ctx.tenantId) : cfgCQ)
+  const ccVars: Record<string, string> = {}
+  for (const r of cfgCRows ?? []) {
+    try { ccVars[r.chave] = JSON.parse(r.valor as string) } catch { ccVars[r.chave] = String(r.valor ?? '') }
+  }
+  const variaveisMerge = {
+    data: new Date().toLocaleDateString('pt-BR'),
+    ...ccVars,
+    ...(variaveis_usadas ?? {}),
+  }
+
   let corpoRenderizado = corpo_html_avulso ?? ''
   if (template_id) {
     const { data: template } = await adminClient
@@ -71,7 +85,9 @@ export async function POST(req: NextRequest) {
       .eq('id', template_id)
       .maybeSingle()
     if (!template) return NextResponse.json({ error: 'Template não encontrado' }, { status: 404 })
-    corpoRenderizado = renderizarTemplate(template.corpo_html, variaveis_usadas ?? {})
+    corpoRenderizado = renderizarTemplate(template.corpo_html, variaveisMerge)
+  } else if (corpo_html_avulso) {
+    corpoRenderizado = renderizarTemplate(corpo_html_avulso, variaveisMerge)
   }
 
   let assinaturaAvp: string | null = assinatura_avp_url ?? null

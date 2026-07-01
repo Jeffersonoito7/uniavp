@@ -162,6 +162,10 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  const [certAssinaturaCargo, setCertAssinaturaCargo] = useState(get('cert_assinatura_cargo'))
  // Contratos Digitais (novo sistema)
  const [contratoAssinaturaUrl, setContratoAssinaturaUrl] = useState(get('contrato_assinatura_contratante_url'))
+ const [contratanteRazaoSocial, setContratanteRazaoSocial] = useState(get('contratante_razao_social'))
+ const [contratanteCnpj, setContratanteCnpj] = useState(get('contratante_cnpj'))
+ const [contratanteEndereco, setContratanteEndereco] = useState(get('contratante_endereco'))
+ const [contratanteRepresentante, setContratanteRepresentante] = useState(get('contratante_representante'))
  const [salvando, setSalvando] = useState(false)
  const [msg, setMsg] = useState('')
  const [uploading, setUploading] = useState('')
@@ -352,6 +356,10 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  { chave: 'captacao_bloquear_app', valor: String(captacaoBloquearApp) },
  { chave: 'passos_painel_habilitado', valor: String(passosPainelHabilitado) },
  { chave: 'contrato_assinatura_contratante_url', valor: contratoAssinaturaUrl },
+ { chave: 'contratante_razao_social', valor: contratanteRazaoSocial },
+ { chave: 'contratante_cnpj', valor: contratanteCnpj },
+ { chave: 'contratante_endereco', valor: contratanteEndereco },
+ { chave: 'contratante_representante', valor: contratanteRepresentante },
  { chave: 'free_quiz_obrigatorio', valor: String(freeQuizObrigatorio) },
  { chave: 'free_bloquear_video', valor: String(freeBloquearVideo) },
  { chave: 'pro_quiz_obrigatorio', valor: String(proQuizObrigatorio) },
@@ -1268,6 +1276,40 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  </div>
  </div>
  ))}
+ </div>
+ </div>
+
+ {/* Dados da Contratante */}
+ <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
+ <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>Dados da Contratante (sua associacao)</p>
+ <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 14px', lineHeight: 1.5 }}>
+  Preenchidos uma vez aqui e substituidos automaticamente como variaveis nos contratos:
+  <code style={{ background: 'var(--avp-card)', padding: '1px 5px', borderRadius: 4, fontSize: 11, marginLeft: 4 }}>{'{{contratante_razao_social}}'}</code>
+  <code style={{ background: 'var(--avp-card)', padding: '1px 5px', borderRadius: 4, fontSize: 11, marginLeft: 4 }}>{'{{contratante_cnpj}}'}</code>
+  <code style={{ background: 'var(--avp-card)', padding: '1px 5px', borderRadius: 4, fontSize: 11, marginLeft: 4 }}>{'{{contratante_endereco}}'}</code>
+  <code style={{ background: 'var(--avp-card)', padding: '1px 5px', borderRadius: 4, fontSize: 11, marginLeft: 4 }}>{'{{contratante_representante}}'}</code>
+ </p>
+ <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+  <div>
+   <label style={{ display: 'block', fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 6 }}>Razao Social</label>
+   <input style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '9px 13px', color: 'var(--avp-text)', fontSize: 13, width: '100%', outline: 'none', boxSizing: 'border-box' }}
+   value={contratanteRazaoSocial} onChange={e => setContratanteRazaoSocial(e.target.value)} placeholder="Ex: AutoVale Prevencoes Ltda" />
+  </div>
+  <div>
+   <label style={{ display: 'block', fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 6 }}>CNPJ</label>
+   <input style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '9px 13px', color: 'var(--avp-text)', fontSize: 13, width: '100%', outline: 'none', boxSizing: 'border-box' }}
+   value={contratanteCnpj} onChange={e => setContratanteCnpj(e.target.value)} placeholder="00.000.000/0001-00" />
+  </div>
+  <div style={{ gridColumn: '1 / -1' }}>
+   <label style={{ display: 'block', fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 6 }}>Endereco completo</label>
+   <input style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '9px 13px', color: 'var(--avp-text)', fontSize: 13, width: '100%', outline: 'none', boxSizing: 'border-box' }}
+   value={contratanteEndereco} onChange={e => setContratanteEndereco(e.target.value)} placeholder="Rua, numero, bairro, cidade — UF, CEP" />
+  </div>
+  <div style={{ gridColumn: '1 / -1' }}>
+   <label style={{ display: 'block', fontSize: 12, color: 'var(--avp-text-dim)', marginBottom: 6 }}>Representante Legal</label>
+   <input style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '9px 13px', color: 'var(--avp-text)', fontSize: 13, width: '100%', outline: 'none', boxSizing: 'border-box' }}
+   value={contratanteRepresentante} onChange={e => setContratanteRepresentante(e.target.value)} placeholder="Nome completo do representante legal" />
+  </div>
  </div>
  </div>
 

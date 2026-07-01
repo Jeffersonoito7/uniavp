@@ -75,12 +75,25 @@ export async function verificarContratoObrigatorio(
     ? (typeof cfgSig.valor === 'string' ? cfgSig.valor : JSON.stringify(cfgSig.valor).replace(/"/g, ''))
     : null
 
+  // Busca dados da contratante configurados no admin
+  const cfgChaves = ['contratante_razao_social', 'contratante_cnpj', 'contratante_endereco', 'contratante_representante']
+  const cfgContratanteQ = adminClient.from('configuracoes').select('chave, valor').in('chave', cfgChaves)
+  const { data: cfgContratanteRows } = await (tenantId ? cfgContratanteQ.eq('tenant_id', tenantId) : cfgContratanteQ)
+  const cc: Record<string, string> = {}
+  for (const r of cfgContratanteRows ?? []) {
+    try { cc[r.chave] = JSON.parse(r.valor as string) } catch { cc[r.chave] = String(r.valor ?? '') }
+  }
+
   const variaveis: Record<string, string> = {
     nome: aluno.nome,
     whatsapp: aluno.whatsapp,
     email: aluno.email ?? '',
     cpf: aluno.cpf ?? '',
     data: new Date().toLocaleDateString('pt-BR'),
+    contratante_razao_social: cc['contratante_razao_social'] ?? '',
+    contratante_cnpj: cc['contratante_cnpj'] ?? '',
+    contratante_endereco: cc['contratante_endereco'] ?? '',
+    contratante_representante: cc['contratante_representante'] ?? '',
   }
 
   const corpoRenderizado = renderizarTemplate(template.corpo_html, variaveis)
