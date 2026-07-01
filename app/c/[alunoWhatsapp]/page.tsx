@@ -44,9 +44,31 @@ export default async function FreeCaptacaoPage({
  const { data: videoConfig } = await tq(adminClient.from('configuracoes')
  .select('valor').eq('chave', 'captacao_video_id')).maybeSingle()
 
- const { data: bloquearConfig } = await tq(adminClient.from('configuracoes')
- .select('valor').eq('chave', 'free_bloquear_video')).maybeSingle()
- const bloquearVideo = bloquearConfig?.valor !== 'false'
+ const { data: cfgsExtra } = await tq(adminClient.from('configuracoes')
+ .select('chave, valor')
+ .in('chave', [
+   'free_bloquear_video',
+   'captacao_mostrar_parceiro', 'captacao_bloquear_parceiro', 'captacao_parceiro_titulo',
+   'captacao_mostrar_app', 'captacao_bloquear_app',
+   'captacao_link_externo',
+   'app_ios_url', 'app_android_url',
+ ]))
+ const cfgMap: Record<string, string> = {}
+ for (const c of cfgsExtra ?? []) {
+   cfgMap[c.chave] = typeof c.valor === 'string' ? c.valor : JSON.stringify(c.valor ?? '').replace(/"/g, '')
+ }
+
+ const bloquearVideo = cfgMap['free_bloquear_video'] !== 'false'
+ const captacaoMostrarParceiro = cfgMap['captacao_mostrar_parceiro'] === 'true'
+ const captacaoBloquearParceiro = cfgMap['captacao_bloquear_parceiro'] === 'true'
+ const captacaoParceiroTitulo = cfgMap['captacao_parceiro_titulo'] || undefined
+ const captacaoMostrarApp = cfgMap['captacao_mostrar_app'] === 'true'
+ const captacaoBloquearApp = cfgMap['captacao_bloquear_app'] === 'true'
+ const appIosUrl = cfgMap['app_ios_url'] || undefined
+ const appAndroidUrl = cfgMap['app_android_url'] || undefined
+
+ // Link parceiro: proprio aluno tem prioridade; fallback para o link global da plataforma
+ const linkExterno = aluno.link_externo || cfgMap['captacao_link_externo'] || undefined
 
  const valorRaw = videoConfig?.valor
  const valorStr = typeof valorRaw === 'string' ? valorRaw : JSON.stringify(valorRaw ?? '')
@@ -56,16 +78,23 @@ export default async function FreeCaptacaoPage({
 
  return (
  <FunilCaptacao
- gestorNome={aluno.nome}
- siteNome={config.nome}
- logoUrl={config.logoPaginaUrl || config.logoUrl}
- corFundo={config.corFundo}
- videoId={videoId}
- direto={direto}
- indicadorWhatsapp={aluno.whatsapp}
- plano={plano}
- linkExterno={aluno.link_externo ?? undefined}
- bloquearVideo={bloquearVideo}
+   gestorNome={aluno.nome}
+   siteNome={config.nome}
+   logoUrl={config.logoPaginaUrl || config.logoUrl}
+   corFundo={config.corFundo}
+   videoId={videoId}
+   direto={direto}
+   indicadorWhatsapp={aluno.whatsapp}
+   plano={plano}
+   linkExterno={linkExterno}
+   bloquearVideo={bloquearVideo}
+   captacaoMostrarParceiro={captacaoMostrarParceiro}
+   captacaoBloquearParceiro={captacaoBloquearParceiro}
+   captacaoParceiroTitulo={captacaoParceiroTitulo}
+   captacaoMostrarApp={captacaoMostrarApp}
+   captacaoBloquearApp={captacaoBloquearApp}
+   appIosUrl={appIosUrl}
+   appAndroidUrl={appAndroidUrl}
  />
  )
 }

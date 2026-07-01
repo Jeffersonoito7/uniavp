@@ -1,34 +1,37 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import AdminLayout from '../../AdminLayout'
 import PhoneInput from '@/app/components/PhoneInput'
 import Link from 'next/link'
 
-type Template = { id: string; nome: string; variaveis: string[] }
-type Assinante = { papel: string; nome: string; email: string; whatsapp: string; cpf: string }
+type Template = { id: string; nome: string; variaveis: string[]; corpo_html: string }
 type ContratoBase = { id: string; titulo: string; numero_registro: string }
 
 const inputStyle: React.CSSProperties = { background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', width: '100%' }
 const labelStyle: React.CSSProperties = { display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 6 }
 
+type Destinatario = { whatsapp: string; email: string; nome: string }
+
 export default function NovoContratoPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const baseId = searchParams.get('base')
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const [templates, setTemplates] = useState<Template[]>([])
   const [templateId, setTemplateId] = useState('')
   const [titulo, setTitulo] = useState('')
   const [tipo, setTipo] = useState<'principal' | 'aditivo'>(baseId ? 'aditivo' : 'principal')
   const [contratoBase, setContratoBase] = useState<ContratoBase | null>(null)
-  const [variaveis, setVariaveis] = useState<Record<string, string>>({})
-  const [assinantes, setAssinantes] = useState<Assinante[]>([{ papel: 'destinatario', nome: '', email: '', whatsapp: '', cpf: '' }])
+  const [corpoHtml, setCorpoHtml] = useState('')
+  const [preview, setPreview] = useState(false)
+  const [destinatarios, setDestinatarios] = useState<Destinatario[]>([{ whatsapp: '', email: '', nome: '' }])
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState<{ tipo: 'ok' | 'err'; texto: string } | null>(null)
 
   useEffect(() => {
-    fetch('/api/admin/contrato-templates')
+    fetch('/api/admin/contrato-templates?com_corpo=1')
       .then(r => r.json())
       .then(d => setTemplates(d.templates ?? []))
   }, [])
@@ -41,33 +44,48 @@ export default function NovoContratoPage() {
         if (d.contrato) {
           setContratoBase(d.contrato)
           setTitulo(`Aditivo — ${d.contrato.titulo}`)
-          // Pre-popula assinantes do contrato original
+          if (d.contrato.corpo_renderizado) setCorpoHtml(d.contrato.corpo_renderizado)
           if (d.contrato.assinantes?.length > 0) {
-            setAssinantes(d.contrato.assinantes.map((a: { papel: string; nome: string; email: string | null; whatsapp: string | null; cpf?: string }) => ({
-              papel: a.papel, nome: a.nome, email: a.email ?? '', whatsapp: a.whatsapp ?? '', cpf: a.cpf ?? '',
+            setDestinatarios(d.contrato.assinantes.map((a: { nome: string; email: string | null; whatsapp: string | null }) => ({
+              nome: a.nome ?? '', email: a.email ?? '', whatsapp: a.whatsapp ?? '',
             })))
           }
         }
       })
   }, [baseId])
 
-  const templateSelecionado = templates.find(t => t.id === templateId)
-
-  function addAssinante() {
-    setAssinantes(prev => [...prev, { papel: 'terceiro', nome: '', email: '', whatsapp: '', cpf: '' }])
+  function aplicarTemplate(id: string) {
+    setTemplateId(id)
+    const t = templates.find(t => t.id === id)
+    if (t) setCorpoHtml(t.corpo_html)
   }
 
-  function removeAssinante(i: number) {
-    setAssinantes(prev => prev.filter((_, idx) => idx !== i))
+  function addDestinatario() {
+    setDestinatarios(prev => [...prev, { whatsapp: '', email: '', nome: '' }])
   }
 
-  function updateAssinante(i: number, campo: keyof Assinante, valor: string) {
-    setAssinantes(prev => prev.map((a, idx) => idx === i ? { ...a, [campo]: valor } : a))
+  function removeDestinatario(i: number) {
+    setDestinatarios(prev => prev.filter((_, idx) => idx !== i))
+  }
+
+  function updateDestinatario(i: number, campo: keyof Destinatario, valor: string) {
+    setDestinatarios(prev => prev.map((d, idx) => idx === i ? { ...d, [campo]: valor } : d))
   }
 
   async function enviar(e: React.FormEvent) {
     e.preventDefault()
+    if (!corpoHtml.trim()) {
+      setMsg({ tipo: 'err', texto: 'O corpo do contrato nao pode estar vazio.' })
+      return
+    }
+    const validos = destinatarios.filter(d => d.whatsapp || d.email)
+    if (validos.length === 0) {
+      setMsg({ tipo: 'err', texto: 'Informe ao menos WhatsApp ou email de um destinatario.' })
+      return
+    }
     setSalvando(true)
+    setMsg(null)
+
     const res = await fetch('/api/admin/contratos-digitais', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -76,8 +94,15 @@ export default function NovoContratoPage() {
         titulo,
         tipo,
         contrato_base_id: baseId || null,
-        variaveis_usadas: variaveis,
-        assinantes: assinantes.map(a => ({ ...a, whatsapp: a.whatsapp.replace(/\D/g, '') })),
+        corpo_html_avulso: corpoHtml,
+        assinantes: validos.map(d => ({
+          papel: 'destinatario',
+          nome: d.nome || null,
+          email: d.email || null,
+          whatsapp: d.whatsapp.replace(/\D/g, '') || null,
+          cpf: null,
+          destinatario_preenche: !d.nome,
+        })),
       }),
     })
     const data = await res.json()
@@ -89,16 +114,22 @@ export default function NovoContratoPage() {
     }
   }
 
+  const card: React.CSSProperties = { background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24 }
+
   return (
     <AdminLayout>
-      <div style={{ marginBottom: 24 }}>
-        <Link href={contratoBase ? `/admin/contratos/${contratoBase.id}` : '/admin/contratos'} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none' }}>
-          {contratoBase ? `← ${contratoBase.titulo}` : '← Contratos'}
-        </Link>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--avp-text)', marginTop: 6 }}>
-          {contratoBase ? 'Novo Aditivo' : 'Novo Contrato'}
-        </h1>
-        <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Preencha os dados e envie os links de assinatura automaticamente por WhatsApp.</p>
+      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+        <div>
+          <Link href={contratoBase ? `/admin/contratos/${contratoBase.id}` : '/admin/contratos'} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none' }}>
+            {contratoBase ? `← ${contratoBase.titulo}` : '← Contratos'}
+          </Link>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--avp-text)', marginTop: 6 }}>
+            {contratoBase ? 'Novo Aditivo' : 'Novo Contrato'}
+          </h1>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>
+            O destinatario recebe o link, preenche os proprios dados e assina. Voce recebe copia por email.
+          </p>
+        </div>
       </div>
 
       {contratoBase && (
@@ -113,20 +144,20 @@ export default function NovoContratoPage() {
         </div>
       )}
 
-      <form onSubmit={enviar} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <form onSubmit={enviar} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
         {/* Dados basicos */}
-        <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24 }}>
-          <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 18 }}>Dados do contrato</p>
+        <div style={card}>
+          <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 18 }}>Identificacao</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div style={{ gridColumn: '1 / -1' }}>
               <label style={labelStyle}>Titulo do contrato *</label>
-              <input style={inputStyle} value={titulo} onChange={e => setTitulo(e.target.value)} placeholder="Ex: Contrato de Representacao — Joao Silva" required />
+              <input style={inputStyle} value={titulo} onChange={e => setTitulo(e.target.value)} placeholder="Ex: Contrato de Representacao" required />
             </div>
             <div>
-              <label style={labelStyle}>Template (opcional)</label>
-              <select style={{ ...inputStyle, cursor: 'pointer' }} value={templateId} onChange={e => setTemplateId(e.target.value)}>
-                <option value="">Sem template (corpo vazio)</option>
+              <label style={labelStyle}>Usar template (opcional)</label>
+              <select style={{ ...inputStyle, cursor: 'pointer' }} value={templateId} onChange={e => aplicarTemplate(e.target.value)}>
+                <option value="">Escrever manualmente</option>
                 {templates.map(t => <option key={t.id} value={t.id}>{t.nome}</option>)}
               </select>
             </div>
@@ -140,66 +171,74 @@ export default function NovoContratoPage() {
           </div>
         </div>
 
-        {/* Variaveis do template */}
-        {templateSelecionado && templateSelecionado.variaveis.length > 0 && (
-          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24 }}>
-            <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Preencher variaveis do template</p>
-            <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 18 }}>Esses valores serao inseridos automaticamente no corpo do contrato.</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-              {templateSelecionado.variaveis.map(v => (
-                <div key={v}>
-                  <label style={labelStyle}>{`{{${v}}}`}</label>
-                  <input style={inputStyle} value={variaveis[v] ?? ''} onChange={e => setVariaveis(p => ({ ...p, [v]: e.target.value }))} placeholder={v} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Assinantes */}
-        <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+        {/* Corpo do contrato */}
+        <div style={card}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div>
-              <p style={{ fontWeight: 700, fontSize: 16, margin: 0 }}>Assinantes</p>
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 4 }}>A AVP ja e considerada assinada (pre-assinada). Adicione aqui os demais assinantes.</p>
+              <p style={{ fontWeight: 700, fontSize: 16, margin: 0 }}>Corpo do contrato *</p>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 4 }}>
+                Escreva em HTML. Use <code style={{ background: 'var(--avp-black)', padding: '1px 6px', borderRadius: 4 }}>{'{{nome}}'}</code> <code style={{ background: 'var(--avp-black)', padding: '1px 6px', borderRadius: 4 }}>{'{{cpf}}'}</code> <code style={{ background: 'var(--avp-black)', padding: '1px 6px', borderRadius: 4 }}>{'{{data}}'}</code> — o destinatario vai preencher os proprios dados.
+              </p>
             </div>
-            <button type="button" onClick={addAssinante} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+            <button type="button" onClick={() => setPreview(p => !p)}
+              style={{ background: preview ? 'var(--avp-blue)' : 'none', border: '1px solid var(--avp-border)', color: preview ? '#fff' : 'var(--avp-text-dim)', borderRadius: 8, padding: '7px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600, flexShrink: 0 }}>
+              {preview ? 'Editar' : 'Preview'}
+            </button>
+          </div>
+
+          {preview ? (
+            <div style={{ background: '#fff', borderRadius: 10, padding: '28px 32px', color: '#111', fontSize: 14, lineHeight: 1.8, minHeight: 300 }}
+              dangerouslySetInnerHTML={{ __html: corpoHtml }} />
+          ) : (
+            <textarea
+              ref={textareaRef}
+              value={corpoHtml}
+              onChange={e => setCorpoHtml(e.target.value)}
+              placeholder={'<p>Pelo presente instrumento, as partes abaixo qualificadas...</p>\n<p><strong>CONTRATANTE:</strong> AutoVale Prevencoes Ltda, CNPJ...</p>\n<p><strong>CONTRATADO:</strong> {{nome}}, CPF {{cpf}}, ...</p>'}
+              style={{ ...inputStyle, minHeight: 340, resize: 'vertical', fontFamily: 'monospace', fontSize: 13, lineHeight: 1.6 }}
+            />
+          )}
+        </div>
+
+        {/* Destinatarios */}
+        <div style={card}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div>
+              <p style={{ fontWeight: 700, fontSize: 16, margin: 0 }}>Destinatarios</p>
+              <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 4 }}>
+                So informe WhatsApp ou email. O proprio destinatario vai preencher nome e CPF ao abrir o link.
+              </p>
+            </div>
+            <button type="button" onClick={addDestinatario}
+              style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
               + Adicionar
             </button>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {assinantes.map((a, i) => (
-              <div key={i} style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: 18 }}>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {destinatarios.map((d, i) => (
+              <div key={i} style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '16px 18px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ background: i === 0 ? '#02A15320' : '#f59e0b20', color: i === 0 ? '#02A153' : '#f59e0b', border: `1px solid ${i === 0 ? '#02A15340' : '#f59e0b40'}`, borderRadius: 6, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>
-                      {i + 1}
-                    </span>
-                    <select style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 6, padding: '4px 10px', color: 'var(--avp-text)', fontSize: 13, cursor: 'pointer' }} value={a.papel} onChange={e => updateAssinante(i, 'papel', e.target.value)}>
-                      <option value="destinatario">Destinatario</option>
-                      <option value="terceiro">Terceiro (NF / representante)</option>
-                    </select>
-                  </div>
-                  {i > 0 && (
-                    <button type="button" onClick={() => removeAssinante(i)} style={{ background: 'none', border: 'none', color: 'var(--avp-danger)', cursor: 'pointer', fontSize: 20, padding: 0 }}>×</button>
+                  <span style={{ background: '#02A15320', color: '#02A153', border: '1px solid #02A15340', borderRadius: 6, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>
+                    Destinatario {destinatarios.length > 1 ? i + 1 : ''}
+                  </span>
+                  {destinatarios.length > 1 && (
+                    <button type="button" onClick={() => removeDestinatario(i)}
+                      style={{ background: 'none', border: 'none', color: 'var(--avp-danger)', cursor: 'pointer', fontSize: 20, padding: 0, lineHeight: 1 }}>×</button>
                   )}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                   <div>
-                    <label style={labelStyle}>Nome *</label>
-                    <input style={inputStyle} value={a.nome} onChange={e => updateAssinante(i, 'nome', e.target.value)} required placeholder="Nome completo" />
+                    <label style={labelStyle}>WhatsApp</label>
+                    <PhoneInput value={d.whatsapp} onChange={v => updateDestinatario(i, 'whatsapp', v)} style={{ background: 'var(--avp-black)', borderRadius: 8 }} />
                   </div>
                   <div>
-                    <label style={labelStyle}>CPF</label>
-                    <input style={inputStyle} value={a.cpf} onChange={e => updateAssinante(i, 'cpf', e.target.value)} placeholder="000.000.000-00" />
+                    <label style={labelStyle}>Email (para copia assinada)</label>
+                    <input type="email" style={inputStyle} value={d.email} onChange={e => updateDestinatario(i, 'email', e.target.value)} placeholder="email@exemplo.com" />
                   </div>
                   <div>
-                    <label style={labelStyle}>WhatsApp (link sera enviado aqui)</label>
-                    <PhoneInput value={a.whatsapp} onChange={v => updateAssinante(i, 'whatsapp', v)} style={{ background: 'var(--avp-black)', borderRadius: 8 }} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>E-mail</label>
-                    <input type="email" style={inputStyle} value={a.email} onChange={e => updateAssinante(i, 'email', e.target.value)} placeholder="email@exemplo.com" />
+                    <label style={labelStyle}>Nome (opcional — destinatario preenche)</label>
+                    <input style={inputStyle} value={d.nome} onChange={e => updateDestinatario(i, 'nome', e.target.value)} placeholder="Deixar vazio = destinatario preenche" />
                   </div>
                 </div>
               </div>
@@ -211,7 +250,8 @@ export default function NovoContratoPage() {
           <Link href="/admin/contratos" style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '12px 22px', fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
             Cancelar
           </Link>
-          <button type="submit" disabled={salvando} style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 28px', fontWeight: 700, fontSize: 14, cursor: 'pointer', opacity: salvando ? 0.6 : 1 }}>
+          <button type="submit" disabled={salvando}
+            style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 28px', fontWeight: 700, fontSize: 14, cursor: 'pointer', opacity: salvando ? 0.6 : 1 }}>
             {salvando ? 'Enviando...' : 'Criar e Enviar Links'}
           </button>
         </div>

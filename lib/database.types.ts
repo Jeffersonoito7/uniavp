@@ -2056,6 +2056,7 @@ export type Database = {
       gestores: {
         Row: {
           ativo: boolean | null
+          cpf: string | null
           created_at: string | null
           email: string
           foto_perfil: string | null
@@ -2074,6 +2075,7 @@ export type Database = {
         }
         Insert: {
           ativo?: boolean | null
+          cpf?: string | null
           created_at?: string | null
           email: string
           foto_perfil?: string | null
@@ -2092,6 +2094,7 @@ export type Database = {
         }
         Update: {
           ativo?: boolean | null
+          cpf?: string | null
           created_at?: string | null
           email?: string
           foto_perfil?: string | null

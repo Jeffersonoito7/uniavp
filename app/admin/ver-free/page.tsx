@@ -25,7 +25,7 @@ export default async function VerFreePage() {
  const { data: alunosRaw } = await adminClient.from('alunos')
  .select('id, nome, whatsapp, status, gestor_nome, user_id')
  .order('nome')
- .limit(200)
+ .limit(2000)
 
  // Filtra apenas FREE (quem não tem gestor ativo)
  const alunos = (alunosRaw ?? []).filter((a: any) => !userIdsPro.has(a.user_id))

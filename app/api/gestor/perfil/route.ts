@@ -24,5 +24,13 @@ export async function PUT(req: NextRequest) {
   const { error } = await adminClient.from('gestores').update(updates as any).eq('id', gestor.id)
   if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
+  // Sincroniza CPF para aluno se o gestor tiver um registro FREE sem CPF
+  if (updates.cpf) {
+    await adminClient.from('alunos')
+      .update({ cpf: updates.cpf })
+      .eq('user_id', user.id)
+      .is('cpf', null)
+  }
+
   return NextResponse.json({ ok: true })
 }

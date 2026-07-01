@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'

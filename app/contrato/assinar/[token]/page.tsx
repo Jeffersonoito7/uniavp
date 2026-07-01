@@ -6,8 +6,9 @@ export const dynamic = 'force-dynamic'
 export default async function AssinarContratoPage({ params }: { params: { token: string } }) {
   const adminClient = createServiceRoleClient()
 
-  const { data: assinante } = await (adminClient.from('contrato_assinantes' as any) as any)
-    .select('id, nome, papel, status, token_expira_em, contrato_id')
+  const { data: assinante } = await adminClient
+    .from('contrato_assinantes')
+    .select('id, nome, email, cpf, papel, status, token_expira_em, contrato_id')
     .eq('token_acesso', params.token)
     .maybeSingle()
 
@@ -35,7 +36,8 @@ export default async function AssinarContratoPage({ params }: { params: { token:
     )
   }
 
-  const { data: contrato } = await (adminClient.from('contratos_digitais' as any) as any)
+  const { data: contrato } = await adminClient
+    .from('contratos_digitais')
     .select('id, titulo, numero_registro, corpo_renderizado, status')
     .eq('id', assinante.contrato_id)
     .maybeSingle()
@@ -52,20 +54,21 @@ export default async function AssinarContratoPage({ params }: { params: { token:
     )
   }
 
-  // Marca como visualizado
   if (assinante.status === 'pendente') {
-    await (adminClient.from('contrato_assinantes' as any) as any)
-      .update({ status: 'visualizado' }).eq('id', assinante.id)
+    await adminClient.from('contrato_assinantes').update({ status: 'visualizado' }).eq('id', assinante.id)
   }
 
   return (
     <AssinaturaDigital
       token={params.token}
       nomeAssinante={assinante.nome}
+      emailAssinante={assinante.email}
+      cpfAssinante={assinante.cpf}
       tituloContrato={contrato.titulo}
       numeroRegistro={contrato.numero_registro}
-      corpoHtml={contrato.corpo_renderizado}
+      corpoHtml={contrato.corpo_renderizado ?? ''}
       jaAssinou={assinante.status === 'assinado'}
+      precisaPreencher={!assinante.nome}
     />
   )
 }

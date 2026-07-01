@@ -18,7 +18,7 @@ import AgenteComercial from './AgenteComercial'
 // ── Componente de Perfil do Gestor ──────────────────────────────────────────
 function PerfilGestor({ gestor, onNomeAtualizado, onFotoAtualizada, podeCfgLink }: { gestor: Gestor; onNomeAtualizado: (n: string) => void; onFotoAtualizada?: (url: string | null) => void; podeCfgLink?: boolean }) {
  const [nome, setNome] = useState(gestor.nome)
- const [linkExterno, setLinkExterno] = useState(gestor.link_externo ?? '')
+ // link_externo gerenciado exclusivamente pelo LinkParceiroCardGestor
  const [fotoUrl, setFotoUrl] = useState<string | null>(gestor.foto_perfil ?? null)
  const [cropSrc, setCropSrc] = useState<string | null>(null)
  const [showCrop, setShowCrop] = useState(false)
@@ -55,7 +55,7 @@ function PerfilGestor({ gestor, onNomeAtualizado, onFotoAtualizada, podeCfgLink 
  const res = await fetch('/api/gestor/perfil', {
  method: 'PUT',
  headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ nome, link_externo: linkExterno }),
+ body: JSON.stringify({ nome }),
  })
  const data = await res.json()
  if (data.ok) { setMsg({ tipo: 'ok', texto: 'Perfil atualizado!' }); onNomeAtualizado(nome) }
@@ -116,13 +116,6 @@ function PerfilGestor({ gestor, onNomeAtualizado, onFotoAtualizada, podeCfgLink 
  <div>
  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>Nome *</label>
  <input style={inp} value={nome} onChange={e => setNome(e.target.value)} required />
- </div>
- <div>
- <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>Meu link da plataforma parceira</label>
- <input style={inp} value={linkExterno} onChange={e => setLinkExterno(e.target.value)} placeholder="Cole aqui o seu link de indicação" />
- <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>
- Cole exatamente como você recebeu. Aparece para os FREEs que você recrutar.
- </p>
  </div>
  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14 }}>
  <div>
@@ -664,7 +657,7 @@ export default function GestorDashboard({
  </div>
 
  {/* Link da plataforma parceira */}
- <LinkParceiroCardGestor linkAtual={gestor.link_externo ?? null} />
+ <LinkParceiroCardGestor linkAtual={gestor.link_externo ?? null} whatsapp={gestor.whatsapp} baseUrl={baseUrl} />
 
  {/* Card do Assistente IA */}
  <AgenteCard />

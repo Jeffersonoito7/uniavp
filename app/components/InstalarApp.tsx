@@ -9,7 +9,13 @@ export default function InstalarApp() {
 
  useEffect(() => {
  if (window.matchMedia('(display-mode: standalone)').matches) return
- if (sessionStorage.getItem('pwa_dispensado')) return
+
+ // Verifica se foi dispensado hoje
+ const dispensadoEm = localStorage.getItem('pwa_dispensado_em')
+ if (dispensadoEm) {
+ const hoje = new Date().toISOString().slice(0, 10)
+ if (dispensadoEm >= hoje) return
+ }
 
  const path = window.location.pathname
  if (path.startsWith('/captacao') || path.startsWith('/g/') || path.startsWith('/c/')) return
@@ -34,12 +40,16 @@ export default function InstalarApp() {
  if (!prompt) return
  prompt.prompt()
  const { outcome } = await prompt.userChoice
- if (outcome === 'accepted') setInstalado(true)
+ if (outcome === 'accepted') {
+ setInstalado(true)
+ localStorage.setItem('pwa_instalado', '1')
+ }
  setVisivel(false)
  }
 
  function dispensar() {
- sessionStorage.setItem('pwa_dispensado', '1')
+ const hoje = new Date().toISOString().slice(0, 10)
+ localStorage.setItem('pwa_dispensado_em', hoje)
  setVisivel(false)
  }
 

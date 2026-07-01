@@ -160,19 +160,8 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  const [certAssinaturaUrl, setCertAssinaturaUrl] = useState(get('cert_assinatura_url'))
  const [certAssinaturaNome, setCertAssinaturaNome] = useState(get('cert_assinatura_nome'))
  const [certAssinaturaCargo, setCertAssinaturaCargo] = useState(get('cert_assinatura_cargo'))
- // Contrato de Representação
- const [contratoHabilitado, setContratoHabilitado] = useState(get('contrato_habilitado') === 'true')
- const [contratoMomento, setContratoMomento] = useState(get('contrato_momento') || 'desativado')
- const [contratoContratanteNome, setContratoContratanteNome] = useState(get('contrato_contratante_nome'))
- const [contratoContratanteCnpj, setContratoContratanteCnpj] = useState(get('contrato_contratante_cnpj'))
- const [contratoContratanteEndereco, setContratoContratanteEndereco] = useState(get('contrato_contratante_endereco'))
- const [contratoRepresentanteNome, setContratoRepresentanteNome] = useState(get('contrato_representante_nome'))
- const [contratoRepresentanteCargo, setContratoRepresentanteCargo] = useState(get('contrato_representante_cargo'))
- const [contratoForo, setContratoForo] = useState(get('contrato_foro') || 'Petrolina/PE')
- const [contratoCorpo, setContratoCorpo] = useState(get('contrato_corpo'))
- const [contratoClausulas, setContratoClausulas] = useState(get('contrato_clausulas'))
+ // Contratos Digitais (novo sistema)
  const [contratoAssinaturaUrl, setContratoAssinaturaUrl] = useState(get('contrato_assinatura_contratante_url'))
- const [contratoLogoUrl, setContratoLogoUrl] = useState(get('contrato_logo_url'))
  const [salvando, setSalvando] = useState(false)
  const [msg, setMsg] = useState('')
  const [uploading, setUploading] = useState('')
@@ -189,9 +178,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  const carteiraLogoEsquerdaRef = useRef<HTMLInputElement>(null)
  const carteiraLogoDireitaRef = useRef<HTMLInputElement>(null)
  const carteiraAssinaturaUrlRef = useRef<HTMLInputElement>(null)
- const contratoArquivoRef = useRef<HTMLInputElement>(null)
  const contratoAssinaturaRef = useRef<HTMLInputElement>(null)
- const contratoLogoRef = useRef<HTMLInputElement>(null)
 
  const setters: Record<string, (v: string) => void> = {
  logoUrl: setLogoUrl,
@@ -208,7 +195,6 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  carteiraAssinaturaUrl: setCarteiraAssinaturaUrl,
  moduloCapaPadrao: setModuloCapaPadrao,
  contratoAssinaturaUrl: setContratoAssinaturaUrl,
- contratoLogoUrl: setContratoLogoUrl,
  }
 
  const campoToChave: Record<string, string> = {
@@ -226,7 +212,6 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  carteiraAssinaturaUrl: 'carteira_assinatura_url',
  moduloCapaPadrao: 'modulo_capa_padrao',
  contratoAssinaturaUrl: 'contrato_assinatura_contratante_url',
- contratoLogoUrl: 'contrato_logo_url',
  }
 
  async function uploadImagem(campo: string, file: File) {
@@ -366,18 +351,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  { chave: 'captacao_mostrar_app', valor: String(captacaoMostrarApp) },
  { chave: 'captacao_bloquear_app', valor: String(captacaoBloquearApp) },
  { chave: 'passos_painel_habilitado', valor: String(passosPainelHabilitado) },
- { chave: 'contrato_habilitado', valor: String(contratoMomento !== 'desativado') },
- { chave: 'contrato_momento', valor: contratoMomento },
- { chave: 'contrato_contratante_nome', valor: contratoContratanteNome },
- { chave: 'contrato_contratante_cnpj', valor: contratoContratanteCnpj },
- { chave: 'contrato_contratante_endereco', valor: contratoContratanteEndereco },
- { chave: 'contrato_representante_nome', valor: contratoRepresentanteNome },
- { chave: 'contrato_representante_cargo', valor: contratoRepresentanteCargo },
- { chave: 'contrato_foro', valor: contratoForo },
- { chave: 'contrato_corpo', valor: contratoCorpo },
- { chave: 'contrato_clausulas', valor: contratoClausulas },
  { chave: 'contrato_assinatura_contratante_url', valor: contratoAssinaturaUrl },
- { chave: 'contrato_logo_url', valor: contratoLogoUrl },
  { chave: 'free_quiz_obrigatorio', valor: String(freeQuizObrigatorio) },
  { chave: 'free_bloquear_video', valor: String(freeBloquearVideo) },
  { chave: 'pro_quiz_obrigatorio', valor: String(proQuizObrigatorio) },
@@ -1257,125 +1231,62 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  </div>}
 
 
- {/* CONTRATO DE REPRESENTAÇÃO */}
+ {/* CONTRATOS DIGITAIS */}
  <div id="contrato" style={{ ...card, border: '2px solid rgba(99,102,241,0.25)', background: 'rgba(99,102,241,0.03)', scrollMarginTop: 80 }}>
  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
  <div>
- <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><ScrollText size={15} style={{ opacity: 0.6 }} />Contrato de Representação</p>
+ <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><ScrollText size={15} style={{ opacity: 0.6 }} />Contratos Digitais</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: 4 }}>
- Contrato digital de licenciamento com quiz por cláusula, PDF com hash SHA-256 e envio via WhatsApp.
+ Envie contratos individuais por WhatsApp ou email. O destinatario abre o link, preenche os proprios dados, le e assina digitalmente. Todos recebem copia por email apos conclusao.
  </p>
  </div>
- <a href="/contrato" target="_blank" rel="noreferrer"
- style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', borderRadius: 8, padding: '7px 16px', fontWeight: 700, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap' }}>
- Ver contrato →
+ <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+ <a href="/admin/contratos" style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', borderRadius: 8, padding: '7px 16px', fontWeight: 700, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+ Ver contratos →
+ </a>
+ <a href="/admin/contratos/novo" style={{ background: 'var(--avp-green)', border: 'none', color: '#fff', borderRadius: 8, padding: '7px 16px', fontWeight: 700, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+ + Novo contrato
  </a>
  </div>
+ </div>
 
- {/* Quando exigir o contrato */}
+ {/* Como funciona */}
  <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
- <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>Quando exigir a assinatura do contrato</p>
- <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.5 }}>
- Controla em que momento o aluno precisa assinar o contrato. Aplica-se a todos os alunos (FREE e PRO).
- </p>
- <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+ <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 12px' }}>Como funciona</p>
+ <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
  {[
- { valor: 'desativado', label: 'Desativado', desc: 'Nenhum aluno precisa assinar contrato' },
- { valor: 'no_cadastro', label: 'No cadastro', desc: 'O aluno assina antes de acessar qualquer aula' },
- { valor: 'ao_concluir', label: 'Ao concluir o curso', desc: 'O aluno assina somente quando concluir 100% do curso' },
- ].map(op => (
- <label key={op.valor} onClick={() => setContratoMomento(op.valor)}
- style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 14px', background: contratoMomento === op.valor ? 'rgba(99,102,241,0.08)' : 'rgba(255,255,255,0.02)', border: `1px solid ${contratoMomento === op.valor ? 'rgba(99,102,241,0.4)' : 'var(--avp-border)'}`, borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s' }}>
- <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${contratoMomento === op.valor ? '#818cf8' : 'var(--avp-border)'}`, background: contratoMomento === op.valor ? '#818cf8' : 'transparent', flexShrink: 0, marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
- {contratoMomento === op.valor && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#fff' }} />}
- </div>
+ { n: '1', titulo: 'Voce cria o contrato', desc: 'Escreve o corpo em HTML com variaveis como {{nome}}, {{cpf}}, {{data}}. Pode usar um template ou escrever do zero.' },
+ { n: '2', titulo: 'Voce informa o contato do destinatario', desc: 'Apenas WhatsApp ou email. Nao precisa preencher nome nem CPF: o proprio destinatario preenche ao abrir.' },
+ { n: '3', titulo: 'Destinatario recebe o link', desc: 'Preenche nome e CPF, le o contrato com os dados inseridos, e assina digitalmente com validade juridica (Lei 14.063/2020).' },
+ { n: '4', titulo: 'Copia por email', desc: 'Quando todos assinam, cada parte com email cadastrado recebe uma copia completa do documento.' },
+ ].map(p => (
+ <div key={p.n} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+ <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0, marginTop: 1 }}>{p.n}</div>
  <div>
- <p style={{ fontWeight: 600, fontSize: 13, margin: 0, color: contratoMomento === op.valor ? '#c4b5fd' : 'var(--avp-text)' }}>{op.label}</p>
- <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '2px 0 0' }}>{op.desc}</p>
+ <p style={{ fontWeight: 600, fontSize: 13, margin: '0 0 2px', color: 'var(--avp-text)' }}>{p.titulo}</p>
+ <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0, lineHeight: 1.5 }}>{p.desc}</p>
  </div>
- </label>
+ </div>
  ))}
  </div>
  </div>
 
- {/* Dados da Contratante */}
+ {/* Templates */}
  <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
- <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 6 }}><Building2 size={13} style={{ opacity: 0.6, flexShrink: 0 }} />Dados da CONTRATANTE (pré-configurados no contrato)</p>
- <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
- <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
- <div>
- <label style={lbl}>Razão Social *</label>
- <input style={inp} value={contratoContratanteNome} onChange={e => setContratoContratanteNome(e.target.value)} placeholder="Ex: AUTO VALE CLUBE DE BENEFÍCIOS" />
+ <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+ <p style={{ fontWeight: 700, fontSize: 13, margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}><FileText size={13} style={{ opacity: 0.6 }} />Templates de contrato</p>
+ <a href="/admin/contratos/templates" style={{ fontSize: 12, color: '#818cf8', textDecoration: 'none', fontWeight: 600 }}>Gerenciar templates →</a>
  </div>
- <div>
- <label style={lbl}>CNPJ *</label>
- <input style={inp} value={contratoContratanteCnpj} onChange={e => setContratoContratanteCnpj(e.target.value)} placeholder="Ex: 45.036.442/0001-26" />
- </div>
- </div>
- <div>
- <label style={lbl}>Endereço completo da sede *</label>
- <input style={inp} value={contratoContratanteEndereco} onChange={e => setContratoContratanteEndereco(e.target.value)} placeholder="Ex: Av. Coronel Antônio Honorato Viana, 532, Gercino Coelho, Petrolina/PE, CEP 56.308-000" />
- </div>
- <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
- <div>
- <label style={lbl}>Representante legal</label>
- <input style={inp} value={contratoRepresentanteNome} onChange={e => setContratoRepresentanteNome(e.target.value)} placeholder="Ex: João da Silva" />
- </div>
- <div>
- <label style={lbl}>Cargo</label>
- <input style={inp} value={contratoRepresentanteCargo} onChange={e => setContratoRepresentanteCargo(e.target.value)} placeholder="Ex: Presidente" />
- </div>
- <div>
- <label style={lbl}>Foro (comarca)</label>
- <input style={inp} value={contratoForo} onChange={e => setContratoForo(e.target.value)} placeholder="Ex: Petrolina/PE" />
- </div>
- </div>
- </div>
- </div>
-
- {/* Logo do contrato (cabeçalho verde) */}
- <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
- <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>Logo do contrato (cabecalho)</p>
- <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.6 }}>
- Aparece no canto superior direito do cabecalho verde do contrato PDF. Use uma versao branca ou clara do logo da associacao (PNG com fundo transparente). Se nao subir nenhuma, o cabecalho fica so com o texto.
+ <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0, lineHeight: 1.5 }}>
+ Crie templates reutilizaveis com HTML e variaveis. Ao criar um contrato, selecione um template e o corpo e carregado automaticamente, podendo ser editado antes do envio.
  </p>
- <input ref={contratoLogoRef} type="file" accept="image/*" style={{ display: 'none' }}
- onChange={e => { const f = e.target.files?.[0]; if (f) { uploadImagem('contratoLogoUrl', f); e.target.value = '' } }}
- />
- <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
- {contratoLogoUrl ? (
- <div style={{ background: '#02a153', borderRadius: 8, padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 140 }}>
- <img src={contratoLogoUrl} alt="Logo contrato" style={{ maxHeight: 44, maxWidth: 180, objectFit: 'contain' }} />
- </div>
- ) : (
- <div style={{ background: '#02a153', borderRadius: 8, padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 140, minHeight: 64 }}>
- <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>Nenhum logo</span>
- </div>
- )}
- <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
- <button
- onClick={() => contratoLogoRef.current?.click()}
- disabled={uploading === 'contratoLogoUrl'}
- style={{ background: uploading === 'contratoLogoUrl' ? 'var(--avp-border)' : contratoLogoUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
- {uploading === 'contratoLogoUrl' ? 'Enviando...' : contratoLogoUrl ? 'Trocar logo' : 'Subir logo (PNG branco)'}
- </button>
- {contratoLogoUrl && (
- <button
- onClick={() => { if (confirm('Remover logo do contrato?')) setContratoLogoUrl('') }}
- style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '9px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
- Remover
- </button>
- )}
- </div>
- </div>
  </div>
 
- {/* Assinatura do representante da CONTRATANTE */}
+ {/* Assinatura do representante */}
  <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
- <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>Assinatura do Representante (CONTRATANTE)</p>
+ <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 6 }}><FileText size={13} style={{ opacity: 0.6, flexShrink: 0 }} />Assinatura do Representante (pre-assina automaticamente)</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.6 }}>
- Imagem PNG da assinatura do presidente ou responsavel legal da associacao. Aparece no bloco de assinaturas do contrato PDF, ao lado da assinatura do consultor.
- Fundo transparente (PNG) fica melhor.
+ Imagem PNG da assinatura do responsavel legal da sua empresa. Quando configurada, todo contrato criado ja sai pre-assinado pelo lado da contratante. Fundo transparente fica melhor.
  </p>
  <input ref={contratoAssinaturaRef} type="file" accept="image/*" style={{ display: 'none' }}
  onChange={e => { const f = e.target.files?.[0]; if (f) { uploadImagem('contratoAssinaturaUrl', f); e.target.value = '' } }}
@@ -1383,18 +1294,18 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
  {contratoAssinaturaUrl && (
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 140 }}>
- <img src={contratoAssinaturaUrl} alt="Assinatura contratante" style={{ maxHeight: 60, maxWidth: 180, objectFit: 'contain' }} />
+ <img src={contratoAssinaturaUrl} alt="Assinatura representante" style={{ maxHeight: 60, maxWidth: 180, objectFit: 'contain' }} />
  </div>
  )}
  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
- <button
+ <button type="button"
  onClick={() => contratoAssinaturaRef.current?.click()}
  disabled={uploading === 'contratoAssinaturaUrl'}
  style={{ background: uploading === 'contratoAssinaturaUrl' ? 'var(--avp-border)' : contratoAssinaturaUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
  {uploading === 'contratoAssinaturaUrl' ? 'Enviando...' : contratoAssinaturaUrl ? 'Trocar assinatura' : 'Subir assinatura (PNG)'}
  </button>
  {contratoAssinaturaUrl && (
- <button
+ <button type="button"
  onClick={() => { if (confirm('Remover assinatura do representante?')) setContratoAssinaturaUrl('') }}
  style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '9px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
  Remover
@@ -1402,72 +1313,6 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  )}
  </div>
  </div>
- </div>
-
- {/* Texto do contrato (PDF body) */}
- <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
- <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 6 }}><FileText size={13} style={{ opacity: 0.6, flexShrink: 0 }} />Corpo do contrato</p>
- <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px', lineHeight: 1.6 }}>
- Cole aqui o texto completo do contrato ou importe de um arquivo <strong>.txt</strong>. Se deixar em branco, o sistema usa o texto padrão.<br />
- <strong style={{ color: 'var(--avp-text)' }}>Formato:</strong> use <code style={{ background: 'var(--avp-card)', padding: '1px 5px', borderRadius: 4, fontSize: 11 }}>## 1. TÍTULO DA SEÇÃO</code> para seções
- e <code style={{ background: 'var(--avp-card)', padding: '1px 5px', borderRadius: 4, fontSize: 11 }}>1.1. Texto da cláusula</code> para subcláusulas.
- </p>
- <input
- ref={contratoArquivoRef}
- type="file"
- accept=".txt,text/plain"
- style={{ display: 'none' }}
- onChange={e => {
- const file = e.target.files?.[0]
- if (!file) return
- const reader = new FileReader()
- reader.onload = ev => {
- const texto = ev.target?.result as string
- if (texto) setContratoCorpo(texto)
- }
- reader.readAsText(file, 'UTF-8')
- e.target.value = ''
- }}
- />
- <div style={{ marginBottom: 8 }}>
- <button
- type="button"
- onClick={() => contratoArquivoRef.current?.click()}
- style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '8px 16px', color: 'var(--avp-text-dim)', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
- Importar arquivo .txt
- </button>
- <span style={{ marginLeft: 10, fontSize: 11, color: 'var(--avp-text-dim)' }}>O conteúdo do arquivo substitui o texto abaixo</span>
- </div>
- <textarea
- value={contratoCorpo}
- onChange={e => setContratoCorpo(e.target.value)}
- rows={18}
- placeholder={`## 1. DO OBJETO\n1.1. O presente instrumento tem por objeto...\n\n## 2. DAS OBRIGAÇÕES\n2.1. A CONTRATANTE deverá...\n2.2. O CONTRATADO se compromete a...`}
- style={{ ...inp, fontFamily: 'monospace', fontSize: 13, lineHeight: 1.6, resize: 'vertical', minHeight: 260 }}
- />
- {contratoCorpo?.trim() ? (
- <div style={{ marginTop: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
- <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 700 }}>Contrato personalizado ativo</span>
- <button
- onClick={() => { if (confirm('Apagar o texto personalizado e voltar ao padrão do sistema?')) setContratoCorpo('') }}
- style={{ background: 'none', border: '1px solid var(--avp-danger)', color: 'var(--avp-danger)', borderRadius: 6, padding: '3px 10px', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
- Remover e usar padrão
- </button>
- </div>
- ) : (
- <p style={{ marginTop: 8, fontSize: 12, color: 'var(--avp-text-dim)' }}>ℹ Usando texto padrão do sistema.</p>
- )}
- </div>
-
- {/* Link direto */}
- <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
- <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 6 }}><Link2 size={13} style={{ opacity: 0.6, flexShrink: 0 }} />Link direto do contrato</p>
- <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 10px' }}>
- Qualquer consultor pode acessar este link para assinar o contrato digitalmente.
- </p>
- <code style={{ display: 'block', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: 'var(--avp-text)', wordBreak: 'break-all' }}>
- {typeof window !== 'undefined' ? window.location.origin : ''}/contrato
- </code>
  </div>
  </div>
 

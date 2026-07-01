@@ -56,13 +56,14 @@ export async function POST(req: NextRequest) {
     contrato_base_id,
     tipo,
     assinatura_avp_url,
+    corpo_html_avulso, // corpo escrito diretamente pelo admin (sem template)
   } = await req.json()
 
   if (!titulo || !assinantes || assinantes.length === 0) {
     return NextResponse.json({ error: 'titulo e assinantes obrigatorios' }, { status: 400 })
   }
 
-  let corpoRenderizado = ''
+  let corpoRenderizado = corpo_html_avulso ?? ''
   if (template_id) {
     const { data: template } = await adminClient
       .from('contrato_templates')
@@ -121,10 +122,10 @@ export async function POST(req: NextRequest) {
         contrato_id: contrato.id,
         ordem: i + 1,
         papel: (a.papel ?? 'destinatario') as 'destinatario' | 'terceiro',
-        nome: a.nome,
-        email: a.email ?? null,
+        nome: a.nome || null,
+        email: a.email || null,
         whatsapp: a.whatsapp ? a.whatsapp.replace(/\D/g, '') : null,
-        cpf: a.cpf ?? null,
+        cpf: a.cpf || null,
         token_acesso: token,
         token_expira_em: expira.toISOString(),
         status: 'pendente' as const,
@@ -136,9 +137,15 @@ export async function POST(req: NextRequest) {
       assinantesInseridos.push(assinante)
 
       const link = `${appUrl}/contrato/assinar/${token}`
+      const saudacao = assinante.nome ? `Ola, ${assinante.nome}!` : 'Ola!'
+      const instrucao = a.destinatario_preenche
+        ? `Voce tem um contrato para assinar:\n*${titulo}*\n\nAo abrir o link, voce vai preencher seus dados e assinar digitalmente:`
+        : `Voce tem um contrato pendente de assinatura:\n*${titulo}*\n\nClique no link para ler e assinar digitalmente:`
+
       if (assinante.whatsapp && instancia) {
-        const msg = `Ola, ${assinante.nome}!\n\nVoce tem um contrato pendente de assinatura:\n*${titulo}*\n\nClique no link abaixo para ler e assinar digitalmente:\n${link}\n\nO link expira em 30 dias.`
-        await enviarWhatsApp(assinante.whatsapp, msg, instancia).catch(() => {})
+        await enviarWhatsApp(assinante.whatsapp,
+          `${saudacao}\n\n${instrucao}\n${link}\n\nO link expira em 30 dias.`,
+          instancia).catch(() => {})
       }
     }
   }

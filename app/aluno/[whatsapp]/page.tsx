@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
@@ -189,6 +191,12 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  const moduloSelecionadoId = searchParams?.modulo
  const moduloAtivo = moduloSelecionadoId ? modulos.find(m => m.modulo_id === moduloSelecionadoId) ?? null : null
 
+ // Verifica se o primeiro módulo foi concluído (libera indicação)
+ const primeiroModulo = modulosOrdenados[0] ?? null
+ const modulo1Concluido = primeiroModulo
+ ? primeiroModulo.aulas.every((a: any) => a.status === 'concluida')
+ : true
+
  const { data: pontosRows } = await adminClient.from('aluno_pontos').select('quantidade').eq('aluno_id', aluno.id)
  const totalPontos = (pontosRows ?? []).reduce((s: number, r: { quantidade: number }) => s + r.quantidade, 0)
 
@@ -355,7 +363,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  />
 
  {/* ── LINK PARCEIRO ── */}
- <LinkParceiroCard alunoId={aluno.id} linkAtual={aluno.link_externo ?? null} />
+ <LinkParceiroCard alunoId={aluno.id} linkAtual={aluno.link_externo ?? null} whatsapp={aluno.whatsapp} baseUrl={baseUrl} />
 
  {/* ── AULAS AO VIVO ── */}
  {(aulasVivo ?? []).length> 0 && (
@@ -481,12 +489,13 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  </a>
  )}
 
- {/* ── INDICAÇÃO — só aparece após o aluno ser formado ── */}
- {!moduloAtivo && aluno.status === 'concluido' && (
+ {/* ── INDICAÇÃO ── */}
+ {!moduloAtivo && (
  <IndicacaoCard
  link={`${baseUrl}/c/${aluno.whatsapp}`}
  totalIndicados={totalIndicadosReal ?? 0}
  ultimosIndicados={ultimosIndicados}
+ bloqueado={!modulo1Concluido}
  />
  )}
 

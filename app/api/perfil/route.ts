@@ -71,11 +71,21 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ ok: true, indicador: { nome: alunoInd.nome, whatsapp: wpp } })
   }
 
+  const cpfLimpo = cpf !== undefined ? (cpf?.replace(/\D/g, '') || null) : undefined
+
   const { error } = await adminClient.from('alunos')
-    .update({ nome: nome ?? aluno.nome, bio: bio ?? null, ...(link_externo !== undefined ? { link_externo } : {}), ...(cpf !== undefined ? { cpf: cpf?.replace(/\D/g, '') || null } : {}) })
+    .update({ nome: nome ?? aluno.nome, bio: bio ?? null, ...(link_externo !== undefined ? { link_externo } : {}), ...(cpfLimpo !== undefined ? { cpf: cpfLimpo } : {}) })
     .eq('id', aluno_id)
 
   if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
+
+  // Sincroniza CPF para gestor se o aluno tiver um registro PRO sem CPF
+  if (cpfLimpo) {
+    await (adminClient.from('gestores') as any)
+      .update({ cpf: cpfLimpo })
+      .eq('user_id', user.id)
+      .is('cpf', null)
+  }
 
   return NextResponse.json({ ok: true })
 }

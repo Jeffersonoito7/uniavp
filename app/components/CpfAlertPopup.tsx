@@ -32,6 +32,12 @@ export default function CpfAlertPopup({ alunoId, tipo }: Props) {
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
   const [concluido, setConcluido] = useState(false)
+  const [dispensado, setDispensado] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const em = localStorage.getItem(`cpf_dispensado_${tipo}`)
+    if (!em) return false
+    return em >= new Date().toISOString().slice(0, 10)
+  })
 
   const cpfLimpo = cpf.replace(/\D/g, '')
   const cpfValido = validarCPF(cpf)
@@ -61,15 +67,19 @@ export default function CpfAlertPopup({ alunoId, tipo }: Props) {
         return
       }
       setConcluido(true)
-      // Recarrega a pagina para refletir o CPF salvo
-      setTimeout(() => window.location.reload(), 800)
+      setTimeout(() => window.location.reload(), 1500)
     } catch {
       setErro('Erro de conexao. Tente novamente.')
       setSalvando(false)
     }
   }
 
-  if (concluido) return null
+  function dispensar() {
+    localStorage.setItem(`cpf_dispensado_${tipo}`, new Date().toISOString().slice(0, 10))
+    setDispensado(true)
+  }
+
+  if (concluido || dispensado) return null
 
   return (
     <div style={{
@@ -163,6 +173,23 @@ export default function CpfAlertPopup({ alunoId, tipo }: Props) {
             }}
           >
             {salvando ? 'Salvando...' : concluido ? 'Salvo!' : 'Salvar CPF e continuar'}
+          </button>
+
+          <button
+            type="button"
+            onClick={dispensar}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'rgba(255,255,255,0.3)',
+              fontSize: 13,
+              cursor: 'pointer',
+              padding: '8px 0 0',
+              textAlign: 'center' as const,
+              width: '100%',
+            }}
+          >
+            Preencher depois
           </button>
         </form>
       </div>

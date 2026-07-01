@@ -19,10 +19,12 @@ export default function IndicacaoCard({
   link,
   totalIndicados,
   ultimosIndicados = [],
+  bloqueado = false,
 }: {
   link: string
   totalIndicados: number
   ultimosIndicados?: { nome: string; criado_em: string }[]
+  bloqueado?: boolean
 }) {
   const [copiado, setCopiado] = useState(false)
   const limiteBatido = totalIndicados >= LIMITE
@@ -37,6 +39,52 @@ export default function IndicacaoCard({
   function compartilharWpp() {
     const msg = encodeURIComponent(`Conheça a plataforma onde me formo como consultor!\n\n${link}\n\nCadastro gratuito.`)
     window.open(`https://wa.me/?text=${msg}`, '_blank')
+  }
+
+  if (bloqueado) {
+    return (
+      <div style={{
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: 16,
+        padding: '20px 24px',
+        marginBottom: 28,
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Conteúdo desfocado por baixo */}
+        <div style={{ filter: 'blur(3px)', opacity: 0.3, pointerEvents: 'none', userSelect: 'none' }}>
+          <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Indique um amigo</p>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 16 }}>Compartilhe seu link e traga outros consultores gratuitamente</p>
+          <div style={{ background: 'var(--avp-black)', borderRadius: 10, padding: '10px 14px', marginBottom: 12, border: '1px solid var(--avp-border)' }}>
+            <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#22c55e' }}>{link}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ flex: 1, height: 36, background: 'var(--avp-green)', borderRadius: 8 }} />
+            <div style={{ width: 90, height: 36, background: 'rgba(37,211,102,0.1)', borderRadius: 8 }} />
+          </div>
+        </div>
+        {/* Overlay de bloqueio */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(10,10,15,0.55)',
+          backdropFilter: 'blur(2px)',
+          borderRadius: 16,
+          padding: '20px 24px',
+          textAlign: 'center',
+          gap: 8,
+        }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <p style={{ fontWeight: 800, fontSize: 15, color: '#fff', margin: 0 }}>Conclua o 1° módulo para indicar</p>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.5 }}>
+            Ao concluir o primeiro módulo, seu link de indicação é liberado.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (

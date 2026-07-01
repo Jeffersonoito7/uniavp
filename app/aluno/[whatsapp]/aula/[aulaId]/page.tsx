@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import Link from 'next/link'
@@ -122,11 +123,16 @@ export default async function AulaPage({ params }: { params: { whatsapp: string;
  ? regras['pro_bloquear_video'] !== 'false'
  : regras['free_bloquear_video'] !== 'false'
 
- // Especialista bypassa bloqueio de video e quiz obrigatorio
+ // Especialista bypassa tudo. Aula-nível tem prioridade sobre global:
+ // quiz_tipo definido na aula vence o global; bloquear_avancar=true sempre bloqueia,
+ // bloquear_avancar=false/null só bloqueia se o global estiver ativo.
  const quizTipoEfetivo = isEspecialista
  ? ((aula.quiz_tipo ?? 'indicativo') as 'obrigatorio' | 'indicativo' | 'sim_nao')
+ : aula.quiz_tipo === 'indicativo' || aula.quiz_tipo === 'sim_nao'
+ ? (aula.quiz_tipo as 'obrigatorio' | 'indicativo' | 'sim_nao')
  : ((quizObrigatorioGlobal ? 'obrigatorio' : (aula.quiz_tipo ?? 'indicativo')) as 'obrigatorio' | 'indicativo' | 'sim_nao')
- const bloquearAvancarEfetivo = isEspecialista ? false : (bloquearVideoGlobal || !!aula.bloquear_avancar)
+ // bloquear_avancar por aula tem prioridade; global só aplica se aula não tiver valor definido
+ const bloquearAvancarEfetivo = isEspecialista ? false : aula.bloquear_avancar !== null ? !!aula.bloquear_avancar : bloquearVideoGlobal
 
  // Quiz
  const { data: questoesRaw } = await adminClient.from('questoes')

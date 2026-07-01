@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
-import { atualizarStatusContrato } from '@/lib/contrato-digital'
+import { atualizarStatusContrato, calcularHash, renderizarTemplate } from '@/lib/contrato-digital'
 import { getIp } from '@/lib/audit'
 import { rateLimit, LIMITS } from '@/lib/rate-limit'
+import { enviarCopiaContrato } from '@/lib/contrato-email'
+import { getSiteConfig } from '@/lib/site-config'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,7 +13,7 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
 
   const { data: assinante } = await adminClient
     .from('contrato_assinantes')
-    .select('id, nome, email, papel, status, token_expira_em, contrato_id')
+    .select('id, nome, email, cpf, papel, status, token_expira_em, contrato_id')
     .eq('token_acesso', params.token)
     .maybeSingle()
 
@@ -23,7 +25,7 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
 
   const { data: contrato } = await adminClient
     .from('contratos_digitais')
-    .select('id, titulo, numero_registro, corpo_renderizado, status, assinatura_avp_url, assinado_avp_em')
+    .select('id, titulo, numero_registro, corpo_renderizado, status, assinatura_avp_url, assinado_avp_em, tenant_id')
     .eq('id', assinante.contrato_id)
     .maybeSingle()
 
@@ -34,7 +36,56 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
     await adminClient.from('contrato_assinantes').update({ status: 'visualizado' }).eq('id', assinante.id)
   }
 
-  return NextResponse.json({ assinante, contrato })
+  // Indica se o destinatario ainda precisa preencher os proprios dados
+  const precisaPreencher = !assinante.nome
+
+  return NextResponse.json({ assinante, contrato, precisaPreencher })
+}
+
+// PATCH — destinatario salva os proprios dados e o contrato e re-renderizado com eles
+export async function PATCH(req: NextRequest, { params }: { params: { token: string } }) {
+  const adminClient = createServiceRoleClient()
+
+  const { data: assinante } = await adminClient
+    .from('contrato_assinantes')
+    .select('id, nome, status, token_expira_em, contrato_id')
+    .eq('token_acesso', params.token)
+    .maybeSingle()
+
+  if (!assinante) return NextResponse.json({ error: 'Link inválido.' }, { status: 404 })
+  if (assinante.nome) return NextResponse.json({ error: 'Dados já preenchidos.' }, { status: 409 })
+  if (assinante.token_expira_em && new Date(assinante.token_expira_em) < new Date()) {
+    return NextResponse.json({ error: 'Link expirado.' }, { status: 410 })
+  }
+
+  const { nome, cpf, email } = await req.json()
+  if (!nome?.trim()) return NextResponse.json({ error: 'Nome obrigatorio.' }, { status: 400 })
+
+  // Salva dados do destinatario
+  await adminClient.from('contrato_assinantes').update({
+    nome: nome.trim(),
+    cpf: cpf?.trim() || null,
+    email: email?.trim() || null,
+  }).eq('id', assinante.id)
+
+  // Re-renderiza o corpo do contrato substituindo as variaveis com os dados reais
+  const { data: contrato } = await adminClient
+    .from('contratos_digitais')
+    .select('id, corpo_renderizado, titulo, numero_registro')
+    .eq('id', assinante.contrato_id)
+    .maybeSingle()
+
+  if (contrato?.corpo_renderizado) {
+    const corpoAtualizado = renderizarTemplate(contrato.corpo_renderizado, {
+      nome: nome.trim(),
+      cpf: cpf?.trim() || '',
+      email: email?.trim() || '',
+      data: new Date().toLocaleDateString('pt-BR'),
+    })
+    await adminClient.from('contratos_digitais').update({ corpo_renderizado: corpoAtualizado }).eq('id', assinante.contrato_id)
+  }
+
+  return NextResponse.json({ ok: true })
 }
 
 export async function POST(req: NextRequest, { params }: { params: { token: string } }) {
@@ -46,11 +97,12 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
 
   const { data: assinante } = await adminClient
     .from('contrato_assinantes')
-    .select('id, nome, papel, status, token_expira_em, contrato_id')
+    .select('id, nome, email, papel, status, token_expira_em, contrato_id')
     .eq('token_acesso', params.token)
     .maybeSingle()
 
   if (!assinante) return NextResponse.json({ error: 'Link inválido.' }, { status: 404 })
+  if (!assinante.nome) return NextResponse.json({ error: 'Preencha seus dados antes de assinar.' }, { status: 400 })
   if (assinante.token_expira_em && new Date(assinante.token_expira_em) < new Date()) {
     return NextResponse.json({ error: 'Link expirado.' }, { status: 410 })
   }
@@ -74,7 +126,7 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
     const { data: pubUrl } = adminClient.storage.from('documentos').getPublicUrl(path)
     urlFinal = pubUrl.publicUrl
   } catch (e) {
-    console.error('[assinar-contrato] falha no upload da assinatura:', e)
+    console.error('[assinar-contrato] falha no upload:', e)
     return NextResponse.json({ error: 'Falha ao salvar assinatura. Tente novamente.' }, { status: 500 })
   }
 
@@ -95,6 +147,38 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
   }
 
   await atualizarStatusContrato(adminClient, assinante.contrato_id)
+
+  // Verifica se todos assinaram para enviar copias por email
+  const { data: contrato } = await adminClient
+    .from('contratos_digitais')
+    .select('titulo, numero_registro, corpo_renderizado, status, tenant_id')
+    .eq('id', assinante.contrato_id)
+    .maybeSingle()
+
+  if (contrato?.status === 'concluido') {
+    const { data: todos } = await adminClient
+      .from('contrato_assinantes')
+      .select('nome, email')
+      .eq('contrato_id', assinante.contrato_id)
+
+    const host = req.headers.get('host') || ''
+    const siteConfig = await getSiteConfig(host)
+    const appUrl = siteConfig.dominioCustomizado ? `https://${siteConfig.dominioCustomizado}` : `https://${host}`
+
+    for (const dest of todos ?? []) {
+      if (dest.email && dest.nome) {
+        await enviarCopiaContrato({
+          email: dest.email,
+          nomeDestinatario: dest.nome,
+          tituloContrato: contrato.titulo,
+          numeroRegistro: contrato.numero_registro,
+          corpoHtml: contrato.corpo_renderizado ?? '',
+          appUrl,
+          contratoId: assinante.contrato_id,
+        })
+      }
+    }
+  }
 
   return NextResponse.json({ ok: true, mensagem: 'Assinatura registrada com sucesso!' })
 }

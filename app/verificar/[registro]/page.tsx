@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
 import { getTenantId } from '@/lib/tenant'

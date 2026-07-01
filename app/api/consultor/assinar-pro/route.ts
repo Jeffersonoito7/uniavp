@@ -14,8 +14,8 @@ async function getAluno() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
   const adminClient = createServiceRoleClient()
-  const { data: aluno } = await adminClient.from('alunos')
-    .select('id, nome, whatsapp, email')
+  const { data: aluno } = await (adminClient.from('alunos') as any)
+    .select('id, nome, whatsapp, email, cpf')
     .eq('user_id', user.id)
     .maybeSingle()
   return aluno ? { aluno, user, adminClient } : null
@@ -118,11 +118,18 @@ export async function POST(req: Request) {
 
   if (gestorPendente) {
     gestorId = gestorPendente.id
-    // Cancela pagamento pendente anterior
-    await adminClient.from('gestor_pagamentos')
-      .update({ status: 'cancelado' })
-      .eq('gestor_id', gestorId)
-      .eq('status', 'pendente')
+    // Cancela pagamento pendente anterior e aproveita para sincronizar CPF do aluno
+    await Promise.all([
+      adminClient.from('gestor_pagamentos')
+        .update({ status: 'cancelado' })
+        .eq('gestor_id', gestorId)
+        .eq('status', 'pendente'),
+      (aluno as any).cpf
+        ? (adminClient.from('gestores') as any)
+            .update({ cpf: (aluno as any).cpf })
+            .eq('id', gestorId)
+        : Promise.resolve(),
+    ])
   } else {
     let indicadoPorGestorId: string | null = null
     if (alunoCtx?.gestor_whatsapp) {
@@ -131,12 +138,13 @@ export async function POST(req: Request) {
       indicadoPorGestorId = gestorOrigem?.id ?? null
     }
 
-    const { data: novoGestor } = await adminClient.from('gestores')
+    const { data: novoGestor } = await (adminClient.from('gestores') as any)
       .insert({
         user_id: user.id,
         nome: aluno.nome,
         email: aluno.email,
         whatsapp: aluno.whatsapp,
+        cpf: (aluno as any).cpf ?? null,
         ativo: false,
         status_assinatura: 'pendente_upgrade',
         indicado_por_gestor_id: indicadoPorGestorId,
