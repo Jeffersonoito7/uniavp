@@ -1,7 +1,8 @@
 import { Resend } from 'resend'
 import { EMAIL_FROM } from '@/lib/constants'
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+const resendKey = (process.env.RESEND_API_KEY ?? '').split(/[\r\n]+/).map(l => l.trim()).filter(Boolean).pop() ?? ''
+const resend = resendKey ? new Resend(resendKey) : null
 
 export async function enviarCopiaContrato({
   email,
