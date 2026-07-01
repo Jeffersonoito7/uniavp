@@ -495,7 +495,7 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  link={`${baseUrl}/c/${aluno.whatsapp}`}
  totalIndicados={totalIndicadosReal ?? 0}
  ultimosIndicados={ultimosIndicados}
- bloqueado={!modulo1Concluido}
+ bloqueado={!isAdminPreview && !modulo1Concluido}
  />
  )}
 
