@@ -11,6 +11,7 @@ import IndicadorPopup from '@/app/components/IndicadorPopup'
 import CpfAlertPopup from '@/app/components/CpfAlertPopup'
 import LinkParceiroPopup from '@/app/components/LinkParceiroPopup'
 import InactivityReload from '@/app/components/InactivityReload'
+import { verificarContratoObrigatorio } from '@/lib/contrato-obrigatorio'
 
 export default async function GestorPage({ searchParams }: { searchParams?: { preview?: string; wpp?: string } }) {
  const supabase = await createClient()
@@ -54,6 +55,19 @@ export default async function GestorPage({ searchParams }: { searchParams?: { pr
  const trialAtivo = gestor.status_assinatura === 'trial' && gestor.trial_expira_em && new Date(gestor.trial_expira_em)> agora
  const planoAtivo = gestor.status_assinatura === 'ativo' && (!gestor.plano_vencimento || new Date(gestor.plano_vencimento)> agora)
  if (!isAdminPreview && !trialAtivo && !planoAtivo) redirect('/gestor/assinar')
+
+ // Verifica contrato digital obrigatorio
+ if (!isAdminPreview) {
+   const tokenContrato = await verificarContratoObrigatorio({
+     id: gestor.id,
+     nome: gestor.nome,
+     whatsapp: gestor.whatsapp,
+     email: gestor.email,
+     cpf: (gestor as any).cpf,
+     tenant_id: gestor.tenant_id,
+   })
+   if (tokenContrato) redirect(`/contrato/assinar/${tokenContrato}`)
+ }
 
  const gestorFoto: string | null = gestor.foto_perfil ?? null
 

@@ -16,6 +16,7 @@ import InactivityReload from '@/app/components/InactivityReload'
 import ProTeaser from '@/app/components/ProTeaser'
 import SetupInicial from '@/app/components/SetupInicial'
 import CpfAlertPopup from '@/app/components/CpfAlertPopup'
+import { verificarContratoObrigatorio } from '@/lib/contrato-obrigatorio'
 import AlunoHeader from './AlunoHeader'
 import AlunoStats from './AlunoStats'
 import ModulosGrid from './ModulosGrid'
@@ -109,6 +110,19 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  aluno_id: aluno.id,
  })
  redirect(`/contrato?${qs.toString()}`)
+ }
+
+ // Verifica contrato digital obrigatorio (novo sistema, independente do antigo)
+ if (!isAdminPreview) {
+   const tokenContrato = await verificarContratoObrigatorio({
+     id: aluno.id,
+     nome: aluno.nome,
+     whatsapp: aluno.whatsapp,
+     email: aluno.email,
+     cpf: aluno.cpf,
+     tenant_id: aluno.tenant_id,
+   })
+   if (tokenContrato) redirect(`/contrato/assinar/${tokenContrato}`)
  }
 
  // Resolve link parceiro: próprio aluno → PRO do aluno → FREE que indicou → global admin

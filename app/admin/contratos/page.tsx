@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import AdminLayout from '../AdminLayout'
 import Link from 'next/link'
+import ContratoObrigatorioConfig from './ContratoObrigatorioConfig'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,6 +36,14 @@ export default async function ContratosPage() {
   if (tid) tq = tq.eq('tenant_id', tid)
   const { data: templates, count: totalTemplates } = await tq
 
+  // Config de contrato obrigatorio
+  let cfgQ = adminClient.from('configuracoes').select('valor').eq('chave', 'contrato_digital_obrigatorio_id')
+  if (tid) cfgQ = cfgQ.eq('tenant_id', tid)
+  const { data: cfgObrigatorio } = await cfgQ.maybeSingle()
+  const templateObrigatorioId = cfgObrigatorio?.valor
+    ? (typeof cfgObrigatorio.valor === 'string' ? cfgObrigatorio.valor.replace(/"/g, '').trim() : String(cfgObrigatorio.valor).trim())
+    : null
+
   const statusCor: Record<string, string> = {
     rascunho: '#6b7280',
     enviado: '#f59e0b',
@@ -60,6 +69,12 @@ export default async function ContratosPage() {
           Gerencie contratos, aditivos e templates com assinatura digital.
         </p>
       </div>
+
+      {/* Contrato obrigatorio */}
+      <ContratoObrigatorioConfig
+        templates={(templates ?? []).filter((t: any) => t.ativo).map((t: any) => ({ id: t.id, nome: t.nome }))}
+        templateAtualId={templateObrigatorioId}
+      />
 
       {/* Acoes rapidas */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 28, flexWrap: 'wrap' }}>
