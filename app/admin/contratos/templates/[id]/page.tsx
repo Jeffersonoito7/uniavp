@@ -8,6 +8,61 @@ import DOMPurify from 'isomorphic-dompurify'
 const inputStyle: React.CSSProperties = { background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', color: 'var(--avp-text)', fontSize: 14, outline: 'none', width: '100%' }
 const labelStyle: React.CSSProperties = { display: 'block', color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 6 }
 
+const ESTRUTURA_PADRAO = `<div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; color: #111;">
+
+  <h2 style="text-align:center; font-size:18px; text-transform:uppercase; margin-bottom:4px;">
+    CONTRATO DE PRESTAÇÃO DE SERVIÇOS
+  </h2>
+  <p style="text-align:center; font-size:13px; color:#555; margin-bottom:32px;">
+    Versão {{data}}
+  </p>
+
+  <h3 style="font-size:14px; text-transform:uppercase; border-bottom:2px solid #111; padding-bottom:6px; margin-bottom:14px;">
+    QUALIFICAÇÃO DAS PARTES
+  </h3>
+
+  <p style="margin-bottom:6px;"><strong>CONTRATANTE:</strong></p>
+  <p style="margin-bottom:4px;"><strong>Razão Social:</strong> AUTOVALE PREVENCOES LTDA</p>
+  <p style="margin-bottom:4px;"><strong>CNPJ:</strong> XX.XXX.XXX/XXXX-XX</p>
+  <p style="margin-bottom:4px;"><strong>Endereço:</strong> Rua Exemplo, 123 — Bairro, Cidade — UF, CEP 00000-000</p>
+  <p style="margin-bottom:20px;"><strong>Representante Legal:</strong> Nome do Responsável</p>
+
+  <p style="margin-bottom:6px;"><strong>CONTRATADO(A):</strong></p>
+  <p style="margin-bottom:4px;"><strong>Nome:</strong> {{nome}}</p>
+  <p style="margin-bottom:4px;"><strong>CPF:</strong> {{cpf}}</p>
+  <p style="margin-bottom:4px;"><strong>WhatsApp:</strong> {{whatsapp}}</p>
+  <p style="margin-bottom:4px;"><strong>E-mail:</strong> {{email}}</p>
+  <p style="margin-bottom:20px;"><strong>Endereço:</strong> {{endereco}}</p>
+
+  <h3 style="font-size:14px; text-transform:uppercase; border-bottom:2px solid #111; padding-bottom:6px; margin-bottom:14px;">
+    CLÁUSULAS
+  </h3>
+
+  <p><strong>CLÁUSULA 1ª — DO OBJETO</strong></p>
+  <p style="margin-bottom:16px;">
+    O presente contrato tem por objeto a prestação de serviços de [descreva o serviço], pelo CONTRATADO(A) em favor da CONTRATANTE, nas condições aqui estabelecidas.
+  </p>
+
+  <p><strong>CLÁUSULA 2ª — DAS OBRIGAÇÕES DO CONTRATADO(A)</strong></p>
+  <p style="margin-bottom:16px;">
+    O CONTRATADO(A) se compromete a: [liste as obrigações].
+  </p>
+
+  <p><strong>CLÁUSULA 3ª — DA VIGÊNCIA</strong></p>
+  <p style="margin-bottom:16px;">
+    O presente contrato entra em vigor na data de sua assinatura, por prazo [determinado/indeterminado].
+  </p>
+
+  <p><strong>CLÁUSULA 4ª — DO FORO</strong></p>
+  <p style="margin-bottom:32px;">
+    As partes elegem o foro da comarca de [Cidade — UF] para dirimir quaisquer dúvidas oriundas deste contrato.
+  </p>
+
+  <p style="margin-bottom:4px;">Por estarem assim justas e acordadas, as partes assinam o presente instrumento eletronicamente.</p>
+  <p><strong>Data:</strong> {{data}}</p>
+
+</div>`
+
 export default function EditarTemplatePage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
@@ -115,7 +170,23 @@ export default function EditarTemplatePage() {
             <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>Use no corpo como: {'{{nome}}'}, {'{{cpf}}'}, {'{{data}}'}</p>
           </div>
           <div>
-            <label style={labelStyle}>Corpo do contrato (HTML) *</label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <label style={{ ...labelStyle, marginBottom: 0 }}>Corpo do contrato (HTML) *</label>
+              <button
+                type="button"
+                onClick={() => {
+                  if (form.corpo_html.trim() && !confirm('Isso vai substituir o corpo atual. Continuar?')) return
+                  setForm(p => ({
+                    ...p,
+                    corpo_html: ESTRUTURA_PADRAO,
+                    variaveis: 'nome, cpf, whatsapp, email, endereco, data',
+                  }))
+                }}
+                style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+              >
+                Estrutura padrao
+              </button>
+            </div>
             <textarea
               style={{ ...inputStyle, minHeight: 420, fontFamily: 'monospace', fontSize: 13, resize: 'vertical' }}
               value={form.corpo_html}
