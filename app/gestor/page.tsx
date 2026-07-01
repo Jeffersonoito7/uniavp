@@ -9,9 +9,9 @@ import { getAppUrl } from '@/lib/get-app-url'
 import GestorDashboard from './GestorDashboard'
 import IndicadorPopup from '@/app/components/IndicadorPopup'
 import CpfAlertPopup from '@/app/components/CpfAlertPopup'
-import LinkParceiroPopup from '@/app/components/LinkParceiroPopup'
 import InactivityReload from '@/app/components/InactivityReload'
 import { verificarContratoObrigatorio } from '@/lib/contrato-obrigatorio'
+// LinkParceiroPopup removido: o card no dashboard ja permite editar o link
 
 export default async function GestorPage({ searchParams }: { searchParams?: { preview?: string; wpp?: string } }) {
  const supabase = await createClient()
@@ -39,7 +39,6 @@ export default async function GestorPage({ searchParams }: { searchParams?: { pr
  if (!gestor) redirect(isAdminPreview ? '/admin/ver-pro' : '/entrar?p=pro')
 
  const gestorSemCpf = !(gestor as any).cpf
- const gestorSemLink = !(gestor as any).link_externo
 
  // Se trial sem data de expiração → auto-concede 7 dias (bug da migration DEFAULT)
  if (!isAdminPreview && gestor.status_assinatura === 'trial' && !gestor.trial_expira_em) {
@@ -165,10 +164,7 @@ export default async function GestorPage({ searchParams }: { searchParams?: { pr
  return (
  <>
  {!isAdminPreview && <InactivityReload />}
- {!isAdminPreview && gestorSemLink && (
- <LinkParceiroPopup />
- )}
- {!isAdminPreview && gestorSemCpf && !gestorSemLink && (
+ {!isAdminPreview && gestorSemCpf && (
  <CpfAlertPopup tipo="gestor" />
  )}
  {!isAdminPreview && !gestor.indicado_por_gestor_id && (
