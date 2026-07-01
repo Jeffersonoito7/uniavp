@@ -6,8 +6,8 @@ import type { Database } from './database.types';
 export async function createClient() {
   const cookieStore = await cookies();
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_URL),
+    cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },
@@ -21,10 +21,14 @@ export async function createClient() {
   );
 }
 
+function cleanEnv(val: string | undefined): string {
+  return (val ?? '').replace(/[\r\n\s]+$/, '').trim()
+}
+
 export function createServiceRoleClient() {
   return createServiceClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_URL),
+    cleanEnv(process.env.SUPABASE_SERVICE_ROLE_KEY),
     { auth: { persistSession: false, autoRefreshToken: false } }
   );
 }
