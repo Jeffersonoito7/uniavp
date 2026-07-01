@@ -22,7 +22,8 @@ export async function createClient() {
 }
 
 function cleanEnv(val: string | undefined): string {
-  return (val ?? '').replace(/[\r\n\s]+$/, '').trim()
+  const lines = (val ?? '').split(/[\r\n]+/).map(l => l.trim()).filter(Boolean)
+  return lines[lines.length - 1] ?? ''
 }
 
 export function createServiceRoleClient() {
