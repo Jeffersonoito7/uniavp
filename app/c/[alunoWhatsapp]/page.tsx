@@ -34,10 +34,10 @@ export default async function FreeCaptacaoPage({
 
  const tq = (q: any) => tenantId ? q.eq('tenant_id', tenantId) : q
 
- const { data: aluno } = await adminClient.from('alunos')
+ const alunoQuery = adminClient.from('alunos')
  .select('nome, whatsapp, link_externo')
  .eq('whatsapp', params.alunoWhatsapp)
- .maybeSingle()
+ const { data: aluno } = await (tenantId ? alunoQuery.eq('tenant_id', tenantId) : alunoQuery).maybeSingle()
 
  if (!aluno) redirect('/captacao')
 

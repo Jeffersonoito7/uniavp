@@ -73,8 +73,16 @@ export async function PUT(req: NextRequest) {
 
   const cpfLimpo = cpf !== undefined ? (cpf?.replace(/\D/g, '') || null) : undefined
 
+  const camposUpdate: Record<string, unknown> = {}
+  if (nome !== undefined) camposUpdate.nome = nome
+  if (bio !== undefined) camposUpdate.bio = bio ?? null
+  if (link_externo !== undefined) camposUpdate.link_externo = link_externo || null
+  if (cpfLimpo !== undefined) camposUpdate.cpf = cpfLimpo
+
+  if (Object.keys(camposUpdate).length === 0) return NextResponse.json({ ok: true })
+
   const { error } = await adminClient.from('alunos')
-    .update({ nome: nome ?? aluno.nome, bio: bio ?? null, ...(link_externo !== undefined ? { link_externo } : {}), ...(cpfLimpo !== undefined ? { cpf: cpfLimpo } : {}) })
+    .update(camposUpdate as any)
     .eq('id', aluno_id)
 
   if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
