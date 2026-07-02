@@ -80,12 +80,24 @@ export async function POST(req: NextRequest) {
   const whatsappLimpo = whatsapp.replace(/\D/g, '')
   const emailLimpo = email.toLowerCase().trim()
 
-  // Se informou WhatsApp do indicador mas não o nome, busca o nome automaticamente
-  if (gestor_whatsapp && !gestor_nome) {
-    const wppIndicador = gestor_whatsapp.replace(/\D/g, '')
-    const { data: gestorEncontrado } = await adminClient.from('gestores')
-      .select('nome').eq('whatsapp', wppIndicador).eq('ativo', true).maybeSingle()
-    if (gestorEncontrado) gestor_nome = gestorEncontrado.nome
+  // Valida que gestor_whatsapp pertence a um PRO ativo antes de gravar.
+  // Se o link /g/[wpp] foi compartilhado por um aluno FREE, descarta o gestor_whatsapp
+  // para nao vincular incorretamente o novo aluno a esse FREE.
+  if (gestor_whatsapp) {
+    const wppLimpoGestor = gestor_whatsapp.replace(/\D/g, '')
+    const wppAlt = wppLimpoGestor.startsWith('55') ? wppLimpoGestor.slice(2) : `55${wppLimpoGestor}`
+    const { data: gestorValido } = await adminClient.from('gestores')
+      .select('nome').eq('ativo', true)
+      .in('whatsapp', [wppLimpoGestor, wppAlt])
+      .maybeSingle()
+    if (gestorValido) {
+      gestor_whatsapp = wppLimpoGestor
+      if (!gestor_nome) gestor_nome = gestorValido.nome
+    } else {
+      // Nao e PRO ativo: descarta vinculo de gestor
+      gestor_whatsapp = ''
+      gestor_nome = ''
+    }
   }
 
   // Resolve tenant antes de criar o aluno
