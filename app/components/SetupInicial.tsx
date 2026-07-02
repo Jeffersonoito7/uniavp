@@ -27,6 +27,7 @@ export default function SetupInicial({
  primeiroPassoEhParceiro ? 'parceiro' : 'app'
  )
  const [concluindo, setConcluindo] = useState(false)
+ const [erroConcluir, setErroConcluir] = useState(false)
 
  const passosFeitos = {
  parceiro: passo === 'app' || (!mostrarApp),
@@ -37,8 +38,15 @@ export default function SetupInicial({
 
  async function concluir() {
  setConcluindo(true)
- await fetch('/api/aluno/setup-concluido', { method: 'POST' })
+ setErroConcluir(false)
+ try {
+ const res = await fetch('/api/aluno/setup-concluido', { method: 'POST' })
+ if (!res.ok) throw new Error('erro')
  router.refresh()
+ } catch {
+ setConcluindo(false)
+ setErroConcluir(true)
+ }
  }
 
  function avancarParaApp() {
@@ -83,14 +91,19 @@ export default function SetupInicial({
  </div>
 
  {(!bloquearParceiro || !linkParceiro) && (
- <button onClick={avancarParaApp} className="btn btn-green btn-full" style={{ fontSize: 15 }}>
- {linkParceiro ? 'Já me cadastrei → Continuar' : 'Continuar →'}
+ <button onClick={avancarParaApp} disabled={concluindo} className="btn btn-green btn-full" style={{ fontSize: 15 }}>
+ {concluindo ? 'Liberando...' : linkParceiro ? 'Já me cadastrei → Continuar' : 'Continuar →'}
  </button>
  )}
  {bloquearParceiro && linkParceiro && (
- <button onClick={avancarParaApp} className="btn btn-ghost btn-full" style={{ fontSize: 15 }}>
- Já me cadastrei → Continuar
+ <button onClick={avancarParaApp} disabled={concluindo} className="btn btn-ghost btn-full" style={{ fontSize: 15 }}>
+ {concluindo ? 'Liberando...' : 'Já me cadastrei → Continuar'}
  </button>
+ )}
+ {erroConcluir && (
+ <p style={{ color: '#f87171', fontSize: 13, textAlign: 'center', margin: '6px 0 0' }}>
+ Erro ao liberar acesso. Tente novamente.
+ </p>
  )}
  </div>
  </div>
@@ -134,9 +147,16 @@ export default function SetupInicial({
  </div>
 
  {bloquearApp && (
+ <>
  <button onClick={concluir} disabled={concluindo} className="btn btn-ghost btn-full" style={{ fontSize: 15 }}>
  {concluindo ? 'Liberando...' : 'Já baixei o app → Acessar as aulas'}
  </button>
+ {erroConcluir && (
+ <p style={{ color: '#f87171', fontSize: 13, textAlign: 'center', margin: '6px 0 0' }}>
+ Erro ao liberar acesso. Tente novamente.
+ </p>
+ )}
+ </>
  )}
  </div>
  </div>
