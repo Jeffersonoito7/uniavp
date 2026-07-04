@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { criarCobrancaPix } from '@/lib/efi'
 import { randomUUID } from 'crypto'
-import { verificarPROGratuito, contarPROsAtivosIndicados, getLimitePROGratuito } from '@/lib/pros-indicados'
+import { contarPROsAtivosIndicados, getLimitePROGratuito } from '@/lib/pros-indicados'
+import { reconciliarEquipeGestor } from '@/lib/pix-processor'
 import { captureException } from '@/lib/monitor'
 import { vencimentoMeses } from '@/lib/date-utils'
 
@@ -44,21 +45,23 @@ export async function POST() {
     await adminClient.from('gestores')
       .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
       .eq('id', gestor.id)
+    reconciliarEquipeGestor(gestor.whatsapp, gestor.nome, adminClient).catch(() => {})
     return NextResponse.json({ ok: true, gratuito: true, incluso: true, vencimento })
   }
 
   // ── Verifica se o PRO atingiu o limite de indicações → gratuito ──
-  const [ehGratuito, totalIndicados, limiteGratuito] = await Promise.all([
-    verificarPROGratuito(gestor.id, adminClient, gestor.tenant_id),
-    contarPROsAtivosIndicados(gestor.id, adminClient),
+  const [totalIndicados, limiteGratuito] = await Promise.all([
+    contarPROsAtivosIndicados(gestor.id, gestor.whatsapp, adminClient),
     getLimitePROGratuito(adminClient, gestor.tenant_id),
   ])
+  const ehGratuito = totalIndicados >= limiteGratuito
 
   if (ehGratuito) {
     const vencimento = vencimentoMeses(1)
     await adminClient.from('gestores')
       .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento })
       .eq('id', gestor.id)
+    reconciliarEquipeGestor(gestor.whatsapp, gestor.nome, adminClient).catch(() => {})
     return NextResponse.json({ ok: true, gratuito: true, vencimento })
   }
 
@@ -134,7 +137,7 @@ export async function GET() {
 
   const adminClient = createServiceRoleClient()
   const { data: gestor } = await adminClient.from('gestores')
-    .select('id, status_assinatura, trial_expira_em, plano_vencimento, tenant_id')
+    .select('id, whatsapp, status_assinatura, trial_expira_em, plano_vencimento, tenant_id')
     .eq('user_id', user.id).maybeSingle()
 
   if (!gestor) return NextResponse.json({ error: 'Não encontrado' }, { status: 404 })
@@ -162,7 +165,7 @@ export async function GET() {
   const modoCobranca = modoCfgGet?.valor ? String(modoCfgGet.valor).replace(/"/g, '') : 'individual'
 
   const [prosIndicados, limiteGratuito] = await Promise.all([
-    contarPROsAtivosIndicados(gestor.id, adminClient),
+    contarPROsAtivosIndicados(gestor.id, gestor.whatsapp, adminClient),
     getLimitePROGratuito(adminClient, gestor.tenant_id),
   ])
   const ehGratuito = prosIndicados >= limiteGratuito

@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
           .maybeSingle()
 
         if (gestorOrigem?.whatsapp) {
-          const totalAgora = await contarPROsAtivosIndicados(gestorOrigem.id, admin)
+          const totalAgora = await contarPROsAtivosIndicados(gestorOrigem.id, gestorOrigem.whatsapp, admin)
           const limiteOrigem = await limiteDo(gestorOrigem.tenant_id)
           const faltam = limiteOrigem - totalAgora
           const perdeuBeneficio = totalAgora === limiteOrigem - 1
@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
 
   for (const g of gestoresSuspensos ?? []) {
     const LIMITE = await limiteDo(g.tenant_id)
-    const total = await contarPROsAtivosIndicados(g.id, admin)
+    const total = await contarPROsAtivosIndicados(g.id, g.whatsapp, admin)
     if (total >= LIMITE) {
       // Reativa gratuitamente
       const vencimento = vencimentoMeses(1)

@@ -186,7 +186,7 @@ export async function POST(req: NextRequest) {
         resolvedId = indNovo?.id ?? null
       }
       if (resolvedId) {
-        // Limite de 20 indicações para consultor free
+        // Limite de 20 indicações para consultor FREE
         const { count: jaIndicou } = await adminClient.from('alunos')
           .select('id', { count: 'exact', head: true })
           .eq('indicador_id', resolvedId)
@@ -221,6 +221,19 @@ export async function POST(req: NextRequest) {
     else if (msg.includes('alunos_email_key') || msg.includes('email'))
       erro = 'Este e-mail já está cadastrado. Faça login ou use outro e-mail.'
     return NextResponse.json({ erro }, { status: 400 })
+  }
+
+  // Re-verifica o limite de indicações após o insert para cobrir requisições concorrentes.
+  // Se duas requisições passaram pelo check simultâneamente, a que ultrapassou o limite
+  // perde o vínculo com o indicador mas o cadastro do aluno é mantido normalmente.
+  if (indicadorId) {
+    const { count: totalAposInsert } = await adminClient.from('alunos')
+      .select('id', { count: 'exact', head: true })
+      .eq('indicador_id', indicadorId)
+    if ((totalAposInsert ?? 0) > 20) {
+      await adminClient.from('alunos').update({ indicador_id: null }).eq('id', aluno.id)
+      aluno.indicador_id = null
+    }
   }
 
   const gestorWppLimpo = gestor_whatsapp.replace(/\D/g, '')

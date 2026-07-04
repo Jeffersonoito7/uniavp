@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { criarCobrancaPix, criarLinkCartaoAnual } from '@/lib/efi'
 import { randomUUID } from 'crypto'
-import { verificarPROGratuito, contarPROsAtivosIndicados, getLimitePROGratuito } from '@/lib/pros-indicados'
+import { contarPROsAtivosIndicados, getLimitePROGratuito } from '@/lib/pros-indicados'
+import { reconciliarEquipeGestor } from '@/lib/pix-processor'
 import { captureException } from '@/lib/monitor'
 import { vencimentoMeses } from '@/lib/date-utils'
 import { getCfgNum, getCfg } from '@/lib/cfg'
@@ -51,13 +52,13 @@ export async function GET() {
 
   // Verifica se já tem gestor ativo (já é PRO)
   const { data: gestorAtivo } = await adminClient.from('gestores')
-    .select('id, status_assinatura, plano_vencimento')
+    .select('id, whatsapp, status_assinatura, plano_vencimento')
     .eq('user_id', user.id)
     .eq('ativo', true)
     .maybeSingle()
   if (gestorAtivo) {
     const [prosIndicados, limiteGratuito] = await Promise.all([
-      contarPROsAtivosIndicados(gestorAtivo.id, adminClient),
+      contarPROsAtivosIndicados(gestorAtivo.id, gestorAtivo.whatsapp, adminClient),
       getLimitePROGratuito(adminClient, tenantIdGet),
     ])
     const modoCobranca = await getModoCobranca(adminClient, tenantIdGet)
@@ -163,12 +164,14 @@ export async function POST(req: Request) {
     await adminClient.from('gestores')
       .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
       .eq('id', gestorId)
+    // Reconcilia equipe: migra alunos captados via link FREE para gestor_whatsapp
+    reconciliarEquipeGestor(aluno.whatsapp, aluno.nome, adminClient).catch(() => {})
     return NextResponse.json({ ok: true, gratuito: true, incluso: true, vencimento })
   }
 
   if (modoCobranca === 'ganho') {
     const [totalIndicados, limiteGratuito] = await Promise.all([
-      contarPROsAtivosIndicados(gestorId, adminClient),
+      contarPROsAtivosIndicados(gestorId, aluno.whatsapp, adminClient),
       getLimitePROGratuito(adminClient, tenantId),
     ])
     if (totalIndicados >= limiteGratuito) {
@@ -176,6 +179,8 @@ export async function POST(req: Request) {
       await adminClient.from('gestores')
         .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
         .eq('id', gestorId)
+      // Reconcilia equipe: migra alunos captados via link FREE para gestor_whatsapp
+      reconciliarEquipeGestor(aluno.whatsapp, aluno.nome, adminClient).catch(() => {})
       return NextResponse.json({ ok: true, gratuito: true, vencimento })
     }
     const faltam = limiteGratuito - totalIndicados
