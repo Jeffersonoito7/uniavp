@@ -1,6 +1,7 @@
 'use client'
 import { useRef, useState, useEffect } from 'react'
 import DOMPurify from 'isomorphic-dompurify'
+import { maskCPF, maskCEP } from '@/lib/masks'
 
 type Props = {
   token: string
@@ -41,6 +42,8 @@ export default function AssinaturaDigital({
   const [email, setEmail] = useState(emailAssinante ?? '')
   const [cpf, setCpf] = useState(cpfAssinante ?? '')
   const [endereco, setEndereco] = useState('')
+  const [cep, setCepState] = useState('')
+  const [buscandoCep, setBuscandoCep] = useState(false)
   const [corpoAtual, setCorpoAtual] = useState(corpoHtml)
   const [salvandoDados, setSalvandoDados] = useState(false)
 
@@ -105,6 +108,21 @@ export default function AssinaturaDigital({
     ctx.fillStyle = '#fff'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     setTemAssinatura(false)
+  }
+
+  async function buscarCEP(valor: string) {
+    const mascarado = maskCEP(valor)
+    setCepState(mascarado)
+    const soNumeros = mascarado.replace(/\D/g, '')
+    if (soNumeros.length !== 8) return
+    setBuscandoCep(true)
+    try {
+      const r = await fetch(`https://viacep.com.br/ws/${soNumeros}/json/`)
+      const d = await r.json()
+      if (!d.erro) {
+        setEndereco(`${d.logradouro}, ${d.bairro}, ${d.localidade}/${d.uf}, CEP ${mascarado}`)
+      }
+    } catch { /* ignora */ } finally { setBuscandoCep(false) }
   }
 
   async function salvarDados(e: React.FormEvent) {
@@ -229,7 +247,7 @@ export default function AssinaturaDigital({
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <div>
                   <label style={{ display: 'block', fontSize: 13, color: '#374151', marginBottom: 6, fontWeight: 600 }}>CPF</label>
-                  <input style={inputStyle} value={cpf} onChange={e => setCpf(e.target.value)} placeholder="000.000.000-00" />
+                  <input style={inputStyle} value={cpf} onChange={e => setCpf(maskCPF(e.target.value))} placeholder="000.000.000-00" />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: 13, color: '#374151', marginBottom: 6, fontWeight: 600 }}>E-mail (para receber cópia)</label>
@@ -237,9 +255,16 @@ export default function AssinaturaDigital({
                 </div>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: 13, color: '#374151', marginBottom: 6, fontWeight: 600 }}>Endereço</label>
-                <input style={inputStyle} value={endereco} onChange={e => setEndereco(e.target.value)} placeholder="Rua, número, bairro, cidade/UF, CEP" />
+              <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 13, color: '#374151', marginBottom: 6, fontWeight: 600 }}>CEP</label>
+                  <input style={{ ...inputStyle, position: 'relative' }} value={cep} onChange={e => buscarCEP(e.target.value)} placeholder="00000-000" maxLength={9} />
+                  {buscandoCep && <p style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>Buscando...</p>}
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 13, color: '#374151', marginBottom: 6, fontWeight: 600 }}>Endereço</label>
+                  <input style={inputStyle} value={endereco} onChange={e => setEndereco(e.target.value)} placeholder="Preenchido automaticamente pelo CEP" />
+                </div>
               </div>
             </div>
 

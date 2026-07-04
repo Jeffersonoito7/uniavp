@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import AdminLayout from '../../AdminLayout'
 import PhoneInput from '@/app/components/PhoneInput'
 import Link from 'next/link'
+import { maskCPF, maskCNPJ, maskCEP } from '@/lib/masks'
 
 type Template = { id: string; nome: string; variaveis: string[]; corpo_html: string }
 type ContratoBase = { id: string; titulo: string; numero_registro: string }
@@ -88,6 +89,8 @@ export default function NovoContratoPage() {
   // Contratante
   const [perfis, setPerfis] = useState<Perfil[]>([])
   const [perfilId, setPerfilId] = useState<string>('manual')
+  const [cepContratante, setCepContratante] = useState('')
+  const [cepContratado, setCepContratado] = useState('')
   const [contratante, setContratante] = useState(PERFIL_VAZIO)
   const [salvandoPerfil, setSalvandoPerfil] = useState(false)
   const [msgPerfil, setMsgPerfil] = useState('')
@@ -193,6 +196,18 @@ export default function NovoContratoPage() {
     setPerfilId(novos.length > 0 ? novos[0].id : 'manual')
     setContratante(novos.length > 0 ? novos[0] : PERFIL_VAZIO)
     setEditandoPerfil(novos.length === 0)
+  }
+
+  async function buscarCEP(valor: string, setEndereco: (v: string) => void, setCep: (v: string) => void) {
+    const mascarado = maskCEP(valor)
+    setCep(mascarado)
+    const soNumeros = mascarado.replace(/\D/g, '')
+    if (soNumeros.length !== 8) return
+    try {
+      const r = await fetch(`https://viacep.com.br/ws/${soNumeros}/json/`)
+      const d = await r.json()
+      if (!d.erro) setEndereco(`${d.logradouro}, ${d.bairro}, ${d.localidade}/${d.uf}, CEP ${mascarado}`)
+    } catch { /* ignora */ }
   }
 
   function aplicarTemplate(id: string) {
@@ -374,11 +389,15 @@ export default function NovoContratoPage() {
                 </div>
                 <div>
                   <label style={labelStyle}>CNPJ</label>
-                  <input style={inputStyle} value={contratante.cnpj} onChange={e => updContratante('cnpj', e.target.value)} placeholder="00.000.000/0001-00" />
+                  <input style={inputStyle} value={contratante.cnpj} onChange={e => updContratante('cnpj', maskCNPJ(e.target.value))} placeholder="00.000.000/0001-00" />
                 </div>
-                <div style={{ gridColumn: '1 / -1' }}>
+                <div>
+                  <label style={labelStyle}>CEP</label>
+                  <input style={inputStyle} value={cepContratante} onChange={e => buscarCEP(e.target.value, v => updContratante('endereco', v), setCepContratante)} placeholder="00000-000" maxLength={9} />
+                </div>
+                <div>
                   <label style={labelStyle}>Endereço</label>
-                  <input style={inputStyle} value={contratante.endereco} onChange={e => updContratante('endereco', e.target.value)} placeholder="Rua, número, bairro, cidade/UF, CEP" />
+                  <input style={inputStyle} value={contratante.endereco} onChange={e => updContratante('endereco', e.target.value)} placeholder="Preenchido pelo CEP ou edite manualmente" />
                 </div>
                 <div>
                   <label style={labelStyle}>Representante legal</label>
@@ -452,7 +471,7 @@ export default function NovoContratoPage() {
                 </div>
                 <div>
                   <label style={labelStyle}>CPF</label>
-                  <input style={inputStyle} value={contratado.cpf} onChange={e => upd('cpf', e.target.value)} placeholder="000.000.000-00" />
+                  <input style={inputStyle} value={contratado.cpf} onChange={e => upd('cpf', maskCPF(e.target.value))} placeholder="000.000.000-00" />
                 </div>
               </>
             )}
@@ -465,10 +484,16 @@ export default function NovoContratoPage() {
               <input type="email" style={inputStyle} value={contratado.email} onChange={e => upd('email', e.target.value)} placeholder="email@exemplo.com" />
             </div>
             {!contratadoPreenche && (
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label style={labelStyle}>Endereço</label>
-                <input style={inputStyle} value={contratado.endereco} onChange={e => upd('endereco', e.target.value)} placeholder="Rua, número, bairro, cidade/UF, CEP" />
-              </div>
+              <>
+                <div>
+                  <label style={labelStyle}>CEP</label>
+                  <input style={inputStyle} value={cepContratado} onChange={e => buscarCEP(e.target.value, v => upd('endereco', v), setCepContratado)} placeholder="00000-000" maxLength={9} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Endereço</label>
+                  <input style={inputStyle} value={contratado.endereco} onChange={e => upd('endereco', e.target.value)} placeholder="Preenchido pelo CEP ou edite manualmente" />
+                </div>
+              </>
             )}
           </div>
 
