@@ -17,23 +17,6 @@ export default function VincularAlunosCliente({
   const [resultado, setResultado] = useState('')
   const [erro, setErro] = useState('')
   const [lista, setLista] = useState(semGestor)
-  const [normalizando, setNormalizando] = useState(false)
-  const [resultNorm, setResultNorm] = useState<{ corrigidos: number; detalhes: string[] } | null>(null)
-
-  async function normalizar() {
-    setNormalizando(true)
-    setResultNorm(null)
-    try {
-      const res = await fetch('/api/admin/vincular-alunos', { method: 'PATCH' })
-      const data = await res.json()
-      setResultNorm(data)
-    } catch {
-      setResultNorm({ corrigidos: 0, detalhes: ['Falha na requisição.'] })
-    } finally {
-      setNormalizando(false)
-    }
-  }
-
   function toggleAluno(id: string) {
     setSelecionados(prev => {
       const n = new Set(prev)
@@ -77,43 +60,6 @@ export default function VincularAlunosCliente({
 
   return (
     <div>
-      {/* Normalizacao automatica: corrige formato de whatsapp diferente */}
-      <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '20px 24px', marginBottom: 28 }}>
-        <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>Corrigir formatos de whatsapp (caso Pablo Alves)</p>
-        <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 14 }}>
-          Alunos que eram ligados a um consultor FREE podem ter o whatsapp do PRO em formato diferente
-          (ex: com ou sem DDI 55). Isso faz com que nao aparecam no painel PRO. Clique abaixo para corrigir automaticamente.
-        </p>
-
-        {resultNorm && (
-          <div style={{ marginBottom: 14 }}>
-            {resultNorm.corrigidos > 0 ? (
-              <p style={{ color: '#4ade80', fontWeight: 700, fontSize: 14, marginBottom: 8 }}>
-                {resultNorm.corrigidos} aluno(s) normalizados com sucesso.
-              </p>
-            ) : (
-              <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 8 }}>
-                Nenhum aluno com formato incorreto encontrado.
-              </p>
-            )}
-            {resultNorm.detalhes.filter(d => d.startsWith('OK')).map((d, i) => (
-              <p key={i} style={{ fontSize: 12, color: '#4ade80', margin: '2px 0' }}>{d}</p>
-            ))}
-            {resultNorm.detalhes.filter(d => d.startsWith('ERRO')).map((d, i) => (
-              <p key={i} style={{ fontSize: 12, color: '#f87171', margin: '2px 0' }}>{d}</p>
-            ))}
-          </div>
-        )}
-
-        <button
-          onClick={normalizar}
-          disabled={normalizando}
-          style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 800, fontSize: 13, cursor: normalizando ? 'not-allowed' : 'pointer', opacity: normalizando ? 0.7 : 1 }}
-        >
-          {normalizando ? 'Verificando...' : 'Normalizar formatos de whatsapp'}
-        </button>
-      </div>
-
       {/* Vincular alunos sem gestor */}
       {lista.length === 0 && !resultado ? (
         <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '24px', textAlign: 'center' }}>

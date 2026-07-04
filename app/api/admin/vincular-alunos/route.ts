@@ -1,11 +1,6 @@
-/**
- * Vincula alunos sem gestor (ou com gestor errado) a um gestor especifico.
- * Usado para corrigir alunos que se cadastraram pelo link generico e nao tem gestor_whatsapp.
- */
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
-import { vincularAlunosDoGestorNoFree } from '@/lib/pix-processor'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,42 +35,6 @@ export async function GET(req: NextRequest) {
   const { data: gestores } = await gq
 
   return NextResponse.json({ semGestor: semGestor ?? [], gestores: gestores ?? [] })
-}
-
-// PATCH: normaliza gestor_whatsapp de todos os alunos do tenant
-// Corrige alunos que tem o whatsapp do gestor em formato diferente (ex: sem DDI 55)
-export async function PATCH(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-
-  const adminClient = createServiceRoleClient()
-  const ctx = await getAdminContext(user.id, adminClient)
-  if (!ctx) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
-
-  const tid = ctx.tenantId ?? null
-
-  // Carrega todos os gestores do tenant
-  let gq = adminClient.from('gestores').select('id, nome, whatsapp')
-  if (tid) gq = gq.eq('tenant_id', tid)
-  const { data: gestores } = await gq
-
-  let corrigidos = 0
-  const detalhes: string[] = []
-
-  for (const gestor of gestores ?? []) {
-    try {
-      const { atualizados } = await vincularAlunosDoGestorNoFree(gestor.whatsapp, gestor.nome, adminClient)
-      if (atualizados > 0) {
-        corrigidos += atualizados
-        detalhes.push(`OK ${gestor.nome} (${gestor.whatsapp}): ${atualizados} aluno(s) normalizados`)
-      }
-    } catch (e: any) {
-      detalhes.push(`ERRO ${gestor.nome}: ${e?.message ?? String(e)}`)
-    }
-  }
-
-  return NextResponse.json({ ok: true, corrigidos, detalhes })
 }
 
 // POST: vincula os alunos selecionados a um gestor
