@@ -121,21 +121,16 @@ export async function POST(req: NextRequest) {
 
   // Se o e-mail já existe no auth, verifica se é órfão (aluno foi deletado)
   if (authErr && (authErr.message.includes('already registered') || authErr.message.includes('already been registered') || authErr.message.includes('email address'))) {
-    // Busca o auth user pelo email via paginação completa
-    let authExistente = null
-    let page = 1
-    const MAX_PAGES = 20
-    while (!authExistente && page <= MAX_PAGES) {
-      const { data: lista } = await adminClient.auth.admin.listUsers({ page, perPage: 1000 })
-      if (!lista?.users?.length) break
-      authExistente = lista.users.find(u => u.email === emailLimpo) ?? null
-      if (authExistente || lista.users.length < 1000) break
-      page++
-    }
+    // Busca direta em auth.users via RPC com SECURITY DEFINER.
+    // Evita paginar listUsers, que quebra acima de ~20k usuários no plano atual.
+    const { data: authRow } = await (adminClient as any).rpc('auth_user_by_email', { p_email: emailLimpo }).maybeSingle() as { data: { id: string; email: string } | null }
 
-    if (!authExistente) {
+    if (!authRow?.id) {
       return NextResponse.json({ erro: 'Não foi possível criar sua conta. Tente novamente.' }, { status: 400 })
     }
+
+    // Reconstitui o objeto mínimo que o código abaixo espera
+    const authExistente = { id: authRow.id, email: authRow.email }
 
     // Verifica se ainda existe aluno vinculado
     const { data: alunoExistente } = await adminClient.from('alunos')
