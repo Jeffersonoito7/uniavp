@@ -252,12 +252,8 @@ export async function POST(req: Request) {
   } catch (e: any) {
     const raw: string = e.message ?? ''
     captureException(e, { endpoint: 'consultor/assinar-pro', extra: { tipo: e.constructor?.name ?? 'Error' } })
-    const msgUsuario = raw.includes('invalid_client') || raw.includes('credentials')
-      ? 'Erro na integração de pagamento. Entre em contato com o suporte.'
-      : raw.includes('Auth') || raw.includes('token')
-      ? 'Serviço de pagamento temporariamente indisponível. Tente novamente em alguns minutos.'
-      : raw.includes('Efi')
-      ? `Erro Efi: ${raw.substring(0, 120)}`
+    const msgUsuario = raw.includes('invalid_client') || raw.includes('credentials') || raw.includes('Auth') || raw.includes('token') || raw.includes('Efi')
+      ? 'Serviço de pagamento temporariamente indisponível. Tente novamente em alguns minutos ou entre em contato com o suporte.'
       : 'Erro ao gerar cobrança. Tente novamente.'
     return NextResponse.json({ error: msgUsuario }, { status: 500 })
   }

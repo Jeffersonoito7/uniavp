@@ -17,7 +17,8 @@ export async function GET() {
     .select('id, titulo, ordem, descricao, capa_url')
     .contains('perfis_permitidos', ['gestor'])
     .order('ordem')
-  if (gestor.tenant_id) modulosQ = modulosQ.eq('tenant_id', gestor.tenant_id)
+  // Inclui modulos do tenant E modulos globais (tenant_id null, criados por super admin)
+  if (gestor.tenant_id) modulosQ = (modulosQ as any).or(`tenant_id.eq.${gestor.tenant_id},tenant_id.is.null`)
   const { data: modulos } = await modulosQ
 
   let aulasQ = admin.from('aulas')

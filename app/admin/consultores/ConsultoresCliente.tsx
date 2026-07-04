@@ -62,7 +62,7 @@ type Consultor = {
 const statusColor: Record<string, string> = {
  ativo: '#02A153',
  pausado: '#f59e0b',
- concluido: '#333687',
+ concluido: '#6366f1',
  desligado: '#e63946',
 }
 

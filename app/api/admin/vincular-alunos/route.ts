@@ -105,9 +105,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Acesso negado.' }, { status: 403 })
   }
 
-  const { error } = await adminClient.from('alunos')
+  let updateQ = adminClient.from('alunos')
     .update({ gestor_nome: gestor.nome, gestor_whatsapp: gestor.whatsapp })
     .in('id', aluno_ids)
+  if (ctx.tenantId) updateQ = (updateQ as any).eq('tenant_id', ctx.tenantId)
+  const { error } = await updateQ
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 

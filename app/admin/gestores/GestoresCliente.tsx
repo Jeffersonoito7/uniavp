@@ -40,17 +40,17 @@ function BadgeStatus({ g }: { g: Gestor }) {
  const vencido = g.plano_vencimento ? new Date(g.plano_vencimento) < agora : false
  const trialAtivo = status === 'trial' && g.trial_expira_em && new Date(g.trial_expira_em)> agora
 
- if (!g.ativo) return <span style={{ background: '#e6394615', color: 'var(--avp-danger)', border: '1px solid #e6394640', borderRadius: 6, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>Suspenso</span>
+ if (!g.ativo) return <span className="badge-status badge-status-red">Suspenso</span>
  if (status === 'ativo' && !vencido) {
  const dias = g.plano_vencimento ? Math.ceil((new Date(g.plano_vencimento).getTime() - agora.getTime()) / 86400000) : null
- return <span style={{ background: '#02A15315', color: 'var(--avp-green)', border: '1px solid #02A15340', borderRadius: 6, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>PRO ativo{dias !== null ? ` · ${dias}d` : ''}</span>
+ return <span className="badge-status badge-status-green">PRO ativo{dias !== null ? ` · ${dias}d` : ''}</span>
  }
  if (trialAtivo) {
  const dias = Math.ceil((new Date(g.trial_expira_em!).getTime() - agora.getTime()) / 86400000)
- return <span style={{ background: '#6366f115', color: '#818cf8', border: '1px solid #6366f140', borderRadius: 6, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>Trial · {dias}d</span>
+ return <span className="badge-status badge-status-blue">Trial · {dias}d</span>
  }
- if (status === 'ativo' && vencido) return <span style={{ background: '#f59e0b15', color: '#f59e0b', border: '1px solid #f59e0b40', borderRadius: 6, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>Vencido</span>
- return <span style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--avp-text-dim)', border: '1px solid var(--avp-border)', borderRadius: 6, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>Pendente</span>
+ if (status === 'ativo' && vencido) return <span className="badge-status badge-status-amber">Vencido</span>
+ return <span className="badge-status badge-status-gray">Pendente</span>
 }
 
 const formVazio = { nome: '', email: '', whatsapp: '', senha: '' }

@@ -80,8 +80,8 @@ export async function POST(req: NextRequest) {
 
     if (eraUpgrade) {
       try {
-        const { concederCreditosBoasVindas } = await import('@/lib/pro-agente')
-        await concederCreditosBoasVindas(gestor.id, gestor.tenant_id ?? null, adminClient)
+        const { reconciliarEquipeGestor } = await import('@/lib/pix-processor')
+        await reconciliarEquipeGestor(gestor.whatsapp, gestor.nome, adminClient)
       } catch { /* não crítico */ }
     }
   } catch (e: any) {

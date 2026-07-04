@@ -12,8 +12,6 @@ import EventosWidget from '@/app/components/EventosWidget'
 import MuralNoticias from '@/app/components/MuralNoticias'
 import ImageCropModal from '@/app/components/ImageCropModal'
 import GestorArtesTemplates from './artes/GestorArtesTemplates'
-import AgenteCard from './AgenteCard'
-import AgenteComercial from './AgenteComercial'
 
 // ── Componente de Perfil do Gestor ──────────────────────────────────────────
 function PerfilGestor({ gestor, onNomeAtualizado, onFotoAtualizada, podeCfgLink }: { gestor: Gestor; onNomeAtualizado: (n: string) => void; onFotoAtualizada?: (url: string | null) => void; podeCfgLink?: boolean }) {
@@ -659,8 +657,6 @@ export default function GestorDashboard({
  {/* Link da plataforma parceira */}
  <LinkParceiroCardGestor linkAtual={gestor.link_externo ?? null} whatsapp={gestor.whatsapp} baseUrl={baseUrl} />
 
- {/* Card do Assistente IA */}
- <AgenteCard />
 
  {/* Documentos para download */}
  {documentos && documentos.length> 0 && (
@@ -1382,10 +1378,6 @@ export default function GestorDashboard({
  </>
  )}
 
- {/* ── ASSISTENTE COMERCIAL ── */}
- {aba === 'assistente' && (
- <AgenteComercial />
- )}
 
  {/* ── PERFIL DO GESTOR ── */}
  {aba === 'perfil' && (

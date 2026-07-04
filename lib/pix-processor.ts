@@ -10,7 +10,6 @@ import { consultarPagamento } from '@/lib/efi'
 import { audit } from '@/lib/audit'
 import { getMensagem } from '@/lib/mensagem'
 import { createLogger } from '@/lib/logger'
-import { creditarCreditos, garantirRegistroCredito } from '@/lib/agente-creditos'
 import { vencimentoMeses } from '@/lib/date-utils'
 
 const log = createLogger('pix-processor')
@@ -314,13 +313,6 @@ export async function processarPixTxid(
       }
 
       if (eraUpgrade) {
-        try {
-          const { concederCreditosBoasVindas } = await import('@/lib/pro-agente')
-          await concederCreditosBoasVindas(gestor.id, gestor.tenant_id ?? null, adminClient)
-        } catch (e) {
-          log.error('falha ao conceder créditos boas-vindas', { err: String(e), gestorId: gestor.id })
-        }
-
         // Reconcilia toda a equipe do novo PRO:
         // 1) corrige variacoes de DDI em gestor_whatsapp
         // 2) migra alunos captados via indicador_id (link FREE) para gestor_whatsapp
@@ -334,55 +326,6 @@ export async function processarPixTxid(
     }
 
     return { processado: true, motivo: precisaAtivar ? undefined : 'ja_processado' }
-  }
-
-  // ── Recarga de créditos do agente IA ─────────────────────────────────────
-  const { data: recarga } = await adminClient.from('agente_recargas')
-    .select('id, gestor_id, tenant_id, creditos, valor')
-    .eq('txid', txid)
-    .maybeSingle()
-
-  if (recarga) {
-    const { data: atualizado } = await adminClient.from('agente_recargas')
-      .update({ status: 'pago', pago_em: new Date().toISOString() })
-      .eq('id', recarga.id)
-      .eq('status', 'pendente')
-      .select('id')
-    if (!atualizado?.length) return { processado: true, motivo: 'ja_processado' }
-
-    await garantirRegistroCredito(recarga.gestor_id, recarga.tenant_id ?? null, adminClient)
-    const novoSaldo = await creditarCreditos(
-      recarga.gestor_id,
-      recarga.creditos,
-      `Recarga via PIX — ${recarga.creditos} créditos`,
-      recarga.tenant_id ?? null,
-      adminClient,
-      { tipo: 'compra', valorPago: Number(recarga.valor), cobrancaId: txid }
-    )
-
-    // Notifica o gestor via WhatsApp
-    const { data: gestor } = await adminClient.from('gestores')
-      .select('whatsapp, nome, tenant_id').eq('id', recarga.gestor_id).maybeSingle()
-
-    if (gestor?.whatsapp) {
-      const instancia = await getInstanciaTenant(gestor.tenant_id ?? null, adminClient)
-      await enviarWhatsAppComFila(
-        gestor.whatsapp,
-        `✅ *Recarga confirmada!*\n\n*+${recarga.creditos} créditos* adicionados à sua conta.\n\nSaldo atual: *${novoSaldo} créditos*\n\n_Use o assistente à vontade!_`,
-        instancia, adminClient, gestor.tenant_id,
-      )
-    }
-
-    await audit({
-      acao: 'agente.recarga_confirmada',
-      entidade: 'agente_recargas',
-      entidade_id: recarga.id,
-      tenant_id: recarga.tenant_id ?? null,
-      usuario_tipo: 'sistema',
-      dados_novos: { txid, creditos: recarga.creditos, valor: recarga.valor, gestor_id: recarga.gestor_id },
-    })
-
-    return { processado: true }
   }
 
   return { processado: false, motivo: 'txid_nao_encontrado' }

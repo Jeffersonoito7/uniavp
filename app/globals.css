@@ -4,11 +4,13 @@
   --avp-blue: #4f46e5; --avp-blue-deep: #3730a3; --avp-blue-bright: #818cf8;
   --avp-green: #22c55e; --avp-green-deep: #16a34a; --avp-green-bright: #4ade80;
   --avp-black: #0a0a0f; --avp-dark: #080810; --avp-card: #0f0f17;
-  --avp-card-hover: #13131f; --avp-text: #f1f5f9; --avp-text-dim: #64748b;
+  --avp-card-hover: #13131f; --avp-text: #f1f5f9; --avp-text-dim: #94a3b8;
   --avp-border: #1e1f2e; --avp-success: #22c55e; --avp-danger: #ef4444;
   --avp-header-bg: rgba(10,10,15,0.92);
   --grad-brand: #4f46e5;
   --avp-accent: #4f46e5; --avp-muted: #94a3b8;
+  --avp-bg: #0a0a0f;
+  --avp-sidebar: #0d0d14;
 }
 
 html.light {
@@ -21,6 +23,7 @@ html.light {
   --avp-text-dim: #475569;
   --avp-header-bg: rgba(241,245,249,0.97);
   --avp-sidebar: #ffffff;
+  --avp-bg: #f1f5f9;
   --avp-accent: #4f46e5;
 }
 
@@ -244,6 +247,36 @@ html.light .card-green  { background: #dcfce7; border-color: #86efac; }
 .badge-amber { background: rgba(217,119,6,0.12);  border: 1px solid rgba(217,119,6,0.3);  color: #fbbf24; }
 .badge-red   { background: rgba(239,68,68,0.1);   border: 1px solid rgba(239,68,68,0.3);  color: #f87171; }
 .badge-gray  { background: rgba(148,163,184,0.1); border: 1px solid rgba(148,163,184,0.2); color: #94a3b8; }
+
+html.light .badge-blue  { background: #ede9fe; border-color: #a5b4fc; color: #3730a3; }
+html.light .badge-green { background: #dcfce7; border-color: #86efac; color: #15803d; }
+html.light .badge-amber { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+html.light .badge-red   { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+html.light .badge-gray  { background: #f1f5f9; border-color: #cbd5e1; color: #475569; }
+
+/* Badges de status (gestores, consultores, contratos) — contraste adequado em dark e light */
+.badge-status {
+  display: inline-flex; align-items: center;
+  border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 700;
+  border: 1px solid;
+}
+.badge-status-green { background: rgba(2,161,83,0.15); color: #4ade80; border-color: rgba(2,161,83,0.4); }
+.badge-status-blue  { background: rgba(99,102,241,0.15); color: #a5b4fc; border-color: rgba(99,102,241,0.4); }
+.badge-status-amber { background: rgba(245,158,11,0.15); color: #fbbf24; border-color: rgba(245,158,11,0.4); }
+.badge-status-red   { background: rgba(239,68,68,0.15); color: #f87171; border-color: rgba(239,68,68,0.4); }
+.badge-status-gray  { background: rgba(148,163,184,0.15); color: #94a3b8; border-color: rgba(148,163,184,0.35); }
+
+html.light .badge-status-green { background: #dcfce7; color: #15803d; border-color: #86efac; }
+html.light .badge-status-blue  { background: #ede9fe; color: #3730a3; border-color: #a5b4fc; }
+html.light .badge-status-amber { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+html.light .badge-status-red   { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+html.light .badge-status-gray  { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+
+/* Alerts no tema claro com contraste adequado */
+html.light .alert-error   { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+html.light .alert-success { background: #dcfce7; border-color: #86efac; color: #15803d; }
+html.light .alert-warning { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+html.light .alert-info    { background: #ede9fe; border-color: #a5b4fc; color: #3730a3; }
 
 /* Inputs */
 .input {
