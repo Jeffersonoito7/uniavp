@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
   const modo = (aula.liberacao_modo ?? 'automatico') as 'automatico' | 'manual_gestor' | 'manual_admin'
   const pendente_liberacao = aprovado && modo !== 'automatico'
   const proxima_aula_liberada_em = aprovado && modo === 'automatico'
-    ? new Date(Date.now() + aula.espera_horas * 3600000).toISOString()
+    ? new Date(Date.now() + (aula.espera_horas ?? 0) * 3600000).toISOString()
     : null
 
   const { error: errProgresso } = await adminClient.from('progresso').insert({
