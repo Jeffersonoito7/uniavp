@@ -4,7 +4,7 @@ import {
   Image as ImageIcon, Building2, Palette, Globe, Settings2, CreditCard, Banknote,
   Award, LayoutGrid, Video, ListOrdered, ListChecks, BookOpen, Smartphone,
   GraduationCap, ScrollText, Monitor, Link2, BookMarked, Shield, Lock,
-  FileText, Gift, Users, UserPlus, Server, Layers, ChevronRight,
+  FileText, Gift, Users, UserPlus, Server, Layers, ChevronRight, Trash2,
 } from 'lucide-react'
 import PhoneInput from '@/app/components/PhoneInput'
 import CarteiraCardPreview from '@/app/components/CarteiraCardPreview'
@@ -50,7 +50,7 @@ function LogoCard({ label, campo, value, desc, rec, fileRef, uploading, onUpload
  onClick={() => { if (confirm(`Remover "${label}"?`)) onDelete(campo) }}
  style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700, flexShrink: 0 }}
  title="Remover imagem">
- 
+ <Trash2 size={15} />
  </button>
  )}
  </div>
