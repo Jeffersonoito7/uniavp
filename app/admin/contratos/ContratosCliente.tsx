@@ -155,7 +155,7 @@ function ModelosAcordo({ acordosIniciais }: { acordosIniciais: Acordo[] }) {
  <button onClick={() => { setCriando(false); setNovoNome(''); setNovaRegra('') }}
  style={{ border: '1px solid var(--avp-border)', background: 'transparent', borderRadius: 8, padding: '8px 16px', fontSize: 13, color: 'var(--avp-text-dim)', cursor: 'pointer' }}>Cancelar</button>
  <button onClick={criar} disabled={!novoNome.trim() || !novaRegra.trim() || salvando}
- style={{ background: !novoNome.trim() || !novaRegra.trim() || salvando ? 'var(--avp-border)' : '#22c55e', border: 'none', borderRadius: 8, padding: '8px 20px', fontSize: 13, fontWeight: 700, color: '#fff', cursor: !novoNome.trim() || !novaRegra.trim() || salvando ? 'not-allowed' : 'pointer' }}>
+ style={{ background: '#22c55e', border: 'none', borderRadius: 8, padding: '8px 20px', fontSize: 13, fontWeight: 700, color: '#fff', cursor: !novoNome.trim() || !novaRegra.trim() || salvando ? 'not-allowed' : 'pointer', opacity: !novoNome.trim() || !novaRegra.trim() || salvando ? 0.4 : 1 }}>
  {salvando ? 'Salvando...' : 'Salvar modelo'}
  </button>
  </div>
@@ -234,7 +234,7 @@ function PainelEnvioContrato({ formadosSemContrato }: { formadosSemContrato: num
  <button
  onClick={enviarParaTodos}
  disabled={enviando}
- style={{ background: enviando ? 'var(--avp-border)' : 'var(--avp-accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 600, fontSize: 13, cursor: enviando ? 'not-allowed' : 'pointer', opacity: enviando ? 0.6 : 1, whiteSpace: 'nowrap' }}>
+ style={{ background: 'var(--avp-accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 600, fontSize: 13, cursor: enviando ? 'not-allowed' : 'pointer', opacity: enviando ? 0.5 : 1, whiteSpace: 'nowrap' }}>
  {enviando ? 'Enviando...' : `Enviar para ${formadosSemContrato}`}
  </button>
  </div>
@@ -384,7 +384,7 @@ function GeradorLinkPersonalizado({ acordos }: { acordos: Acordo[] }) {
  />
  </div>
  <button onClick={gerar} disabled={!regra.trim()}
- style={{ alignSelf: 'flex-start', background: regra.trim() ? 'rgba(245,158,11,0.15)' : 'var(--avp-border)', border: `1px solid ${regra.trim() ? 'rgba(245,158,11,0.4)' : 'transparent'}`, color: regra.trim() ? '#fbbf24' : 'var(--avp-text-dim)', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 13, cursor: regra.trim() ? 'pointer' : 'not-allowed' }}>
+ style={{ alignSelf: 'flex-start', background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.4)', color: '#fbbf24', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 13, cursor: regra.trim() ? 'pointer' : 'not-allowed', opacity: regra.trim() ? 1 : 0.4 }}>
  Gerar link
  </button>
  {link && (

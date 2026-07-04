@@ -153,7 +153,7 @@ function ArquivosAula({ aulaId }: { aulaId: string }) {
  type="button"
  onClick={() => fileRef.current?.click()}
  disabled={uploading}
- style={{ background: uploading ? 'var(--avp-border)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 14px', cursor: uploading ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 600, alignSelf: 'flex-start' }}
+ style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 14px', cursor: uploading ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 600, alignSelf: 'flex-start', opacity: uploading ? 0.5 : 1 }}
 >
  {uploading ? 'Enviando...' : 'Selecionar e enviar arquivo'}
  </button>
@@ -889,7 +889,7 @@ export default function AulasCliente({ moduloId, aulasIniciais }: { moduloId: st
  })
  const data = await res.json()
  if (data.aula) setAulas(prev => prev.map(a => a.id === aula.id ? { ...a, publicado: !a.publicado } : a))
- }} style={{ background: aula.publicado ? 'var(--avp-border)' : 'var(--avp-green)', color: aula.publicado ? 'var(--avp-text-dim)' : '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+ }} style={{ background: aula.publicado ? 'rgba(245,158,11,0.12)' : 'var(--avp-green)', color: aula.publicado ? '#f59e0b' : '#fff', border: `1px solid ${aula.publicado ? 'rgba(245,158,11,0.35)' : 'transparent'}`, borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
  {aula.publicado ? 'Despublicar' : 'Publicar'}
  </button>
  <button onClick={() => excluirAula(aula)}

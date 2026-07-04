@@ -140,7 +140,7 @@ export default function BibliotecaAdminCliente({ inicial }: { inicial: Item[] })
  <button type="submit" disabled={salvando} style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>
  {salvando ? 'Salvando...' : 'Salvar'}
  </button>
- <button type="button" onClick={() => setAbrindo(false)} style={{ background: 'var(--avp-border)', color: 'var(--avp-text)', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>
+ <button type="button" onClick={() => setAbrindo(false)} style={{ background: 'transparent', color: 'var(--avp-text-dim)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>
  Cancelar
  </button>
  </div>
@@ -172,7 +172,7 @@ export default function BibliotecaAdminCliente({ inicial }: { inicial: Item[] })
  <button onClick={() => toggleAtivo(item)} style={{ background: item.ativo ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', color: item.ativo ? '#22c55e' : '#ef4444', border: 'none', borderRadius: 6, padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
  {item.ativo ? 'Ativo' : 'Inativo'}
  </button>
- <button onClick={() => abrirEdicao(item)} style={{ background: 'var(--avp-border)', color: 'var(--avp-text)', border: 'none', borderRadius: 6, padding: '6px 12px', fontSize: 12, cursor: 'pointer' }}>
+ <button onClick={() => abrirEdicao(item)} style={{ background: 'rgba(99,102,241,0.1)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 6, padding: '6px 12px', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
  Editar
  </button>
  <button onClick={() => deletar(item.id)} style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: 6, padding: '6px 12px', fontSize: 12, cursor: 'pointer' }}>

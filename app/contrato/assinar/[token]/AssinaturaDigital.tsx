@@ -242,7 +242,7 @@ export default function AssinaturaDigital({
             )}
 
             <button type="submit" disabled={salvandoDados}
-              style={{ background: salvandoDados ? '#d1d5db' : '#1e293b', color: '#fff', border: 'none', borderRadius: 10, padding: '14px', fontWeight: 700, fontSize: 15, cursor: salvandoDados ? 'not-allowed' : 'pointer' }}>
+              style={{ background: '#1e293b', color: '#fff', border: 'none', borderRadius: 10, padding: '14px', fontWeight: 700, fontSize: 15, cursor: salvandoDados ? 'not-allowed' : 'pointer', opacity: salvandoDados ? 0.5 : 1 }}>
               {salvandoDados ? 'Salvando...' : 'Continuar para o contrato →'}
             </button>
           </form>
@@ -268,7 +268,7 @@ export default function AssinaturaDigital({
             </div>
 
             <button onClick={() => leu && setEtapa('assinar')} disabled={!leu}
-              style={{ width: '100%', background: leu ? '#16a34a' : '#d1d5db', color: '#fff', border: 'none', borderRadius: 10, padding: '14px', fontWeight: 700, fontSize: 16, cursor: leu ? 'pointer' : 'not-allowed', transition: 'background 0.2s' }}>
+              style={{ width: '100%', background: '#16a34a', color: '#fff', border: 'none', borderRadius: 10, padding: '14px', fontWeight: 700, fontSize: 16, cursor: leu ? 'pointer' : 'not-allowed', opacity: leu ? 1 : 0.4, transition: 'opacity 0.2s' }}>
               Continuar para assinatura →
             </button>
           </>
@@ -323,7 +323,7 @@ export default function AssinaturaDigital({
                 ← Reler
               </button>
               <button onClick={assinar} disabled={!temAssinatura || enviando}
-                style={{ flex: 1, background: temAssinatura && !enviando ? '#16a34a' : '#d1d5db', color: '#fff', border: 'none', borderRadius: 10, padding: '13px', fontWeight: 700, fontSize: 15, cursor: temAssinatura && !enviando ? 'pointer' : 'not-allowed', transition: 'background 0.2s' }}>
+                style={{ flex: 1, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 10, padding: '13px', fontWeight: 700, fontSize: 15, cursor: temAssinatura && !enviando ? 'pointer' : 'not-allowed', opacity: temAssinatura && !enviando ? 1 : 0.4, transition: 'opacity 0.2s' }}>
                 {enviando ? 'Registrando assinatura...' : 'Assinar Digitalmente'}
               </button>
             </div>

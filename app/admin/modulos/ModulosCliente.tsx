@@ -301,7 +301,7 @@ export default function ModulosCliente({ modulosIniciais, capaDefault }: { modul
  Editar
  </button>
  <button onClick={() => togglePublicado(m)}
- style={{ background: m.publicado ? 'var(--avp-border)' : 'var(--avp-green)', color: m.publicado ? 'var(--avp-text-dim)' : '#fff', border: 'none', borderRadius: 6, padding: '5px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+ style={{ background: m.publicado ? 'rgba(245,158,11,0.12)' : 'var(--avp-green)', color: m.publicado ? '#f59e0b' : '#fff', border: `1px solid ${m.publicado ? 'rgba(245,158,11,0.35)' : 'transparent'}`, borderRadius: 6, padding: '5px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
  {m.publicado ? 'Despublicar' : 'Publicar'}
  </button>
  <button onClick={() => excluirModulo(m)}

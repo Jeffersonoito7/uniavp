@@ -261,7 +261,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
  onChange={e => { const f = e.target.files?.[0]; if (f) uploadCertImg('template', f); e.target.value = '' }} />
  <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
  <button onClick={() => certTemplateRef.current?.click()} disabled={certUploading === 'template'}
- style={{ flex: 1, background: certUploading === 'template' ? 'var(--avp-border)' : certTemplateUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+ style={{ flex: 1, background: certTemplateUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: certUploading === 'template' ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, opacity: certUploading === 'template' ? 0.5 : 1 }}>
  {certUploading === 'template' ? 'Enviando...' : certTemplateUrl ? 'Trocar template' : 'Subir template'}
  </button>
  {certTemplateUrl && <button onClick={() => setCertTemplateUrl('')}
@@ -328,7 +328,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 1 }}>Tamanho (%)</label>
  <div style={{ display: 'flex', gap: 6 }}>
  <input type="number" min={1} max={8} step={0.1} style={{ ...inp, flex: 1 }} value={certNomeTamanho} onChange={e => setCertNomeTamanho(e.target.value)} />
- <button onClick={() => setCertNomeTamanho('4.5')} style={{ background: 'var(--avp-border)', border: 'none', borderRadius: 8, padding: '0 10px', color: 'var(--avp-text-dim)', fontSize: 11, cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' as const }}>⟳</button>
+ <button onClick={() => setCertNomeTamanho('4.5')} style={{ background: 'transparent', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '0 10px', color: 'var(--avp-text-dim)', fontSize: 11, cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' as const }}>⟳</button>
  </div>
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>% da largura · padrão: 4.5</p>
  </div>
@@ -380,7 +380,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
  onChange={e => { const f = e.target.files?.[0]; if (f) uploadCertImg('assinatura', f); e.target.value = '' }} />
  <div style={{ display: 'flex', gap: 8 }}>
  <button onClick={() => certAssinaturaRef.current?.click()} disabled={certUploading === 'assinatura'}
- style={{ flex: 1, background: certUploading === 'assinatura' ? 'var(--avp-border)' : certAssinaturaUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+ style={{ flex: 1, background: certAssinaturaUrl ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: certUploading === 'assinatura' ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, opacity: certUploading === 'assinatura' ? 0.5 : 1 }}>
  {certUploading === 'assinatura' ? 'Enviando...' : certAssinaturaUrl ? 'Trocar' : 'Subir assinatura'}
  </button>
  {certAssinaturaUrl && <button onClick={() => setCertAssinaturaUrl('')} style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}></button>}
@@ -425,7 +425,7 @@ export default function ModuloEditorCliente({ modulo: inicial, aulas }: { modulo
  onChange={e => { const f = e.target.files?.[0]; if (f) uploadCertImg(campo, f); e.target.value = '' }} />
  <div style={{ display: 'flex', gap: 6 }}>
  <button onClick={() => ref.current?.click()} disabled={certUploading === campo}
- style={{ flex: 1, background: certUploading === campo ? 'var(--avp-border)' : val ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
+ style={{ flex: 1, background: val ? 'var(--avp-green)' : 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px', cursor: certUploading === campo ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 700, opacity: certUploading === campo ? 0.5 : 1 }}>
  {certUploading === campo ? 'Enviando...' : val ? 'Trocar' : 'Subir'}
  </button>
  {val && <button onClick={() => setVal('')} style={{ background: '#e6394620', border: '1px solid #e6394640', color: 'var(--avp-danger)', borderRadius: 8, padding: '8px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}></button>}

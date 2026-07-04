@@ -96,7 +96,7 @@ export default function AdminsCliente({ adminsIniciais, meuUserId }: { adminsIni
  </p>
  </div>
  <button onClick={() => setShowForm(s => !s)}
- style={{ background: showForm ? 'var(--avp-border)' : 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 22px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>
+ style={{ background: showForm ? 'transparent' : 'var(--avp-green)', color: showForm ? 'var(--avp-text-dim)' : '#fff', border: showForm ? '1px solid var(--avp-border)' : 'none', borderRadius: 10, padding: '10px 22px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>
  {showForm ? 'Cancelar' : '+ Adicionar gerente'}
  </button>
  </div>
