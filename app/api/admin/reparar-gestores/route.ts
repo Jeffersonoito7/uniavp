@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
-import { processarPixTxid, vincularAlunosDoGestorNoFree } from '@/lib/pix-processor'
+import { processarPixTxid, reconciliarEquipeGestor } from '@/lib/pix-processor'
 import { vencimentoMeses } from '@/lib/date-utils'
 import { getAppUrl } from '@/lib/get-app-url'
 import { enviarWhatsAppComFila, getInstanciaTenant } from '@/lib/whatsapp'
@@ -84,12 +84,13 @@ export async function POST(req: NextRequest) {
         log.error('falha ao notificar gestor reparado', { gestor_id: gestor.id, err: String(e) })
       }
 
-      // Ao ativar, vincula automaticamente alunos do FREE com whatsapp em formato diferente
+      // Reconcilia toda a equipe: DDI + indicador_id → gestor_whatsapp
       try {
-        const { atualizados } = await vincularAlunosDoGestorNoFree(gestor.whatsapp, gestor.nome, adminClient)
-        if (atualizados > 0) detalhes.push(`OK ${gestor.nome}: ${atualizados} aluno(s) do FREE vinculados`)
+        const rec = await reconciliarEquipeGestor(gestor.whatsapp, gestor.nome, adminClient)
+        const total = rec.ddi + rec.indicador
+        if (total > 0) detalhes.push(`OK ${gestor.nome}: ${total} aluno(s) reconciliados (ddi:${rec.ddi} indicador:${rec.indicador})`)
       } catch (e) {
-        log.error('falha ao vincular alunos free no reparo', { gestor_id: gestor.id, err: String(e) })
+        log.error('falha ao reconciliar equipe no reparo', { gestor_id: gestor.id, err: String(e) })
       }
 
       reparados++
@@ -124,9 +125,33 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const mensagem = reparados === 0
-    ? `Nenhum caso pendente encontrado. ${txidsPendentes.length} txid(s) pendente(s) verificado(s) na EFI.`
+  // ── Fase 3: reconcilia equipe de todos os gestores PRO ativos ─────────────
+  // Corrige alunos captados quando o gestor ainda era FREE (indicador_id orfao).
+  // Roda sempre pois e idempotente e barata — so atualiza quem tem gestor_whatsapp vazio.
+  const { data: todosAtivos } = await adminClient
+    .from('gestores')
+    .select('id, nome, whatsapp')
+    .eq('ativo', true)
+    .eq('status_assinatura', 'ativo')
+    .limit(200)
+
+  let totalReconciliados = 0
+  for (const g of todosAtivos ?? []) {
+    try {
+      const rec = await reconciliarEquipeGestor(g.whatsapp, g.nome, adminClient)
+      const total = rec.ddi + rec.indicador
+      if (total > 0) {
+        detalhes.push(`EQUIPE ${g.nome}: ${total} aluno(s) reconciliados (ddi:${rec.ddi} indicador:${rec.indicador})`)
+        totalReconciliados += total
+      }
+    } catch (e) {
+      log.error('falha na fase3 reconciliacao', { gestor_id: g.id, err: String(e) })
+    }
+  }
+
+  const mensagem = reparados === 0 && totalReconciliados === 0
+    ? `Nenhum caso pendente encontrado. ${txidsPendentes.length} txid(s) pendente(s) verificado(s) na EFI. ${todosAtivos?.length ?? 0} gestor(es) verificados, equipes OK.`
     : undefined
 
-  return NextResponse.json({ ok: true, reparados, detalhes, mensagem })
+  return NextResponse.json({ ok: true, reparados, totalReconciliados, detalhes, mensagem })
 }

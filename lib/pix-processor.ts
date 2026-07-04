@@ -51,6 +51,72 @@ export async function vincularAlunosDoGestorNoFree(
   return { atualizados: ids.length }
 }
 
+/**
+ * Ao virar PRO, migra alunos que foram captados via link FREE do consultor
+ * (vinculados por indicador_id na tabela indicadores, com gestor_whatsapp vazio).
+ * Essa e a causa raiz da "perda de equipe": o FREE capta via /captacao?ref=wpp
+ * e os alunos ficam com indicador_id preenchido mas gestor_whatsapp vazio.
+ * Ao virar PRO, o dashboard busca apenas por gestor_whatsapp e nao encontra ninguem.
+ */
+export async function migrarAlunosDeIndicadorParaGestor(
+  gestorWhatsapp: string,
+  gestorNome: string,
+  adminClient: ReturnType<typeof createServiceRoleClient>
+): Promise<{ atualizados: number }> {
+  const wpp = gestorWhatsapp
+  const wppSemDDI = wpp.startsWith('55') && wpp.length > 11 ? wpp.slice(2) : wpp
+  const wppComDDI = wpp.startsWith('55') ? wpp : `55${wpp}`
+  const variacoes = [...new Set([wpp, wppSemDDI, wppComDDI])]
+
+  // Busca o registro do consultor na tabela indicadores (pode estar em qualquer formato de DDI)
+  const { data: indicadorRows } = await adminClient
+    .from('indicadores')
+    .select('id')
+    .eq('tipo', 'consultor')
+    .in('whatsapp', variacoes)
+
+  if (!indicadorRows?.length) return { atualizados: 0 }
+
+  const indicadorIds = indicadorRows.map(r => r.id)
+
+  // Busca alunos com indicador_id apontando para esse consultor
+  // e que ainda nao tem gestor_whatsapp definido (nunca foram reconciliados)
+  const { data: alunosSemGestor } = await (adminClient as any)
+    .from('alunos')
+    .select('id')
+    .in('indicador_id', indicadorIds)
+    .or('gestor_whatsapp.is.null,gestor_whatsapp.eq.')
+
+  if (!alunosSemGestor?.length) return { atualizados: 0 }
+
+  const ids = alunosSemGestor.map((a: { id: string }) => a.id)
+  const { error } = await adminClient
+    .from('alunos')
+    .update({ gestor_whatsapp: wpp, gestor_nome: gestorNome })
+    .in('id', ids)
+
+  if (error) throw new Error(error.message)
+
+  log.info('alunos do indicador free migrados para gestor PRO', { gestorWhatsapp: wpp, atualizados: ids.length })
+  return { atualizados: ids.length }
+}
+
+/**
+ * Ponto unico de reconciliacao de equipe ao ativar um gestor PRO.
+ * Chama vincularAlunosDoGestorNoFree (corrige DDI) e migrarAlunosDeIndicadorParaGestor (corrige indicador_id).
+ */
+export async function reconciliarEquipeGestor(
+  gestorWhatsapp: string,
+  gestorNome: string,
+  adminClient: ReturnType<typeof createServiceRoleClient>
+): Promise<{ ddi: number; indicador: number }> {
+  const [r1, r2] = await Promise.all([
+    vincularAlunosDoGestorNoFree(gestorWhatsapp, gestorNome, adminClient),
+    migrarAlunosDeIndicadorParaGestor(gestorWhatsapp, gestorNome, adminClient),
+  ])
+  return { ddi: r1.atualizados, indicador: r2.atualizados }
+}
+
 export async function processarPixTxid(
   txid: string,
   adminClient: ReturnType<typeof createServiceRoleClient>
@@ -255,12 +321,14 @@ export async function processarPixTxid(
           log.error('falha ao conceder créditos boas-vindas', { err: String(e), gestorId: gestor.id })
         }
 
-        // Puxa automaticamente alunos que eram do gestor no FREE mas com whatsapp em formato diferente.
-        // Caso comum: gestor tinha alunos com gestor_whatsapp='11999999999' e agora é PRO com '5511999999999'.
+        // Reconcilia toda a equipe do novo PRO:
+        // 1) corrige variacoes de DDI em gestor_whatsapp
+        // 2) migra alunos captados via indicador_id (link FREE) para gestor_whatsapp
         try {
-          await vincularAlunosDoGestorNoFree(gestor.whatsapp, gestor.nome, adminClient)
+          const resultado = await reconciliarEquipeGestor(gestor.whatsapp, gestor.nome, adminClient)
+          log.info('equipe reconciliada no upgrade PIX', { gestorId: gestor.id, ...resultado })
         } catch (e) {
-          log.error('falha ao vincular alunos do free no upgrade', { err: String(e), gestorId: gestor.id })
+          log.error('falha ao reconciliar equipe no upgrade', { err: String(e), gestorId: gestor.id })
         }
       }
     }

@@ -5,6 +5,7 @@ import { getAdminContext } from '@/lib/admin-context'
 import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
 import { audit, getIp } from '@/lib/audit'
+import { reconciliarEquipeGestor } from '@/lib/pix-processor'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,6 +30,11 @@ export async function POST(req: NextRequest) {
 
   const { data: gestor, error } = await q.select('id, nome, whatsapp').single()
   if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
+
+  // Reconcilia equipe: migra alunos captados quando era FREE (indicador_id) e corrige DDI
+  if (gestor?.whatsapp) {
+    reconciliarEquipeGestor(gestor.whatsapp, gestor.nome, adminClient).catch(() => {})
+  }
 
   // Notifica o gestor via WhatsApp (fire-and-forget)
   if (gestor?.whatsapp) {
