@@ -40,6 +40,7 @@ export default function AssinaturaDigital({
   const [nome, setNome] = useState(nomeAssinante ?? '')
   const [email, setEmail] = useState(emailAssinante ?? '')
   const [cpf, setCpf] = useState(cpfAssinante ?? '')
+  const [endereco, setEndereco] = useState('')
   const [corpoAtual, setCorpoAtual] = useState(corpoHtml)
   const [salvandoDados, setSalvandoDados] = useState(false)
 
@@ -114,7 +115,7 @@ export default function AssinaturaDigital({
     const res = await fetch(`/api/contrato/assinar/${token}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome: nome.trim(), cpf: cpf.trim(), email: email.trim() }),
+      body: JSON.stringify({ nome: nome.trim(), cpf: cpf.trim(), email: email.trim(), endereco: endereco.trim() }),
     })
     if (!res.ok) {
       const d = await res.json().catch(() => ({}))
@@ -231,9 +232,14 @@ export default function AssinaturaDigital({
                   <input style={inputStyle} value={cpf} onChange={e => setCpf(e.target.value)} placeholder="000.000.000-00" />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 13, color: '#374151', marginBottom: 6, fontWeight: 600 }}>Email (para receber copia)</label>
+                  <label style={{ display: 'block', fontSize: 13, color: '#374151', marginBottom: 6, fontWeight: 600 }}>E-mail (para receber cópia)</label>
                   <input type="email" style={inputStyle} value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
                 </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 13, color: '#374151', marginBottom: 6, fontWeight: 600 }}>Endereço</label>
+                <input style={inputStyle} value={endereco} onChange={e => setEndereco(e.target.value)} placeholder="Rua, número, bairro, cidade/UF, CEP" />
               </div>
             </div>
 

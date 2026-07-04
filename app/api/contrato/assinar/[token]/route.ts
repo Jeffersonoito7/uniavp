@@ -58,7 +58,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { token: str
     return NextResponse.json({ error: 'Link expirado.' }, { status: 410 })
   }
 
-  const { nome, cpf, email } = await req.json()
+  const { nome, cpf, email, endereco } = await req.json()
   if (!nome?.trim()) return NextResponse.json({ error: 'Nome obrigatorio.' }, { status: 400 })
 
   // Salva dados do destinatario
@@ -80,6 +80,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { token: str
       nome: nome.trim(),
       cpf: cpf?.trim() || '',
       email: email?.trim() || '',
+      endereco: endereco?.trim() || '',
       data: new Date().toLocaleDateString('pt-BR'),
     })
     await adminClient.from('contratos_digitais').update({ corpo_renderizado: corpoAtualizado }).eq('id', assinante.contrato_id)
