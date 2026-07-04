@@ -53,7 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
  </head>
  <body style={{ overflowX: 'hidden' }}>
  {/* Aplica tema antes da hidratação para evitar flash */}
- <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('avp-theme')==='light'){var e=document.documentElement;e.classList.add('light');var v={'--avp-black':'#f1f5f9','--avp-dark':'#e2e8f0','--avp-card':'#ffffff','--avp-card-hover':'#f8fafc','--avp-border':'#cbd5e1','--avp-text':'#0f172a','--avp-text-dim':'#475569','--avp-header-bg':'rgba(241,245,249,0.97)','--avp-sidebar':'#ffffff'};Object.keys(v).forEach(function(k){e.style.setProperty(k,v[k])})}}catch(e){}})()` }} />
+ <script dangerouslySetInnerHTML={{ __html: `(function(){try{var m=localStorage.getItem('avp-theme')||'dark';var isLight=m==='light'||(m==='system'&&!window.matchMedia('(prefers-color-scheme: dark)').matches);if(isLight){var e=document.documentElement;e.classList.add('light');var v={'--avp-black':'#f1f5f9','--avp-dark':'#e2e8f0','--avp-card':'#ffffff','--avp-card-hover':'#f8fafc','--avp-border':'#cbd5e1','--avp-text':'#0f172a','--avp-text-dim':'#475569','--avp-header-bg':'rgba(241,245,249,0.97)','--avp-sidebar':'#ffffff'};Object.keys(v).forEach(function(k){e.style.setProperty(k,v[k])})}}catch(e){}})()` }} />
  <RegisterSW />
  {children}
  <InstalarApp />
