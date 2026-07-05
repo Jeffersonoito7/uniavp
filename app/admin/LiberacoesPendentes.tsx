@@ -17,6 +17,7 @@ type Aguardando = {
   aula_id: string
   proxima_aula_liberada_em: string
   created_at: string
+  proxima_aula_titulo: string | null
   aluno: { nome: string; whatsapp: string } | null
   aula: { titulo: string; modulo: { titulo: string } | null } | null
 }
@@ -180,8 +181,13 @@ export default function LiberacoesPendentes() {
                   </div>
                   <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>
                     {a.aula?.modulo?.titulo && <span>{a.aula.modulo.titulo} {'>'} </span>}
-                    <strong style={{ color: 'var(--avp-text)' }}>{a.aula?.titulo}</strong>
+                    <span style={{ color: 'var(--avp-text-dim)' }}>Concluiu: {a.aula?.titulo}</span>
                   </p>
+                  {a.proxima_aula_titulo && (
+                    <p style={{ fontSize: 12, color: 'var(--avp-text)', margin: '2px 0 0' }}>
+                      Desbloqueara: <strong>{a.proxima_aula_titulo}</strong>
+                    </p>
+                  )}
                 </div>
                 <div style={{ textAlign: 'center', minWidth: 120 }}>
                   <p style={{ fontSize: 12, color: '#f59e0b', fontWeight: 700, margin: 0 }}>
