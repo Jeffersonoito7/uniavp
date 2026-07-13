@@ -71,7 +71,7 @@ export async function PUT(req: NextRequest) {
     await (adminClient.from('alunos') as any).update(extraUpdates).eq('id', id)
   }
 
-  const authUserId = aluno.user_id ?? user_id
+  let authUserId = aluno.user_id ?? user_id
   if (nova_senha && nova_senha.length >= 6 && !authUserId) {
     return NextResponse.json({ error: 'Este consultor ainda não tem conta ativa. Use "Reenviar Acesso" primeiro para criar a conta, depois redefina a senha.' }, { status: 400 })
   }
@@ -81,8 +81,34 @@ export async function PUT(req: NextRequest) {
     if (nova_senha && nova_senha.length >= 6) authUpdates.password = nova_senha
     if (Object.keys(authUpdates).length > 0) {
       const { error: authError } = await adminClient.auth.admin.updateUserById(authUserId, authUpdates)
-      if (authError && nova_senha) {
-        return NextResponse.json({ error: 'Dados salvos, mas falha ao alterar a senha: ' + authError.message }, { status: 500 })
+      if (authError) {
+        // auth user pode ter sido deletado — tenta localizar pelo email atual
+        const emailBusca = email || aluno.email
+        if (emailBusca && nova_senha) {
+          let authEncontrado: string | null = null
+          let page = 1
+          while (!authEncontrado) {
+            const { data: lista } = await adminClient.auth.admin.listUsers({ page, perPage: 1000 })
+            if (!lista?.users?.length) break
+            const encontrado = lista.users.find(u => u.email === emailBusca)
+            if (encontrado) { authEncontrado = encontrado.id; break }
+            if (lista.users.length < 1000) break
+            page++
+          }
+          if (authEncontrado) {
+            // Reconecta o user_id no registro do aluno e aplica as atualizações
+            await (adminClient.from('alunos') as any).update({ user_id: authEncontrado }).eq('id', id)
+            authUserId = authEncontrado
+            const { error: authError2 } = await adminClient.auth.admin.updateUserById(authEncontrado, authUpdates)
+            if (authError2 && nova_senha) {
+              return NextResponse.json({ error: 'Dados salvos, mas falha ao alterar a senha: ' + authError2.message }, { status: 500 })
+            }
+          } else {
+            return NextResponse.json({ error: 'Dados salvos, mas o usuário não tem conta de acesso ativa. Use "Reenviar Acesso" para criar o acesso e depois redefina a senha.' }, { status: 500 })
+          }
+        } else if (nova_senha) {
+          return NextResponse.json({ error: 'Dados salvos, mas falha ao alterar a senha: ' + authError.message }, { status: 500 })
+        }
       }
     }
   }
