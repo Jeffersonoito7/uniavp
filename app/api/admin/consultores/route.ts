@@ -60,7 +60,7 @@ export async function PUT(req: NextRequest) {
 
   let putQuery = adminClient.from('alunos').update(updates).eq('id', id)
   if (ctx.tenantId) putQuery = putQuery.eq('tenant_id', ctx.tenantId)
-  const { data: aluno, error } = await putQuery.select('*').single()
+  const { data: aluno, error } = await putQuery.select('*, indicador:indicadores(whatsapp, nome)').single()
   if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   // Salva CPF e especialista separado (colunas adicionadas via migration, podem não estar nos tipos gerados)
