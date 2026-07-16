@@ -46,14 +46,12 @@ export async function PUT(req: NextRequest) {
         if (ctx.tenantId) alunoIndQuery = alunoIndQuery.eq('tenant_id', ctx.tenantId)
         const { data: alunoInd } = await alunoIndQuery.maybeSingle()
 
-        if (alunoInd) {
-          const { data: novoInd } = await adminClient.from('indicadores')
-            .insert({ whatsapp: wpp, nome: alunoInd.nome, tipo: 'aluno', ...(ctx.tenantId ? { tenant_id: ctx.tenantId } : {}) })
-            .select('id').single()
-          if (novoInd) updates.indicador_id = novoInd.id
-        } else {
-          return NextResponse.json({ error: 'Indicador não encontrado com este WhatsApp' }, { status: 400 })
-        }
+        const nomeIndicador = alunoInd?.nome ?? wpp
+        const tipoIndicador = alunoInd ? 'aluno' : 'externo'
+        const { data: novoInd } = await adminClient.from('indicadores')
+          .insert({ whatsapp: wpp, nome: nomeIndicador, tipo: tipoIndicador, ...(ctx.tenantId ? { tenant_id: ctx.tenantId } : {}) })
+          .select('id').single()
+        if (novoInd) updates.indicador_id = novoInd.id
       }
     }
   }
