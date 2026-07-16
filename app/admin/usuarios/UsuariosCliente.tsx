@@ -46,7 +46,8 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
  setEditForm({ nome: c.nome, email: c.email, whatsapp: c.whatsapp, status: c.status, gestor_nome: c.gestor_nome ?? '', gestor_whatsapp: c.gestor_whatsapp ?? '', indicador_whatsapp: indWpp })
  } else {
  const g = dado as Gestor
- setEditForm({ nome: g.nome, email: g.email, whatsapp: g.whatsapp, status: g.ativo ? 'ativo' : 'inativo', gestor_nome: '', gestor_whatsapp: '' })
+ setIndicadorOriginal('')
+ setEditForm({ nome: g.nome, email: g.email, whatsapp: g.whatsapp, status: g.ativo ? 'ativo' : 'inativo', gestor_nome: '', gestor_whatsapp: '', indicador_whatsapp: '' })
  }
  }
 
