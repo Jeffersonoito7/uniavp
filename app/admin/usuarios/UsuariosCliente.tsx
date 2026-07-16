@@ -21,6 +21,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
  // Modal de edição
  const [editando, setEditando] = useState<{ tipo: 'consultor' | 'gestor'; dado: Consultor | Gestor } | null>(null)
  const [editForm, setEditForm] = useState({ nome: '', email: '', whatsapp: '', status: 'ativo', gestor_nome: '', gestor_whatsapp: '', indicador_whatsapp: '' })
+ const [indicadorOriginal, setIndicadorOriginal] = useState('')
  const [salvando, setSalvando] = useState(false)
 
  // Modal de reset de senha
@@ -40,7 +41,9 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
  setEditando({ tipo, dado })
  if (tipo === 'consultor') {
  const c = dado as Consultor
- setEditForm({ nome: c.nome, email: c.email, whatsapp: c.whatsapp, status: c.status, gestor_nome: c.gestor_nome ?? '', gestor_whatsapp: c.gestor_whatsapp ?? '', indicador_whatsapp: c.indicador?.whatsapp ?? '' })
+ const indWpp = c.indicador?.whatsapp ?? ''
+ setIndicadorOriginal(indWpp)
+ setEditForm({ nome: c.nome, email: c.email, whatsapp: c.whatsapp, status: c.status, gestor_nome: c.gestor_nome ?? '', gestor_whatsapp: c.gestor_whatsapp ?? '', indicador_whatsapp: indWpp })
  } else {
  const g = dado as Gestor
  setEditForm({ nome: g.nome, email: g.email, whatsapp: g.whatsapp, status: g.ativo ? 'ativo' : 'inativo', gestor_nome: '', gestor_whatsapp: '' })
@@ -53,7 +56,19 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
  if (editando.tipo === 'consultor') {
  const res = await fetch('/api/admin/consultores', {
  method: 'PUT', headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ id: editando.dado.id, nome: editForm.nome, email: editForm.email, whatsapp: editForm.whatsapp.replace(/\D/g, ''), status: editForm.status, gestor_nome: editForm.gestor_nome, gestor_whatsapp: editForm.gestor_whatsapp, indicador_whatsapp: editForm.indicador_whatsapp.replace(/\D/g, '') || null }),
+ body: JSON.stringify({
+   id: editando.dado.id,
+   nome: editForm.nome,
+   email: editForm.email,
+   whatsapp: editForm.whatsapp.replace(/\D/g, ''),
+   status: editForm.status,
+   gestor_nome: editForm.gestor_nome,
+   gestor_whatsapp: editForm.gestor_whatsapp,
+   // só envia indicador_whatsapp se o admin alterou o campo
+   ...(editForm.indicador_whatsapp !== indicadorOriginal
+     ? { indicador_whatsapp: editForm.indicador_whatsapp.replace(/\D/g, '') || null }
+     : {}),
+ }),
  })
  const data = await res.json()
  if (data.aluno) {
