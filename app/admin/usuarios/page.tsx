@@ -16,7 +16,7 @@ export default async function UsuariosPage() {
 
  const [{ data: consultores }, { data: gestores }] = await Promise.all([
  adminClient.from('alunos')
- .select('id, nome, whatsapp, email, status, created_at, gestor_nome, gestor_whatsapp, user_id')
+ .select('id, nome, whatsapp, email, status, created_at, gestor_nome, gestor_whatsapp, user_id, indicador:indicadores(whatsapp, nome)')
  .order('created_at', { ascending: false }),
  adminClient.from('gestores')
  .select('id, nome, email, whatsapp, ativo, created_at, user_id')

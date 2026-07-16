@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import PhoneInput from '@/app/components/PhoneInput'
 
-type Consultor = { id: string; nome: string; whatsapp: string; email: string; status: string; created_at: string | null; gestor_nome?: string | null; gestor_whatsapp?: string | null; user_id: string | null }
+type Consultor = { id: string; nome: string; whatsapp: string; email: string; status: string; created_at: string | null; gestor_nome?: string | null; gestor_whatsapp?: string | null; user_id: string | null; indicador?: { whatsapp: string | null; nome: string } | null }
 type Gestor = { id: string; nome: string; email: string; whatsapp: string; ativo: boolean | null; created_at: string | null; user_id: string | null }
 
 const EyeIcon = ({ open }: { open: boolean }) => open
@@ -20,7 +20,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
 
  // Modal de edição
  const [editando, setEditando] = useState<{ tipo: 'consultor' | 'gestor'; dado: Consultor | Gestor } | null>(null)
- const [editForm, setEditForm] = useState({ nome: '', email: '', whatsapp: '', status: 'ativo', gestor_nome: '', gestor_whatsapp: '' })
+ const [editForm, setEditForm] = useState({ nome: '', email: '', whatsapp: '', status: 'ativo', gestor_nome: '', gestor_whatsapp: '', indicador_whatsapp: '' })
  const [salvando, setSalvando] = useState(false)
 
  // Modal de reset de senha
@@ -40,7 +40,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
  setEditando({ tipo, dado })
  if (tipo === 'consultor') {
  const c = dado as Consultor
- setEditForm({ nome: c.nome, email: c.email, whatsapp: c.whatsapp, status: c.status, gestor_nome: c.gestor_nome ?? '', gestor_whatsapp: c.gestor_whatsapp ?? '' })
+ setEditForm({ nome: c.nome, email: c.email, whatsapp: c.whatsapp, status: c.status, gestor_nome: c.gestor_nome ?? '', gestor_whatsapp: c.gestor_whatsapp ?? '', indicador_whatsapp: c.indicador?.whatsapp ?? '' })
  } else {
  const g = dado as Gestor
  setEditForm({ nome: g.nome, email: g.email, whatsapp: g.whatsapp, status: g.ativo ? 'ativo' : 'inativo', gestor_nome: '', gestor_whatsapp: '' })
@@ -53,7 +53,7 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
  if (editando.tipo === 'consultor') {
  const res = await fetch('/api/admin/consultores', {
  method: 'PUT', headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ id: editando.dado.id, nome: editForm.nome, email: editForm.email, whatsapp: editForm.whatsapp.replace(/\D/g, ''), status: editForm.status, gestor_nome: editForm.gestor_nome, gestor_whatsapp: editForm.gestor_whatsapp }),
+ body: JSON.stringify({ id: editando.dado.id, nome: editForm.nome, email: editForm.email, whatsapp: editForm.whatsapp.replace(/\D/g, ''), status: editForm.status, gestor_nome: editForm.gestor_nome, gestor_whatsapp: editForm.gestor_whatsapp, indicador_whatsapp: editForm.indicador_whatsapp.replace(/\D/g, '') || null }),
  })
  const data = await res.json()
  if (data.aluno) {
@@ -261,6 +261,11 @@ export default function UsuariosCliente({ consultoresIniciais, gestoresIniciais 
  </div>
  <div><label style={lbl}>Nome do Gestor</label><input style={inp} value={editForm.gestor_nome} onChange={e => setEditForm(p => ({ ...p, gestor_nome: e.target.value }))} /></div>
  <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>WhatsApp do Gestor</label><PhoneInput value={editForm.gestor_whatsapp} onChange={v => setEditForm(p => ({ ...p, gestor_whatsapp: v }))} placeholder="WhatsApp do gestor" /></div>
+ <div style={{ gridColumn: '1 / -1' }}>
+   <label style={lbl}>WhatsApp do Indicador</label>
+   <PhoneInput value={editForm.indicador_whatsapp} onChange={v => setEditForm(p => ({ ...p, indicador_whatsapp: v }))} placeholder="Deixe vazio para remover" />
+   <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>Troca o indicador. Use quando o aluno se cadastrou pelo link errado.</p>
+ </div>
  </>
  ) : (
  <div>
