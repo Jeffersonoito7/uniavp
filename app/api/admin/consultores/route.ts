@@ -42,16 +42,32 @@ export async function PUT(req: NextRequest) {
       if (indExistente) {
         updates.indicador_id = indExistente.id
       } else {
-        let alunoIndQuery = adminClient.from('alunos').select('id, nome').eq('whatsapp', wpp)
-        if (ctx.tenantId) alunoIndQuery = alunoIndQuery.eq('tenant_id', ctx.tenantId)
-        const { data: alunoInd } = await alunoIndQuery.maybeSingle()
+        // Busca sem filtro de tenant para evitar falso "não encontrado"
+        const { data: indSemTenant } = await adminClient.from('indicadores')
+          .select('id').eq('whatsapp', wpp).maybeSingle()
 
-        const nomeIndicador = alunoInd?.nome ?? wpp
-        const tipoIndicador = alunoInd ? 'aluno' : 'externo'
-        const { data: novoInd } = await adminClient.from('indicadores')
-          .insert({ whatsapp: wpp, nome: nomeIndicador, tipo: tipoIndicador, ...(ctx.tenantId ? { tenant_id: ctx.tenantId } : {}) })
-          .select('id').single()
-        if (novoInd) updates.indicador_id = novoInd.id
+        if (indSemTenant) {
+          updates.indicador_id = indSemTenant.id
+        } else {
+          let alunoIndQuery = adminClient.from('alunos').select('id, nome').eq('whatsapp', wpp)
+          if (ctx.tenantId) alunoIndQuery = alunoIndQuery.eq('tenant_id', ctx.tenantId)
+          const { data: alunoInd } = await alunoIndQuery.maybeSingle()
+
+          const nomeIndicador = alunoInd?.nome ?? wpp
+          const tipoIndicador = alunoInd ? 'aluno' : 'externo'
+          const { data: novoInd, error: insertErr } = await adminClient.from('indicadores')
+            .insert({ whatsapp: wpp, nome: nomeIndicador, tipo: tipoIndicador, ...(ctx.tenantId ? { tenant_id: ctx.tenantId } : {}) })
+            .select('id').single()
+
+          if (novoInd) {
+            updates.indicador_id = novoInd.id
+          } else if (insertErr) {
+            // Conflito de unique: busca novamente sem filtro
+            const { data: indConflito } = await adminClient.from('indicadores')
+              .select('id').eq('whatsapp', wpp).maybeSingle()
+            if (indConflito) updates.indicador_id = indConflito.id
+          }
+        }
       }
     }
   }
