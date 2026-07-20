@@ -195,16 +195,21 @@ export default function CertificadoPopup({
  {imgCarregada && (<>
  {/* Nome */}
  <div style={{
- position: 'absolute', left: '50%', top: `${nomeY}%`,
- transform: 'translate(-50%, -50%)',
- width: '82%', textAlign: 'center',
+ position: 'absolute', left: 0, right: 0, top: `${nomeY}%`,
+ transform: 'translateY(-50%)',
+ textAlign: 'center',
+ overflow: 'hidden',
+ pointerEvents: 'none',
+ }}>
+ <span style={{
+ display: 'inline-block',
  fontFamily: fonte.family, fontWeight: Number(fonte.weight), fontStyle: fonte.style as any,
  fontSize: `${Math.min(nomeFontePct * 100, 5.5)}cqw`, color: nomeCor,
  textTransform: 'uppercase', letterSpacing: 2, lineHeight: 1.2,
- whiteSpace: 'nowrap', overflow: 'hidden',
- pointerEvents: 'none',
+ whiteSpace: 'nowrap',
+ transform: `scaleX(${Math.min(1, 18 / Math.max(nomeAluno.length, 1))})`,
+ transformOrigin: '50% 50%',
  }}>
- <span style={{ display: 'inline-block', transform: `scaleX(${Math.min(1, 18 / Math.max(nomeAluno.length, 1))})`, transformOrigin: 'center' }}>
  {nomeAluno}
  </span>
  </div>
