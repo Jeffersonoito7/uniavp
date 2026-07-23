@@ -13,6 +13,7 @@ export type AuditAcao =
   | 'aluno.criado'
   | 'aluno.deletado'
   | 'aluno.status_alterado'
+  | 'aluno.editado'
   | 'aluno.senha_resetada'
   | 'contrato.assinado'
   | 'contrato.aditivo.assinado'

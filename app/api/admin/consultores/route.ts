@@ -82,7 +82,8 @@ export async function PUT(req: NextRequest) {
   if (cpf !== undefined) extraUpdates.cpf = cpf ? String(cpf).replace(/\D/g, '') || null : null
   if (especialista !== undefined) extraUpdates.especialista = !!especialista
   if (Object.keys(extraUpdates).length > 0) {
-    await (adminClient.from('alunos') as any).update(extraUpdates).eq('id', id)
+    const { error: extraErr } = await (adminClient.from('alunos') as any).update(extraUpdates).eq('id', id)
+    if (extraErr) return NextResponse.json({ error: 'Dados principais salvos, mas falha ao salvar CPF/especialista: ' + extraErr.message }, { status: 500 })
   }
 
   let authUserId = aluno.user_id ?? user_id
@@ -101,7 +102,7 @@ export async function PUT(req: NextRequest) {
         if (emailBusca && nova_senha) {
           let authEncontrado: string | null = null
           let page = 1
-          while (!authEncontrado) {
+          while (!authEncontrado && page <= 50) {
             const { data: lista } = await adminClient.auth.admin.listUsers({ page, perPage: 1000 })
             if (!lista?.users?.length) break
             const encontrado = lista.users.find(u => u.email === emailBusca)
@@ -127,10 +128,12 @@ export async function PUT(req: NextRequest) {
     }
   }
 
-  // Audit: distingue alteracao de status de edicao geral
-  const acao = status !== undefined && status !== dadosAnteriores?.status
-    ? 'aluno.status_alterado'
-    : nova_senha ? 'aluno.senha_resetada' : 'aluno.status_alterado'
+  // Audit: identifica a ação real para não corromper o histórico
+  const acao = nova_senha
+    ? 'aluno.senha_resetada'
+    : (status !== undefined && status !== dadosAnteriores?.status)
+      ? 'aluno.status_alterado'
+      : 'aluno.editado'
 
   await audit({
     acao,
@@ -177,7 +180,7 @@ export async function DELETE(req: NextRequest) {
   } else if (aluno?.email) {
     let authExistente = null
     let page = 1
-    while (!authExistente) {
+    while (!authExistente && page <= 50) {
       const { data: lista } = await adminClient.auth.admin.listUsers({ page, perPage: 1000 })
       if (!lista?.users?.length) break
       authExistente = lista.users.find(u => u.email === aluno.email) ?? null

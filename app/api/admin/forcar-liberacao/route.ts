@@ -69,11 +69,20 @@ export async function POST(req: NextRequest) {
 
   const adminClient = createServiceRoleClient()
   const { data: adminRecord } = await adminClient.from('admins')
-    .select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+    .select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!adminRecord) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
   const { progresso_id } = await req.json()
   if (!progresso_id) return NextResponse.json({ error: 'progresso_id obrigatório' }, { status: 400 })
+
+  // Verifica se o progresso pertence a um aluno do tenant do admin (isolamento cross-tenant)
+  if (adminRecord.tenant_id) {
+    const { data: prog } = await adminClient.from('progresso')
+      .select('aluno_id, aluno:alunos(tenant_id)').eq('id', progresso_id).maybeSingle()
+    const tenantDoAluno = (prog?.aluno as any)?.tenant_id
+    if (!tenantDoAluno || tenantDoAluno !== adminRecord.tenant_id)
+      return NextResponse.json({ error: 'Sem permissão para liberar este progresso' }, { status: 403 })
+  }
 
   const { error } = await adminClient.from('progresso')
     .update({ proxima_aula_liberada_em: new Date().toISOString() })

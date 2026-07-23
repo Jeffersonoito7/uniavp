@@ -19,18 +19,21 @@ export default async function CRMPage() {
  { data: modulos },
  { data: pontosRows },
  ] = await Promise.all([
- adminClient.from('alunos').select('id, nome, whatsapp, status, created_at, gestor_nome').order('created_at', { ascending: false }),
- adminClient.from('progresso').select('aluno_id, aula_id, aprovado').eq('aprovado', true),
+ adminClient.from('alunos').select('id, nome, whatsapp, status, created_at, gestor_nome').order('created_at', { ascending: false }).limit(5000),
+ adminClient.from('progresso').select('aluno_id, aula_id, aprovado').eq('aprovado', true).limit(50000),
  adminClient.from('aulas').select('id, modulo_id, modulo:modulos!inner(perfis_permitidos)').eq('publicado', true).eq('modulos.publicado', true),
  adminClient.from('modulos').select('id, titulo, ordem').eq('publicado', true).order('ordem'),
- adminClient.from('aluno_pontos').select('aluno_id, quantidade'),
+ adminClient.from('aluno_pontos').select('aluno_id, quantidade').limit(50000),
  ])
 
  const allAlunos = alunos ?? []
  // Conta apenas aulas de módulos acessíveis ao perfil consultor (free)
  // Módulos PRO-exclusivos (sem 'consultor' em perfis_permitidos) não entram no total
  const aulasFree = (aulasPublicadas ?? []).filter((a: any) => {
-   const perfis: string[] = a.modulo?.perfis_permitidos ?? ['consultor', 'gestor']
+   // Se perfis_permitidos for null/undefined, assume que é exclusivo (não inclui free)
+   // Isso evita contar aulas PRO no total de aulas free por engano
+   const perfis: string[] | null = a.modulo?.perfis_permitidos ?? null
+   if (!perfis) return false
    return perfis.includes('consultor')
  })
  const totalAulas = aulasFree.length
@@ -57,8 +60,10 @@ export default async function CRMPage() {
  }
 
  // Métricas por aluno
+ // "Formados" usa status='concluido' — mesma fonte de verdade do dashboard principal
+ // (o quiz/route.ts grava status='concluido' automaticamente ao completar todas as aulas)
  const nuncaIniciou = allAlunos.filter((a: any) => !progressoMap[a.id] || progressoMap[a.id].size === 0).length
- const formados = allAlunos.filter((a: any) => totalAulas> 0 && (progressoMap[a.id]?.size ?? 0)>= totalAulas).length
+ const formados = allAlunos.filter((a: any) => a.status === 'concluido').length
  const emAndamento = allAlunos.length - nuncaIniciou - formados
 
  // Por status

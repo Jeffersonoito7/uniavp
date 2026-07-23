@@ -10,7 +10,13 @@ async function isSuperAdmin(userId: string, adminClient: ReturnType<typeof creat
   return !!data
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+  const adminClient = createServiceRoleClient()
+  if (!await isSuperAdmin(user.id, adminClient)) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+
   try {
     const status = await consultarWebhook()
     return NextResponse.json(status)

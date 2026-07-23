@@ -72,7 +72,8 @@ export async function GET(req: NextRequest) {
     options: { redirectTo },
   })
 
-  const debug = req.nextUrl.searchParams.get('debug') === '1'
+  // debug só funciona em desenvolvimento local — nunca em produção
+  const debug = process.env.NODE_ENV !== 'production' && req.nextUrl.searchParams.get('debug') === '1'
 
   if (error || !linkData?.properties?.action_link) {
     return new NextResponse(`<html><body style="font-family:sans-serif;padding:40px;background:#0a0a0f;color:#fff">

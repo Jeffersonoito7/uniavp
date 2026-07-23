@@ -5,6 +5,9 @@ import { DEMO_PASSWORD } from '@/lib/constants'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
+  if (process.env.NODE_ENV === 'production' && !process.env.SEED_DEMO_ALLOW_PROD) {
+    return NextResponse.json({ error: 'Seed desabilitado em produção' }, { status: 403 })
+  }
   const token = req.nextUrl.searchParams.get('token')
   if (!process.env.CRON_SECRET || token !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: 'Token inválido' }, { status: 401 })

@@ -5,6 +5,7 @@ import { getAppUrl } from '@/lib/get-app-url'
 import { getMensagem } from '@/lib/mensagem'
 import { dispararGatilhoContrato } from '@/lib/contrato-gatilho'
 import { rateLimit, LIMITS } from '@/lib/rate-limit'
+import { captureException } from '@/lib/monitor'
 
 export const dynamic = 'force-dynamic'
 
@@ -220,6 +221,8 @@ export async function POST(req: NextRequest) {
           const { data: seq } = await adminClient.rpc('gerar_numero_registro_aluno' as any)
           proximoNumero = seq as number
         }
+        // Filtro extra neq('status','concluido') garante idempotência:
+        // se dois requests chegarem simultâneos, apenas o primeiro aplica o UPDATE
         await adminClient.from('alunos')
           .update({
             status: 'concluido',
@@ -227,6 +230,7 @@ export async function POST(req: NextRequest) {
             numero_registro: proximoNumero,
           })
           .eq('id', aluno.id)
+          .neq('status', 'concluido')
       }
     }
 
@@ -286,7 +290,7 @@ export async function POST(req: NextRequest) {
               alunoId: aluno.id,
               tenantId: aluno.tenant_id,
               appUrl,
-            }).catch(() => {})
+            }).catch((e: any) => captureException(e, { endpoint: 'quiz/gatilho-modulo', extra: { alunoId: aluno.id } }))
           }
         }
       }
@@ -321,7 +325,7 @@ export async function POST(req: NextRequest) {
         alunoId: aluno.id,
         tenantId: aluno.tenant_id,
         appUrl,
-      }).catch(() => {})
+      }).catch((e: any) => captureException(e, { endpoint: 'quiz/gatilho-conclusao', extra: { alunoId: aluno.id } }))
     }
   }
 
