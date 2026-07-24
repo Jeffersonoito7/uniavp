@@ -80,6 +80,18 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  const [msg, setMsg] = useState<{ tipo: 'ok' | 'err'; texto: string } | null>(null)
  const [verSenha, setVerSenha] = useState(false)
 
+ // Modal de desempenho/notas
+ type DesempenhoModulo = { modulo: string; ordem: number; aulas: { aula_titulo: string; nota: number; aprovacao_minima: number; aprovado: boolean; data: string }[] }
+ type Desempenho = { aluno: { nome: string; status: string }; resumo: { totalAulas: number; aprovadas: number; mediaNota: number; tentativas: number }; modulos: DesempenhoModulo[] }
+ const [desempenho, setDesempenho] = useState<{ consultor: Consultor; dados: Desempenho | null; carregando: boolean } | null>(null)
+
+ async function abrirDesempenho(c: Consultor) {
+   setDesempenho({ consultor: c, dados: null, carregando: true })
+   const res = await fetch(`/api/admin/desempenho-aluno?aluno_id=${c.id}`)
+   const data = await res.json()
+   setDesempenho({ consultor: c, dados: res.ok ? data : null, carregando: false })
+ }
+
  function abrirEdicao(c: Consultor) {
  setEditForm({ nome: c.nome, whatsapp: c.whatsapp, email: c.email, status: c.status, gestor_nome: c.gestor_nome ?? '', gestor_whatsapp: c.gestor_whatsapp ?? '', indicador_whatsapp: c.indicador?.whatsapp ?? '', nova_senha: '', cpf: c.cpf ?? '', especialista: c.especialista ?? false })
  setEditando(c)
@@ -410,6 +422,10 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
  Editar
  </button>
+ <button onClick={() => abrirDesempenho(c)}
+ style={{ background: '#02A15320', border: '1px solid #02A15340', color: '#02A153', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+ Notas
+ </button>
  <a href={`/admin/artes/${c.whatsapp}`} target="_blank" rel="noreferrer"
  style={{ background: '#a855f720', border: '1px solid #a855f740', color: '#a855f7', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
  Arte
@@ -441,6 +457,93 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  </table>
  </div>
  </div>
+
+ {/* Modal de Desempenho/Notas */}
+ {desempenho && (
+ <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.82)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 }}
+   onClick={e => e.target === e.currentTarget && setDesempenho(null)}>
+   <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 28, width: 640, maxWidth: '100%', maxHeight: '90vh', overflowY: 'auto' }}
+     onMouseDown={e => e.stopPropagation()}>
+   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+     <div>
+       <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0 }}>Desempenho nos Quizzes</h2>
+       <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 4 }}>{desempenho.consultor.nome}</p>
+     </div>
+     <button onClick={() => setDesempenho(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--avp-text-dim)', fontSize: 22 }}>×</button>
+   </div>
+
+   {desempenho.carregando && (
+     <p style={{ textAlign: 'center', color: 'var(--avp-text-dim)', padding: 32 }}>Carregando...</p>
+   )}
+
+   {!desempenho.carregando && !desempenho.dados && (
+     <p style={{ textAlign: 'center', color: 'var(--avp-danger)', padding: 32 }}>Erro ao carregar dados.</p>
+   )}
+
+   {!desempenho.carregando && desempenho.dados && (() => {
+     const { resumo, modulos } = desempenho.dados
+     const corMedia = resumo.mediaNota >= 70 ? '#02A153' : resumo.mediaNota >= 50 ? '#f59e0b' : '#e63946'
+     return (
+       <>
+       {/* Cards de resumo */}
+       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 22 }}>
+         {[
+           { label: 'Aulas realizadas', valor: resumo.totalAulas, cor: 'var(--avp-text)' },
+           { label: 'Aprovadas', valor: resumo.aprovadas, cor: '#02A153' },
+           { label: 'Média geral', valor: `${resumo.mediaNota}%`, cor: corMedia },
+           { label: 'Tentativas', valor: resumo.tentativas, cor: 'var(--avp-text-dim)' },
+         ].map(c => (
+           <div key={c.label} style={{ background: 'var(--avp-black)', borderRadius: 10, padding: '12px 14px', textAlign: 'center' }}>
+           <p style={{ fontSize: 20, fontWeight: 800, color: c.cor, margin: 0 }}>{c.valor}</p>
+           <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>{c.label}</p>
+           </div>
+         ))}
+       </div>
+
+       {resumo.totalAulas === 0 && (
+         <p style={{ textAlign: 'center', color: 'var(--avp-text-dim)', padding: 24 }}>Nenhum quiz realizado ainda.</p>
+       )}
+
+       {/* Por módulo */}
+       {modulos.map(mod => (
+         <div key={mod.modulo} style={{ marginBottom: 16 }}>
+         <p style={{ fontWeight: 700, fontSize: 13, color: 'var(--avp-text-dim)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+           {mod.modulo}
+         </p>
+         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+           {mod.aulas.map((a, i) => {
+           const cor = a.aprovado ? '#02A153' : a.nota >= a.aprovacao_minima * 0.8 ? '#f59e0b' : '#e63946'
+           return (
+             <div key={i} style={{ background: 'var(--avp-black)', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+             <div style={{ flex: 1, minWidth: 0 }}>
+               <p style={{ fontSize: 13, fontWeight: 600, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.aula_titulo}</p>
+               <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 2 }}>
+                 {new Date(a.data).toLocaleDateString('pt-BR')} · min. {a.aprovacao_minima}%
+               </p>
+             </div>
+             <div style={{ textAlign: 'right', flexShrink: 0 }}>
+               <p style={{ fontSize: 18, fontWeight: 800, color: cor, margin: 0 }}>{a.nota}%</p>
+               <p style={{ fontSize: 10, color: a.aprovado ? '#02A153' : '#e63946', fontWeight: 700, marginTop: 2 }}>
+                 {a.aprovado ? 'APROVADO' : 'REPROVADO'}
+               </p>
+             </div>
+             <div style={{ width: 60, flexShrink: 0 }}>
+               <div style={{ background: '#222', borderRadius: 100, height: 5, overflow: 'hidden' }}>
+                 <div style={{ width: `${a.nota}%`, background: cor, height: '100%', borderRadius: 100 }} />
+               </div>
+             </div>
+             </div>
+           )
+           })}
+         </div>
+         </div>
+       ))}
+       </>
+     )
+   })()}
+   </div>
+ </div>
+ )}
 
  <LiberarEmailCard />
  </>

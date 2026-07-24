@@ -195,11 +195,20 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    let todasAulasQ = adminClient.from('aulas').select('id').eq('publicado', true)
+    // Busca apenas aulas de módulos publicados acessíveis ao perfil 'consultor' (trilha free)
+    // Módulos PRO-exclusivos (sem 'consultor' em perfis_permitidos) não contam para o certificado
+    let todasAulasQ = (adminClient.from('aulas') as any)
+      .select('id, modulo:modulos!inner(perfis_permitidos)')
+      .eq('publicado', true)
+      .eq('modulos.publicado', true)
     if (aluno.tenant_id) todasAulasQ = todasAulasQ.eq('tenant_id', aluno.tenant_id)
-    const { data: todasAulas } = await todasAulasQ
-    if (todasAulas) {
-      const todosIds = todasAulas.map((a: { id: string }) => a.id)
+    const { data: todasAulasRaw } = await todasAulasQ
+    const todasAulas = (todasAulasRaw ?? []).filter((a: any) => {
+      const perfis: string[] | null = a.modulo?.perfis_permitidos ?? null
+      return Array.isArray(perfis) && perfis.includes('consultor')
+    })
+    if (todasAulas.length > 0) {
+      const todosIds = todasAulas.map((a: any) => a.id)
       const { data: todasAprovRows } = await adminClient.from('progresso')
         .select('aula_id')
         .eq('aluno_id', aluno.id)
