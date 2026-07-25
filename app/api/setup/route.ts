@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
-const PROJECT_REF = 'chntghqjogoqdhyuargf'
+const PROJECT_REF = process.env.SUPABASE_PROJECT_REF ?? 'chntghqjogoqdhyuargf'
 
 const SQLS = [
   `CREATE TABLE IF NOT EXISTS otp_whatsapp (id UUID DEFAULT gen_random_uuid() PRIMARY KEY, whatsapp TEXT NOT NULL, codigo TEXT NOT NULL, expira_em TIMESTAMPTZ NOT NULL, usado BOOLEAN DEFAULT FALSE, created_at TIMESTAMPTZ DEFAULT NOW())`,
