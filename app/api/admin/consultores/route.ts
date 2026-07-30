@@ -90,42 +90,39 @@ export async function PUT(req: NextRequest) {
   if (nova_senha && nova_senha.length >= 6 && !authUserId) {
     return NextResponse.json({ error: 'Este consultor ainda não tem conta ativa. Use "Reenviar Acesso" primeiro para criar a conta, depois redefina a senha.' }, { status: 400 })
   }
-  if (authUserId) {
-    const authUpdates: Record<string, unknown> = {}
-    if (email) authUpdates.email = email
-    if (nova_senha && nova_senha.length >= 6) authUpdates.password = nova_senha
-    if (Object.keys(authUpdates).length > 0) {
-      const { error: authError } = await adminClient.auth.admin.updateUserById(authUserId, authUpdates)
-      if (authError) {
-        // auth user pode ter sido deletado — tenta localizar pelo email atual
-        const emailBusca = email || aluno.email
-        if (emailBusca && nova_senha) {
-          let authEncontrado: string | null = null
-          let page = 1
-          while (!authEncontrado && page <= 50) {
-            const { data: lista } = await adminClient.auth.admin.listUsers({ page, perPage: 1000 })
-            if (!lista?.users?.length) break
-            const encontrado = lista.users.find(u => u.email === emailBusca)
-            if (encontrado) { authEncontrado = encontrado.id; break }
-            if (lista.users.length < 1000) break
-            page++
-          }
-          if (authEncontrado) {
-            // Reconecta o user_id no registro do aluno e aplica as atualizações
-            await (adminClient.from('alunos') as any).update({ user_id: authEncontrado }).eq('id', id)
-            authUserId = authEncontrado
-            const { error: authError2 } = await adminClient.auth.admin.updateUserById(authEncontrado, authUpdates)
-            if (authError2 && nova_senha) {
-              return NextResponse.json({ error: 'Dados salvos, mas falha ao alterar a senha: ' + authError2.message }, { status: 500 })
-            }
-          } else {
-            return NextResponse.json({ error: 'Dados salvos, mas o usuário não tem conta de acesso ativa. Use "Reenviar Acesso" para criar o acesso e depois redefina a senha.' }, { status: 500 })
-          }
-        } else if (nova_senha) {
-          return NextResponse.json({ error: 'Dados salvos, mas falha ao alterar a senha: ' + authError.message }, { status: 500 })
+
+  if (authUserId && nova_senha && nova_senha.length >= 6) {
+    // Atualiza APENAS a senha (sem misturar email na mesma chamada — evita conflito com fluxo de confirmação)
+    const { error: senhaErr } = await adminClient.auth.admin.updateUserById(authUserId, { password: nova_senha })
+    if (senhaErr) {
+      // user_id no banco pode estar desatualizado — busca pelo email ANTIGO (que o auth ainda tem)
+      const emailBusca = (dadosAnteriores?.email as string | undefined) ?? aluno.email
+      let authEncontrado: string | null = null
+      let page = 1
+      while (!authEncontrado && page <= 50) {
+        const { data: lista } = await adminClient.auth.admin.listUsers({ page, perPage: 1000 })
+        if (!lista?.users?.length) break
+        const encontrado = lista.users.find(u => u.email === emailBusca)
+        if (encontrado) { authEncontrado = encontrado.id; break }
+        if (lista.users.length < 1000) break
+        page++
+      }
+      if (authEncontrado) {
+        await (adminClient.from('alunos') as any).update({ user_id: authEncontrado }).eq('id', id)
+        authUserId = authEncontrado
+        const { error: authError2 } = await adminClient.auth.admin.updateUserById(authEncontrado, { password: nova_senha })
+        if (authError2) {
+          return NextResponse.json({ error: 'Dados salvos, mas falha ao alterar a senha: ' + authError2.message }, { status: 500 })
         }
+      } else {
+        return NextResponse.json({ error: 'Dados salvos, mas o usuário não tem conta de acesso ativa. Use "Reenviar Acesso" para criar o acesso e depois redefina a senha.' }, { status: 500 })
       }
     }
+  }
+
+  // Atualiza email no auth apenas se o email foi alterado (separado da senha para não interferir)
+  if (authUserId && email && dadosAnteriores?.email && email !== dadosAnteriores.email) {
+    await adminClient.auth.admin.updateUserById(authUserId, { email }).catch(() => {})
   }
 
   // Audit: identifica a ação real para não corromper o histórico
