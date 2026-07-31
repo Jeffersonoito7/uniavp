@@ -40,7 +40,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  nome: string; clientes: Cliente[]; stats: Stats; recentesAlunos: { nome: string; created_at: string | null; status: string }[]; configs: Config[]
 }) {
  const [clientes, setClientes] = useState<Cliente[]>(inicial)
- const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca' | 'boleto_avulso' | 'configuracoes' | 'planos' | 'implantacao' | 'contratos' | 'monitoramento'>('dashboard')
+ const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca' | 'boleto_avulso' | 'configuracoes' | 'planos' | 'implantacao' | 'contratos' | 'monitoramento' | 'nfse'>('dashboard')
  const [onboardingId, setOnboardingId] = useState<string | null>(null)
  const [onboardingForm, setOnboardingForm] = useState({ admin_email: '', admin_nome: '', dominio: '', whatsapp_instancia: '' })
  const [onboardingMsg, setOnboardingMsg] = useState<string[]>([])
@@ -268,6 +268,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  { id: 'boleto_avulso', label: 'Boleto Avulso', icon: Icons.invoice },
  { id: 'configuracoes', label: 'Configurações', icon: Icons.settings },
  { id: 'cobranca', label: 'Cobranças', icon: Icons.billing },
+ { id: 'nfse', label: 'NFS-e', icon: Icons.invoice },
  ] as const
 
  const sidebarW = colapsada ? 56 : 220
@@ -1658,6 +1659,303 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  </div>
  </div>
  )}
+
+ {/* ── NFS-e ─────────────────────────────────────────────────── */}
+ {aba === 'nfse' && <NfsePanel C={C} inp={inp} btn={btn} btnGhost={btnGhost} lbl={lbl} darkMode={darkMode} />}
+
  </div>
+ )
+}
+
+// ── Componente NFS-e ─────────────────────────────────────────────────────
+function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any; btn: any; btnGhost: any; lbl: any; darkMode: boolean }) {
+ const [subAba, setSubAba] = useState<'config' | 'emitir' | 'notas'>('config')
+
+ // Config
+ const [cfg, setCfg] = useState<any>({})
+ const [cfgLoading, setCfgLoading] = useState(true)
+ const [cfgMsg, setCfgMsg] = useState('')
+ const [salvandoCfg, setSalvandoCfg] = useState(false)
+
+ // Certificado
+ const [certStatus, setCertStatus] = useState<{ configurado: boolean; validoAte?: string; titular?: string }>({ configurado: false })
+ const [certFile, setCertFile] = useState<File | null>(null)
+ const [certSenha, setCertSenha] = useState('')
+ const [certLoading, setCertLoading] = useState(false)
+ const [certMsg, setCertMsg] = useState('')
+
+ // Emissão
+ const [emissaoForm, setEmissaoForm] = useState({ valor: '', descricao: '', tomador_doc: '', tomador_nome: '', tomador_email: '' })
+ const [emitindo, setEmitindo] = useState(false)
+ const [emissaoMsg, setEmissaoMsg] = useState('')
+ const [tomadores, setTomadores] = useState<any[]>([])
+
+ // Notas
+ const [notas, setNotas] = useState<any[]>([])
+ const [notasLoading, setNotasLoading] = useState(false)
+ const [cancelando, setCancelando] = useState<string | null>(null)
+ const [cancelMsg, setCancelMsg] = useState('')
+
+ useEffect(() => {
+  fetch('/api/super/nfse/config').then(r => r.json()).then(d => { setCfg(d.config ?? {}); setCfgLoading(false) })
+  fetch('/api/super/nfse/certificado').then(r => r.json()).then(d => setCertStatus(d))
+  fetch('/api/super/nfse/tomadores').then(r => r.json()).then(d => setTomadores(d.tomadores ?? []))
+ }, [])
+
+ function carregarNotas() {
+  setNotasLoading(true)
+  fetch('/api/super/nfse/notas').then(r => r.json()).then(d => { setNotas(d.notas ?? []); setNotasLoading(false) })
+ }
+
+ useEffect(() => { if (subAba === 'notas') carregarNotas() }, [subAba])
+
+ async function salvarConfig() {
+  setSalvandoCfg(true); setCfgMsg('')
+  const r = await fetch('/api/super/nfse/config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cfg) })
+  const d = await r.json()
+  setCfgMsg(d.ok ? 'Configuracoes salvas.' : (d.error ?? 'Erro ao salvar.'))
+  setSalvandoCfg(false)
+ }
+
+ async function enviarCert() {
+  if (!certFile) return
+  setCertLoading(true); setCertMsg('')
+  const form = new FormData()
+  form.append('certificado', certFile)
+  form.append('senha', certSenha)
+  const r = await fetch('/api/super/nfse/certificado', { method: 'POST', body: form })
+  const d = await r.json()
+  if (d.ok) { setCertStatus({ configurado: true, validoAte: d.validoAte, titular: d.titular }); setCertMsg('Certificado salvo com sucesso.') }
+  else setCertMsg(d.error ?? 'Erro ao salvar certificado.')
+  setCertLoading(false)
+ }
+
+ async function emitir() {
+  setEmitindo(true); setEmissaoMsg('')
+  const tomador = emissaoForm.tomador_doc ? {
+   cpfCnpj: emissaoForm.tomador_doc.replace(/\D/g, ''),
+   razaoSocial: emissaoForm.tomador_nome,
+   email: emissaoForm.tomador_email,
+  } : undefined
+  const r = await fetch('/api/super/nfse/emitir', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ valor: emissaoForm.valor, descricao: emissaoForm.descricao, tomador }) })
+  const d = await r.json()
+  if (d.ok) {
+   setEmissaoMsg(`NFS-e emitida. Numero: ${d.numero}${d.codigoVerificacao ? ' | Codigo: ' + d.codigoVerificacao : ''} | Ambiente: ${d.ambiente}`)
+   setEmissaoForm({ valor: '', descricao: '', tomador_doc: '', tomador_nome: '', tomador_email: '' })
+  } else {
+   setEmissaoMsg(d.error ?? 'Erro ao emitir.')
+  }
+  setEmitindo(false)
+ }
+
+ async function cancelar(nota: any) {
+  setCancelando(nota.id); setCancelMsg('')
+  const r = await fetch('/api/super/nfse/cancelar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ numero: nota.numero, id: nota.id }) })
+  const d = await r.json()
+  if (d.ok) { setNotas(prev => prev.map(n => n.id === nota.id ? { ...n, status: 'cancelada' } : n)); setCancelMsg('Nota cancelada.') }
+  else setCancelMsg(d.error ?? 'Erro ao cancelar.')
+  setCancelando(null)
+ }
+
+ const card: React.CSSProperties = { background: darkMode ? '#13141a' : '#fff', border: `1px solid ${darkMode ? '#2a2b35' : '#e5e7eb'}`, borderRadius: 10, padding: 20, marginBottom: 20 }
+ const tabStyle = (id: string): React.CSSProperties => ({
+  padding: '7px 18px', borderRadius: 6, fontSize: 13, fontWeight: subAba === id ? 700 : 400,
+  background: subAba === id ? (darkMode ? '#3b5bdb' : '#2563eb') : 'transparent',
+  color: subAba === id ? '#fff' : C.dim, border: 'none', cursor: 'pointer',
+ })
+
+ const cfgInput = (field: string, label: string, tipo?: string, placeholder?: string) => (
+  <div key={field}>
+   <label style={lbl}>{label}</label>
+   <input style={inp} type={tipo ?? 'text'} placeholder={placeholder} value={cfg[field] ?? ''}
+    onChange={e => setCfg((p: any) => ({ ...p, [field]: e.target.value }))} />
+  </div>
+ )
+
+ return (
+  <div>
+   <h2 style={{ fontSize: 20, fontWeight: 700, color: C.text, marginBottom: 4 }}>Emissao de NFS-e</h2>
+   <p style={{ color: C.dim, fontSize: 13, marginBottom: 20 }}>Nota Fiscal de Servicos Eletroncia - padrao ABRASF 2.04</p>
+
+   <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
+    <button style={tabStyle('config')} onClick={() => setSubAba('config')}>Configuracao</button>
+    <button style={tabStyle('emitir')} onClick={() => setSubAba('emitir')}>Emitir NFS-e</button>
+    <button style={tabStyle('notas')} onClick={() => setSubAba('notas')}>Historico de Notas</button>
+   </div>
+
+   {/* Sub-aba Configuracao */}
+   {subAba === 'config' && (
+    <div>
+     <div style={card}>
+      <h3 style={{ fontWeight: 700, color: C.text, marginBottom: 16, fontSize: 15 }}>Dados do Prestador</h3>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
+       {cfgInput('cnpj', 'CNPJ do Emissor', 'text', '00.000.000/0001-00')}
+       {cfgInput('inscricao_municipal', 'Inscricao Municipal')}
+       {cfgInput('codigo_municipio_ibge', 'Codigo IBGE do Municipio', 'text', 'ex: 2611101')}
+       {cfgInput('url_servico', 'URL do Servico SOAP (WSDL)', 'text', 'https://...')}
+       {cfgInput('item_lista_servico', 'Item da Lista LC116', 'text', 'ex: 17.01')}
+       {cfgInput('codigo_tributacao_municipio', 'Codigo Tributacao Municipio')}
+       {cfgInput('aliquota_iss', 'Aliquota ISS (%)', 'text', 'ex: 5.00')}
+       {cfgInput('serie_rps', 'Serie RPS', 'text', 'ex: 1')}
+       {cfgInput('descricao_servico', 'Descricao padrao do servico')}
+      </div>
+      <div style={{ display: 'flex', gap: 14, marginTop: 14 }}>
+       <div>
+        <label style={lbl}>Optante Simples Nacional</label>
+        <select style={{ ...inp, width: 180 }} value={cfg.optante_simples ? '1' : '2'} onChange={e => setCfg((p: any) => ({ ...p, optante_simples: e.target.value === '1' }))}>
+         <option value="1">Sim</option>
+         <option value="2">Nao</option>
+        </select>
+       </div>
+       <div>
+        <label style={lbl}>Ambiente</label>
+        <select style={{ ...inp, width: 180 }} value={cfg.ambiente ?? 'homologacao'} onChange={e => setCfg((p: any) => ({ ...p, ambiente: e.target.value }))}>
+         <option value="homologacao">Homologacao (teste)</option>
+         <option value="producao">Producao</option>
+        </select>
+       </div>
+      </div>
+      {cfgMsg && <p style={{ marginTop: 12, fontSize: 13, color: cfgMsg.includes('alvas') || cfgMsg.includes('sucesso') || cfgMsg.includes('salvas') ? '#4ade80' : '#f87171' }}>{cfgMsg}</p>}
+      <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+       <button style={btn} onClick={salvarConfig} disabled={salvandoCfg}>{salvandoCfg ? 'Salvando...' : 'Salvar Configuracao'}</button>
+      </div>
+     </div>
+
+     <div style={card}>
+      <h3 style={{ fontWeight: 700, color: C.text, marginBottom: 8, fontSize: 15 }}>Certificado Digital A1 (.pfx)</h3>
+      {certStatus.configurado ? (
+       <p style={{ fontSize: 13, color: '#4ade80', marginBottom: 12 }}>
+        Certificado configurado. Titular: {certStatus.titular ?? '-'} | Validade: {certStatus.validoAte ? new Date(certStatus.validoAte).toLocaleDateString('pt-BR') : '-'}
+       </p>
+      ) : (
+       <p style={{ fontSize: 13, color: '#f87171', marginBottom: 12 }}>Nenhum certificado configurado.</p>
+      )}
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+       <div>
+        <label style={lbl}>Arquivo .pfx</label>
+        <input type="file" accept=".pfx,.p12" style={{ ...inp, padding: 6 }} onChange={e => setCertFile(e.target.files?.[0] ?? null)} />
+       </div>
+       <div>
+        <label style={lbl}>Senha do certificado</label>
+        <input style={{ ...inp, width: 200 }} type="password" placeholder="senha" value={certSenha} onChange={e => setCertSenha(e.target.value)} />
+       </div>
+       <button style={btn} onClick={enviarCert} disabled={certLoading || !certFile}>
+        {certLoading ? 'Enviando...' : 'Salvar Certificado'}
+       </button>
+      </div>
+      {certMsg && <p style={{ marginTop: 10, fontSize: 13, color: certMsg.includes('sucesso') ? '#4ade80' : '#f87171' }}>{certMsg}</p>}
+     </div>
+    </div>
+   )}
+
+   {/* Sub-aba Emitir */}
+   {subAba === 'emitir' && (
+    <div style={card}>
+     <h3 style={{ fontWeight: 700, color: C.text, marginBottom: 16, fontSize: 15 }}>Emitir Nova NFS-e</h3>
+     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
+      <div>
+       <label style={lbl}>Valor do servico (R$) *</label>
+       <input style={inp} type="number" step="0.01" min="0.01" placeholder="0,00" value={emissaoForm.valor} onChange={e => setEmissaoForm(p => ({ ...p, valor: e.target.value }))} />
+      </div>
+      <div style={{ gridColumn: '1 / -1' }}>
+       <label style={lbl}>Descricao do servico</label>
+       <input style={inp} placeholder="Deixe em branco para usar a descricao padrao" value={emissaoForm.descricao} onChange={e => setEmissaoForm(p => ({ ...p, descricao: e.target.value }))} />
+      </div>
+     </div>
+
+     <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${darkMode ? '#2a2b35' : '#e5e7eb'}` }}>
+      <p style={{ fontSize: 13, fontWeight: 600, color: C.dim, marginBottom: 12 }}>Tomador (opcional)</p>
+      {tomadores.length > 0 && (
+       <div style={{ marginBottom: 12 }}>
+        <label style={lbl}>Selecionar tomador cadastrado</label>
+        <select style={{ ...inp, width: '100%' }} onChange={e => {
+         const t = tomadores.find(x => x.documento === e.target.value)
+         if (t) setEmissaoForm(p => ({ ...p, tomador_doc: t.documento, tomador_nome: t.razao_social, tomador_email: t.email ?? '' }))
+         else setEmissaoForm(p => ({ ...p, tomador_doc: '', tomador_nome: '', tomador_email: '' }))
+        }}>
+         <option value="">-- selecione ou preencha abaixo --</option>
+         {tomadores.map(t => <option key={t.documento} value={t.documento}>{t.razao_social} ({t.documento})</option>)}
+        </select>
+       </div>
+      )}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
+       <div>
+        <label style={lbl}>CPF/CNPJ</label>
+        <input style={inp} placeholder="000.000.000-00" value={emissaoForm.tomador_doc} onChange={e => setEmissaoForm(p => ({ ...p, tomador_doc: e.target.value }))} />
+       </div>
+       <div>
+        <label style={lbl}>Nome / Razao Social</label>
+        <input style={inp} value={emissaoForm.tomador_nome} onChange={e => setEmissaoForm(p => ({ ...p, tomador_nome: e.target.value }))} />
+       </div>
+       <div>
+        <label style={lbl}>E-mail</label>
+        <input style={inp} type="email" value={emissaoForm.tomador_email} onChange={e => setEmissaoForm(p => ({ ...p, tomador_email: e.target.value }))} />
+       </div>
+      </div>
+     </div>
+
+     {emissaoMsg && (
+      <p style={{ marginTop: 16, padding: 10, borderRadius: 6, background: emissaoMsg.includes('emitida') ? (darkMode ? '#14532d' : '#dcfce7') : (darkMode ? '#450a0a' : '#fee2e2'), color: emissaoMsg.includes('emitida') ? '#4ade80' : '#f87171', fontSize: 13 }}>
+       {emissaoMsg}
+      </p>
+     )}
+     <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end' }}>
+      <button style={{ ...btn, opacity: emitindo || !emissaoForm.valor ? 0.6 : 1 }} onClick={emitir} disabled={emitindo || !emissaoForm.valor}>
+       {emitindo ? 'Emitindo...' : 'Emitir NFS-e'}
+      </button>
+     </div>
+    </div>
+   )}
+
+   {/* Sub-aba Historico */}
+   {subAba === 'notas' && (
+    <div>
+     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <h3 style={{ fontWeight: 700, color: C.text, fontSize: 15, margin: 0 }}>Historico de Notas</h3>
+      <button style={btnGhost} onClick={carregarNotas}>Atualizar</button>
+     </div>
+     {cancelMsg && <p style={{ fontSize: 13, color: '#f87171', marginBottom: 12 }}>{cancelMsg}</p>}
+     {notasLoading ? (
+      <p style={{ color: C.dim, fontSize: 13 }}>Carregando...</p>
+     ) : notas.length === 0 ? (
+      <p style={{ color: C.dim, fontSize: 13 }}>Nenhuma nota emitida ainda.</p>
+     ) : (
+      <div style={{ overflowX: 'auto' }}>
+       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <thead>
+         <tr style={{ borderBottom: `1px solid ${darkMode ? '#2a2b35' : '#e5e7eb'}` }}>
+          {['Numero', 'Data', 'Tomador', 'Valor (R$)', 'Status', 'Acoes'].map(h => (
+           <th key={h} style={{ padding: '8px 12px', textAlign: 'left', color: C.dim, fontWeight: 600 }}>{h}</th>
+          ))}
+         </tr>
+        </thead>
+        <tbody>
+         {notas.map(n => (
+          <tr key={n.id} style={{ borderBottom: `1px solid ${darkMode ? '#1e1f28' : '#f1f5f9'}` }}>
+           <td style={{ padding: '8px 12px', color: C.text }}>{n.numero ?? '-'}</td>
+           <td style={{ padding: '8px 12px', color: C.dim }}>{n.data ? new Date(n.data).toLocaleDateString('pt-BR') : '-'}</td>
+           <td style={{ padding: '8px 12px', color: C.text }}>{n.tomador_nome || n.tomador_doc || '-'}</td>
+           <td style={{ padding: '8px 12px', color: C.text }}>{Number(n.valor ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+           <td style={{ padding: '8px 12px' }}>
+            <span style={{ padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 600, background: n.status === 'ativa' ? '#14532d' : '#450a0a', color: n.status === 'ativa' ? '#4ade80' : '#f87171' }}>
+             {n.status}
+            </span>
+           </td>
+           <td style={{ padding: '8px 12px' }}>
+            {n.status === 'ativa' && (
+             <button style={{ ...btnGhost, fontSize: 11, padding: '3px 10px', color: '#f87171' }} onClick={() => cancelar(n)} disabled={cancelando === n.id}>
+              {cancelando === n.id ? 'Cancelando...' : 'Cancelar'}
+             </button>
+            )}
+           </td>
+          </tr>
+         ))}
+        </tbody>
+       </table>
+      </div>
+     )}
+    </div>
+   )}
+  </div>
  )
 }
