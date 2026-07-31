@@ -35,7 +35,7 @@ export default async function AdminDashboard() {
  ] = await Promise.all([
  tq(adminClient.from('alunos').select('id', { count: 'exact', head: true })),
  tq(adminClient.from('alunos').select('id', { count: 'exact', head: true })).eq('status', 'ativo'),
- tq(adminClient.from('alunos').select('id', { count: 'exact', head: true })).or('status.eq.concluido,numero_registro.not.is.null'),
+ tq(adminClient.from('alunos').select('id', { count: 'exact', head: true })).not('data_formacao', 'is', null),
  tq(adminClient.from('modulos').select('id', { count: 'exact', head: true })),
  tq(adminClient.from('aulas').select('id', { count: 'exact', head: true })),
  tq(adminClient.from('aulas').select('id', { count: 'exact', head: true })).eq('publicado', true),
