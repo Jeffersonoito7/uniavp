@@ -9,6 +9,53 @@ import { captureException } from '@/lib/monitor'
 
 export const dynamic = 'force-dynamic'
 
+async function verificarConclusao(
+  adminClient: ReturnType<typeof createServiceRoleClient>,
+  aluno: { id: string; tenant_id: string | null },
+  aula: { modulo_id: string }
+): Promise<boolean> {
+  let todasAulasQ = (adminClient.from('aulas') as any)
+    .select('id, modulo:modulos!inner(perfis_permitidos)')
+    .eq('publicado', true)
+    .eq('modulos.publicado', true)
+  if (aluno.tenant_id) todasAulasQ = todasAulasQ.eq('tenant_id', aluno.tenant_id)
+  const { data: todasAulasRaw } = await todasAulasQ
+  const todasAulas = (todasAulasRaw ?? []).filter((a: any) => {
+    const perfis: string[] | null = a.modulo?.perfis_permitidos ?? null
+    return Array.isArray(perfis) && perfis.includes('consultor')
+  })
+  if (todasAulas.length === 0) return false
+
+  const todosIds = todasAulas.map((a: any) => a.id)
+  const { data: todasAprovRows } = await adminClient.from('progresso')
+    .select('aula_id')
+    .eq('aluno_id', aluno.id)
+    .eq('aprovado', true)
+    .in('aula_id', todosIds)
+  const totalAprovTotal = new Set((todasAprovRows ?? []).map((p: { aula_id: string }) => p.aula_id)).size
+  if (totalAprovTotal < todosIds.length) return false
+
+  // Aluno completou toda a trilha
+  await adminClient.from('aluno_pontos').insert({ aluno_id: aluno.id, quantidade: 50, motivo: 'Bônus conclusão geral da trilha' })
+  const { data: medalhaGraduado } = await adminClient.from('medalhas_config').select('id').eq('tipo', 'conclusao_geral').maybeSingle()
+  if (medalhaGraduado) {
+    await adminClient.from('aluno_medalhas').upsert({ aluno_id: aluno.id, medalha_id: medalhaGraduado.id }, { onConflict: 'aluno_id,medalha_id' })
+  }
+  const { data: alunoAtual } = await adminClient.from('alunos').select('numero_registro, status').eq('id', aluno.id).maybeSingle()
+  if (alunoAtual?.status === 'concluido') return true // ja concluido, idempotente
+
+  let proximoNumero = alunoAtual?.numero_registro
+  if (!proximoNumero) {
+    const { data: seq } = await adminClient.rpc('gerar_numero_registro_aluno' as any)
+    proximoNumero = seq as number
+  }
+  await adminClient.from('alunos')
+    .update({ status: 'concluido', data_formacao: new Date().toISOString().split('T')[0], numero_registro: proximoNumero })
+    .eq('id', aluno.id)
+    .neq('status', 'concluido')
+  return true
+}
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -35,7 +82,11 @@ export async function POST(req: NextRequest) {
     // Idempotencia: ignora se já existe progresso aprovado para esta aula
     const { data: jaExiste } = await adminClient.from('progresso')
       .select('id').eq('aluno_id', aluno.id).eq('aula_id', aula_id).eq('aprovado', true).limit(1).maybeSingle()
-    if (jaExiste) return NextResponse.json({ ok: true, pulado: true, aprovado: true })
+    if (jaExiste) {
+      // Mesmo já existindo, verifica conclusao para cobrir casos historicos
+      await verificarConclusao(adminClient, aluno, aula)
+      return NextResponse.json({ ok: true, pulado: true, aprovado: true })
+    }
 
     const liberada_em = new Date(Date.now() + (aula.espera_horas ?? 0) * 3600000).toISOString()
     const { error: errInsert } = await adminClient.from('progresso').insert({
@@ -49,6 +100,10 @@ export async function POST(req: NextRequest) {
     await adminClient.from('aluno_pontos').insert({
       aluno_id: aluno.id, quantidade: 5, motivo: `Quiz indicativo visto - aula ${aula_id}`,
     })
+
+    // Verifica se a conclusao do curso foi atingida apos esta aula de video
+    await verificarConclusao(adminClient, aluno, aula)
+
     return NextResponse.json({ ok: true, pulado: true, aprovado: true })
   }
 
@@ -195,53 +250,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Busca apenas aulas de módulos publicados acessíveis ao perfil 'consultor' (trilha free)
-    // Módulos PRO-exclusivos (sem 'consultor' em perfis_permitidos) não contam para o certificado
-    let todasAulasQ = (adminClient.from('aulas') as any)
-      .select('id, modulo:modulos!inner(perfis_permitidos)')
-      .eq('publicado', true)
-      .eq('modulos.publicado', true)
-    if (aluno.tenant_id) todasAulasQ = todasAulasQ.eq('tenant_id', aluno.tenant_id)
-    const { data: todasAulasRaw } = await todasAulasQ
-    const todasAulas = (todasAulasRaw ?? []).filter((a: any) => {
-      const perfis: string[] | null = a.modulo?.perfis_permitidos ?? null
-      return Array.isArray(perfis) && perfis.includes('consultor')
-    })
-    if (todasAulas.length > 0) {
-      const todosIds = todasAulas.map((a: any) => a.id)
-      const { data: todasAprovRows } = await adminClient.from('progresso')
-        .select('aula_id')
-        .eq('aluno_id', aluno.id)
-        .eq('aprovado', true)
-        .in('aula_id', todosIds)
-      const totalAprovTotal = new Set((todasAprovRows ?? []).map((p: { aula_id: string }) => p.aula_id)).size
-      if (totalAprovTotal === todosIds.length) {
-        await adminClient.from('aluno_pontos').insert({ aluno_id: aluno.id, quantidade: 50, motivo: 'Bônus conclusão geral da trilha' })
-        const { data: medalhaGraduado } = await adminClient.from('medalhas_config').select('id').eq('tipo', 'conclusao_geral').maybeSingle()
-        if (medalhaGraduado) {
-          await adminClient.from('aluno_medalhas').upsert({ aluno_id: aluno.id, medalha_id: medalhaGraduado.id }, { onConflict: 'aluno_id,medalha_id' })
-        }
-        // Verifica se já tem numero_registro antes de atribuir (idempotente)
-        const { data: alunoAtual } = await adminClient.from('alunos')
-          .select('numero_registro').eq('id', aluno.id).maybeSingle()
-        let proximoNumero = alunoAtual?.numero_registro
-        if (!proximoNumero) {
-          // Usa sequence atomica do Postgres para evitar race condition
-          const { data: seq } = await adminClient.rpc('gerar_numero_registro_aluno' as any)
-          proximoNumero = seq as number
-        }
-        // Filtro extra neq('status','concluido') garante idempotência:
-        // se dois requests chegarem simultâneos, apenas o primeiro aplica o UPDATE
-        await adminClient.from('alunos')
-          .update({
-            status: 'concluido',
-            data_formacao: new Date().toISOString().split('T')[0],
-            numero_registro: proximoNumero,
-          })
-          .eq('id', aluno.id)
-          .neq('status', 'concluido')
-      }
-    }
+    await verificarConclusao(adminClient, aluno, aula)
 
     // Busca estado atualizado do aluno (após possível update de status acima)
     const { data: alunoAtualizado } = await adminClient.from('alunos')
