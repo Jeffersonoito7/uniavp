@@ -40,7 +40,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  nome: string; clientes: Cliente[]; stats: Stats; recentesAlunos: { nome: string; created_at: string | null; status: string }[]; configs: Config[]
 }) {
  const [clientes, setClientes] = useState<Cliente[]>(inicial)
- const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca' | 'boleto_avulso' | 'configuracoes' | 'planos' | 'implantacao' | 'contratos' | 'monitoramento' | 'nfse'>('dashboard')
+ const [aba, setAba] = useState<'dashboard' | 'clientes' | 'novo' | 'testar' | 'cobranca' | 'boleto_avulso' | 'configuracoes' | 'planos' | 'implantacao' | 'contratos' | 'monitoramento' | 'nfse' | 'pix'>('dashboard')
  const [onboardingId, setOnboardingId] = useState<string | null>(null)
  const [onboardingForm, setOnboardingForm] = useState({ admin_email: '', admin_nome: '', dominio: '', whatsapp_instancia: '' })
  const [onboardingMsg, setOnboardingMsg] = useState<string[]>([])
@@ -269,6 +269,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  { id: 'configuracoes', label: 'Configurações', icon: Icons.settings },
  { id: 'cobranca', label: 'Cobranças', icon: Icons.billing },
  { id: 'nfse', label: 'NFS-e', icon: Icons.invoice },
+ { id: 'pix', label: 'Cobrança PIX', icon: Icons.pix },
  ] as const
 
  const sidebarW = colapsada ? 56 : 220
@@ -1662,6 +1663,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
 
  {/* ── NFS-e ─────────────────────────────────────────────────── */}
  {aba === 'nfse' && <NfsePanel C={C} inp={inp} btn={btn} btnGhost={btnGhost} lbl={lbl} darkMode={darkMode} />}
+ {aba === 'pix' && <CobrancaPixPanel C={C} inp={inp} btn={btn} btnGhost={btnGhost} lbl={lbl} darkMode={darkMode} />}
 
  </div>
  )
@@ -1945,6 +1947,175 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
             {n.status === 'ativa' && (
              <button style={{ ...btnGhost, fontSize: 11, padding: '3px 10px', color: '#f87171' }} onClick={() => cancelar(n)} disabled={cancelando === n.id}>
               {cancelando === n.id ? 'Cancelando...' : 'Cancelar'}
+             </button>
+            )}
+           </td>
+          </tr>
+         ))}
+        </tbody>
+       </table>
+      </div>
+     )}
+    </div>
+   )}
+  </div>
+ )
+}
+
+// ── Componente Cobrança PIX ──────────────────────────────────────────────
+function CobrancaPixPanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any; btn: any; btnGhost: any; lbl: any; darkMode: boolean }) {
+ const hoje = new Date().toISOString().split('T')[0]
+ const [form, setForm] = useState({ valor: '', descricao: '', vencimento: hoje, devedor_nome: '', devedor_doc: '' })
+ const [gerando, setGerando] = useState(false)
+ const [resultado, setResultado] = useState<{ txid: string; qrCode: string; copiaECola: string } | null>(null)
+ const [msg, setMsg] = useState('')
+ const [copiado, setCopiado] = useState(false)
+
+ const [cobrancas, setCobrancas] = useState<any[]>([])
+ const [subAba, setSubAba] = useState<'gerar' | 'historico'>('gerar')
+ const [consultando, setConsultando] = useState<string | null>(null)
+
+ useEffect(() => { if (subAba === 'historico') carregarCobrancas() }, [subAba])
+
+ function carregarCobrancas() {
+  fetch('/api/super/cobranca/listar').then(r => r.json()).then(d => setCobrancas(d.cobrancas ?? []))
+ }
+
+ async function gerar() {
+  setGerando(true); setMsg(''); setResultado(null)
+  const r = await fetch('/api/super/cobranca/gerar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+  const d = await r.json()
+  if (d.ok) { setResultado(d); setMsg('') }
+  else setMsg(d.error ?? 'Erro ao gerar cobrança.')
+  setGerando(false)
+ }
+
+ async function consultar(txid: string) {
+  setConsultando(txid)
+  const r = await fetch('/api/super/cobranca/consultar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ txid }) })
+  const d = await r.json()
+  if (d.ok) setCobrancas(prev => prev.map(c => c.txid === txid ? { ...c, status: d.status, valor_pago: d.valorPago } : c))
+  setConsultando(null)
+ }
+
+ function copiar(texto: string) {
+  navigator.clipboard.writeText(texto)
+  setCopiado(true)
+  setTimeout(() => setCopiado(false), 2000)
+ }
+
+ const card: React.CSSProperties = { background: darkMode ? '#13141a' : '#fff', border: `1px solid ${darkMode ? '#2a2b35' : '#e5e7eb'}`, borderRadius: 10, padding: 20, marginBottom: 20 }
+ const tabStyle = (id: string): React.CSSProperties => ({
+  padding: '7px 18px', borderRadius: 6, fontSize: 13, fontWeight: subAba === id ? 700 : 400,
+  background: subAba === id ? (darkMode ? '#3b5bdb' : '#2563eb') : 'transparent',
+  color: subAba === id ? '#fff' : C.dim, border: 'none', cursor: 'pointer',
+ })
+
+ return (
+  <div>
+   <h2 style={{ fontSize: 20, fontWeight: 700, color: C.text, marginBottom: 4 }}>Cobrança PIX</h2>
+   <p style={{ color: C.dim, fontSize: 13, marginBottom: 20 }}>Gere cobranças PIX com vencimento via Efí Pay</p>
+
+   <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+    <button style={tabStyle('gerar')} onClick={() => setSubAba('gerar')}>Gerar Cobrança</button>
+    <button style={tabStyle('historico')} onClick={() => setSubAba('historico')}>Histórico</button>
+   </div>
+
+   {subAba === 'gerar' && (
+    <div style={card}>
+     {!resultado ? (
+      <>
+       <h3 style={{ fontWeight: 700, color: C.text, marginBottom: 16, fontSize: 15 }}>Nova cobrança</h3>
+       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 }}>
+        <div>
+         <label style={lbl}>Valor (R$) *</label>
+         <input style={inp} type="number" step="0.01" min="0.01" placeholder="0,00" value={form.valor} onChange={e => setForm(p => ({ ...p, valor: e.target.value }))} />
+        </div>
+        <div>
+         <label style={lbl}>Vencimento *</label>
+         <input style={inp} type="date" value={form.vencimento} onChange={e => setForm(p => ({ ...p, vencimento: e.target.value }))} />
+        </div>
+        <div style={{ gridColumn: '1 / -1' }}>
+         <label style={lbl}>Descrição</label>
+         <input style={inp} placeholder="Ex: Mensalidade Universidade AVP - Agosto/2026" value={form.descricao} onChange={e => setForm(p => ({ ...p, descricao: e.target.value }))} />
+        </div>
+        <div>
+         <label style={lbl}>Nome do devedor</label>
+         <input style={inp} placeholder="Razão social ou nome" value={form.devedor_nome} onChange={e => setForm(p => ({ ...p, devedor_nome: e.target.value }))} />
+        </div>
+        <div>
+         <label style={lbl}>CPF / CNPJ do devedor</label>
+         <input style={inp} placeholder="Somente números" value={form.devedor_doc} onChange={e => setForm(p => ({ ...p, devedor_doc: e.target.value }))} />
+        </div>
+       </div>
+       {msg && <p style={{ marginTop: 12, fontSize: 13, color: '#f87171' }}>{msg}</p>}
+       <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end' }}>
+        <button style={{ ...btn, opacity: gerando || !form.valor || !form.vencimento ? 0.6 : 1 }} onClick={gerar} disabled={gerando || !form.valor || !form.vencimento}>
+         {gerando ? 'Gerando...' : 'Gerar cobrança PIX'}
+        </button>
+       </div>
+      </>
+     ) : (
+      <div style={{ textAlign: 'center' }}>
+       <p style={{ color: '#4ade80', fontWeight: 700, fontSize: 16, marginBottom: 20 }}>Cobrança gerada com sucesso!</p>
+       {resultado.qrCode && (
+        <img src={resultado.qrCode} alt="QR Code PIX" style={{ width: 220, height: 220, borderRadius: 8, border: `2px solid ${darkMode ? '#2a2b35' : '#e5e7eb'}`, marginBottom: 16 }} />
+       )}
+       <div style={{ background: darkMode ? '#080810' : '#f8fafc', borderRadius: 8, padding: '12px 16px', marginBottom: 16, textAlign: 'left' }}>
+        <p style={{ fontSize: 12, color: C.dim, marginBottom: 6 }}>Copia e Cola</p>
+        <p style={{ fontSize: 11, color: C.text, wordBreak: 'break-all', fontFamily: 'monospace' }}>{resultado.copiaECola}</p>
+       </div>
+       <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <button style={btn} onClick={() => copiar(resultado.copiaECola)}>
+         {copiado ? 'Copiado!' : 'Copiar código PIX'}
+        </button>
+        <button style={btnGhost} onClick={() => { setResultado(null); setForm({ valor: '', descricao: '', vencimento: hoje, devedor_nome: '', devedor_doc: '' }) }}>
+         Nova cobrança
+        </button>
+       </div>
+       <p style={{ fontSize: 12, color: C.dim, marginTop: 16 }}>TXID: {resultado.txid}</p>
+      </div>
+     )}
+    </div>
+   )}
+
+   {subAba === 'historico' && (
+    <div>
+     <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+      <button style={btnGhost} onClick={carregarCobrancas}>Atualizar</button>
+     </div>
+     {cobrancas.length === 0 ? (
+      <p style={{ color: C.dim, fontSize: 13 }}>Nenhuma cobrança gerada ainda.</p>
+     ) : (
+      <div style={{ overflowX: 'auto' }}>
+       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <thead>
+         <tr style={{ borderBottom: `1px solid ${darkMode ? '#2a2b35' : '#e5e7eb'}` }}>
+          {['Data', 'Devedor', 'Valor (R$)', 'Vencimento', 'Status', 'Ações'].map(h => (
+           <th key={h} style={{ padding: '8px 12px', textAlign: 'left', color: C.dim, fontWeight: 600 }}>{h}</th>
+          ))}
+         </tr>
+        </thead>
+        <tbody>
+         {cobrancas.map(c => (
+          <tr key={c.id} style={{ borderBottom: `1px solid ${darkMode ? '#1e1f28' : '#f1f5f9'}` }}>
+           <td style={{ padding: '8px 12px', color: C.dim }}>{c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '-'}</td>
+           <td style={{ padding: '8px 12px', color: C.text }}>{c.devedor_nome || '-'}</td>
+           <td style={{ padding: '8px 12px', color: C.text, fontWeight: 600 }}>
+            {Number(c.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            {c.valor_pago && <span style={{ color: '#4ade80', fontSize: 11, marginLeft: 6 }}>pago: {Number(c.valor_pago).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>}
+           </td>
+           <td style={{ padding: '8px 12px', color: C.dim }}>{c.vencimento ? new Date(c.vencimento + 'T12:00:00').toLocaleDateString('pt-BR') : '-'}</td>
+           <td style={{ padding: '8px 12px' }}>
+            <span style={{ padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 600, background: c.status === 'CONCLUIDA' ? '#14532d' : '#1e293b', color: c.status === 'CONCLUIDA' ? '#4ade80' : '#fbbf24' }}>
+             {c.status}
+            </span>
+           </td>
+           <td style={{ padding: '8px 12px', display: 'flex', gap: 6 }}>
+            {c.copia_e_cola && <button style={{ ...btnGhost, fontSize: 11, padding: '3px 10px' }} onClick={() => copiar(c.copia_e_cola)}>Copiar PIX</button>}
+            {c.status !== 'CONCLUIDA' && (
+             <button style={{ ...btnGhost, fontSize: 11, padding: '3px 10px' }} onClick={() => consultar(c.txid)} disabled={consultando === c.txid}>
+              {consultando === c.txid ? '...' : 'Verificar'}
              </button>
             )}
            </td>
