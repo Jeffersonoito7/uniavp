@@ -187,17 +187,17 @@ function montarXml(cfg: NfseConfig, dados: DadosEmissao): { xml: string; id: str
     const imTom = soDigitos(t.inscricaoMunicipal ?? t.im)
     const e = t.endereco ?? {}
     const logr = e.logradouro ?? e.endereco
-    const endTom = logr
-      ? `<Endereco>` +
-        `<Endereco>${esc(logr)}</Endereco>` +
-        `<Numero>${esc(e.numero ?? 'S/N')}</Numero>` +
-        (e.complemento ? `<Complemento>${esc(e.complemento)}</Complemento>` : '') +
-        `<Bairro>${esc(e.bairro ?? 'Centro')}</Bairro>` +
-        `<CodigoMunicipio>${soDigitos(e.codigoCidade ?? e.codigoMunicipio ?? ibge)}</CodigoMunicipio>` +
-        `<Uf>${esc(e.estado ?? e.uf ?? 'PE')}</Uf>` +
-        `<Cep>${soDigitos(e.cep) || '00000000'}</Cep>` +
-        `</Endereco>`
-      : ''
+    // Sempre inclui endereco do tomador (e&L Petrolina exige; usa fallback se nao informado)
+    const endTom =
+      `<Endereco>` +
+      `<Endereco>${esc(logr ?? 'Nao Informado')}</Endereco>` +
+      `<Numero>${esc(e.numero ?? 'S/N')}</Numero>` +
+      (e.complemento ? `<Complemento>${esc(e.complemento)}</Complemento>` : '') +
+      `<Bairro>${esc(e.bairro ?? 'Centro')}</Bairro>` +
+      `<CodigoMunicipio>${soDigitos(e.codigoCidade ?? e.codigoMunicipio ?? ibge)}</CodigoMunicipio>` +
+      `<Uf>${esc(e.estado ?? e.uf ?? 'PE')}</Uf>` +
+      `<Cep>${soDigitos(e.cep) || '00000000'}</Cep>` +
+      `</Endereco>`
     tomadorXml =
       `<TomadorServico>` +
       `<IdentificacaoTomador><CpfCnpj>${idTom}</CpfCnpj>` +
