@@ -78,6 +78,7 @@ export async function POST(req: NextRequest) {
     serieRps: cfg.serie_rps ?? '1',
     descricaoServico: cfg.descricao_servico,
     codigoTributacaoMunicipio: cfg.codigo_tributacao_municipio,
+    codigoServicoPrestado: cfg.codigo_servico_prestado ?? String(cfg.codigo_tributacao_municipio ?? '').replace(/\D/g, '') || undefined,
     ambiente: cfg.ambiente ?? 'homologacao',
   }
 

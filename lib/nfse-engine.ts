@@ -220,9 +220,9 @@ function montarXml(cfg: NfseConfig, dados: DadosEmissao): { xml: string; id: str
     `<Servico>` +
     `<Valores><ValorServicos>${valor}</ValorServicos><Aliquota>${aliq}</Aliquota></Valores>` +
     `<IssRetido>2</IssRetido>` +
+    (cfg.codigoServicoPrestado ? `<CodigoServico>${esc(cfg.codigoServicoPrestado)}</CodigoServico>` : '') +
     `<ItemListaServico>${esc(item)}</ItemListaServico>` +
     (cfg.codigoTributacaoMunicipio ? `<CodigoTributacaoMunicipio>${esc(cfg.codigoTributacaoMunicipio)}</CodigoTributacaoMunicipio>` : '') +
-    (cfg.codigoServicoPrestado ? `<CodigoServico>${esc(cfg.codigoServicoPrestado)}</CodigoServico>` : '') +
     `<Discriminacao>${discr}</Discriminacao>` +
     `<CodigoMunicipio>${ibge}</CodigoMunicipio>` +
     `<ExigibilidadeISS>1</ExigibilidadeISS>` +
