@@ -95,6 +95,19 @@ export function carregarCertificado(pfxBuffer: Buffer, senha: string): CertInfo 
   return { keyPem, certPem, certBase64, validoAte, titular }
 }
 
+// Carrega a partir de PEM já extraído (evita parse do PFX com algoritmos legados)
+export function carregarCertificadoDePem(keyPem: string, certPem: string): CertInfo {
+  const cert = forge.pki.certificateFromPem(certPem)
+  const certBase64 = certPem
+    .replace(/-----BEGIN CERTIFICATE-----/g, '')
+    .replace(/-----END CERTIFICATE-----/g, '')
+    .replace(/\s+/g, '')
+  const validoAte = cert.validity.notAfter
+  const cn = cert.subject.getField('CN')
+  const titular = cn?.value ?? ''
+  return { keyPem, certPem, certBase64, validoAte, titular }
+}
+
 interface NfseConfig {
   urlServico: string
   cnpj: string
