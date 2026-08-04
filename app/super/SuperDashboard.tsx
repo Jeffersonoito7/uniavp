@@ -1690,6 +1690,7 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
  const [emissaoForm, setEmissaoForm] = useState({ valor: '', descricao: '', tomador_doc: '', tomador_nome: '', tomador_email: '' })
  const [emitindo, setEmitindo] = useState(false)
  const [emissaoMsg, setEmissaoMsg] = useState('')
+ const [emissaoResultado, setEmissaoResultado] = useState<{ numero: string; codigoVerificacao?: string; valor: string; tomadorNome?: string; descricao?: string; ambiente: string } | null>(null)
  const [tomadores, setTomadores] = useState<any[]>([])
 
  // Notas
@@ -1733,7 +1734,7 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
  }
 
  async function emitir() {
-  setEmitindo(true); setEmissaoMsg('')
+  setEmitindo(true); setEmissaoMsg(''); setEmissaoResultado(null)
   const tomador = emissaoForm.tomador_doc ? {
    cpfCnpj: emissaoForm.tomador_doc.replace(/\D/g, ''),
    razaoSocial: emissaoForm.tomador_nome,
@@ -1742,7 +1743,14 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
   const r = await fetch('/api/super/nfse/emitir', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ valor: emissaoForm.valor, descricao: emissaoForm.descricao, tomador }) })
   const d = await r.json()
   if (d.ok) {
-   setEmissaoMsg(`NFS-e emitida. Numero: ${d.numero}${d.codigoVerificacao ? ' | Codigo: ' + d.codigoVerificacao : ''} | Ambiente: ${d.ambiente}`)
+   setEmissaoResultado({
+    numero: d.numero,
+    codigoVerificacao: d.codigoVerificacao,
+    valor: emissaoForm.valor,
+    tomadorNome: emissaoForm.tomador_nome || undefined,
+    descricao: emissaoForm.descricao || undefined,
+    ambiente: d.ambiente,
+   })
    setEmissaoForm({ valor: '', descricao: '', tomador_doc: '', tomador_nome: '', tomador_email: '' })
   } else {
    setEmissaoMsg(d.error ?? 'Erro ao emitir.')
@@ -1897,15 +1905,86 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
      </div>
 
      {emissaoMsg && (
-      <p style={{ marginTop: 16, padding: 10, borderRadius: 6, background: emissaoMsg.includes('emitida') ? (darkMode ? '#14532d' : '#dcfce7') : (darkMode ? '#450a0a' : '#fee2e2'), color: emissaoMsg.includes('emitida') ? '#4ade80' : '#f87171', fontSize: 13 }}>
+      <p style={{ marginTop: 16, padding: 10, borderRadius: 6, background: darkMode ? '#450a0a' : '#fee2e2', color: '#f87171', fontSize: 13 }}>
        {emissaoMsg}
       </p>
      )}
+
+     {emissaoResultado && (
+      <div style={{ marginTop: 20, border: '1px solid #166534', borderRadius: 12, overflow: 'hidden' }}>
+       {/* Cabecalho com logo */}
+       <div style={{ background: 'linear-gradient(135deg, #0D2B6E 0%, #1a4a8a 100%)', padding: '20px 24px', textAlign: 'center' }}>
+        <img
+         src="/logo.png"
+         alt="Universidade Oito7 Digital"
+         style={{ height: 52, objectFit: 'contain', marginBottom: 8 }}
+         onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+        />
+        <p style={{ color: '#fff', fontSize: 11, margin: 0, opacity: 0.7, letterSpacing: 1 }}>NOTA FISCAL DE SERVICOS ELETRONICAS</p>
+       </div>
+
+       {/* Dados da nota */}
+       <div style={{ background: darkMode ? '#052e16' : '#f0fdf4', padding: '20px 24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+         <div>
+          <p style={{ fontSize: 11, color: '#6b7280', margin: 0, textTransform: 'uppercase', letterSpacing: 0.5 }}>Numero da Nota</p>
+          <p style={{ fontSize: 28, fontWeight: 900, color: '#4ade80', margin: 0, fontVariantNumeric: 'tabular-nums' }}>#{emissaoResultado.numero}</p>
+         </div>
+         <div style={{ textAlign: 'right' }}>
+          <p style={{ fontSize: 11, color: '#6b7280', margin: 0, textTransform: 'uppercase', letterSpacing: 0.5 }}>Valor</p>
+          <p style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>
+           {Number(emissaoResultado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+          </p>
+         </div>
+        </div>
+
+        {emissaoResultado.codigoVerificacao && (
+         <div style={{ marginBottom: 10 }}>
+          <p style={{ fontSize: 11, color: '#6b7280', margin: '0 0 2px' }}>Codigo de Verificacao</p>
+          <p style={{ fontSize: 14, fontWeight: 700, color: C.text, margin: 0, fontFamily: 'monospace', letterSpacing: 1 }}>{emissaoResultado.codigoVerificacao}</p>
+         </div>
+        )}
+
+        {emissaoResultado.tomadorNome && (
+         <div style={{ marginBottom: 10 }}>
+          <p style={{ fontSize: 11, color: '#6b7280', margin: '0 0 2px' }}>Tomador</p>
+          <p style={{ fontSize: 14, color: C.text, margin: 0 }}>{emissaoResultado.tomadorNome}</p>
+         </div>
+        )}
+
+        {emissaoResultado.descricao && (
+         <div style={{ marginBottom: 10 }}>
+          <p style={{ fontSize: 11, color: '#6b7280', margin: '0 0 2px' }}>Descricao</p>
+          <p style={{ fontSize: 13, color: C.text, margin: 0 }}>{emissaoResultado.descricao}</p>
+         </div>
+        )}
+
+        <div style={{ marginTop: 16, display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'center' }}>
+         <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: emissaoResultado.ambiente === 'producao' ? '#14532d' : '#1e3a5f', color: emissaoResultado.ambiente === 'producao' ? '#4ade80' : '#60a5fa' }}>
+          {emissaoResultado.ambiente === 'producao' ? 'Producao' : 'Homologacao'}
+         </span>
+         <button style={{ ...btnGhost, fontSize: 12 }} onClick={() => { setEmissaoResultado(null); setSubAba('notas') }}>
+          Ver historico
+         </button>
+        </div>
+       </div>
+      </div>
+     )}
+
+     {!emissaoResultado && (
      <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end' }}>
       <button style={{ ...btn, opacity: emitindo || !emissaoForm.valor ? 0.6 : 1 }} onClick={emitir} disabled={emitindo || !emissaoForm.valor}>
        {emitindo ? 'Emitindo...' : 'Emitir NFS-e'}
       </button>
      </div>
+     )}
+     {emissaoResultado && (
+      <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
+       <button style={btn} onClick={() => setEmissaoResultado(null)}>
+        Nova NFS-e
+       </button>
+      </div>
+     )}
     </div>
    )}
 
