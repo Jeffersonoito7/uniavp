@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import { decCert, carregarCertificado, emitirNfse } from '@/lib/nfse-engine'
+import { decCert, carregarCertificado, carregarCertificadoDePem, emitirNfse } from '@/lib/nfse-engine'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -49,9 +49,17 @@ export async function POST(req: NextRequest) {
 
   let certInfo: Awaited<ReturnType<typeof carregarCertificado>>
   try {
-    const pfxBuffer = decCert(cfg.cert_enc!)
-    const senha = decCert(cfg.cert_pass_enc!).toString('utf8')
-    certInfo = carregarCertificado(pfxBuffer, senha)
+    if (cfg.key_pem_enc && cfg.cert_pem_enc) {
+      // PEMs pre-extraidos (formato preferencial, compativel com certs modernos)
+      const keyPem = decCert(cfg.key_pem_enc).toString('utf8')
+      const certPem = decCert(cfg.cert_pem_enc).toString('utf8')
+      certInfo = carregarCertificadoDePem(keyPem, certPem)
+    } else {
+      // Fallback: parse direto do PFX (pode falhar com algoritmos legados)
+      const pfxBuffer = decCert(cfg.cert_enc!)
+      const senha = decCert(cfg.cert_pass_enc!).toString('utf8')
+      certInfo = carregarCertificado(pfxBuffer, senha)
+    }
   } catch (e: any) {
     return NextResponse.json({ error: 'Erro ao ler o certificado digital: ' + (e?.message ?? '') }, { status: 500 })
   }
