@@ -90,13 +90,15 @@ function gerarHtml(xml: string, numero: string, codigoVerificacao: string): stri
 <meta charset="UTF-8">
 <title>NFS-e N ${numero_n} — Oito7 Digital</title>
 <style>
+  @page { size: A4; margin: 10mm 12mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, Helvetica, sans-serif; font-size: 10px; color: #111; background: #fff; padding: 12px; }
-  .danfse { border: 2px solid #1a56db; max-width: 740px; margin: 0 auto; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 10px; color: #111; background: #f0f4f8; }
+  .page { width: 210mm; min-height: 297mm; margin: 0 auto; background: #fff; padding: 0; }
+  .danfse { border: 2px solid #1a56db; width: 100%; }
   .header { background: #1a56db; color: #fff; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; }
   .header h1 { font-size: 16px; font-weight: 700; letter-spacing: 1px; }
   .header .sub { font-size: 10px; opacity: 0.85; margin-top: 2px; }
-  .numero-bloco { background: #e8f0fe; border-bottom: 2px solid #1a56db; padding: 8px 14px; display: flex; gap: 30px; align-items: center; }
+  .numero-bloco { background: #e8f0fe; border-bottom: 2px solid #1a56db; padding: 8px 14px; display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
   .numero-bloco .num { font-size: 22px; font-weight: 700; color: #1a56db; }
   .numero-bloco .label { font-size: 9px; text-transform: uppercase; color: #555; }
   .numero-bloco .valor-dest { font-size: 18px; font-weight: 700; color: #111; margin-left: auto; }
@@ -106,23 +108,31 @@ function gerarHtml(xml: string, numero: string, codigoVerificacao: string): stri
   .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px 12px; }
   .campo label { font-size: 8px; text-transform: uppercase; color: #666; display: block; margin-bottom: 1px; }
   .campo span { font-size: 10px; font-weight: 500; }
-  .chave-bloco { background: #f5f5f5; border: 1px solid #ddd; padding: 8px 14px; display: flex; gap: 20px; align-items: center; }
-  .chave-bloco .chave { font-size: 14px; font-weight: 700; letter-spacing: 2px; color: #333; font-family: monospace; }
+  .chave-bloco { background: #f5f5f5; border: 1px solid #ddd; padding: 8px 14px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  .chave-bloco .chave { font-size: 13px; font-weight: 700; letter-spacing: 2px; color: #333; font-family: monospace; }
   .discriminacao { white-space: pre-wrap; word-break: break-word; background: #f9f9f9; padding: 6px 10px; border: 1px solid #eee; border-radius: 3px; font-size: 10px; }
   .footer { padding: 6px 14px; font-size: 8px; color: #888; text-align: center; }
   .tag-simples { background: #d1fae5; color: #065f46; padding: 1px 6px; border-radius: 99px; font-size: 8px; font-weight: 600; }
+  .toolbar { background: #1e293b; padding: 10px 16px; display: flex; gap: 10px; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 10; }
+  .btn-imp { padding: 8px 22px; background: #1a56db; color: #fff; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 700; }
+  .btn-close { padding: 8px 16px; background: transparent; color: #94a3b8; border: 1px solid #334155; border-radius: 6px; font-size: 12px; cursor: pointer; }
   @media print {
-    body { padding: 0; }
-    .btn-print { display: none !important; }
+    body { background: #fff; }
+    .toolbar { display: none !important; }
+    .page { width: 100%; padding: 0; margin: 0; box-shadow: none; }
+  }
+  @media screen {
+    .page { box-shadow: 0 4px 24px rgba(0,0,0,0.18); margin: 0 auto 30px; }
+    body { padding-bottom: 30px; }
   }
 </style>
 </head>
 <body>
-<div style="text-align:center; margin-bottom:10px; display:flex; gap:8px; justify-content:center;">
-  <button class="btn-print" onclick="window.print()" style="padding:8px 20px; background:#1a56db; color:#fff; border:none; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600;">Imprimir / Salvar PDF</button>
-  <button class="btn-print" onclick="window.close()" style="padding:8px 16px; background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:6px; font-size:12px; cursor:pointer;">Fechar</button>
+<div class="toolbar">
+  <button class="btn-imp" onclick="window.print()">Imprimir / Salvar PDF (A4)</button>
+  <button class="btn-close" onclick="window.close()">Fechar</button>
 </div>
-
+<div class="page">
 <div class="danfse">
   <!-- Header -->
   <div class="header">
@@ -223,6 +233,7 @@ function gerarHtml(xml: string, numero: string, codigoVerificacao: string): stri
     Nota Fiscal de Serviços Eletrônica gerada em conformidade com a Lei Complementar nº 116/2003 e legislação municipal de Petrolina-PE.<br>
     Este documento tem validade jurídica mediante autenticação no portal da Prefeitura.
   </div>
+</div>
 </div>
 </body>
 </html>`
