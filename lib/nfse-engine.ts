@@ -97,15 +97,18 @@ export function carregarCertificado(pfxBuffer: Buffer, senha: string): CertInfo 
 
 // Carrega a partir de PEM já extraído (evita parse do PFX com algoritmos legados)
 export function carregarCertificadoDePem(keyPem: string, certPem: string): CertInfo {
-  const cert = forge.pki.certificateFromPem(certPem)
-  const certBase64 = certPem
-    .replace(/-----BEGIN CERTIFICATE-----/g, '')
-    .replace(/-----END CERTIFICATE-----/g, '')
+  // Extrai apenas o primeiro certificado da cadeia (leaf cert)
+  const match = certPem.match(/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/)
+  const leafPem = match ? match[0] : certPem
+  const cert = forge.pki.certificateFromPem(leafPem)
+  const certBase64 = leafPem
+    .replace('-----BEGIN CERTIFICATE-----', '')
+    .replace('-----END CERTIFICATE-----', '')
     .replace(/\s+/g, '')
   const validoAte = cert.validity.notAfter
   const cn = cert.subject.getField('CN')
   const titular = cn?.value ?? ''
-  return { keyPem, certPem, certBase64, validoAte, titular }
+  return { keyPem, certPem: leafPem, certBase64, validoAte, titular }
 }
 
 interface NfseConfig {
@@ -167,7 +170,7 @@ function montarXml(cfg: NfseConfig, dados: DadosEmissao): { xml: string; id: str
   const hoje = dados.data || new Date().toISOString().slice(0, 10)
   const rpsNum = String(dados.numeroRps ?? 1)
   const rpsSerie = String(cfg.serieRps ?? '1')
-  const discr = esc(dados.descricao ?? cfg.descricaoServico ?? 'Prestacao de servico')
+  const discr = esc(dados.descricao || cfg.descricaoServico || 'Prestacao de servicos de tecnologia')
 
   const t = dados.tomador ?? {}
   const docTom = soDigitos(t.cpfCnpj ?? t.cnpj ?? t.cpf ?? t.doc)
