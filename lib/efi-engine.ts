@@ -57,34 +57,50 @@ export async function gerarCobrancaPix(params: CobrancaParams): Promise<Cobranca
 
   const token = await getToken()
   const agent = getAgent()
-  const txid = `UNI${Date.now()}${Math.random().toString(36).slice(2, 7).toUpperCase()}`
+  // txid: 26-35 chars, somente [a-zA-Z0-9]
+  const rand = Math.random().toString(36).slice(2).toUpperCase().replace(/[^A-Z0-9]/g, '')
+  const txid = ('UNI' + Date.now() + rand).slice(0, 35).padEnd(26, '0')
   const valor = Number(params.valor).toFixed(2)
 
-  const body: any = {
-    calendario: { dataDeVencimento: params.vencimento, validadeAposVencimento: 30 },
-    valor: {
-      original: valor,
-      multa: { modalidade: 2, valorPerc: '2.00' },
-      juros: { modalidade: 2, valorPerc: '0.03' },
-    },
-    chave,
-    solicitacaoPagador: params.descricao.slice(0, 140),
+  const doc = params.devedor?.cnpj?.replace(/\D/g, '') || params.devedor?.cpf?.replace(/\D/g, '') || ''
+  const temDoc = doc.length === 11 || doc.length === 14
+  // cobv exige devedor com CPF/CNPJ valido; sem isso usa cob (imediata)
+  const usaCobv = temDoc
+
+  let body: any
+  if (usaCobv) {
+    body = {
+      calendario: { dataDeVencimento: params.vencimento, validadeAposVencimento: 30 },
+      valor: {
+        original: valor,
+        multa: { modalidade: 2, valorPerc: '2.00' },
+        juros: { modalidade: 2, valorPerc: '0.03' },
+      },
+      chave,
+      solicitacaoPagador: params.descricao.slice(0, 140),
+      devedor: doc.length === 14
+        ? { nome: params.devedor!.nome, cnpj: doc }
+        : { nome: params.devedor!.nome, cpf: doc },
+    }
+  } else {
+    // cob imediata: expira em 86400s (1 dia) por padrao
+    body = {
+      calendario: { expiracao: 86400 },
+      valor: { original: valor },
+      chave,
+      solicitacaoPagador: params.descricao.slice(0, 140),
+    }
+    if (params.devedor?.nome) body.devedor = { nome: params.devedor.nome }
   }
 
-  if (params.devedor?.nome) {
-    const doc = params.devedor.cnpj?.replace(/\D/g, '') || params.devedor.cpf?.replace(/\D/g, '')
-    if (doc && doc.length === 14) body.devedor = { nome: params.devedor.nome, cnpj: doc }
-    else if (doc && doc.length === 11) body.devedor = { nome: params.devedor.nome, cpf: doc }
-    else body.devedor = { nome: params.devedor.nome }
-  }
-
-  await axios.put(`${BASE_URL}/v2/cobv/${txid}`, body, {
+  const endpoint = usaCobv ? `/v2/cobv/${txid}` : `/v2/cob/${txid}`
+  await axios.put(`${BASE_URL}${endpoint}`, body, {
     httpsAgent: agent,
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     timeout: 20000,
   })
 
-  const { data: cobv } = await axios.get(`${BASE_URL}/v2/cobv/${txid}`, {
+  const { data: cobv } = await axios.get(`${BASE_URL}${endpoint}`, {
     httpsAgent: agent,
     headers: { Authorization: `Bearer ${token}` },
     timeout: 10000,
