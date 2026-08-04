@@ -1,7 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import QRCode from 'qrcode'
 
 export const dynamic = 'force-dynamic'
+
+function crc16(str: string): string {
+  let crc = 0xFFFF
+  for (let i = 0; i < str.length; i++) {
+    crc ^= str.charCodeAt(i) << 8
+    for (let j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF
+    }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, '0')
+}
+
+function tlv(id: string, value: string): string {
+  return id + String(value.length).padStart(2, '0') + value
+}
+
+function pixPayload(chave: string, nome: string, cidade: string, valor: number, txid: string): string {
+  const nomeLimpo = nome.normalize('NFD').replace(/[̀-ͯ]/g, '').substring(0, 25).toUpperCase()
+  const cidadeLimpa = cidade.normalize('NFD').replace(/[̀-ͯ]/g, '').substring(0, 15).toUpperCase()
+  const txidLimpo = txid.replace(/\W/g, '').substring(0, 25) || '***'
+  const merchantAccount = tlv('00', 'BR.GOV.BCB.PIX') + tlv('01', chave)
+  const additionalData = tlv('05', txidLimpo)
+  let payload =
+    tlv('00', '01') +
+    tlv('01', '12') +
+    tlv('26', merchantAccount) +
+    '52040000' +
+    '5303986' +
+    (valor > 0 ? tlv('54', valor.toFixed(2)) : '') +
+    '5802BR' +
+    tlv('59', nomeLimpo) +
+    tlv('60', cidadeLimpa) +
+    tlv('62', additionalData) +
+    '6304'
+  return payload + crc16(payload)
+}
+
+async function gerarQrDataUrl(payload: string): Promise<string> {
+  return QRCode.toDataURL(payload, { errorCorrectionLevel: 'M', margin: 1, width: 200 })
+}
 
 function esc(s: string) {
   return (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -35,7 +76,7 @@ function fmtCep(c: string) {
   return d.length === 8 ? d.replace(/(\d{5})(\d{3})/, '$1-$2') : c
 }
 
-function gerarHtml(xml: string, numero: string, codigoVerificacao: string): string {
+function gerarHtml(xml: string, numero: string, codigoVerificacao: string, qrDataUrl?: string, valorPix?: number): string {
   const inf = xml.includes('<InfNfse') ? xml.match(/<InfNfse[\s\S]*$/)?.[0] ?? xml : xml
 
   const numero_n = tag(xml, 'Numero') || numero
@@ -217,6 +258,24 @@ function gerarHtml(xml: string, numero: string, codigoVerificacao: string): stri
     </div>
   </div>
 
+  <!-- PIX -->
+  ${qrDataUrl ? `
+  <div class="secao" style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
+    <div>
+      <div class="secao-titulo" style="margin-bottom:8px;">Pagamento via PIX</div>
+      <img src="${qrDataUrl}" alt="QR Code PIX" style="width:120px; height:120px; display:block; border:1px solid #e5e7eb; border-radius:6px; padding:4px;" />
+    </div>
+    <div style="flex:1; min-width:180px;">
+      <div class="campo" style="margin-bottom:8px;"><label>Chave PIX</label><span style="font-family:monospace; font-size:11px;">oito7digital@gmail.com</span></div>
+      <div class="campo" style="margin-bottom:8px;"><label>Favorecido</label><span>OITO7DIGITAL LTDA</span></div>
+      ${valorPix ? `<div class="campo" style="margin-bottom:8px;"><label>Valor</label><span style="font-size:13px; font-weight:700;">${Number(valorPix).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>` : ''}
+      <div style="margin-top:10px; font-size:9px; color:#666; line-height:1.5;">
+        Escaneie o QR Code com o app do seu banco ou copie a chave PIX para realizar o pagamento.
+      </div>
+    </div>
+  </div>
+  ` : ''}
+
   <!-- Chave de autenticacao -->
   <div class="chave-bloco">
     <div>
@@ -258,7 +317,18 @@ export async function GET(req: NextRequest) {
     return new NextResponse('XML da nota não disponível (nota emitida antes desta versão).', { status: 404 })
   }
 
-  const html = gerarHtml(nota.xml, nota.numero, nota.codigo_verificacao)
+  // PIX QR Code
+  let qrDataUrl: string | undefined
+  const { data: cfg } = await (sb as any).from('nfse_config').select('pix_key,pix_nome,pix_cidade').eq('id', 'default').maybeSingle()
+  if (cfg?.pix_key) {
+    try {
+      const valor = Number(nota.valor ?? 0)
+      const payload = pixPayload(cfg.pix_key, cfg.pix_nome || 'OITO7DIGITAL LTDA', cfg.pix_cidade || 'PETROLINA', valor, `NF${nota.numero}`)
+      qrDataUrl = await gerarQrDataUrl(payload)
+    } catch { /* segue sem PIX */ }
+  }
+
+  const html = gerarHtml(nota.xml, nota.numero, nota.codigo_verificacao, qrDataUrl, nota.valor)
   return new NextResponse(html, {
     headers: { 'Content-Type': 'text/html; charset=utf-8' }
   })
