@@ -1942,6 +1942,7 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
        {ci('url_servico', 'URL SOAP (WSDL)', 'https://...')}
        {ci('item_lista_servico', 'Item LC116', '17.06')}
        {ci('codigo_tributacao_municipio', 'Codigo Tributacao')}
+       {ci('codigo_servico_nacional', 'Codigo Servico Nacional (EL97)', '010801400')}
        {ci('aliquota_iss', 'Aliquota ISS (%)', '2.50')}
        {ci('serie_rps', 'Serie RPS', '1')}
        <div style={{ gridColumn: '1 / -1' }}>{ci('descricao_servico', 'Descricao padrao do servico')}</div>

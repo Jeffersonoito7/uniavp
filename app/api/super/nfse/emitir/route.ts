@@ -79,6 +79,7 @@ export async function POST(req: NextRequest) {
     descricaoServico: cfg.descricao_servico,
     codigoTributacaoMunicipio: cfg.codigo_tributacao_municipio,
     codigoServicoPrestado: (cfg.codigo_servico_prestado || String(cfg.codigo_tributacao_municipio || '').replace(/\D/g, '')) || undefined,
+    codigoServicoNacional: cfg.codigo_servico_nacional || undefined,
     ambiente: cfg.ambiente ?? 'homologacao',
   }
 
