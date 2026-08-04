@@ -123,6 +123,7 @@ interface NfseConfig {
   serieRps?: string
   descricaoServico?: string
   codigoTributacaoMunicipio?: string
+  codigoServicoPrestado?: string
   ambiente?: string
 }
 
@@ -167,7 +168,11 @@ function montarXml(cfg: NfseConfig, dados: DadosEmissao): { xml: string; id: str
   const optante = cfg.optanteSimples ? '1' : '2'
   const incentivo = cfg.incentivadorCultural ? '1' : '2'
   const valor = n2(dados.valor)
-  const hoje = dados.data || new Date().toISOString().slice(0, 10)
+  // Data no horario de Brasilia (UTC-3) para evitar data futura no servidor UTC
+  const agora = new Date()
+  const brasilOffset = -3 * 60
+  const brasilMs = agora.getTime() + (brasilOffset - agora.getTimezoneOffset()) * 60000
+  const hoje = dados.data || new Date(brasilMs).toISOString().slice(0, 10)
   const rpsNum = String(dados.numeroRps ?? 1)
   const rpsSerie = String(cfg.serieRps ?? '1')
   const discr = esc(dados.descricao || cfg.descricaoServico || 'Prestacao de servicos de tecnologia')
@@ -217,6 +222,7 @@ function montarXml(cfg: NfseConfig, dados: DadosEmissao): { xml: string; id: str
     `<IssRetido>2</IssRetido>` +
     `<ItemListaServico>${esc(item)}</ItemListaServico>` +
     (cfg.codigoTributacaoMunicipio ? `<CodigoTributacaoMunicipio>${esc(cfg.codigoTributacaoMunicipio)}</CodigoTributacaoMunicipio>` : '') +
+    (cfg.codigoServicoPrestado ? `<CodigoServico>${esc(cfg.codigoServicoPrestado)}</CodigoServico>` : '') +
     `<Discriminacao>${discr}</Discriminacao>` +
     `<CodigoMunicipio>${ibge}</CodigoMunicipio>` +
     `<ExigibilidadeISS>1</ExigibilidadeISS>` +

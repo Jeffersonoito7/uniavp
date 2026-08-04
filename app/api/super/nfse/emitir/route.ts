@@ -104,15 +104,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, numero: r.numero, codigoVerificacao: r.codigoVerificacao, ambiente: cfg.ambiente ?? 'homologacao' })
     }
 
-    // Emissão rejeitada pela prefeitura: desfaz o incremento de RPS
-    await (sb as any).from('nfse_config').update({ rps_seq: numeroRps - 1 }).eq('id', 'default')
-
+    // Prefeitura recusou: NAO desfaz o RPS (prefeitura ja registrou o numero internamente)
     return NextResponse.json({
       error: r.erros && r.erros.length ? r.erros.join(' | ') : 'A prefeitura recusou a nota.',
       httpStatus: r.httpStatus,
       respostaBruta: r.respostaBruta,
     }, { status: 422 })
   } catch (e: any) {
+    // Erro de conexao/rede: ai sim reverte o contador (a prefeitura nao recebeu)
     await (sb as any).from('nfse_config').update({ rps_seq: numeroRps - 1 }).eq('id', 'default')
     return NextResponse.json({ error: e?.message ?? 'Falha ao emitir a NFS-e.' }, { status: 500 })
   }
