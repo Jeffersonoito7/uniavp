@@ -68,10 +68,10 @@ export async function GET(req: NextRequest) {
       avisos++
     }
 
-    // ── Suspende após 2 dias de atraso ────────────────────────────
+    // ── Baixa para FREE após 2 dias de atraso ─────────────────────
     if (diasParaVencer < -2) {
       await admin.from('gestores')
-        .update({ ativo: false, status_assinatura: 'suspenso' })
+        .update({ status_assinatura: 'free', plano_vencimento: null })
         .eq('id', g.id)
 
       await enviarWhatsApp(g.whatsapp,
@@ -106,12 +106,12 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // ── 2. Verifica PROs suspensos que voltaram a ter rede completa ──
-  // (caso alguém da rede de um PRO suspenso renove → reativa gratuito)
+  // ── 2. Verifica PROs no plano FREE que voltaram a ter rede completa ──
+  // (caso alguém da rede renove → reativa PRO gratuito)
   const { data: gestoresSuspensos } = await admin.from('gestores')
     .select('id, nome, whatsapp, status_assinatura, tenant_id')
-    .eq('ativo', false)
-    .eq('status_assinatura', 'suspenso')
+    .eq('ativo', true)
+    .in('status_assinatura', ['free', 'suspenso'])
 
   for (const g of gestoresSuspensos ?? []) {
     const LIMITE = await limiteDo(g.tenant_id)

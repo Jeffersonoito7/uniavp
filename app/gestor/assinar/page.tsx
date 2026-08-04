@@ -122,15 +122,15 @@ export default function AssinarPage() {
  </div>
  )}
 
- {/* Plano expirado / precisa pagar */}
- {(info?.status === 'suspenso' || (info?.status === 'trial' && !info.trialAtivo)) && (
+ {/* Plano expirado / plano free / precisa pagar */}
+ {(info?.status === 'suspenso' || info?.status === 'free' || (info?.status === 'trial' && !info.trialAtivo)) && (
  <>
  <div className="alert alert-error" style={{ marginBottom: 20, textAlign: 'center', padding: '20px 24px' }}>
  <p style={{ fontWeight: 800, fontSize: 18, color: 'var(--avp-danger)', marginBottom: 4 }}>
- {info?.status === 'suspenso' ? 'Acesso suspenso' : 'Trial encerrado'}
+ {info?.status === 'free' ? 'Plano PRO encerrado' : info?.status === 'suspenso' ? 'Acesso suspenso' : 'Trial encerrado'}
  </p>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0 }}>
- Assine para continuar usando o UNIAVP PRO
+ {info?.status === 'free' ? 'Seu plano voltou ao gratuito. Assine o PRO para retomar o painel de gestão.' : 'Assine para continuar usando o UNIAVP PRO'}
  </p>
  </div>
 
