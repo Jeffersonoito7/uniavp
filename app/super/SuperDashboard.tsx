@@ -1670,39 +1670,43 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
 }
 
 // ── Componente NFS-e ─────────────────────────────────────────────────────
-function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any; btn: any; btnGhost: any; lbl: any; darkMode: boolean }) {
- const [subAba, setSubAba] = useState<'config' | 'emitir' | 'notas'>('config')
+const TOMADORES_PADRAO = [
+  { documento: '62302560000158', razao_social: 'Oito7 Digital Servicos Ltda', email: 'oito7digital@gmail.com' },
+  { documento: '07594985000110', razao_social: 'Auto Vale Prevencoes Ltda', email: 'contato@autovaleprevencoes.org.br' },
+]
 
- // Config
+function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any; btn: any; btnGhost: any; lbl: any; darkMode: boolean }) {
+ const [subAba, setSubAba] = useState<'emitir' | 'notas' | 'config'>('emitir')
+
  const [cfg, setCfg] = useState<any>({})
- const [cfgLoading, setCfgLoading] = useState(true)
  const [cfgMsg, setCfgMsg] = useState('')
  const [salvandoCfg, setSalvandoCfg] = useState(false)
 
- // Certificado
  const [certStatus, setCertStatus] = useState<{ configurado: boolean; validoAte?: string; titular?: string }>({ configurado: false })
  const [certFile, setCertFile] = useState<File | null>(null)
  const [certSenha, setCertSenha] = useState('')
  const [certLoading, setCertLoading] = useState(false)
  const [certMsg, setCertMsg] = useState('')
 
- // Emissão
  const [emissaoForm, setEmissaoForm] = useState({ valor: '', descricao: '', tomador_doc: '', tomador_nome: '', tomador_email: '' })
  const [emitindo, setEmitindo] = useState(false)
  const [emissaoMsg, setEmissaoMsg] = useState('')
  const [emissaoResultado, setEmissaoResultado] = useState<{ numero: string; codigoVerificacao?: string; valor: string; tomadorNome?: string; descricao?: string; ambiente: string } | null>(null)
- const [tomadores, setTomadores] = useState<any[]>([])
+ const [tomadores, setTomadores] = useState<any[]>(TOMADORES_PADRAO)
 
- // Notas
  const [notas, setNotas] = useState<any[]>([])
  const [notasLoading, setNotasLoading] = useState(false)
  const [cancelando, setCancelando] = useState<string | null>(null)
  const [cancelMsg, setCancelMsg] = useState('')
 
  useEffect(() => {
-  fetch('/api/super/nfse/config').then(r => r.json()).then(d => { setCfg(d.config ?? {}); setCfgLoading(false) })
+  fetch('/api/super/nfse/config').then(r => r.json()).then(d => setCfg(d.config ?? {}))
   fetch('/api/super/nfse/certificado').then(r => r.json()).then(d => setCertStatus(d))
-  fetch('/api/super/nfse/tomadores').then(r => r.json()).then(d => setTomadores(d.tomadores ?? []))
+  fetch('/api/super/nfse/tomadores').then(r => r.json()).then(d => {
+   const extras = d.tomadores ?? []
+   const combined = [...TOMADORES_PADRAO, ...extras.filter((e: any) => !TOMADORES_PADRAO.find(p => p.documento === e.documento))]
+   setTomadores(combined)
+  })
  }, [])
 
  function carregarNotas() {
@@ -1728,9 +1732,15 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
   form.append('senha', certSenha)
   const r = await fetch('/api/super/nfse/certificado', { method: 'POST', body: form })
   const d = await r.json()
-  if (d.ok) { setCertStatus({ configurado: true, validoAte: d.validoAte, titular: d.titular }); setCertMsg('Certificado salvo com sucesso.') }
+  if (d.ok) { setCertStatus({ configurado: true, validoAte: d.validoAte, titular: d.titular }); setCertMsg('Certificado salvo.') }
   else setCertMsg(d.error ?? 'Erro ao salvar certificado.')
   setCertLoading(false)
+ }
+
+ function selecionarTomador(documento: string) {
+  const t = tomadores.find(x => x.documento === documento)
+  if (t) setEmissaoForm(p => ({ ...p, tomador_doc: t.documento, tomador_nome: t.razao_social, tomador_email: t.email ?? '' }))
+  else setEmissaoForm(p => ({ ...p, tomador_doc: '', tomador_nome: '', tomador_email: '' }))
  }
 
  async function emitir() {
@@ -1743,14 +1753,7 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
   const r = await fetch('/api/super/nfse/emitir', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ valor: emissaoForm.valor, descricao: emissaoForm.descricao, tomador }) })
   const d = await r.json()
   if (d.ok) {
-   setEmissaoResultado({
-    numero: d.numero,
-    codigoVerificacao: d.codigoVerificacao,
-    valor: emissaoForm.valor,
-    tomadorNome: emissaoForm.tomador_nome || undefined,
-    descricao: emissaoForm.descricao || undefined,
-    ambiente: d.ambiente,
-   })
+   setEmissaoResultado({ numero: d.numero, codigoVerificacao: d.codigoVerificacao, valor: emissaoForm.valor, tomadorNome: emissaoForm.tomador_nome || undefined, descricao: emissaoForm.descricao || undefined, ambiente: d.ambiente })
    setEmissaoForm({ valor: '', descricao: '', tomador_doc: '', tomador_nome: '', tomador_email: '' })
   } else {
    setEmissaoMsg(d.error ?? 'Erro ao emitir.')
@@ -1767,11 +1770,15 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
   setCancelando(null)
  }
 
- const card: React.CSSProperties = { background: darkMode ? '#13141a' : '#fff', border: `1px solid ${darkMode ? '#2a2b35' : '#e5e7eb'}`, borderRadius: 10, padding: 20, marginBottom: 20 }
+ const brd = darkMode ? '#1e2030' : '#e5e7eb'
+ const cardSt: React.CSSProperties = { background: darkMode ? '#0f1017' : '#fff', border: `1px solid ${brd}`, borderRadius: 12, overflow: 'hidden' }
+ const secSt: React.CSSProperties = { padding: '20px 24px' }
+ const divider: React.CSSProperties = { borderTop: `1px solid ${brd}` }
+
  const tabStyle = (id: string): React.CSSProperties => ({
-  padding: '7px 18px', borderRadius: 6, fontSize: 13, fontWeight: subAba === id ? 700 : 400,
-  background: subAba === id ? (darkMode ? '#3b5bdb' : '#2563eb') : 'transparent',
-  color: subAba === id ? '#fff' : C.dim, border: 'none', cursor: 'pointer',
+  padding: '8px 20px', borderRadius: 6, fontSize: 13, fontWeight: subAba === id ? 600 : 400,
+  background: subAba === id ? C.accent : 'transparent',
+  color: subAba === id ? '#fff' : C.dim, border: `1px solid ${subAba === id ? C.accent : brd}`, cursor: 'pointer',
  })
 
  const cfgInput = (field: string, label: string, tipo?: string, placeholder?: string) => (
@@ -1783,206 +1790,159 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
  )
 
  return (
-  <div>
-   <h2 style={{ fontSize: 20, fontWeight: 700, color: C.text, marginBottom: 4 }}>Emissao de NFS-e</h2>
-   <p style={{ color: C.dim, fontSize: 13, marginBottom: 20 }}>Nota Fiscal de Servicos Eletroncia - padrao ABRASF 2.04</p>
-
-   <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
-    <button style={tabStyle('config')} onClick={() => setSubAba('config')}>Configuracao</button>
-    <button style={tabStyle('emitir')} onClick={() => setSubAba('emitir')}>Emitir NFS-e</button>
-    <button style={tabStyle('notas')} onClick={() => setSubAba('notas')}>Historico de Notas</button>
+  <div style={{ maxWidth: 860 }}>
+   {/* Cabecalho */}
+   <div style={{ marginBottom: 24 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
+     <h2 style={{ fontSize: 20, fontWeight: 700, color: C.text, margin: 0 }}>Nota Fiscal de Servicos</h2>
+     {certStatus.configurado && (
+      <span style={{ fontSize: 11, padding: '2px 10px', borderRadius: 99, background: '#052e16', border: '1px solid #166534', color: '#4ade80', fontWeight: 600 }}>
+       Certificado A1 ativo
+      </span>
+     )}
+    </div>
+    <p style={{ color: C.dim, fontSize: 13, margin: 0 }}>
+     Emissor: Oito7 Digital Servicos Ltda, CNPJ 62.302.560/0001-58, Petrolina-PE. Padrao ABRASF 2.04.
+    </p>
    </div>
 
-   {/* Sub-aba Configuracao */}
-   {subAba === 'config' && (
-    <div>
-     <div style={card}>
-      <h3 style={{ fontWeight: 700, color: C.text, marginBottom: 16, fontSize: 15 }}>Dados do Prestador</h3>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
-       {cfgInput('cnpj', 'CNPJ do Emissor', 'text', '00.000.000/0001-00')}
-       {cfgInput('inscricao_municipal', 'Inscricao Municipal')}
-       {cfgInput('codigo_municipio_ibge', 'Codigo IBGE do Municipio', 'text', 'ex: 2611101')}
-       {cfgInput('url_servico', 'URL do Servico SOAP (WSDL)', 'text', 'https://...')}
-       {cfgInput('item_lista_servico', 'Item da Lista LC116', 'text', 'ex: 17.01')}
-       {cfgInput('codigo_tributacao_municipio', 'Codigo Tributacao Municipio')}
-       {cfgInput('aliquota_iss', 'Aliquota ISS (%)', 'text', 'ex: 5.00')}
-       {cfgInput('serie_rps', 'Serie RPS', 'text', 'ex: 1')}
-       {cfgInput('descricao_servico', 'Descricao padrao do servico')}
-      </div>
-      <div style={{ display: 'flex', gap: 14, marginTop: 14 }}>
-       <div>
-        <label style={lbl}>Optante Simples Nacional</label>
-        <select style={{ ...inp, width: 180 }} value={cfg.optante_simples ? '1' : '2'} onChange={e => setCfg((p: any) => ({ ...p, optante_simples: e.target.value === '1' }))}>
-         <option value="1">Sim</option>
-         <option value="2">Nao</option>
-        </select>
-       </div>
-       <div>
-        <label style={lbl}>Ambiente</label>
-        <select style={{ ...inp, width: 180 }} value={cfg.ambiente ?? 'homologacao'} onChange={e => setCfg((p: any) => ({ ...p, ambiente: e.target.value }))}>
-         <option value="homologacao">Homologacao (teste)</option>
-         <option value="producao">Producao</option>
-        </select>
-       </div>
-      </div>
-      {cfgMsg && <p style={{ marginTop: 12, fontSize: 13, color: cfgMsg.includes('alvas') || cfgMsg.includes('sucesso') || cfgMsg.includes('salvas') ? '#4ade80' : '#f87171' }}>{cfgMsg}</p>}
-      <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
-       <button style={btn} onClick={salvarConfig} disabled={salvandoCfg}>{salvandoCfg ? 'Salvando...' : 'Salvar Configuracao'}</button>
-      </div>
-     </div>
-
-     <div style={card}>
-      <h3 style={{ fontWeight: 700, color: C.text, marginBottom: 8, fontSize: 15 }}>Certificado Digital A1 (.pfx)</h3>
-      {certStatus.configurado ? (
-       <p style={{ fontSize: 13, color: '#4ade80', marginBottom: 12 }}>
-        Certificado configurado. Titular: {certStatus.titular ?? '-'} | Validade: {certStatus.validoAte ? new Date(certStatus.validoAte).toLocaleDateString('pt-BR') : '-'}
-       </p>
-      ) : (
-       <p style={{ fontSize: 13, color: '#f87171', marginBottom: 12 }}>Nenhum certificado configurado.</p>
-      )}
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-       <div>
-        <label style={lbl}>Arquivo .pfx</label>
-        <input type="file" accept=".pfx,.p12" style={{ ...inp, padding: 6 }} onChange={e => setCertFile(e.target.files?.[0] ?? null)} />
-       </div>
-       <div>
-        <label style={lbl}>Senha do certificado</label>
-        <input style={{ ...inp, width: 200 }} type="password" placeholder="senha" value={certSenha} onChange={e => setCertSenha(e.target.value)} />
-       </div>
-       <button style={btn} onClick={enviarCert} disabled={certLoading || !certFile}>
-        {certLoading ? 'Enviando...' : 'Salvar Certificado'}
-       </button>
-      </div>
-      {certMsg && <p style={{ marginTop: 10, fontSize: 13, color: certMsg.includes('sucesso') ? '#4ade80' : '#f87171' }}>{certMsg}</p>}
-     </div>
-    </div>
-   )}
+   <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+    <button style={tabStyle('emitir')} onClick={() => setSubAba('emitir')}>Emitir NFS-e</button>
+    <button style={tabStyle('notas')} onClick={() => setSubAba('notas')}>Historico</button>
+    <button style={tabStyle('config')} onClick={() => setSubAba('config')}>Configuracao</button>
+   </div>
 
    {/* Sub-aba Emitir */}
    {subAba === 'emitir' && (
-    <div style={card}>
-     <h3 style={{ fontWeight: 700, color: C.text, marginBottom: 16, fontSize: 15 }}>Emitir Nova NFS-e</h3>
-     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
-      <div>
-       <label style={lbl}>Valor do servico (R$) *</label>
-       <input style={inp} type="number" step="0.01" min="0.01" placeholder="0,00" value={emissaoForm.valor} onChange={e => setEmissaoForm(p => ({ ...p, valor: e.target.value }))} />
-      </div>
-      <div style={{ gridColumn: '1 / -1' }}>
-       <label style={lbl}>Descricao do servico</label>
-       <input style={inp} placeholder="Deixe em branco para usar a descricao padrao" value={emissaoForm.descricao} onChange={e => setEmissaoForm(p => ({ ...p, descricao: e.target.value }))} />
-      </div>
-     </div>
-
-     <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${darkMode ? '#2a2b35' : '#e5e7eb'}` }}>
-      <p style={{ fontSize: 13, fontWeight: 600, color: C.dim, marginBottom: 12 }}>Tomador (opcional)</p>
-      {tomadores.length > 0 && (
-       <div style={{ marginBottom: 12 }}>
-        <label style={lbl}>Selecionar tomador cadastrado</label>
-        <select style={{ ...inp, width: '100%' }} onChange={e => {
-         const t = tomadores.find(x => x.documento === e.target.value)
-         if (t) setEmissaoForm(p => ({ ...p, tomador_doc: t.documento, tomador_nome: t.razao_social, tomador_email: t.email ?? '' }))
-         else setEmissaoForm(p => ({ ...p, tomador_doc: '', tomador_nome: '', tomador_email: '' }))
-        }}>
-         <option value="">-- selecione ou preencha abaixo --</option>
-         {tomadores.map(t => <option key={t.documento} value={t.documento}>{t.razao_social} ({t.documento})</option>)}
-        </select>
-       </div>
-      )}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
-       <div>
-        <label style={lbl}>CPF/CNPJ</label>
-        <input style={inp} placeholder="000.000.000-00" value={emissaoForm.tomador_doc} onChange={e => setEmissaoForm(p => ({ ...p, tomador_doc: e.target.value }))} />
-       </div>
-       <div>
-        <label style={lbl}>Nome / Razao Social</label>
-        <input style={inp} value={emissaoForm.tomador_nome} onChange={e => setEmissaoForm(p => ({ ...p, tomador_nome: e.target.value }))} />
-       </div>
-       <div>
-        <label style={lbl}>E-mail</label>
-        <input style={inp} type="email" value={emissaoForm.tomador_email} onChange={e => setEmissaoForm(p => ({ ...p, tomador_email: e.target.value }))} />
-       </div>
-      </div>
-     </div>
-
-     {emissaoMsg && (
-      <p style={{ marginTop: 16, padding: 10, borderRadius: 6, background: darkMode ? '#450a0a' : '#fee2e2', color: '#f87171', fontSize: 13 }}>
-       {emissaoMsg}
-      </p>
-     )}
-
-     {emissaoResultado && (
-      <div style={{ marginTop: 20, border: '1px solid #166534', borderRadius: 12, overflow: 'hidden' }}>
-       {/* Cabecalho com logo */}
-       <div style={{ background: 'linear-gradient(135deg, #0D2B6E 0%, #1a4a8a 100%)', padding: '20px 24px', textAlign: 'center' }}>
-        <img
-         src="/logo.png"
-         alt="Universidade Oito7 Digital"
-         style={{ height: 52, objectFit: 'contain', marginBottom: 8 }}
-         onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-        />
-        <p style={{ color: '#fff', fontSize: 11, margin: 0, opacity: 0.7, letterSpacing: 1 }}>NOTA FISCAL DE SERVICOS ELETRONICAS</p>
-       </div>
-
-       {/* Dados da nota */}
-       <div style={{ background: darkMode ? '#052e16' : '#f0fdf4', padding: '20px 24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+    <div>
+     {!emissaoResultado ? (
+      <div style={cardSt}>
+       {/* Secao valor e descricao */}
+       <div style={secSt}>
+        <p style={{ fontSize: 12, fontWeight: 700, color: C.dim, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 16px' }}>Servico</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 14 }}>
          <div>
-          <p style={{ fontSize: 11, color: '#6b7280', margin: 0, textTransform: 'uppercase', letterSpacing: 0.5 }}>Numero da Nota</p>
-          <p style={{ fontSize: 28, fontWeight: 900, color: '#4ade80', margin: 0, fontVariantNumeric: 'tabular-nums' }}>#{emissaoResultado.numero}</p>
+          <label style={lbl}>Valor (R$) *</label>
+          <input style={{ ...inp, fontSize: 20, fontWeight: 700, padding: '12px 14px' }} type="number" step="0.01" min="0.01" placeholder="0,00"
+           value={emissaoForm.valor} onChange={e => setEmissaoForm(p => ({ ...p, valor: e.target.value }))} />
+         </div>
+         <div>
+          <label style={lbl}>Descricao</label>
+          <input style={inp} placeholder="Ex: Licenca mensal plataforma EAD — Agosto/2026"
+           value={emissaoForm.descricao} onChange={e => setEmissaoForm(p => ({ ...p, descricao: e.target.value }))} />
+         </div>
+        </div>
+       </div>
+
+       {/* Secao tomador */}
+       <div style={{ ...divider, ...secSt }}>
+        <p style={{ fontSize: 12, fontWeight: 700, color: C.dim, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 16px' }}>Tomador do Servico</p>
+
+        {/* Cards de tomadores rapidos */}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+         {tomadores.map(t => {
+          const sel = emissaoForm.tomador_doc === t.documento
+          return (
+           <button key={t.documento} onClick={() => selecionarTomador(sel ? '' : t.documento)}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, padding: '10px 14px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', transition: 'all 0.1s',
+             background: sel ? `${C.accent}18` : (darkMode ? '#080810' : '#f8fafc'),
+             border: `1px solid ${sel ? C.accent : brd}`, color: C.text }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: sel ? C.accent : C.text }}>{t.razao_social}</span>
+            <span style={{ fontSize: 11, color: C.dim, fontFamily: 'monospace' }}>{t.documento}</span>
+           </button>
+          )
+         })}
+         <button onClick={() => setEmissaoForm(p => ({ ...p, tomador_doc: '', tomador_nome: '', tomador_email: '' }))}
+          style={{ padding: '10px 14px', borderRadius: 8, cursor: 'pointer', background: 'transparent', border: `1px dashed ${brd}`, color: C.dim, fontSize: 13 }}>
+          + Outro tomador
+         </button>
+        </div>
+
+        {/* Campos manuais */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
+         <div>
+          <label style={lbl}>CPF / CNPJ</label>
+          <input style={inp} placeholder="Somente numeros" value={emissaoForm.tomador_doc}
+           onChange={e => setEmissaoForm(p => ({ ...p, tomador_doc: e.target.value }))} />
+         </div>
+         <div>
+          <label style={lbl}>Razao Social / Nome</label>
+          <input style={inp} value={emissaoForm.tomador_nome}
+           onChange={e => setEmissaoForm(p => ({ ...p, tomador_nome: e.target.value }))} />
+         </div>
+         <div>
+          <label style={lbl}>E-mail</label>
+          <input style={inp} type="email" value={emissaoForm.tomador_email}
+           onChange={e => setEmissaoForm(p => ({ ...p, tomador_email: e.target.value }))} />
+         </div>
+        </div>
+       </div>
+
+       {/* Rodape com botao */}
+       <div style={{ ...divider, ...secSt, background: darkMode ? '#080810' : '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: 12, color: C.dim }}>
+         {cfg.ambiente === 'producao'
+          ? <span style={{ color: '#4ade80', fontWeight: 600 }}>Producao — nota com validade fiscal</span>
+          : <span style={{ color: '#fbbf24', fontWeight: 600 }}>Homologacao — nota de teste, sem validade</span>
+         }
+        </div>
+        {emissaoMsg && <p style={{ fontSize: 13, color: '#f87171', margin: 0, maxWidth: 340 }}>{emissaoMsg}</p>}
+        <button style={{ ...btn, padding: '11px 28px', fontSize: 14, opacity: emitindo || !emissaoForm.valor ? 0.6 : 1 }}
+         onClick={emitir} disabled={emitindo || !emissaoForm.valor}>
+         {emitindo ? 'Emitindo...' : 'Emitir NFS-e'}
+        </button>
+       </div>
+      </div>
+     ) : (
+      /* Confirmacao */
+      <div style={{ ...cardSt, border: '1px solid #166534' }}>
+       <div style={{ background: 'linear-gradient(135deg, #0D2B6E 0%, #1a4a8a 100%)', padding: '24px', textAlign: 'center' }}>
+        <img src="/logo.png" alt="Logo" style={{ height: 52, objectFit: 'contain', marginBottom: 8 }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+        <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11, margin: 0, letterSpacing: 2, textTransform: 'uppercase' }}>Nota Fiscal de Servicos Emitida</p>
+       </div>
+       <div style={{ ...secSt, background: darkMode ? '#052e16' : '#f0fdf4' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+         <div>
+          <p style={{ fontSize: 11, color: '#6b7280', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: 1 }}>Numero</p>
+          <p style={{ fontSize: 36, fontWeight: 900, color: '#4ade80', margin: 0, fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>#{emissaoResultado.numero}</p>
          </div>
          <div style={{ textAlign: 'right' }}>
-          <p style={{ fontSize: 11, color: '#6b7280', margin: 0, textTransform: 'uppercase', letterSpacing: 0.5 }}>Valor</p>
-          <p style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>
+          <p style={{ fontSize: 11, color: '#6b7280', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: 1 }}>Valor</p>
+          <p style={{ fontSize: 26, fontWeight: 800, color: C.text, margin: 0 }}>
            {Number(emissaoResultado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
           </p>
          </div>
         </div>
-
-        {emissaoResultado.codigoVerificacao && (
-         <div style={{ marginBottom: 10 }}>
-          <p style={{ fontSize: 11, color: '#6b7280', margin: '0 0 2px' }}>Codigo de Verificacao</p>
-          <p style={{ fontSize: 14, fontWeight: 700, color: C.text, margin: 0, fontFamily: 'monospace', letterSpacing: 1 }}>{emissaoResultado.codigoVerificacao}</p>
-         </div>
-        )}
-
-        {emissaoResultado.tomadorNome && (
-         <div style={{ marginBottom: 10 }}>
-          <p style={{ fontSize: 11, color: '#6b7280', margin: '0 0 2px' }}>Tomador</p>
-          <p style={{ fontSize: 14, color: C.text, margin: 0 }}>{emissaoResultado.tomadorNome}</p>
-         </div>
-        )}
-
-        {emissaoResultado.descricao && (
-         <div style={{ marginBottom: 10 }}>
-          <p style={{ fontSize: 11, color: '#6b7280', margin: '0 0 2px' }}>Descricao</p>
-          <p style={{ fontSize: 13, color: C.text, margin: 0 }}>{emissaoResultado.descricao}</p>
-         </div>
-        )}
-
-        <div style={{ marginTop: 16, display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'center' }}>
-         <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: emissaoResultado.ambiente === 'producao' ? '#14532d' : '#1e3a5f', color: emissaoResultado.ambiente === 'producao' ? '#4ade80' : '#60a5fa' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
+         {emissaoResultado.codigoVerificacao && (
+          <div>
+           <p style={{ fontSize: 11, color: '#6b7280', margin: '0 0 3px' }}>Codigo de Verificacao</p>
+           <p style={{ fontSize: 15, fontWeight: 700, color: C.text, margin: 0, fontFamily: 'monospace', letterSpacing: 2 }}>{emissaoResultado.codigoVerificacao}</p>
+          </div>
+         )}
+         {emissaoResultado.tomadorNome && (
+          <div>
+           <p style={{ fontSize: 11, color: '#6b7280', margin: '0 0 3px' }}>Tomador</p>
+           <p style={{ fontSize: 13, color: C.text, margin: 0 }}>{emissaoResultado.tomadorNome}</p>
+          </div>
+         )}
+         {emissaoResultado.descricao && (
+          <div style={{ gridColumn: '1 / -1' }}>
+           <p style={{ fontSize: 11, color: '#6b7280', margin: '0 0 3px' }}>Descricao</p>
+           <p style={{ fontSize: 13, color: C.text, margin: 0 }}>{emissaoResultado.descricao}</p>
+          </div>
+         )}
+        </div>
+        <div style={{ marginTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+         <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 99, background: emissaoResultado.ambiente === 'producao' ? '#14532d' : '#1e3a5f', color: emissaoResultado.ambiente === 'producao' ? '#4ade80' : '#60a5fa', fontWeight: 600 }}>
           {emissaoResultado.ambiente === 'producao' ? 'Producao' : 'Homologacao'}
          </span>
-         <button style={{ ...btnGhost, fontSize: 12 }} onClick={() => { setEmissaoResultado(null); setSubAba('notas') }}>
-          Ver historico
-         </button>
+         <div style={{ display: 'flex', gap: 8 }}>
+          <button style={btnGhost} onClick={() => { setEmissaoResultado(null); setSubAba('notas') }}>Ver historico</button>
+          <button style={btn} onClick={() => setEmissaoResultado(null)}>Nova NFS-e</button>
+         </div>
         </div>
        </div>
-      </div>
-     )}
-
-     {!emissaoResultado && (
-     <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end' }}>
-      <button style={{ ...btn, opacity: emitindo || !emissaoForm.valor ? 0.6 : 1 }} onClick={emitir} disabled={emitindo || !emissaoForm.valor}>
-       {emitindo ? 'Emitindo...' : 'Emitir NFS-e'}
-      </button>
-     </div>
-     )}
-     {emissaoResultado && (
-      <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
-       <button style={btn} onClick={() => setEmissaoResultado(null)}>
-        Nova NFS-e
-       </button>
       </div>
      )}
     </div>
@@ -1990,42 +1950,42 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
 
    {/* Sub-aba Historico */}
    {subAba === 'notas' && (
-    <div>
-     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-      <h3 style={{ fontWeight: 700, color: C.text, fontSize: 15, margin: 0 }}>Historico de Notas</h3>
+    <div style={cardSt}>
+     <div style={{ ...secSt, ...divider, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <p style={{ fontWeight: 700, color: C.text, margin: 0, fontSize: 14 }}>Notas Emitidas</p>
       <button style={btnGhost} onClick={carregarNotas}>Atualizar</button>
      </div>
-     {cancelMsg && <p style={{ fontSize: 13, color: '#f87171', marginBottom: 12 }}>{cancelMsg}</p>}
+     {cancelMsg && <p style={{ fontSize: 13, color: '#f87171', padding: '8px 24px', margin: 0 }}>{cancelMsg}</p>}
      {notasLoading ? (
-      <p style={{ color: C.dim, fontSize: 13 }}>Carregando...</p>
+      <p style={{ color: C.dim, fontSize: 13, padding: 24 }}>Carregando...</p>
      ) : notas.length === 0 ? (
-      <p style={{ color: C.dim, fontSize: 13 }}>Nenhuma nota emitida ainda.</p>
+      <p style={{ color: C.dim, fontSize: 13, padding: 24 }}>Nenhuma nota emitida ainda.</p>
      ) : (
       <div style={{ overflowX: 'auto' }}>
        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
         <thead>
-         <tr style={{ borderBottom: `1px solid ${darkMode ? '#2a2b35' : '#e5e7eb'}` }}>
-          {['Numero', 'Data', 'Tomador', 'Valor (R$)', 'Status', 'Acoes'].map(h => (
-           <th key={h} style={{ padding: '8px 12px', textAlign: 'left', color: C.dim, fontWeight: 600 }}>{h}</th>
+         <tr style={{ borderBottom: `1px solid ${brd}` }}>
+          {['Numero', 'Data', 'Tomador', 'Valor', 'Status', ''].map(h => (
+           <th key={h} style={{ padding: '10px 16px', textAlign: 'left', color: C.dim, fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
           ))}
          </tr>
         </thead>
         <tbody>
          {notas.map(n => (
-          <tr key={n.id} style={{ borderBottom: `1px solid ${darkMode ? '#1e1f28' : '#f1f5f9'}` }}>
-           <td style={{ padding: '8px 12px', color: C.text }}>{n.numero ?? '-'}</td>
-           <td style={{ padding: '8px 12px', color: C.dim }}>{n.data ? new Date(n.data).toLocaleDateString('pt-BR') : '-'}</td>
-           <td style={{ padding: '8px 12px', color: C.text }}>{n.tomador_nome || n.tomador_doc || '-'}</td>
-           <td style={{ padding: '8px 12px', color: C.text }}>{Number(n.valor ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-           <td style={{ padding: '8px 12px' }}>
-            <span style={{ padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 600, background: n.status === 'ativa' ? '#14532d' : '#450a0a', color: n.status === 'ativa' ? '#4ade80' : '#f87171' }}>
-             {n.status}
+          <tr key={n.id} style={{ borderBottom: `1px solid ${brd}` }}>
+           <td style={{ padding: '12px 16px', color: C.accent, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>#{n.numero ?? '-'}</td>
+           <td style={{ padding: '12px 16px', color: C.dim }}>{n.data ? new Date(n.data).toLocaleDateString('pt-BR') : '-'}</td>
+           <td style={{ padding: '12px 16px', color: C.text }}>{n.tomador_nome || n.tomador_doc || '-'}</td>
+           <td style={{ padding: '12px 16px', color: C.text, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{Number(n.valor ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+           <td style={{ padding: '12px 16px' }}>
+            <span style={{ padding: '3px 10px', borderRadius: 99, fontSize: 11, fontWeight: 600, background: n.status === 'ativa' ? '#052e16' : '#1a0a0a', color: n.status === 'ativa' ? '#4ade80' : '#f87171', border: `1px solid ${n.status === 'ativa' ? '#166534' : '#3f1515'}` }}>
+             {n.status === 'ativa' ? 'Ativa' : 'Cancelada'}
             </span>
            </td>
-           <td style={{ padding: '8px 12px' }}>
+           <td style={{ padding: '12px 16px' }}>
             {n.status === 'ativa' && (
-             <button style={{ ...btnGhost, fontSize: 11, padding: '3px 10px', color: '#f87171' }} onClick={() => cancelar(n)} disabled={cancelando === n.id}>
-              {cancelando === n.id ? 'Cancelando...' : 'Cancelar'}
+             <button style={{ ...btnGhost, fontSize: 11, padding: '4px 12px', color: '#f87171', borderColor: '#3f1515' }} onClick={() => cancelar(n)} disabled={cancelando === n.id}>
+              {cancelando === n.id ? '...' : 'Cancelar'}
              </button>
             )}
            </td>
@@ -2035,6 +1995,78 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
        </table>
       </div>
      )}
+    </div>
+   )}
+
+   {/* Sub-aba Configuracao */}
+   {subAba === 'config' && (
+    <div>
+     <div style={{ ...cardSt, marginBottom: 16 }}>
+      <div style={secSt}>
+       <p style={{ fontSize: 12, fontWeight: 700, color: C.dim, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 16px' }}>Dados do Prestador</p>
+       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
+        {cfgInput('cnpj', 'CNPJ', 'text', '62.302.560/0001-58')}
+        {cfgInput('inscricao_municipal', 'Inscricao Municipal')}
+        {cfgInput('codigo_municipio_ibge', 'Codigo IBGE', 'text', '2611101')}
+        {cfgInput('url_servico', 'URL SOAP (WSDL)', 'text', 'https://...')}
+        {cfgInput('item_lista_servico', 'Item LC116', 'text', '17.06')}
+        {cfgInput('codigo_tributacao_municipio', 'Codigo Tributacao')}
+        {cfgInput('aliquota_iss', 'Aliquota ISS (%)', 'text', '2.50')}
+        {cfgInput('serie_rps', 'Serie RPS', 'text', '1')}
+        {cfgInput('descricao_servico', 'Descricao padrao')}
+       </div>
+       <div style={{ display: 'flex', gap: 14, marginTop: 14 }}>
+        <div>
+         <label style={lbl}>Simples Nacional</label>
+         <select style={{ ...inp, width: 160 }} value={cfg.optante_simples ? '1' : '2'} onChange={e => setCfg((p: any) => ({ ...p, optante_simples: e.target.value === '1' }))}>
+          <option value="1">Sim</option><option value="2">Nao</option>
+         </select>
+        </div>
+        <div>
+         <label style={lbl}>Ambiente</label>
+         <select style={{ ...inp, width: 200 }} value={cfg.ambiente ?? 'homologacao'} onChange={e => setCfg((p: any) => ({ ...p, ambiente: e.target.value }))}>
+          <option value="homologacao">Homologacao (teste)</option>
+          <option value="producao">Producao</option>
+         </select>
+        </div>
+       </div>
+      </div>
+      <div style={{ ...divider, ...secSt, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: darkMode ? '#080810' : '#f8fafc' }}>
+       {cfgMsg && <p style={{ fontSize: 13, color: cfgMsg.includes('salvas') ? '#4ade80' : '#f87171', margin: 0 }}>{cfgMsg}</p>}
+       {!cfgMsg && <span />}
+       <button style={btn} onClick={salvarConfig} disabled={salvandoCfg}>{salvandoCfg ? 'Salvando...' : 'Salvar'}</button>
+      </div>
+     </div>
+
+     <div style={cardSt}>
+      <div style={secSt}>
+       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+        <p style={{ fontSize: 12, fontWeight: 700, color: C.dim, textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>Certificado Digital A1</p>
+        {certStatus.configurado && (
+         <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 99, background: '#052e16', border: '1px solid #166534', color: '#4ade80', fontWeight: 600 }}>Ativo</span>
+        )}
+       </div>
+       {certStatus.configurado ? (
+        <p style={{ fontSize: 13, color: C.dim, marginBottom: 16 }}>
+         {certStatus.titular ?? 'Titular nao identificado'} — Validade: {certStatus.validoAte ? new Date(certStatus.validoAte).toLocaleDateString('pt-BR') : '-'}
+        </p>
+       ) : (
+        <p style={{ fontSize: 13, color: '#f87171', marginBottom: 16 }}>Nenhum certificado configurado.</p>
+       )}
+       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div>
+         <label style={lbl}>Arquivo .pfx / .p12</label>
+         <input type="file" accept=".pfx,.p12" style={{ ...inp, padding: 6 }} onChange={e => setCertFile(e.target.files?.[0] ?? null)} />
+        </div>
+        <div>
+         <label style={lbl}>Senha</label>
+         <input style={{ ...inp, width: 180 }} type="password" placeholder="senha do certificado" value={certSenha} onChange={e => setCertSenha(e.target.value)} />
+        </div>
+        <button style={btn} onClick={enviarCert} disabled={certLoading || !certFile}>{certLoading ? 'Enviando...' : 'Salvar Certificado'}</button>
+       </div>
+       {certMsg && <p style={{ marginTop: 10, fontSize: 13, color: certMsg.includes('sucesso') || certMsg.includes('salvo') ? '#4ade80' : '#f87171' }}>{certMsg}</p>}
+      </div>
+     </div>
     </div>
    )}
   </div>
