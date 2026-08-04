@@ -1671,10 +1671,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
 }
 
 // ── Componente NFS-e ─────────────────────────────────────────────────────
-const TOMADORES_PADRAO = [
-  { documento: '62302560000158', razao_social: 'Oito7 Digital Servicos Ltda', email: 'oito7digital@gmail.com' },
-  { documento: '07594985000110', razao_social: 'Auto Vale Prevencoes Ltda', email: 'contato@autovaleprevencoes.org.br' },
-]
+const TOMADORES_PADRAO: { documento: string; razao_social: string; email: string }[] = []
 
 function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any; btn: any; btnGhost: any; lbl: any; darkMode: boolean }) {
  const [aba, setAba] = useState<'emitir' | 'config'>('emitir')
