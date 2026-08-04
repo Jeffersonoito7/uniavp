@@ -1693,6 +1693,7 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
  const [emissaoMsg, setEmissaoMsg] = useState('')
  const [emissaoResultado, setEmissaoResultado] = useState<{ numero: string; codigoVerificacao?: string; valor: string; tomadorNome?: string; descricao?: string; ambiente: string } | null>(null)
  const [tomadores, setTomadores] = useState<any[]>(TOMADORES_PADRAO)
+ const [buscandoCnpj, setBuscandoCnpj] = useState(false)
 
  const [notas, setNotas] = useState<any[]>([])
  const [notasLoading, setNotasLoading] = useState(false)
@@ -1741,6 +1742,22 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
   const t = tomadores.find(x => x.documento === documento)
   if (t) setEmissaoForm(p => ({ ...p, tomador_doc: t.documento, tomador_nome: t.razao_social, tomador_email: t.email ?? '' }))
   else setEmissaoForm(p => ({ ...p, tomador_doc: '', tomador_nome: '', tomador_email: '' }))
+ }
+
+ async function buscarCnpj(doc: string) {
+  const digits = doc.replace(/\D/g, '')
+  if (digits.length !== 14) return
+  setBuscandoCnpj(true)
+  try {
+   const r = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${digits}`)
+   if (r.ok) {
+    const d = await r.json()
+    const nome = d.razao_social || d.nome_fantasia || ''
+    const email = d.email || ''
+    setEmissaoForm(p => ({ ...p, tomador_nome: nome, tomador_email: email }))
+   }
+  } catch { /* ignora falhas de rede */ }
+  setBuscandoCnpj(false)
  }
 
  async function emitir() {
@@ -1861,9 +1878,9 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
         {/* Campos manuais */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
          <div>
-          <label style={lbl}>CPF / CNPJ</label>
+          <label style={lbl}>CPF / CNPJ {buscandoCnpj && <span style={{ color: C.accent, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>buscando...</span>}</label>
           <input style={inp} placeholder="Somente numeros" value={emissaoForm.tomador_doc}
-           onChange={e => setEmissaoForm(p => ({ ...p, tomador_doc: e.target.value }))} />
+           onChange={e => { setEmissaoForm(p => ({ ...p, tomador_doc: e.target.value })); buscarCnpj(e.target.value) }} />
          </div>
          <div>
           <label style={lbl}>Razao Social / Nome</label>
