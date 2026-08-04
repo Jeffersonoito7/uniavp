@@ -241,20 +241,16 @@ function montarXml(cfg: NfseConfig, dados: DadosEmissao): { xml: string; id: str
 }
 
 function assinar(xml: string, _id: string, keyPem: string, certBase64: string): string {
-  const sig = new SignedXml({
-    privateKey: keyPem,
-    signatureAlgorithm: 'http://www.w3.org/2000/09/xmldsig#rsa-sha1',
-    canonicalizationAlgorithm: 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315',
-    getKeyInfoContent: () => `<X509Data><X509Certificate>${certBase64}</X509Certificate></X509Data>`,
-  })
-  sig.addReference({
-    xpath: `//*[local-name(.)='InfDeclaracaoPrestacaoServico']`,
-    transforms: [
-      'http://www.w3.org/2000/09/xmldsig#enveloped-signature',
-      'http://www.w3.org/TR/2001/REC-xml-c14n-20010315',
-    ],
-    digestAlgorithm: 'http://www.w3.org/2000/09/xmldsig#sha1',
-  })
+  const sig = new SignedXml()
+  sig.signingKey = keyPem
+  sig.signatureAlgorithm = 'http://www.w3.org/2000/09/xmldsig#rsa-sha1'
+  sig.canonicalizationAlgorithm = 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
+  sig.keyInfoProvider = { getKeyInfo: () => `<X509Data><X509Certificate>${certBase64}</X509Certificate></X509Data>`, getKey: () => Buffer.from('') }
+  sig.addReference(
+    `//*[local-name(.)='InfDeclaracaoPrestacaoServico']`,
+    ['http://www.w3.org/2000/09/xmldsig#enveloped-signature', 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'],
+    'http://www.w3.org/2000/09/xmldsig#sha1'
+  )
   sig.computeSignature(xml, {
     location: { reference: `//*[local-name(.)='InfDeclaracaoPrestacaoServico']`, action: 'after' },
   })
@@ -337,20 +333,16 @@ export async function emitirNfse(
 }
 
 function assinarElemento(xml: string, localName: string, keyPem: string, certBase64: string): string {
-  const sig = new SignedXml({
-    privateKey: keyPem,
-    signatureAlgorithm: 'http://www.w3.org/2000/09/xmldsig#rsa-sha1',
-    canonicalizationAlgorithm: 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315',
-    getKeyInfoContent: () => `<X509Data><X509Certificate>${certBase64}</X509Certificate></X509Data>`,
-  })
-  sig.addReference({
-    xpath: `//*[local-name(.)='${localName}']`,
-    transforms: [
-      'http://www.w3.org/2000/09/xmldsig#enveloped-signature',
-      'http://www.w3.org/TR/2001/REC-xml-c14n-20010315',
-    ],
-    digestAlgorithm: 'http://www.w3.org/2000/09/xmldsig#sha1',
-  })
+  const sig = new SignedXml()
+  sig.signingKey = keyPem
+  sig.signatureAlgorithm = 'http://www.w3.org/2000/09/xmldsig#rsa-sha1'
+  sig.canonicalizationAlgorithm = 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
+  sig.keyInfoProvider = { getKeyInfo: () => `<X509Data><X509Certificate>${certBase64}</X509Certificate></X509Data>`, getKey: () => Buffer.from('') }
+  sig.addReference(
+    `//*[local-name(.)='${localName}']`,
+    ['http://www.w3.org/2000/09/xmldsig#enveloped-signature', 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'],
+    'http://www.w3.org/2000/09/xmldsig#sha1'
+  )
   sig.computeSignature(xml, { location: { reference: `//*[local-name(.)='${localName}']`, action: 'after' } })
   return sig.getSignedXml()
 }

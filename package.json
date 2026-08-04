@@ -30,7 +30,7 @@
     "resend": "^6.12.3",
     "web-push": "^3.6.7",
     "xlsx": "^0.18.5",
-    "xml-crypto": "^6.1.2",
+    "xml-crypto": "^3.2.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
