@@ -76,7 +76,7 @@ function fmtCep(c: string) {
   return d.length === 8 ? d.replace(/(\d{5})(\d{3})/, '$1-$2') : c
 }
 
-function gerarHtml(xml: string, numero: string, codigoVerificacao: string, qrDataUrl?: string, valorPix?: number): string {
+function gerarHtml(xml: string, numero: string, codigoVerificacao: string, qrDataUrl?: string, valorPix?: number, obsNota?: string): string {
   const inf = xml.includes('<InfNfse') ? xml.match(/<InfNfse[\s\S]*$/)?.[0] ?? xml : xml
 
   const numero_n = tag(xml, 'Numero') || numero
@@ -258,6 +258,14 @@ function gerarHtml(xml: string, numero: string, codigoVerificacao: string, qrDat
     </div>
   </div>
 
+  <!-- Observacao -->
+  ${obsNota ? `
+  <div class="secao">
+    <div class="secao-titulo">Observações</div>
+    <div class="discriminacao">${esc(obsNota)}</div>
+  </div>
+  ` : ''}
+
   <!-- PIX -->
   ${qrDataUrl ? `
   <div class="secao" style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
@@ -328,7 +336,7 @@ export async function GET(req: NextRequest) {
     } catch { /* segue sem PIX */ }
   }
 
-  const html = gerarHtml(nota.xml, nota.numero, nota.codigo_verificacao, qrDataUrl, nota.valor)
+  const html = gerarHtml(nota.xml, nota.numero, nota.codigo_verificacao, qrDataUrl, nota.valor, cfg?.obs_nota)
   return new NextResponse(html, {
     headers: { 'Content-Type': 'text/html; charset=utf-8' }
   })

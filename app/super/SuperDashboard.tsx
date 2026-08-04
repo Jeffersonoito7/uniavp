@@ -1975,6 +1975,20 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
      </div>
 
      <div style={card}>
+      {secH(FileCheck2, 'Personalização da Nota e PIX')}
+      <p style={{ fontSize: 13, color: C.dim, marginBottom: 14 }}>Aparece no PDF da DANFSE enviado ao tomador.</p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+       {ci('pix_key', 'Chave PIX', 'email, CPF, CNPJ ou chave aleatória')}
+       {ci('pix_nome', 'Nome do recebedor PIX', 'OITO7DIGITAL LTDA')}
+       {ci('pix_cidade', 'Cidade (PIX)', 'PETROLINA')}
+       <div style={{ gridColumn: '1 / -1' }}>{ci('obs_nota', 'Observação / mensagem na nota (opcional)', 'Ex: Referente ao mês de agosto...')}</div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 14 }}>
+       <button style={btn} onClick={salvarConfig} disabled={salvandoCfg}>{salvandoCfg ? 'Salvando...' : 'Salvar personalização'}</button>
+      </div>
+     </div>
+
+     <div style={card}>
       {secH(ShieldCheck, 'Certificado digital A1')}
       <p style={{ fontSize: 13, color: C.dim, margin: '0 0 14px' }}>O certificado A1 (.pfx) e obrigatorio para assinar as notas. Guardado criptografado no servidor.</p>
       {certStatus.configurado && (
