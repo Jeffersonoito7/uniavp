@@ -1915,6 +1915,12 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
             </div>
            </div>
            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            {n.numero && n.codigo_verificacao && (
+             <a href={`https://pe-petrolina-pm.cloud.el.com.br/nfse/contribuinte/notaprint.aspx?nf=${n.numero}&c=${n.codigo_verificacao}`} target="_blank" rel="noreferrer"
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 7, border: `1px solid ${darkMode ? '#1e3a5f' : '#bfdbfe'}`, background: 'transparent', color: '#60a5fa', fontSize: 12, cursor: 'pointer', textDecoration: 'none' }}>
+              PDF
+             </a>
+            )}
             {n.status !== 'cancelada' && (
              <button onClick={() => cancelar(n)} disabled={cancelando === n.numero}
               style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 7, border: `1px solid ${darkMode ? '#3f1515' : '#fca5a5'}`, background: 'transparent', color: '#f87171', fontSize: 12, cursor: 'pointer', opacity: cancelando === n.numero ? 0.5 : 1 }}>
