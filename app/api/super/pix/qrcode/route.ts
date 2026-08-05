@@ -49,16 +49,25 @@ export async function POST(req: NextRequest) {
   const { data: admin } = await sb.from('super_admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
   if (!admin) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
-  const { valor, descricao } = await req.json()
+  const { valor, descricao, chave_override, nome_override } = await req.json()
   if (!valor || Number(valor) <= 0) return NextResponse.json({ error: 'Informe o valor.' }, { status: 400 })
 
-  const { data: cfg } = await (sb as any).from('nfse_config').select('pix_key,pix_nome,pix_cidade').eq('id', 'default').maybeSingle()
-  if (!cfg?.pix_key) return NextResponse.json({ error: 'Chave PIX não configurada. Vá em NFS-e > Configuração > Personalização.' }, { status: 400 })
+  let chave = chave_override?.trim()
+  let nome = nome_override?.trim() || 'FAVORECIDO'
+  let cidade = 'PETROLINA'
+
+  if (!chave) {
+   const { data: cfg } = await (sb as any).from('nfse_config').select('pix_key,pix_nome,pix_cidade').eq('id', 'default').maybeSingle()
+   if (!cfg?.pix_key) return NextResponse.json({ error: 'Chave PIX não configurada.' }, { status: 400 })
+   chave = cfg.pix_key
+   nome = cfg.pix_nome || nome
+   cidade = cfg.pix_cidade || cidade
+  }
 
   const valorNum = Number(valor)
   const txid = descricao ? descricao.replace(/\W/g, '').substring(0, 25) : '***'
-  const payload = pixPayload(cfg.pix_key, cfg.pix_nome || 'OITO7DIGITAL LTDA', cfg.pix_cidade || 'PETROLINA', valorNum, txid)
+  const payload = pixPayload(chave, nome, cidade, valorNum, txid)
   const qrDataUrl = await QRCode.toDataURL(payload, { errorCorrectionLevel: 'M', margin: 1, width: 300 })
 
-  return NextResponse.json({ ok: true, payload, qrDataUrl, chave: cfg.pix_key, nome: cfg.pix_nome, valor: valorNum })
+  return NextResponse.json({ ok: true, payload, qrDataUrl, chave, nome, valor: valorNum })
 }

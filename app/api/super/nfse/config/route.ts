@@ -18,7 +18,7 @@ export async function GET() {
 
   const { data } = await (sb as any)
     .from('nfse_config')
-    .select('url_servico, cnpj, inscricao_municipal, item_lista_servico, aliquota_iss, optante_simples, incentivador_cultural, codigo_municipio_ibge, serie_rps, descricao_servico, codigo_tributacao_municipio, cert_configurado, cert_valido_ate, cert_titular, ambiente, rps_seq, pix_key, pix_nome, pix_cidade, obs_nota')
+    .select('url_servico, cnpj, inscricao_municipal, item_lista_servico, aliquota_iss, optante_simples, incentivador_cultural, codigo_municipio_ibge, serie_rps, descricao_servico, codigo_tributacao_municipio, cert_configurado, cert_valido_ate, cert_titular, ambiente, rps_seq, pix_key, pix_nome, pix_cidade')
     .eq('id', 'default')
     .maybeSingle()
 
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json()
   const campos: Record<string, unknown> = {}
-  const permitidos = ['url_servico', 'cnpj', 'inscricao_municipal', 'item_lista_servico', 'aliquota_iss', 'optante_simples', 'incentivador_cultural', 'codigo_municipio_ibge', 'serie_rps', 'descricao_servico', 'codigo_tributacao_municipio', 'ambiente', 'pix_key', 'pix_nome', 'pix_cidade', 'obs_nota']
+  const permitidos = ['url_servico', 'cnpj', 'inscricao_municipal', 'item_lista_servico', 'aliquota_iss', 'optante_simples', 'incentivador_cultural', 'codigo_municipio_ibge', 'serie_rps', 'descricao_servico', 'codigo_tributacao_municipio', 'ambiente', 'pix_key', 'pix_nome', 'pix_cidade']
   for (const k of permitidos) {
     if (body[k] !== undefined) campos[k] = body[k]
   }

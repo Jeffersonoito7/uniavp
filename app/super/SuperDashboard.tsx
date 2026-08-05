@@ -1692,6 +1692,33 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
  const [notas, setNotas] = useState<any[]>([])
  const [notasLoading, setNotasLoading] = useState(false)
  const [cancelando, setCancelando] = useState<string | null>(null)
+ const [cobrancaAvulsa, setCobrancaAvulsa] = useState<{ notaId: string; numero: string; valor: number } | null>(null)
+ const [cobTipo, setCobTipo] = useState<'pix_manual' | 'efi'>('pix_manual')
+ const [cobChavePix, setCobChavePix] = useState('')
+ const [cobNomePix, setCobNomePix] = useState('OITO7DIGITAL LTDA')
+ const [cobQr, setCobQr] = useState<{ qrDataUrl: string; payload: string } | null>(null)
+ const [cobLoading, setCobLoading] = useState(false)
+ const [cobMsg, setCobMsg] = useState('')
+
+ async function gerarCobrancaAvulsa() {
+  if (!cobrancaAvulsa) return
+  setCobLoading(true); setCobMsg(''); setCobQr(null)
+  try {
+   if (cobTipo === 'pix_manual') {
+    if (!cobChavePix.trim()) { setCobMsg('Informe a chave PIX.'); setCobLoading(false); return }
+    const res = await fetch('/api/super/pix/qrcode', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ valor: cobrancaAvulsa.valor, descricao: `NF${cobrancaAvulsa.numero}`, chave_override: cobChavePix.trim(), nome_override: cobNomePix.trim() }) })
+    const data = await res.json()
+    if (!data.ok) { setCobMsg(data.error ?? 'Erro ao gerar QR Code'); setCobLoading(false); return }
+    setCobQr({ qrDataUrl: data.qrDataUrl, payload: data.payload })
+   } else {
+    const res = await fetch('/api/super/efi/cobranca', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ valor: cobrancaAvulsa.valor, descricao: `NFS-e ${cobrancaAvulsa.numero}` }) })
+    const data = await res.json()
+    if (!data.ok) { setCobMsg(data.error ?? 'Erro Efi Pay'); setCobLoading(false); return }
+    setCobQr({ qrDataUrl: data.qrCode, payload: data.copiaECola })
+   }
+  } catch (e: any) { setCobMsg(e.message ?? 'Erro') }
+  setCobLoading(false)
+ }
 
  const loadNotas = () => {
   setNotasLoading(true)
@@ -1800,6 +1827,7 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
  )
 
  return (
+  <>
   <div style={{ maxWidth: 780 }}>
    {/* Header */}
    <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
@@ -1915,12 +1943,16 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
             </div>
            </div>
            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-            {n.id && n.numero && (
+            {n.id && n.numero && (<>
              <a href={`/api/super/nfse/danfse?id=${n.id}`} target="_blank" rel="noreferrer"
               style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 7, border: `1px solid ${darkMode ? '#1e3a5f' : '#bfdbfe'}`, background: 'transparent', color: '#60a5fa', fontSize: 12, cursor: 'pointer', textDecoration: 'none' }}>
-              PDF
+              Nota Fiscal
              </a>
-            )}
+             <button onClick={() => { setCobrancaAvulsa({ notaId: n.id!, numero: n.numero!, valor: Number(n.valor ?? 0) }); setCobQr(null); setCobMsg(''); setCobChavePix(''); setCobNomePix('OITO7DIGITAL LTDA'); setCobTipo('pix_manual') }}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 7, border: `1px solid ${darkMode ? '#166534' : '#bbf7d0'}`, background: 'transparent', color: '#4ade80', fontSize: 12, cursor: 'pointer' }}>
+              Cobranca
+             </button>
+            </>)}
             {n.status !== 'cancelada' && (
              <button onClick={() => cancelar(n)} disabled={cancelando === n.numero}
               style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 7, border: `1px solid ${darkMode ? '#3f1515' : '#fca5a5'}`, background: 'transparent', color: '#f87171', fontSize: 12, cursor: 'pointer', opacity: cancelando === n.numero ? 0.5 : 1 }}>
@@ -2022,6 +2054,64 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
     </>
    )}
   </div>
+  {/* Modal Cobranca Avulsa */}
+  {cobrancaAvulsa && (
+   <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+    <div style={{ background: darkMode ? '#1e293b' : '#fff', borderRadius: 14, padding: 28, width: '100%', maxWidth: 460, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}>
+     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <div>
+       <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>Cobranca Avulsa</div>
+       <div style={{ fontSize: 12, color: C.dim, marginTop: 2 }}>NFS-e {cobrancaAvulsa.numero} · {Number(cobrancaAvulsa.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+      </div>
+      <button onClick={() => setCobrancaAvulsa(null)} style={{ background: 'none', border: 'none', color: C.dim, cursor: 'pointer', fontSize: 20 }}>×</button>
+     </div>
+     <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+      {(['pix_manual', 'efi'] as const).map(t => (
+       <button key={t} onClick={() => { setCobTipo(t); setCobQr(null); setCobMsg('') }}
+        style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: `2px solid ${cobTipo === t ? '#22c55e' : (darkMode ? '#334155' : '#e2e8f0')}`, background: cobTipo === t ? (darkMode ? '#052e16' : '#f0fdf4') : 'transparent', color: cobTipo === t ? '#22c55e' : C.dim, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+        {t === 'pix_manual' ? 'PIX Manual' : 'Efi Pay'}
+       </button>
+      ))}
+     </div>
+     {cobTipo === 'pix_manual' && !cobQr && (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+       <div>
+        <label style={{ fontSize: 11, color: C.dim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.4px', display: 'block', marginBottom: 4 }}>Chave PIX</label>
+        <input value={cobChavePix} onChange={e => setCobChavePix(e.target.value)} placeholder="CPF, CNPJ, e-mail, telefone ou aleatoria" style={{ width: '100%', padding: '9px 12px', borderRadius: 7, border: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`, background: darkMode ? '#0f172a' : '#f8fafc', color: C.text, fontSize: 13 }} />
+       </div>
+       <div>
+        <label style={{ fontSize: 11, color: C.dim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.4px', display: 'block', marginBottom: 4 }}>Nome do Favorecido</label>
+        <input value={cobNomePix} onChange={e => setCobNomePix(e.target.value)} placeholder="Nome que aparece no PIX" style={{ width: '100%', padding: '9px 12px', borderRadius: 7, border: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`, background: darkMode ? '#0f172a' : '#f8fafc', color: C.text, fontSize: 13 }} />
+       </div>
+      </div>
+     )}
+     {cobTipo === 'efi' && !cobQr && (
+      <div style={{ padding: '12px', background: darkMode ? '#0f172a' : '#f8fafc', borderRadius: 8, fontSize: 13, color: C.dim }}>
+       Vai gerar via Efi Pay usando as credenciais configuradas. Valor: {Number(cobrancaAvulsa.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}.
+      </div>
+     )}
+     {cobMsg && <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 8, background: darkMode ? '#1a0a0a' : '#fef2f2', color: '#f87171', fontSize: 13 }}>{cobMsg}</div>}
+     {cobQr && (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 8 }}>
+       <img src={cobQr.qrDataUrl} alt="QR Code PIX" style={{ width: 200, height: 200, border: '3px solid #22c55e', borderRadius: 10, padding: 4 }} />
+       <div style={{ fontSize: 13, color: '#22c55e', fontWeight: 700 }}>{Number(cobrancaAvulsa.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+       <button onClick={() => navigator.clipboard.writeText(cobQr.payload)}
+        style={{ padding: '8px 20px', borderRadius: 8, border: '1px solid #22c55e', background: 'transparent', color: '#22c55e', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
+        Copiar Copia e Cola
+       </button>
+       <button onClick={() => { setCobQr(null); setCobMsg('') }} style={{ background: 'none', border: 'none', color: C.dim, fontSize: 12, cursor: 'pointer' }}>Gerar novamente</button>
+      </div>
+     )}
+     {!cobQr && (
+      <button onClick={gerarCobrancaAvulsa} disabled={cobLoading}
+       style={{ width: '100%', marginTop: 16, padding: '11px 0', borderRadius: 9, border: 'none', background: '#22c55e', color: '#fff', fontSize: 14, fontWeight: 700, cursor: cobLoading ? 'not-allowed' : 'pointer', opacity: cobLoading ? 0.7 : 1 }}>
+       {cobLoading ? 'Gerando...' : 'Gerar QR Code'}
+      </button>
+     )}
+    </div>
+   </div>
+  )}
+ </>
  )
 }
 
@@ -2093,5 +2183,6 @@ function CobrancaPixPanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; in
     )}
    </div>
   </div>
+
  )
 }
