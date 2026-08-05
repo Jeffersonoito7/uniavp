@@ -3,9 +3,10 @@ import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 
 const NAVY   = '#0f2556'
-const NAVY2  = '#1a3a6b'
-const GOLD   = '#e9a100'
-const GOLD_L = '#f5c842'
+const TEAL   = '#06b6d4'
+const GREEN  = '#10b981'
+const GRAD   = 'linear-gradient(135deg, #06b6d4, #10b981)'
+const GRAD_H = 'linear-gradient(135deg, #22d3ee, #34d399)'
 const BG     = '#07070e'
 const CARD   = '#0d0d1a'
 const BORDER = '#1c1c30'
@@ -130,8 +131,8 @@ export default function LoginForm({
           top:-120px; right:-120px;
           width:460px; height:460px;
           border-radius:50%;
-          background:${GOLD};
-          opacity:.06;
+          background:${TEAL};
+          opacity:.07;
         }
         .lp-side::after{
           content:'';
@@ -139,30 +140,30 @@ export default function LoginForm({
           bottom:-80px; left:-80px;
           width:320px; height:320px;
           border-radius:50%;
-          background:${GOLD};
-          opacity:.05;
+          background:${GREEN};
+          opacity:.06;
         }
         .lp-eyebrow{
           font-size:10px;
           font-weight:700;
           letter-spacing:4px;
           text-transform:uppercase;
-          color:${GOLD};
+          color:${TEAL};
           margin-bottom:18px;
         }
         .lp-headline{
-          font-size:26px;
+          font-size:24px;
           font-weight:800;
           color:#fff;
-          line-height:1.3;
+          line-height:1.35;
           margin-bottom:8px;
           letter-spacing:-.4px;
         }
         .lp-rule{
           width:40px;
           height:2px;
-          background:${GOLD};
-          margin:20px 0 28px;
+          background:${GRAD};
+          margin:18px 0 24px;
         }
         .lp-feature{
           display:flex;
@@ -173,8 +174,8 @@ export default function LoginForm({
         .lp-dot{
           width:22px; height:22px;
           border-radius:50%;
-          background:rgba(233,161,0,.15);
-          border:1px solid rgba(233,161,0,.35);
+          background:rgba(6,182,212,.15);
+          border:1px solid rgba(6,182,212,.35);
           display:flex; align-items:center; justify-content:center;
           flex-shrink:0;
         }
@@ -247,7 +248,7 @@ export default function LoginForm({
           outline:none;
           transition:border-color .18s;
         }
-        input.lp-inp:focus{border-color:${GOLD};}
+        input.lp-inp:focus{border-color:${TEAL};}
         input.lp-inp::placeholder{color:#2e2e4a;}
         .lp-field{margin-bottom:18px;}
         .lp-pwd-wrap{position:relative;}
@@ -260,19 +261,19 @@ export default function LoginForm({
         .lp-forgot{
           display:block; text-align:right;
           margin-top:6px; font-size:12px;
-          color:${GOLD}; text-decoration:none; background:none; border:none;
+          color:${GREEN}; text-decoration:none; background:none; border:none;
           cursor:pointer;
         }
         .lp-forgot:hover{text-decoration:underline;}
         .lp-btn{
           width:100%; padding:12px;
-          background:${GOLD}; color:#0a0a0a;
+          background:${GRAD}; color:#fff;
           font-size:14px; font-weight:700;
           border:none; border-radius:9px; cursor:pointer;
           transition:background .18s, opacity .18s;
           margin-top:8px;
         }
-        .lp-btn:hover{background:${GOLD_L};}
+        .lp-btn:hover{background:${GRAD_H};}
         .lp-btn:disabled{opacity:.55; cursor:default;}
         .lp-alert-err{
           background:#1a0505; border:1px solid #3f1010;
@@ -307,14 +308,14 @@ export default function LoginForm({
           justify-content:center;
         }
         .lp-links a{color:${MUTED}; text-decoration:none;}
-        .lp-links a:hover{color:${GOLD};}
+        .lp-links a:hover{color:${TEAL};}
         /* Mobile: banner topo */
         .lp-mobile-banner{
           display:none;
           background:${NAVY};
           padding:18px 24px;
           text-align:center;
-          border-bottom:2px solid ${GOLD};
+          border-bottom:2px solid ${TEAL};
         }
         .lp-mobile-title{
           font-size:16px; font-weight:800; color:#fff; letter-spacing:-.2px;
@@ -344,18 +345,20 @@ export default function LoginForm({
         {/* ── PAINEL ESQUERDO (desktop) ── */}
         <div className="lp-side">
           <div style={{ position: 'relative', zIndex: 1, maxWidth: 360 }}>
-            <p className="lp-eyebrow">Universidade APV</p>
+            {/* Logo branca */}
+            <img src="/logo.png" alt="Universidade APV"
+              style={{ height: 68, objectFit: 'contain', display: 'block', marginBottom: 24 }} />
+            <div className="lp-rule" />
             <h2 className="lp-headline">
               Aprenda.<br />Cresça.<br />Conquiste.
             </h2>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,.55)', lineHeight: 1.6 }}>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,.55)', lineHeight: 1.6, marginBottom: 24 }}>
               A plataforma de capacitação da AutoVale Prevenções para consultores e equipes.
             </p>
-            <div className="lp-rule" />
             {FEATURES.map(f => (
               <div key={f} className="lp-feature">
                 <div className="lp-dot">
-                  <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke={GOLD} strokeWidth={3}>
+                  <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke={TEAL} strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
@@ -368,7 +371,9 @@ export default function LoginForm({
 
         {/* ── BANNER MOBILE ── */}
         <div className="lp-mobile-banner">
-          {logoUrl && !logoFalhou ? (
+          <img src="/logo.png" alt="Universidade APV"
+            style={{ height: 40, objectFit: 'contain', margin: '0 auto 4px', display: 'block' }} />
+          {false && logoUrl && !logoFalhou ? (
             <img src={logoUrl} alt={siteNome} style={{ height: 38, objectFit: 'contain', margin: '0 auto 6px', display: 'block' }}
               onError={() => setLogoFalhou(true)} />
           ) : (

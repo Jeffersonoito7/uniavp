@@ -3,21 +3,23 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 
-const NAVY  = '#0f2556'
-const GOLD  = '#e9a100'
-const GOLD_L = '#f5c842'
-const BG    = '#07070e'
-const CARD  = '#0d0d1a'
+const NAVY   = '#0f2556'
+const TEAL   = '#06b6d4'
+const GREEN  = '#10b981'
+const GRAD   = 'linear-gradient(135deg, #06b6d4, #10b981)'
+const GRAD_H = 'linear-gradient(135deg, #22d3ee, #34d399)'
+const BG     = '#07070e'
+const CARD   = '#0d0d1a'
 const BORDER = '#1c1c30'
-const TEXT  = '#f1f5f9'
-const MUTED = '#64748b'
+const TEXT   = '#f1f5f9'
+const MUTED  = '#64748b'
 const DIMMED = '#94a3b8'
 
 const TEMAS = {
   pro: { accent: '#22c55e', badge: 'Painel PRO' },
   free: { accent: '#3b82f6', badge: 'Painel FREE' },
   adm: { accent: '#818cf8', badge: 'Painel Admin' },
-  default: { accent: GOLD, badge: '' },
+  default: { accent: TEAL, badge: '' },
 }
 
 const FEATURES = [
@@ -75,8 +77,8 @@ function EntrarForm() {
     }
   }
 
-  const accentBtn = p === 'default' ? GOLD : tema.accent
-  const accentBtnHover = p === 'default' ? GOLD_L : tema.accent
+  const accentBtn = p === 'default' ? GRAD : tema.accent
+  const accentBtnHover = p === 'default' ? GRAD_H : tema.accent
 
   return (
     <>
@@ -106,30 +108,30 @@ function EntrarForm() {
           content:'';position:absolute;
           top:-120px;right:-120px;
           width:460px;height:460px;border-radius:50%;
-          background:${GOLD};opacity:.06;
+          background:${TEAL};opacity:.07;
         }
         .ep-side::after{
           content:'';position:absolute;
           bottom:-80px;left:-80px;
           width:320px;height:320px;border-radius:50%;
-          background:${GOLD};opacity:.05;
+          background:${GREEN};opacity:.06;
         }
         .ep-eyebrow{
           font-size:10px;font-weight:700;
           letter-spacing:4px;text-transform:uppercase;
-          color:${GOLD};margin-bottom:18px;
+          color:${TEAL};margin-bottom:18px;
         }
         .ep-headline{
-          font-size:26px;font-weight:800;
-          color:#fff;line-height:1.3;
+          font-size:24px;font-weight:800;
+          color:#fff;line-height:1.35;
           margin-bottom:8px;letter-spacing:-.4px;
         }
-        .ep-rule{width:40px;height:2px;background:${GOLD};margin:20px 0 28px;}
+        .ep-rule{width:40px;height:2px;background:${GRAD};margin:18px 0 24px;}
         .ep-feature{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
         .ep-dot{
           width:22px;height:22px;border-radius:50%;
-          background:rgba(233,161,0,.15);
-          border:1px solid rgba(233,161,0,.35);
+          background:rgba(6,182,212,.15);
+          border:1px solid rgba(6,182,212,.35);
           display:flex;align-items:center;justify-content:center;flex-shrink:0;
         }
         .ep-feature-text{font-size:13.5px;color:rgba(255,255,255,.78);line-height:1.4;}
@@ -169,7 +171,7 @@ function EntrarForm() {
           padding:11px 14px;color:${TEXT};font-size:14px;
           outline:none;transition:border-color .18s;font-family:inherit;
         }
-        input.ep-inp:focus{border-color:${GOLD};}
+        input.ep-inp:focus{border-color:${TEAL};}
         input.ep-inp::placeholder{color:#2e2e4a;}
         .ep-field{margin-bottom:18px;}
         .ep-pwd{position:relative;}
@@ -182,7 +184,7 @@ function EntrarForm() {
         .ep-forgot{
           display:block;text-align:right;
           margin-top:6px;font-size:12px;
-          color:${GOLD};text-decoration:none;
+          color:${GREEN};text-decoration:none;
         }
         .ep-forgot:hover{text-decoration:underline;}
         .ep-btn{
@@ -213,7 +215,7 @@ function EntrarForm() {
         .ep-mobile-banner{
           display:none;
           background:${NAVY};padding:18px 24px;
-          text-align:center;border-bottom:2px solid ${GOLD};
+          text-align:center;border-bottom:2px solid ${TEAL};
         }
         .ep-mb-title{font-size:16px;font-weight:800;color:#fff;letter-spacing:-.2px;}
         .ep-mb-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:3px;}
@@ -240,16 +242,18 @@ function EntrarForm() {
         {/* Painel esquerdo */}
         <div className="ep-side">
           <div style={{ position: 'relative', zIndex: 1, maxWidth: 360 }}>
-            <p className="ep-eyebrow">Universidade APV</p>
+            {/* Logo branca */}
+            <img src="/logo.png" alt="Universidade APV"
+              style={{ height: 64, objectFit: 'contain', display: 'block', marginBottom: 28 }} />
+            <div className="ep-rule" />
             <h2 className="ep-headline">Aprenda.<br />Cresça.<br />Conquiste.</h2>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,.55)', lineHeight: 1.6 }}>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,.55)', lineHeight: 1.6, marginBottom: 24 }}>
               A plataforma de capacitacao da AutoVale Prevencoes para consultores e equipes.
             </p>
-            <div className="ep-rule" />
             {FEATURES.map(f => (
               <div key={f} className="ep-feature">
                 <div className="ep-dot">
-                  <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke={GOLD} strokeWidth={3}>
+                  <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke={TEAL} strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
@@ -262,13 +266,8 @@ function EntrarForm() {
 
         {/* Banner mobile */}
         <div className="ep-mobile-banner">
-          {logoUrl && !logoFalhou ? (
-            <img src={logoUrl} alt={siteNome}
-              style={{ height: 38, objectFit: 'contain', margin: '0 auto 6px', display: 'block' }}
-              onError={() => setLogoFalhou(true)} />
-          ) : (
-            <div className="ep-mb-title">{siteNome || 'Universidade APV'}</div>
-          )}
+          <img src="/logo.png" alt="Universidade APV"
+            style={{ height: 38, objectFit: 'contain', margin: '0 auto 4px', display: 'block' }} />
           <div className="ep-mb-sub">Plataforma de capacitacao</div>
         </div>
 
@@ -363,7 +362,7 @@ function EntrarForm() {
                   disabled={loading}
                   style={{
                     background: loading ? 'rgba(100,100,100,.4)' : accentBtn,
-                    color: p === 'default' ? '#0a0a0a' : '#fff',
+                    color: '#fff',
                   }}
                   onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = accentBtnHover }}
                   onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = accentBtn }}
