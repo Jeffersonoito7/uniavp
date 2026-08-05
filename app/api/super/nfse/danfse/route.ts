@@ -376,7 +376,8 @@ export async function GET(req: NextRequest) {
   if (!nota) return new NextResponse('Nota não encontrada', { status: 404 })
   if (!nota.xml) return new NextResponse('XML da nota não disponível.', { status: 404 })
 
-  const { data: cfg } = await (sb as any).from('nfse_config').select('pix_key,pix_nome,pix_cidade,obs_nota').eq('id', 'default').maybeSingle()
+  const { data: cfg, error: cfgErr } = await (sb as any).from('nfse_config').select('pix_key,pix_nome,pix_cidade').eq('id', 'default').maybeSingle()
+  if (cfgErr) console.error('nfse_config error:', cfgErr.message)
 
   let qrDataUrl: string | undefined
   if (cfg?.pix_key) {
@@ -387,6 +388,6 @@ export async function GET(req: NextRequest) {
     } catch { /* segue sem PIX */ }
   }
 
-  const html = gerarHtml(nota.xml, nota.numero, nota.codigo_verificacao, qrDataUrl, nota.valor, cfg?.pix_key, cfg?.pix_nome, cfg?.pix_cidade, cfg?.obs_nota)
+  const html = gerarHtml(nota.xml, nota.numero, nota.codigo_verificacao, qrDataUrl, nota.valor, cfg?.pix_key, cfg?.pix_nome, cfg?.pix_cidade, undefined)
   return new NextResponse(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } })
 }
