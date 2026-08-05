@@ -101,7 +101,9 @@ function EntrarForm() {
           background-size:cover;
           background-position:center;
           flex-direction:column;
-          justify-content:flex-end;
+          justify-content:center;
+          align-items:center;
+          text-align:center;
           padding:52px 48px;
           position:relative;
           overflow:hidden;
@@ -110,32 +112,37 @@ function EntrarForm() {
         }
         .ep-side-overlay{
           position:absolute;inset:0;
-          background:linear-gradient(to top,rgba(10,20,50,.82) 0%,rgba(10,20,50,.25) 55%,transparent 100%);
+          background:rgba(10,22,60,.45);
         }
-        .ep-side-inner{position:relative;z-index:1;}
+        .ep-side-inner{
+          position:relative;z-index:1;
+          display:flex;flex-direction:column;
+          align-items:center;text-align:center;
+          max-width:340px;
+        }
         .ep-eyebrow{
           font-size:10px;font-weight:600;
-          letter-spacing:3px;text-transform:uppercase;
-          color:rgba(255,255,255,.65);margin-bottom:10px;
+          letter-spacing:4px;text-transform:uppercase;
+          color:rgba(255,255,255,.7);margin-bottom:16px;
           font-family:'Inter',system-ui,sans-serif;
         }
         .ep-headline{
-          font-size:28px;font-weight:800;
-          color:#fff;line-height:1.25;
-          margin-bottom:16px;letter-spacing:-.5px;
+          font-size:36px;font-weight:800;
+          color:#fff;line-height:1.2;
+          margin-bottom:20px;letter-spacing:-.8px;
           font-family:'Inter',system-ui,sans-serif;
         }
-        .ep-rule{width:36px;height:2px;background:rgba(255,255,255,.4);margin-bottom:20px;}
-        .ep-feature{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+        .ep-rule{width:48px;height:2px;background:rgba(255,255,255,.35);margin:0 auto 24px;}
+        .ep-feature{display:flex;align-items:center;gap:10px;margin-bottom:12px;text-align:left;}
         .ep-dot{
           width:18px;height:18px;border-radius:50%;
           background:rgba(255,255,255,.15);
-          border:1px solid rgba(255,255,255,.3);
+          border:1px solid rgba(255,255,255,.35);
           display:flex;align-items:center;justify-content:center;flex-shrink:0;
         }
-        .ep-feature-text{font-size:13px;color:rgba(255,255,255,.85);line-height:1.3;font-family:'Inter',system-ui,sans-serif;}
+        .ep-feature-text{font-size:13.5px;color:rgba(255,255,255,.88);line-height:1.3;font-family:'Inter',system-ui,sans-serif;}
         .ep-footer{
-          margin-top:28px;
+          margin-top:36px;
           font-size:10px;letter-spacing:2px;text-transform:uppercase;
           color:rgba(255,255,255,.3);font-family:'Inter',system-ui,sans-serif;
         }
@@ -242,8 +249,6 @@ function EntrarForm() {
         <div className="ep-side">
           <div className="ep-side-overlay" />
           <div className="ep-side-inner">
-            <img src="/logo.png" alt="Universidade APV"
-              style={{ height: 52, objectFit: 'contain', display: 'block', marginBottom: 32 }} />
             <p className="ep-eyebrow">Plataforma de Capacitacao</p>
             <h2 className="ep-headline">Aprenda.<br />Cresça.<br />Conquiste.</h2>
             <div className="ep-rule" />
@@ -267,8 +272,13 @@ function EntrarForm() {
 
         {/* Banner mobile */}
         <div className="ep-mobile-banner">
-          <img src="/logo.png" alt="Universidade AVP"
-            style={{ height: 56, objectFit: 'contain', margin: '0 auto 4px', display: 'block' }} />
+          {logoUrl && !logoFalhou ? (
+            <img src={logoUrl} alt={siteNome || 'Universidade AVP'}
+              style={{ height: 60, objectFit: 'contain', margin: '0 auto 4px', display: 'block' }}
+              onError={() => setLogoFalhou(true)} />
+          ) : (
+            <div className="ep-mb-title">{siteNome || 'Universidade AVP'}</div>
+          )}
           <div className="ep-mb-sub">Plataforma de capacitacao</div>
         </div>
 
@@ -276,10 +286,15 @@ function EntrarForm() {
         <div className="ep-main">
           <div className="ep-wrap">
 
-            {/* Logo completa — desktop */}
+            {/* Logo — desktop */}
             <div className="ep-logo">
-              <img src="/logo.png" alt="Universidade AVP"
-                style={{ height: 88, objectFit: 'contain', display: 'block', margin: '0 auto' }} />
+              {logoUrl && !logoFalhou ? (
+                <img src={logoUrl} alt={siteNome || 'Universidade AVP'}
+                  style={{ height: 88, objectFit: 'contain', display: 'block', margin: '0 auto' }}
+                  onError={() => setLogoFalhou(true)} />
+              ) : siteNome ? (
+                <span style={{ fontSize: 22, fontWeight: 800, color: TEXT, display: 'block', textAlign: 'center' }}>{siteNome}</span>
+              ) : null}
             </div>
 
             <div className="ep-card">

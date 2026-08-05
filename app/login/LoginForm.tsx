@@ -122,7 +122,9 @@ export default function LoginForm({
           background-size:cover;
           background-position:center;
           flex-direction:column;
-          justify-content:flex-end;
+          justify-content:center;
+          align-items:center;
+          text-align:center;
           padding:52px 48px;
           position:relative;
           overflow:hidden;
@@ -131,31 +133,37 @@ export default function LoginForm({
         }
         .lp-side-overlay{
           position:absolute;inset:0;
-          background:linear-gradient(to top,rgba(10,20,50,.82) 0%,rgba(10,20,50,.25) 55%,transparent 100%);
+          background:rgba(10,22,60,.45);
         }
-        .lp-side-inner{position:relative;z-index:1;}
+        .lp-side-inner{
+          position:relative;z-index:1;
+          display:flex;flex-direction:column;
+          align-items:center;text-align:center;
+          max-width:340px;
+        }
         .lp-eyebrow{
           font-size:10px;font-weight:600;
-          letter-spacing:3px;text-transform:uppercase;
-          color:rgba(255,255,255,.65);margin-bottom:10px;
+          letter-spacing:4px;text-transform:uppercase;
+          color:rgba(255,255,255,.7);margin-bottom:16px;
           font-family:'Inter',system-ui,sans-serif;
         }
         .lp-headline{
-          font-size:28px;font-weight:800;
-          color:#fff;line-height:1.25;
-          margin-bottom:16px;letter-spacing:-.5px;
+          font-size:36px;font-weight:800;
+          color:#fff;line-height:1.2;
+          margin-bottom:20px;letter-spacing:-.8px;
           font-family:'Inter',system-ui,sans-serif;
         }
         .lp-rule{
-          width:36px;height:2px;
-          background:rgba(255,255,255,.4);
-          margin-bottom:20px;
+          width:48px;height:2px;
+          background:rgba(255,255,255,.35);
+          margin:0 auto 24px;
         }
         .lp-feature{
           display:flex;
           align-items:center;
-          gap:12px;
-          margin-bottom:14px;
+          gap:10px;
+          margin-bottom:12px;
+          text-align:left;
         }
         .lp-dot{
           width:18px; height:18px;
@@ -332,8 +340,6 @@ export default function LoginForm({
         <div className="lp-side">
           <div className="lp-side-overlay" />
           <div className="lp-side-inner">
-            <img src="/logo.png" alt="Universidade AVP"
-              style={{ height: 80, objectFit: 'contain', display: 'block', marginBottom: 32 }} />
             <p className="lp-eyebrow">Plataforma de Capacitacao</p>
             <h2 className="lp-headline">Aprenda.<br />Cresça.<br />Conquiste.</h2>
             <div className="lp-rule" />
@@ -351,14 +357,19 @@ export default function LoginForm({
                 <span className="lp-feature-text">{f}</span>
               </div>
             ))}
-            <div className="lp-footer" style={{ marginTop: 28 }}>uniavp.autovaleprevencoes.org.br</div>
+            <div className="lp-footer" style={{ marginTop: 32 }}>uniavp.autovaleprevencoes.org.br</div>
           </div>
         </div>
 
         {/* ── BANNER MOBILE ── */}
         <div className="lp-mobile-banner">
-          <img src="/logo.png" alt="Universidade AVP"
-            style={{ height: 60, objectFit: 'contain', margin: '0 auto 4px', display: 'block' }} />
+          {logoUrl && !logoFalhou ? (
+            <img src={logoUrl} alt={siteNome || 'Universidade AVP'}
+              style={{ height: 60, objectFit: 'contain', margin: '0 auto 4px', display: 'block' }}
+              onError={() => setLogoFalhou(true)} />
+          ) : (
+            <span style={{ fontSize: 17, fontWeight: 800, color: '#fff' }}>{siteNome || 'Universidade AVP'}</span>
+          )}
           <div className="lp-mobile-sub">Plataforma de capacitacao</div>
         </div>
 
@@ -366,10 +377,15 @@ export default function LoginForm({
         <div className="lp-main">
           <div className="lp-form-wrap">
 
-            {/* Logo completa — so desktop */}
+            {/* Logo — so desktop */}
             <div className="lp-logo-area" style={{ display: 'none' }} id="lp-logo-desktop">
-              <img src="/logo.png" alt="Universidade AVP"
-                style={{ height: 88, objectFit: 'contain', display: 'block', margin: '0 auto' }} />
+              {logoUrl && !logoFalhou ? (
+                <img src={logoUrl} alt={siteNome || 'Universidade AVP'}
+                  style={{ height: 88, objectFit: 'contain', display: 'block', margin: '0 auto' }}
+                  onError={() => setLogoFalhou(true)} />
+              ) : siteNome ? (
+                <span style={{ fontSize: 22, fontWeight: 800, color: TEXT, display: 'block', textAlign: 'center' }}>{siteNome}</span>
+              ) : null}
             </div>
             <style>{`@media(min-width:900px){#lp-logo-desktop{display:block!important;}}`}</style>
 
