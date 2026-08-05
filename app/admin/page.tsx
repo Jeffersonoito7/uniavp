@@ -46,16 +46,31 @@ export default async function AdminDashboard() {
 
  const taxaConclusao = totalAlunos ? Math.round(((alunosConcluidos ?? 0) / (totalAlunos ?? 1)) * 100) : 0
 
- const { data: progressoRows } = await tq(adminClient.from('progresso').select('aluno_id').eq('aprovado', true))
+ // busca IDs dos alunos ativos do tenant para filtrar progresso (tabela progresso nao tem tenant_id)
+ const { data: alunosAtivosRows } = await tq(
+   adminClient.from('alunos').select('id').eq('status', 'ativo')
+ )
+ const idsAtivos = (alunosAtivosRows ?? []).map((a: { id: string }) => a.id)
+
  const totalAulasPublicadasN = aulasPublicadas ?? 1
- const progressoPorAluno: Record<string, number> = {}
- for (const p of progressoRows ?? []) {
- progressoPorAluno[p.aluno_id] = (progressoPorAluno[p.aluno_id] ?? 0) + 1
+ let mediaProgresso = 0
+ if (idsAtivos.length > 0) {
+   const { data: progressoRows } = await adminClient
+     .from('progresso')
+     .select('aluno_id')
+     .eq('aprovado', true)
+     .in('aluno_id', idsAtivos)
+   const progressoPorAluno: Record<string, number> = {}
+   for (const p of progressoRows ?? []) {
+     progressoPorAluno[p.aluno_id] = (progressoPorAluno[p.aluno_id] ?? 0) + 1
+   }
+   const vals = Object.values(progressoPorAluno) as number[]
+   // inclui ativos sem nenhuma aula aprovada como 0%
+   mediaProgresso = Math.round(
+     vals.reduce((s, v) => s + Math.min(100, Math.round((v / totalAulasPublicadasN) * 100)), 0)
+     / idsAtivos.length
+   )
  }
- const vals = Object.values(progressoPorAluno) as number[]
- const mediaProgresso = vals.length> 0
- ? Math.round(vals.reduce((s, v) => s + Math.min(100, Math.round((v / totalAulasPublicadasN) * 100)), 0) / vals.length)
- : 0
 
  const seteAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
  const { count: novosAlunos } = await tq(adminClient.from('alunos').select('id', { count: 'exact', head: true })).gte('created_at', seteAtras)
