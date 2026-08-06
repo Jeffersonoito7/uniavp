@@ -46,30 +46,27 @@ export default async function AdminDashboard() {
 
  const taxaConclusao = totalAlunos ? Math.round(((alunosConcluidos ?? 0) / (totalAlunos ?? 1)) * 100) : 0
 
- // busca IDs dos alunos ativos do tenant para filtrar progresso (tabela progresso nao tem tenant_id)
- const { data: alunosAtivosRows } = await tq(
-   adminClient.from('alunos').select('id').eq('status', 'ativo')
- )
- const idsAtivos = (alunosAtivosRows ?? []).map((a: { id: string }) => a.id)
-
+ // calcula progresso medio via join: progresso -> alunos (sem passar array de IDs que estoura URL)
  const totalAulasPublicadasN = aulasPublicadas ?? 1
  let mediaProgresso = 0
- if (idsAtivos.length > 0) {
-   const { data: progressoRows } = await adminClient
+ {
+   // busca count de aulas aprovadas por aluno ativo do tenant, usando join
+   const joinQ = adminClient
      .from('progresso')
-     .select('aluno_id')
+     .select('aluno_id, aluno:alunos!inner(status, tenant_id)')
      .eq('aprovado', true)
-     .in('aluno_id', idsAtivos)
+     .eq('aluno.status', 'ativo')
+   const { data: progressoRows } = tid
+     ? await joinQ.eq('aluno.tenant_id', tid)
+     : await joinQ
    const progressoPorAluno: Record<string, number> = {}
-   for (const p of progressoRows ?? []) {
+   for (const p of (progressoRows ?? []) as any[]) {
      progressoPorAluno[p.aluno_id] = (progressoPorAluno[p.aluno_id] ?? 0) + 1
    }
+   const numAtivos = alunosAtivos ?? 1
    const vals = Object.values(progressoPorAluno) as number[]
-   // inclui ativos sem nenhuma aula aprovada como 0%
-   mediaProgresso = Math.round(
-     vals.reduce((s, v) => s + Math.min(100, Math.round((v / totalAulasPublicadasN) * 100)), 0)
-     / idsAtivos.length
-   )
+   const soma = vals.reduce((s, v) => s + Math.min(100, Math.round((v / totalAulasPublicadasN) * 100)), 0)
+   mediaProgresso = numAtivos > 0 ? Math.round(soma / numAtivos) : 0
  }
 
  const seteAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
