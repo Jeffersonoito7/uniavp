@@ -130,8 +130,8 @@ export default async function PlanoFreePage() {
  </div>
 
  {/* PRO */}
- <div style={{ background: 'rgba(79,70,229,0.08)', border: '2px solid rgba(79,70,229,0.3)', borderRadius: 16, padding: 28, position: 'relative' }}>
- <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', background: '#4f46e5', borderRadius: 100, padding: '4px 18px', fontSize: 11, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap' }}>
+ <div style={{ background: 'rgba(79,70,229,0.08)', border: '2px solid rgba(79,70,229,0.3)', borderRadius: 16, padding: '32px 28px 28px', position: 'relative', overflow: 'visible' }}>
+ <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translate(-50%, -50%)', background: '#4f46e5', borderRadius: 100, padding: '4px 18px', fontSize: 11, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap' }}>
  PRÓXIMO NÍVEL
  </div>
  <p style={{ fontSize: 13, fontWeight: 700, color: '#818cf8', marginBottom: 8 }}>PRO</p>

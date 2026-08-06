@@ -58,7 +58,7 @@ export default async function ReciboPage({ params }: { params: { cobrancaId: str
 
  {/* Botão imprimir */}
  <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
- <p style={{ color: '#888', fontSize: 13 }}>
+ <p style={{ color: '#374151', fontSize: 13 }}>
  {pago ? ' Recibo de pagamento' : ' Cobrança em aberto'}
  </p>
  <button
@@ -98,7 +98,7 @@ export default async function ReciboPage({ params }: { params: { cobrancaId: str
 
  {/* Dados lado esquerdo */}
  <div style={{ padding: '28px 32px', borderRight: '1px solid #f0f0f0' }}>
- <p style={{ fontSize: 11, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 20 }}>Dados da cobrança</p>
+ <p style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 20 }}>Dados da cobrança</p>
 
  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
  <Campo label="Beneficiário" value={config.nome} />
@@ -113,7 +113,7 @@ export default async function ReciboPage({ params }: { params: { cobrancaId: str
 
  {/* Valor em destaque */}
  <div style={{ marginTop: 24, paddingTop: 20, borderTop: '2px solid #f0f0f0' }}>
- <p style={{ fontSize: 11, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Valor</p>
+ <p style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Valor</p>
  <p style={{ fontSize: 38, fontWeight: 900, color: '#0D2B6E', letterSpacing: -1 }}>{valor}</p>
  </div>
  </div>
@@ -122,11 +122,11 @@ export default async function ReciboPage({ params }: { params: { cobrancaId: str
  <div style={{ padding: '28px 28px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, minWidth: 200 }}>
  {!pago && qrCodeSrc ? (
  <>
- <p style={{ fontSize: 11, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1 }}>Pague com PIX</p>
+ <p style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 1 }}>Pague com PIX</p>
  <div style={{ padding: 8, border: '3px solid #0D2B6E', borderRadius: 10 }}>
  <img src={qrCodeSrc} alt="QR Code PIX" width={180} height={180} style={{ display: 'block', borderRadius: 4 }} />
  </div>
- <p style={{ fontSize: 10, color: '#aaa', textAlign: 'center', lineHeight: 1.5 }}>
+ <p style={{ fontSize: 10, color: '#6b7280', textAlign: 'center', lineHeight: 1.5 }}>
  Aponte a câmera<br />do celular para o<br />QR code acima
  </p>
  </>
@@ -138,7 +138,7 @@ export default async function ReciboPage({ params }: { params: { cobrancaId: str
  <p style={{ fontSize: 13, fontWeight: 700, color: '#02A153', textAlign: 'center' }}>Pagamento<br />confirmado</p>
  </>
  ) : (
- <p style={{ fontSize: 12, color: '#aaa', textAlign: 'center' }}>QR Code<br />não disponível</p>
+ <p style={{ fontSize: 12, color: '#6b7280', textAlign: 'center' }}>QR Code<br />não disponível</p>
  )}
  </div>
  </div>

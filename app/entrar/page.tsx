@@ -178,7 +178,7 @@ function EntrarForm() {
           outline:none;transition:border-color .18s;font-family:inherit;
         }
         input.ep-inp:focus{border-color:${TEAL};}
-        input.ep-inp::placeholder{color:#2e2e4a;}
+        input.ep-inp::placeholder{color:#4a5568;}
         .ep-field{margin-bottom:18px;}
         .ep-pwd{position:relative;}
         .ep-eye{

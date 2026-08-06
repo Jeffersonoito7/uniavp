@@ -51,7 +51,7 @@ export default async function VerificarPage({ params }: { params: { registro: st
  ? <img src={config.logoUrl} alt={config.nome} style={{ height: 56, objectFit: 'contain', marginBottom: 12, display: 'block', margin: '0 auto 12px' }} />
  : <p style={{ fontWeight: 900, fontSize: 22, color: '#fff', marginBottom: 12 }}>{config.nome}</p>
  }
- <p style={{ color: '#666', fontSize: 14 }}>Sistema de Verificação de Autenticidade</p>
+ <p style={{ color: '#94a3b8', fontSize: 14 }}>Sistema de Verificação de Autenticidade</p>
  </div>
 
  {/* Card resultado */}
@@ -62,7 +62,7 @@ export default async function VerificarPage({ params }: { params: { registro: st
  <c.Icone size={40} style={{ color: c.text, flexShrink: 0 }} />
  <div>
  <p style={{ fontWeight: 800, fontSize: 16, color: c.text, margin: 0 }}>{msgs[status]}</p>
- <p style={{ color: '#888', fontSize: 13, margin: '4px 0 0' }}>Nº de Registro: <strong style={{ color: '#fff' }}>{params.registro}</strong></p>
+ <p style={{ color: '#cbd5e1', fontSize: 13, margin: '4px 0 0' }}>Nº de Registro: <strong style={{ color: '#fff' }}>{params.registro}</strong></p>
  </div>
  </div>
 
@@ -85,7 +85,7 @@ export default async function VerificarPage({ params }: { params: { registro: st
  )}
 
  {!aluno && (
- <div style={{ padding: 32, textAlign: 'center', color: '#555' }}>
+ <div style={{ padding: 32, textAlign: 'center', color: '#94a3b8' }}>
  <p style={{ fontSize: 15 }}>Nenhum registro encontrado com este número.</p>
  <p style={{ fontSize: 13, marginTop: 8 }}>Verifique se o número foi digitado corretamente.</p>
  </div>
@@ -93,7 +93,7 @@ export default async function VerificarPage({ params }: { params: { registro: st
  </div>
 
  {/* Rodapé */}
- <p style={{ color: '#444', fontSize: 12, textAlign: 'center', marginTop: 24, lineHeight: 1.6 }}>
+ <p style={{ color: '#64748b', fontSize: 12, textAlign: 'center', marginTop: 24, lineHeight: 1.6 }}>
  Este sistema garante a autenticidade dos documentos emitidos por {config.nome}.<br />
  Em caso de dúvidas, entre em contato conosco.
  </p>
@@ -106,7 +106,7 @@ function Row({ label, value, destaque }: { label: string; value: string; destaqu
  const cor = destaque === 'verde' ? '#02A153' : destaque === 'vermelho' ? '#e63946' : '#fff'
  return (
  <div style={{ borderBottom: '1px solid #252836', paddingBottom: 14 }}>
- <p style={{ fontSize: 11, fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 4px' }}>{label}</p>
+ <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 4px' }}>{label}</p>
  <p style={{ fontSize: 15, fontWeight: 600, color: cor, margin: 0 }}>{value}</p>
  </div>
  )

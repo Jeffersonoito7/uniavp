@@ -447,7 +447,7 @@ export default function NovoContratoPage() {
                 onClick={() => setContratadoPreenche(p => !p)}
                 style={{ flexShrink: 0, width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', background: contratadoPreenche ? 'var(--avp-accent)' : 'var(--avp-border)', position: 'relative', transition: 'background 0.2s' }}
               >
-                <span style={{ position: 'absolute', top: 3, left: contratadoPreenche ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+                <span style={{ position: 'absolute', top: 3, left: contratadoPreenche ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: contratadoPreenche ? '#fff' : '#94a3b8', transition: 'left 0.2s' }} />
               </button>
               <div>
                 <p style={{ fontWeight: 700, fontSize: 14, margin: 0, color: contratadoPreenche ? '#818cf8' : 'var(--avp-text)' }}>

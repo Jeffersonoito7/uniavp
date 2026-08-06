@@ -141,9 +141,9 @@ export default function AssinarProPage() {
  style={{
  background: opcao === 'cartao' ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.04)',
  border: `2px solid ${opcao === 'cartao' ? '#22c55e' : 'rgba(255,255,255,0.1)'}`,
- borderRadius: 14, padding: '20px 16px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s', position: 'relative',
+ borderRadius: 14, padding: '28px 16px 20px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s', position: 'relative', overflow: 'visible',
  }}>
- <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', background: '#22c55e', color: '#000', fontSize: 10, fontWeight: 900, padding: '3px 10px', borderRadius: 100, whiteSpace: 'nowrap' }}>
+ <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translate(-50%, -50%)', background: '#22c55e', color: '#000', fontSize: 10, fontWeight: 900, padding: '3px 10px', borderRadius: 100, whiteSpace: 'nowrap' }}>
  MELHOR OFERTA
  </div>
  <CreditCard size={24} style={{ color: '#22c55e', marginBottom: 10, display: 'block', margin: '0 auto 10px' }} />

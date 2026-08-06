@@ -138,11 +138,11 @@ export default async function LandingPage() {
  <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.5, color: '#4f46e5', textTransform: 'uppercase', marginBottom: 12 }}>Planos</p>
  <h2 style={{ fontSize: 34, fontWeight: 800, letterSpacing: -0.8, marginBottom: 12, color: '#f1f5f9' }}>Simples e transparente</h2>
  <p style={{ fontSize: 16, color: '#64748b', lineHeight: 1.6 }}>Sem fidelidade. Cancele quando quiser.</p>
- <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(planos.length, 3)}, 1fr)`, gap: 1, border: '1px solid #1e1f2e', borderRadius: 12, overflow: 'hidden', marginTop: 48 }}>
+ <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(planos.length, 3)}, 1fr)`, gap: 1, border: '1px solid #1e1f2e', borderRadius: 12, overflow: 'visible', marginTop: 48 }}>
  {planos.map((p, i) => (
- <div key={p.id} style={{ background: '#0f0f17', padding: '32px 28px', position: 'relative', borderRight: i < planos.length - 1 ? '1px solid #1e1f2e' : 'none', borderTop: p.destaque ? '2px solid #4f46e5' : undefined }}>
+ <div key={p.id} style={{ background: '#0f0f17', padding: '32px 28px', position: 'relative', borderRight: i < planos.length - 1 ? '1px solid #1e1f2e' : 'none', borderTop: p.destaque ? '2px solid #4f46e5' : '1px solid #1e1f2e', borderRadius: i === 0 ? '12px 0 0 12px' : i === planos.length - 1 ? '0 12px 12px 0' : undefined }}>
  {p.destaque && (
- <div style={{ position: 'absolute', top: -1, left: 20, background: '#4f46e5', color: '#fff', fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: '0 0 6px 6px', letterSpacing: 0.5 }}>
+ <div style={{ position: 'absolute', top: -14, left: 20, background: '#4f46e5', color: '#fff', fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: '6px 6px 6px 6px', letterSpacing: 0.5 }}>
  MAIS POPULAR
  </div>
  )}

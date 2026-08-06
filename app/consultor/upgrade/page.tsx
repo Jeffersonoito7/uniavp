@@ -97,8 +97,8 @@ export default async function UpgradePage() {
  ))}
  </div>
  {/* Pro */}
- <div style={{ background: 'rgba(79,70,229,0.08)', border: '2px solid rgba(79,70,229,0.35)', borderRadius: 16, padding: 24, position: 'relative' }}>
- <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: '#4f46e5', borderRadius: 100, padding: '4px 16px', fontSize: 11, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap' }}>
+ <div style={{ background: 'rgba(79,70,229,0.08)', border: '2px solid rgba(79,70,229,0.35)', borderRadius: 16, padding: '32px 24px 24px', position: 'relative', overflow: 'visible' }}>
+ <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translate(-50%, -50%)', background: '#4f46e5', borderRadius: 100, padding: '4px 16px', fontSize: 11, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap' }}>
  RECOMENDADO
  </div>
  <p style={{ fontSize: 11, fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>{nomePro}</p>
