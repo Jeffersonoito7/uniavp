@@ -46,27 +46,33 @@ export default async function AdminDashboard() {
 
  const taxaConclusao = totalAlunos ? Math.round(((alunosConcluidos ?? 0) / (totalAlunos ?? 1)) * 100) : 0
 
- // calcula progresso medio via join: progresso -> alunos (sem passar array de IDs que estoura URL)
+ // calcula progresso medio: busca IDs dos ativos em batches de 100 para nao estourar URL
  const totalAulasPublicadasN = aulasPublicadas ?? 1
  let mediaProgresso = 0
  {
-   // busca count de aulas aprovadas por aluno ativo do tenant, usando join
-   const joinQ = adminClient
-     .from('progresso')
-     .select('aluno_id, aluno:alunos!inner(status, tenant_id)')
-     .eq('aprovado', true)
-     .eq('aluno.status', 'ativo')
-   const { data: progressoRows } = tid
-     ? await joinQ.eq('aluno.tenant_id', tid)
-     : await joinQ
-   const progressoPorAluno: Record<string, number> = {}
-   for (const p of (progressoRows ?? []) as any[]) {
-     progressoPorAluno[p.aluno_id] = (progressoPorAluno[p.aluno_id] ?? 0) + 1
+   const { data: alunosAtivosRows } = await tq(
+     adminClient.from('alunos').select('id').eq('status', 'ativo')
+   )
+   const idsAtivos = (alunosAtivosRows ?? []).map((a: any) => a.id as string)
+   if (idsAtivos.length > 0) {
+     const CHUNK = 100
+     const allRows: { aluno_id: string }[] = []
+     for (let i = 0; i < idsAtivos.length; i += CHUNK) {
+       const { data } = await adminClient
+         .from('progresso')
+         .select('aluno_id')
+         .eq('aprovado', true)
+         .in('aluno_id', idsAtivos.slice(i, i + CHUNK))
+       for (const r of data ?? []) allRows.push(r as { aluno_id: string })
+     }
+     const progressoPorAluno: Record<string, number> = {}
+     for (const p of allRows) {
+       progressoPorAluno[p.aluno_id] = (progressoPorAluno[p.aluno_id] ?? 0) + 1
+     }
+     const vals = Object.values(progressoPorAluno) as number[]
+     const soma = vals.reduce((s, v) => s + Math.min(100, Math.round((v / totalAulasPublicadasN) * 100)), 0)
+     mediaProgresso = Math.round(soma / idsAtivos.length)
    }
-   const numAtivos = alunosAtivos ?? 1
-   const vals = Object.values(progressoPorAluno) as number[]
-   const soma = vals.reduce((s, v) => s + Math.min(100, Math.round((v / totalAulasPublicadasN) * 100)), 0)
-   mediaProgresso = numAtivos > 0 ? Math.round(soma / numAtivos) : 0
  }
 
  const seteAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
