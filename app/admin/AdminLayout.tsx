@@ -375,14 +375,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <>
       {/* Header */}
       <div style={{
-        padding: colapsada ? '0 10px 16px' : '0 14px 16px',
+        padding: colapsada ? '12px 10px' : '12px 14px',
         borderBottom: '1px solid var(--avp-border)',
         display: 'flex', alignItems: 'center',
         justifyContent: colapsada ? 'center' : 'space-between',
-        gap: 8, minHeight: 58, flexShrink: 0,
+        gap: 8, minHeight: 64, flexShrink: 0,
       }}>
         {!colapsada && (
-          <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+          <div style={{ flex: 1, minWidth: 0, overflow: 'visible' }}>
             <Logo />
           </div>
         )}
