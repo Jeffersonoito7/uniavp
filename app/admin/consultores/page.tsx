@@ -2,7 +2,6 @@ export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import ConsultoresCliente from './ConsultoresCliente'
-import ReparadorGestores from '../ReparadorGestores'
 
 export default async function ConsultoresPage() {
  const supabase = await createClient()
@@ -28,7 +27,6 @@ export default async function ConsultoresPage() {
  <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>UNIAVP FREE</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Gerencie os consultores cadastrados</p>
  </div>
- <ReparadorGestores />
  <ConsultoresCliente consultoresIniciais={consultores ?? []} />
      </>
   )

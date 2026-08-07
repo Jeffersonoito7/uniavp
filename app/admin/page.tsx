@@ -3,10 +3,7 @@ import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase-server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
-import LiberacoesPendentes from './LiberacoesPendentes'
 import LinksTeste from './LinksTeste'
-import ReparadorGestores from './ReparadorGestores'
-import RecalcularConclusao from './RecalcularConclusao'
 
 import { DOMINIO_MASTER } from '@/lib/constants'
 
@@ -95,11 +92,7 @@ export default async function AdminDashboard() {
 
  {isMaster && <LinksTeste />}
 
- <ReparadorGestores />
- <RecalcularConclusao />
- <LiberacoesPendentes />
-
- <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 28 }}>
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 28 }}>
  {stats.map(s => (
  <div key={s.label} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '16px 18px' }}>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10 }}>{s.label}</p>
