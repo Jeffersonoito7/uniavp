@@ -13,7 +13,7 @@ import {
 import ThemeToggle from '@/app/components/ThemeToggle'
 import LogoutButton from '@/app/components/LogoutButton'
 
-const BG = '#0f1729'
+const BG = 'linear-gradient(180deg, #0a2240 0%, #063a2e 100%)'
 const BORDER = 'rgba(255,255,255,0.08)'
 const TEXT_DIM = 'rgba(255,255,255,0.5)'
 const TEXT_MUTED = 'rgba(255,255,255,0.25)'
