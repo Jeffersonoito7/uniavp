@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ erro: 'Não foi possível criar sua conta. Tente novamente.' }, { status: 400 })
   }
 
-  // Resolve indicador: consultor free que indicou via link /captacao?ref=whatsapp
+  // Resolve indicador via link /captacao?ref=whatsapp (FREE ou PRO)
   let indicadorId: string | null = null
   if (indicador_whatsapp) {
     const refWpp = indicador_whatsapp.replace(/\D/g, '')
@@ -165,27 +165,35 @@ export async function POST(req: NextRequest) {
       .eq('whatsapp', refWpp)
       .maybeSingle()
     if (alunoRef) {
-      // Busca ou cria entrada na tabela indicadores para este consultor
+      // Busca indicador por whatsapp sem filtrar por tipo (PRO e FREE podem indicar)
       const { data: indExistente } = await adminClient.from('indicadores')
         .select('id')
         .eq('whatsapp', refWpp)
-        .eq('tipo', 'consultor')
         .maybeSingle()
-      const indId = indExistente?.id ?? null
-      let resolvedId = indId
+      let resolvedId = indExistente?.id ?? null
       if (!resolvedId) {
+        // Verifica se é gestor (PRO) para definir o tipo correto
+        const { data: gestorRef } = await adminClient.from('gestores')
+          .select('id').eq('whatsapp', refWpp).eq('ativo', true).maybeSingle()
+        const tipoInd = gestorRef ? 'gestor' : 'consultor'
         const { data: indNovo } = await adminClient.from('indicadores')
-          .insert({ nome: alunoRef.nome, tipo: 'consultor', whatsapp: refWpp, email: alunoRef.email ?? null })
+          .insert({ nome: alunoRef.nome, tipo: tipoInd, whatsapp: refWpp, email: alunoRef.email ?? null })
           .select('id')
           .single()
         resolvedId = indNovo?.id ?? null
       }
       if (resolvedId) {
-        // Limite de 20 indicações para consultor FREE
-        const { count: jaIndicou } = await adminClient.from('alunos')
-          .select('id', { count: 'exact', head: true })
-          .eq('indicador_id', resolvedId)
-        indicadorId = (jaIndicou ?? 0) < 20 ? resolvedId : null
+        // Limite de 20 indicações apenas para FREE; PRO não tem limite
+        const { data: gestorRef } = await adminClient.from('gestores')
+          .select('id').eq('whatsapp', refWpp).eq('ativo', true).maybeSingle()
+        if (gestorRef) {
+          indicadorId = resolvedId
+        } else {
+          const { count: jaIndicou } = await adminClient.from('alunos')
+            .select('id', { count: 'exact', head: true })
+            .eq('indicador_id', resolvedId)
+          indicadorId = (jaIndicou ?? 0) < 20 ? resolvedId : null
+        }
       }
     }
   }
