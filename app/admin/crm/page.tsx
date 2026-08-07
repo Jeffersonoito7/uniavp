@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import AdminLayout from '../AdminLayout'
 
 export default async function CRMPage() {
  const supabase = await createClient()
@@ -113,7 +112,7 @@ export default async function CRMPage() {
  const statusCor: Record<string, string> = { ativo: 'var(--avp-green)', concluido: 'var(--avp-blue)', pausado: '#6366f1', desligado: 'var(--avp-danger)' }
 
  return (
- <AdminLayout>
+    <>
  <div style={{ marginBottom: 28 }}>
  <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>CRM — Visão Geral</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Acompanhe o progresso e engajamento dos consultores</p>
@@ -244,6 +243,6 @@ export default async function CRMPage() {
  </table>
  </div>
  </div>
- </AdminLayout>
- )
+     </>
+  )
 }

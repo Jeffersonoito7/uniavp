@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import AdminLayout from '../AdminLayout'
 import GestoresCliente from './GestoresCliente'
 
 export default async function GestoresPage() {
@@ -23,12 +22,12 @@ export default async function GestoresPage() {
  const { data: gestores } = await q
 
  return (
- <AdminLayout>
+    <>
  <div style={{ marginBottom: 24 }}>
  <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>UNIAVP PRO</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Gerenciamento de contas PRO</p>
  </div>
  <GestoresCliente gestoresIniciais={gestores ?? []} />
- </AdminLayout>
- )
+     </>
+  )
 }

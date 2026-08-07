@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import AdminLayout from '../../AdminLayout'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -30,7 +29,7 @@ export default async function ContratosAntigosPage() {
   const statusCor: Record<string, string> = { cancelado: '#e63946' }
 
   return (
-    <AdminLayout>
+    <>
       <div style={{ marginBottom: 24 }}>
         <Link href="/admin/contratos" style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none' }}>← Contratos</Link>
         <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--avp-text)', marginTop: 6 }}>Contratos legados</h1>
@@ -62,6 +61,6 @@ export default async function ContratosAntigosPage() {
           ))}
         </div>
       )}
-    </AdminLayout>
+      </>
   )
 }

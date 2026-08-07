@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import AdminLayout from '../AdminLayout'
 import BibliotecaAdminCliente from './BibliotecaAdminCliente'
 
 export default async function BibliotecaAdminPage() {
@@ -14,12 +13,12 @@ export default async function BibliotecaAdminPage() {
  const { data: items } = await admin.from('biblioteca')
  .select('*').eq('tenant_id', adminRecord.tenant_id ?? '').order('ordem').order('created_at', { ascending: false })
  return (
- <AdminLayout>
+    <>
  <div style={{ marginBottom: 28 }}>
  <h1 style={{ fontSize: 24, fontWeight: 800 }}>Biblioteca do Poder</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Gerencie audiobooks, podcasts e vídeos disponíveis para os consultores</p>
  </div>
  <BibliotecaAdminCliente inicial={items ?? []} />
- </AdminLayout>
- )
+     </>
+  )
 }

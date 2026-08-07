@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import AdminLayout from '../AdminLayout'
 import ModulosCliente from './ModulosCliente'
 
 export default async function ModulosPage() {
@@ -23,7 +22,7 @@ export default async function ModulosPage() {
  const capaDefault = capaCfg?.valor ? String(capaCfg.valor).replace(/"/g, '') : null
 
  return (
- <AdminLayout>
+    <>
  <div style={{ marginBottom: 24 }}>
  <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Módulos</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Gerencie os módulos e aulas da trilha</p>
@@ -32,6 +31,6 @@ export default async function ModulosPage() {
  </p>
  </div>
  <ModulosCliente modulosIniciais={modulos ?? []} capaDefault={capaDefault} />
- </AdminLayout>
- )
+     </>
+  )
 }

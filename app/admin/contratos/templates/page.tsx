@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect } from 'react'
-import AdminLayout from '../../AdminLayout'
 import Link from 'next/link'
 
 type Template = {
@@ -65,7 +64,7 @@ export default function TemplatesPage() {
   const card: React.CSSProperties = { background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20 }
 
   return (
-    <AdminLayout>
+    <>
       <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div>
           <Link href="/admin/contratos" style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none' }}>← Contratos</Link>
@@ -166,6 +165,6 @@ export default function TemplatesPage() {
           )}
         </div>
       )}
-    </AdminLayout>
+      </>
   )
 }

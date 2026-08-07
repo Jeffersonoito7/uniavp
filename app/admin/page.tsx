@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase-server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
-import AdminLayout from './AdminLayout'
 import LiberacoesPendentes from './LiberacoesPendentes'
 import LinksTeste from './LinksTeste'
 import ReparadorGestores from './ReparadorGestores'
@@ -88,7 +87,7 @@ export default async function AdminDashboard() {
  ]
 
  return (
- <AdminLayout>
+    <>
  <div style={{ marginBottom: 24 }}>
  <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--avp-text)', letterSpacing: '-0.02em' }}>Dashboard</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 4 }}>Visão geral da plataforma</p>
@@ -109,7 +108,6 @@ export default async function AdminDashboard() {
  </div>
  ))}
  </div>
-
- </AdminLayout>
- )
+     </>
+  )
 }

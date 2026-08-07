@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import AdminLayout from '../../../AdminLayout'
 import Link from 'next/link'
 import DOMPurify from 'isomorphic-dompurify'
 
@@ -120,10 +119,10 @@ export default function EditarTemplatePage() {
     return html
   }
 
-  if (loading) return <AdminLayout><p style={{ color: 'var(--avp-text-dim)', padding: 40, textAlign: 'center' }}>Carregando...</p></AdminLayout>
+  if (loading) return <p style={{ color: 'var(--avp-text-dim)', padding: 40, textAlign: 'center' }}>Carregando...</p>
 
   return (
-    <AdminLayout>
+    <>
       <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div>
           <Link href="/admin/contratos/templates" style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none' }}>← Templates</Link>
@@ -204,6 +203,6 @@ export default function EditarTemplatePage() {
           </div>
         </form>
       )}
-    </AdminLayout>
+      </>
   )
 }

@@ -2,7 +2,6 @@ export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import AdminLayout from '../../AdminLayout'
 import ModuloEditorCliente from './ModuloEditorCliente'
 
 export default async function ModuloDetalhePage({ params }: { params: { id: string } }) {
@@ -19,10 +18,8 @@ export default async function ModuloDetalhePage({ params }: { params: { id: stri
  const { data: aulas } = await adminClient.from('aulas').select('*').eq('modulo_id', params.id).order('ordem')
 
  return (
- <AdminLayout>
  <Suspense>
  <ModuloEditorCliente modulo={modulo} aulas={aulas ?? []} />
  </Suspense>
- </AdminLayout>
  )
 }

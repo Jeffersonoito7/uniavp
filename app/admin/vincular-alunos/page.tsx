@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
-import AdminLayout from '../AdminLayout'
 import VincularAlunosCliente from './VincularAlunosCliente'
 
 export const dynamic = 'force-dynamic'
@@ -34,7 +33,7 @@ export default async function VincularAlunosPage() {
   const { data: gestores } = await gq
 
   return (
-    <AdminLayout>
+    <>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--avp-text)' }}>Vincular Alunos a PRO</h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>
@@ -50,6 +49,6 @@ export default async function VincularAlunosPage() {
       <div style={{ marginTop: 28 }}>
         <a href='/admin' style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'underline' }}>Voltar ao admin</a>
       </div>
-    </AdminLayout>
+      </>
   )
 }

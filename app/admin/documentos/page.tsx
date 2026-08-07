@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import AdminLayout from '../AdminLayout'
 import DocumentosCliente from './DocumentosCliente'
 
 export default async function DocumentosPage() {
@@ -18,8 +17,6 @@ export default async function DocumentosPage() {
  .order('created_at', { ascending: false })
 
  return (
- <AdminLayout>
  <DocumentosCliente documentosIniciais={documentos ?? []} />
- </AdminLayout>
  )
 }

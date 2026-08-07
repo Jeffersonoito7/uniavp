@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import AdminLayout from '../../AdminLayout'
 import PhoneInput from '@/app/components/PhoneInput'
 import Link from 'next/link'
 import { maskCPF, maskCNPJ, maskCEP } from '@/lib/masks'
@@ -290,7 +289,7 @@ export default function NovoContratoPage() {
   const card: React.CSSProperties = { background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24 }
 
   return (
-    <AdminLayout>
+    <>
       <div style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div>
           <Link href={contratoBase ? `/admin/contratos/${contratoBase.id}` : '/admin/contratos'} style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none' }}>
@@ -563,6 +562,6 @@ export default function NovoContratoPage() {
           </button>
         </div>
       </form>
-    </AdminLayout>
+      </>
   )
 }

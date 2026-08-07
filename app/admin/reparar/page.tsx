@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { vincularAlunosDoGestorNoFree } from '@/lib/pix-processor'
-import AdminLayout from '../AdminLayout'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,7 +54,6 @@ export default async function RepararPage() {
   }
 
   return (
-    <AdminLayout>
       <div style={{ maxWidth: 600 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Reparar Sistema</h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 28 }}>
@@ -123,6 +121,5 @@ export default async function RepararPage() {
           Voltar ao admin
         </a>
       </div>
-    </AdminLayout>
   )
 }

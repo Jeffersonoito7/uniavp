@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import AdminLayout from '../AdminLayout'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -35,7 +34,7 @@ export default async function VerFreePage() {
  }
 
  return (
- <AdminLayout>
+    <>
  <div style={{ marginBottom: 24 }}>
  <h1 style={{ fontSize: 22, fontWeight: 800 }}>Ver Painel FREE</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>
@@ -71,6 +70,6 @@ export default async function VerFreePage() {
  <p style={{ color: 'var(--avp-text-dim)', textAlign: 'center', padding: 40 }}>Nenhum aluno cadastrado ainda.</p>
  )}
  </div>
- </AdminLayout>
- )
+     </>
+  )
 }

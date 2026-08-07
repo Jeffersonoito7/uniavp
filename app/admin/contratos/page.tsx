@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import AdminLayout from '../AdminLayout'
 import Link from 'next/link'
 import ContratoObrigatorioConfig from './ContratoObrigatorioConfig'
 
@@ -62,7 +61,7 @@ export default async function ContratosPage() {
   const card: React.CSSProperties = { background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20 }
 
   return (
-    <AdminLayout>
+    <>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Contratos Digitais</h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>
@@ -140,6 +139,6 @@ export default async function ContratosPage() {
           </table>
         </div>
       </div>
-    </AdminLayout>
+      </>
   )
 }

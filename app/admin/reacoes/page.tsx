@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import AdminLayout from '../AdminLayout'
 
 export default async function ReacoesPage() {
  const supabase = await createClient()
@@ -54,7 +53,7 @@ export default async function ReacoesPage() {
  const mediaGeral = reacoesData.length ? (reacoesData.reduce((s: number, r: any) => s + r.nota, 0) / reacoesData.length).toFixed(1) : '—'
 
  return (
- <AdminLayout>
+    <>
  <div style={{ marginBottom: 28 }}>
  <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Reações das Aulas</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Avaliações e comentários dos consultores por aula</p>
@@ -146,6 +145,6 @@ export default async function ReacoesPage() {
  )
  })}
  </div>
- </AdminLayout>
- )
+     </>
+  )
 }

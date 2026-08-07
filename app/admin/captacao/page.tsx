@@ -3,7 +3,6 @@ import { headers } from 'next/headers'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getSiteConfig } from '@/lib/site-config'
 import { getAppUrl } from '@/lib/get-app-url'
-import AdminLayout from '../AdminLayout'
 import CaptacaoCliente from './CaptacaoCliente'
 
 export const dynamic = 'force-dynamic'
@@ -29,7 +28,7 @@ export default async function CaptacaoPage() {
  : await getAppUrl(adminRecord.tenant_id)
 
  return (
- <AdminLayout>
+    <>
  <div style={{ marginBottom: 24 }}>
  <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Links de Captação</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>
@@ -37,6 +36,6 @@ export default async function CaptacaoPage() {
  </p>
  </div>
  <CaptacaoCliente gestores={gestores ?? []} baseUrl={baseUrl} />
- </AdminLayout>
- )
+     </>
+  )
 }

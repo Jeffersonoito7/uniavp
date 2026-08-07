@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import AdminLayout from '../../AdminLayout'
 import Link from 'next/link'
 import DOMPurify from 'isomorphic-dompurify'
 
@@ -59,14 +58,14 @@ export default function DetalheContratoPage() {
     setContrato(prev => prev ? { ...prev, status: 'cancelado' } : prev)
   }
 
-  if (loading) return <AdminLayout><p style={{ color: 'var(--avp-text-dim)', padding: 40, textAlign: 'center' }}>Carregando...</p></AdminLayout>
-  if (!contrato) return <AdminLayout><p style={{ color: 'var(--avp-danger)', padding: 40, textAlign: 'center' }}>Contrato não encontrado.</p></AdminLayout>
+  if (loading) return <p style={{ color: 'var(--avp-text-dim)', padding: 40, textAlign: 'center' }}>Carregando...</p>
+  if (!contrato) return <p style={{ color: 'var(--avp-danger)', padding: 40, textAlign: 'center' }}>Contrato não encontrado.</p>
 
   const statusCorContrato: Record<string, string> = { rascunho: '#6b7280', enviado: '#f59e0b', parcialmente_assinado: '#3b82f6', concluido: '#02A153', cancelado: '#e63946' }
   const card: React.CSSProperties = { background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 20, marginBottom: 20 }
 
   return (
-    <AdminLayout>
+    <>
       <div style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div>
           <Link href="/admin/contratos" style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none' }}>← Contratos</Link>
@@ -167,6 +166,6 @@ export default function DetalheContratoPage() {
             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(contrato.corpo_renderizado) }} />
         </div>
       )}
-    </AdminLayout>
+      </>
   )
 }

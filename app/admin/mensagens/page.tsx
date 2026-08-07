@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { MENSAGENS_PADRAO } from '@/lib/mensagem'
-import AdminLayout from '../AdminLayout'
 import MensagensCliente from './MensagensCliente'
 
 export const dynamic = 'force-dynamic'
@@ -31,7 +30,7 @@ export default async function MensagensPage() {
  }))
 
  return (
- <AdminLayout>
+    <>
  <div style={{ marginBottom: 24 }}>
  <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Mensagens WhatsApp</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>
@@ -39,6 +38,6 @@ export default async function MensagensPage() {
  </p>
  </div>
  <MensagensCliente iniciais={iniciais} />
- </AdminLayout>
- )
+     </>
+  )
 }

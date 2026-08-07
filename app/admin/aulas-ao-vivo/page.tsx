@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import AdminLayout from '../AdminLayout'
 import AulasAoVivoAdmin from './AulasAoVivoAdmin'
 
 export default async function AulasAoVivoPage() {
@@ -16,7 +15,7 @@ export default async function AulasAoVivoPage() {
  const { data: aulas } = await adminClient.from('aulas_ao_vivo').select('*').is('gestor_id', null).order('data_hora')
 
  return (
- <AdminLayout>
+    <>
  <div style={{ marginBottom: 28 }}>
  <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Aulas ao Vivo</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>
@@ -24,6 +23,6 @@ export default async function AulasAoVivoPage() {
  </p>
  </div>
  <AulasAoVivoAdmin inicial={aulas ?? []} />
- </AdminLayout>
- )
+     </>
+  )
 }

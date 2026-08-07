@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import AdminLayout from '../AdminLayout'
 import ConfiguracoesCliente from './ConfiguracoesCliente'
 import WhatsAppConectar from '@/app/components/WhatsAppConectar'
 
@@ -28,7 +27,7 @@ export default async function ConfiguracoesPage() {
  const configs = (rawConfigs ?? []).map(c => ({ ...c, valor: c.valor != null ? String(c.valor) : null }))
 
  return (
- <AdminLayout>
+    <>
  <div style={{ marginBottom: 24 }}>
  <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Configurações</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Configurações da plataforma</p>
@@ -37,6 +36,6 @@ export default async function ConfiguracoesPage() {
  <div style={{ marginTop: 24 }}>
  <WhatsAppConectar />
  </div>
- </AdminLayout>
- )
+     </>
+  )
 }

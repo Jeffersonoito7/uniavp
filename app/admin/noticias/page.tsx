@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import AdminLayout from '../AdminLayout'
 import NoticiasCliente from './NoticiasCliente'
 
 export default async function NoticiasPage() {
@@ -13,12 +12,12 @@ export default async function NoticiasPage() {
  if (!adminRecord) redirect('/entrar?p=adm')
  const { data: noticias } = await adminClient.from('noticias').select('*').order('created_at', { ascending: false })
  return (
- <AdminLayout>
+    <>
  <div style={{ marginBottom: 28 }}>
  <h1 style={{ fontSize: 24, fontWeight: 800 }}>Mural de Notícias</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Publique avisos e novidades visíveis para todos os consultores</p>
  </div>
  <NoticiasCliente inicial={noticias ?? []} />
- </AdminLayout>
- )
+     </>
+  )
 }

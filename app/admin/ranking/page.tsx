@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import AdminLayout from '../AdminLayout'
 
 export default async function RankingPage() {
  const supabase = await createClient()
@@ -23,7 +22,7 @@ export default async function RankingPage() {
  for (const a of alunos ?? []) alunoMap[a.id] = a.nome
 
  return (
- <AdminLayout>
+    <>
  <div style={{ marginBottom: 24 }}>
  <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Ranking</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Alunos com mais pontos na plataforma</p>
@@ -40,6 +39,6 @@ export default async function RankingPage() {
  ))}
  {ranking.length === 0 && <div style={{ textAlign: 'center', padding: 60, color: 'var(--avp-text-dim)' }}>Nenhum ponto registrado ainda.</div>}
  </div>
- </AdminLayout>
- )
+     </>
+  )
 }
