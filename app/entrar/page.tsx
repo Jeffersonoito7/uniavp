@@ -94,17 +94,17 @@ function EntrarForm() {
         /* ── Painel esquerdo ── */
         .ep-side{
           display:none;
-          width:45%;
-          min-width:360px;
-          background:linear-gradient(135deg,#1a56db 0%,#15b97a 100%);
-          background-image:url('/bg-login.jpg'),linear-gradient(135deg,#1a56db 0%,#15b97a 100%);
+          width:52%;
+          min-width:420px;
+          background:linear-gradient(150deg,#0f2fa8 0%,#1a56db 35%,#0ea87a 80%,#06d68a 100%);
+          background-image:url('/bg-login.jpg'),linear-gradient(150deg,#0f2fa8 0%,#1a56db 35%,#0ea87a 80%,#06d68a 100%);
           background-size:cover;
           background-position:center;
           flex-direction:column;
           justify-content:center;
           align-items:center;
           text-align:center;
-          padding:52px 48px;
+          padding:64px 60px;
           position:relative;
           overflow:hidden;
           flex-shrink:0;
@@ -112,51 +112,53 @@ function EntrarForm() {
         }
         .ep-side-overlay{
           position:absolute;inset:0;
-          background:rgba(10,22,60,.45);
+          background:rgba(8,16,50,.52);
         }
         .ep-side-inner{
           position:relative;z-index:1;
           display:flex;flex-direction:column;
           align-items:center;text-align:center;
-          max-width:340px;
+          max-width:400px;
         }
         .ep-eyebrow{
-          font-size:10px;font-weight:600;
-          letter-spacing:4px;text-transform:uppercase;
-          color:rgba(255,255,255,.7);margin-bottom:16px;
+          font-size:11px;font-weight:700;
+          letter-spacing:5px;text-transform:uppercase;
+          color:rgba(255,255,255,.75);margin-bottom:20px;
           font-family:'Inter',system-ui,sans-serif;
         }
         .ep-headline{
-          font-size:36px;font-weight:800;
-          color:#fff;line-height:1.2;
-          margin-bottom:20px;letter-spacing:-.8px;
+          font-size:52px;font-weight:900;
+          color:#fff;line-height:1.1;
+          margin-bottom:24px;letter-spacing:-1.5px;
           font-family:'Inter',system-ui,sans-serif;
+          text-shadow:0 2px 24px rgba(0,0,0,.3);
         }
-        .ep-rule{width:48px;height:2px;background:rgba(255,255,255,.35);margin:0 auto 24px;}
-        .ep-feature{display:flex;align-items:center;gap:10px;margin-bottom:12px;text-align:left;}
+        .ep-rule{width:56px;height:3px;background:rgba(255,255,255,.4);margin:0 auto 28px;border-radius:2px;}
+        .ep-feature{display:flex;align-items:center;gap:12px;margin-bottom:14px;text-align:left;}
         .ep-dot{
-          width:18px;height:18px;border-radius:50%;
-          background:rgba(255,255,255,.15);
-          border:1px solid rgba(255,255,255,.35);
+          width:22px;height:22px;border-radius:50%;
+          background:rgba(255,255,255,.18);
+          border:1px solid rgba(255,255,255,.4);
           display:flex;align-items:center;justify-content:center;flex-shrink:0;
         }
-        .ep-feature-text{font-size:13.5px;color:rgba(255,255,255,.88);line-height:1.3;font-family:'Inter',system-ui,sans-serif;}
+        .ep-feature-text{font-size:15px;color:rgba(255,255,255,.9);line-height:1.35;font-family:'Inter',system-ui,sans-serif;}
         .ep-footer{
-          margin-top:36px;
-          font-size:10px;letter-spacing:2px;text-transform:uppercase;
-          color:rgba(255,255,255,.3);font-family:'Inter',system-ui,sans-serif;
+          margin-top:44px;
+          font-size:10px;letter-spacing:2.5px;text-transform:uppercase;
+          color:rgba(255,255,255,.28);font-family:'Inter',system-ui,sans-serif;
         }
         /* ── Painel direito ── */
         .ep-main{
           flex:1;display:flex;flex-direction:column;
           justify-content:center;align-items:center;
-          padding:48px 24px;min-height:100vh;
+          padding:48px 32px;min-height:100vh;
         }
-        .ep-wrap{width:100%;max-width:420px;}
-        .ep-logo{text-align:center;margin-bottom:28px;}
+        .ep-wrap{width:100%;max-width:460px;}
+        .ep-logo{text-align:center;margin-bottom:32px;}
         .ep-card{
           background:${CARD};border:1px solid ${BORDER};
-          border-radius:14px;padding:32px 28px;
+          border-radius:18px;padding:40px 36px;
+          box-shadow:0 8px 40px rgba(0,0,0,.45);
         }
         .ep-badge{
           display:inline-flex;align-items:center;gap:6px;
@@ -226,19 +228,20 @@ function EntrarForm() {
         .ep-mb-title{font-size:16px;font-weight:800;color:#fff;letter-spacing:-.2px;}
         .ep-mb-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:3px;}
         /* Breakpoints */
-        @media(min-width:900px){
+        @media(min-width:820px){
           .ep-side{display:flex;}
         }
-        @media(max-width:899px){
+        @media(max-width:819px){
           .ep-root{flex-direction:column;}
           .ep-mobile-banner{display:block;}
           .ep-main{padding:32px 20px 48px;}
-          .ep-card{padding:24px 20px;}
+          .ep-card{padding:28px 22px;}
           .ep-logo{display:none!important;}
+          .ep-wrap{max-width:100%;}
         }
         @media(max-width:480px){
           .ep-main{padding:24px 16px 40px;}
-          .ep-card{padding:20px 16px;}
+          .ep-card{padding:24px 18px;}
           .ep-title{font-size:18px;}
         }
       `}</style>
@@ -249,12 +252,12 @@ function EntrarForm() {
         <div className="ep-side">
           <div className="ep-side-overlay" />
           <div className="ep-side-inner">
-            <p className="ep-eyebrow">Plataforma de Capacitacao</p>
+            <p className="ep-eyebrow">Plataforma de Capacitação</p>
             <h2 className="ep-headline">Aprenda.<br />Cresça.<br />Conquiste.</h2>
             <div className="ep-rule" />
             {[
               'Trilhas completas com certificado',
-              'Aulas em video + quizzes',
+              'Aulas em vídeo e quizzes interativos',
               'Progresso e ranking em tempo real',
             ].map(f => (
               <div key={f} className="ep-feature">
@@ -279,7 +282,7 @@ function EntrarForm() {
           ) : (
             <div className="ep-mb-title">{siteNome || 'Universidade AVP'}</div>
           )}
-          <div className="ep-mb-sub">Plataforma de capacitacao</div>
+          <div className="ep-mb-sub">Plataforma de capacitação</div>
         </div>
 
         {/* Painel direito */}
@@ -397,7 +400,7 @@ function EntrarForm() {
                 ))}
               </div>
             )}
-            <p className="ep-bottom">Um unico acesso para todos os paineis</p>
+            <p className="ep-bottom">Um único acesso para todos os painéis</p>
 
           </div>
         </div>
