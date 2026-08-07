@@ -88,8 +88,11 @@ export default async function ContratosPage() {
 
       {/* Acoes rapidas */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 28, flexWrap: 'wrap' }}>
-        <Link href="/admin/contratos/novo" style={{ background: 'var(--avp-green)', color: '#fff', borderRadius: 8, padding: '10px 22px', fontWeight: 700, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          + Novo Contrato
+        <Link href="/admin/contratos/avulso" style={{ background: 'var(--avp-green)', color: '#fff', borderRadius: 8, padding: '10px 22px', fontWeight: 700, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          + Contrato Avulso
+        </Link>
+        <Link href="/admin/contratos/novo" style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 22px', fontWeight: 600, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          Editor completo
         </Link>
         <Link href="/admin/contratos/templates" style={{ background: 'var(--avp-blue)', color: '#fff', borderRadius: 8, padding: '10px 22px', fontWeight: 700, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           Templates ({totalTemplates ?? 0})
