@@ -169,13 +169,6 @@ export default function AdminSidebar({ logoUrl, siteNome }: Props) {
 
   const content = (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG }}>
-      <style>{`
-        .sb-link { display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.82);background:transparent;text-decoration:none;transition:background 0.15s,color 0.15s;cursor:pointer;border:none;width:100%;text-align:left;box-sizing:border-box; }
-        .sb-link:hover { background:rgba(255,255,255,0.09);color:#fff; }
-        .sb-link.ativo { background:rgba(255,255,255,0.13);color:#fff;font-weight:600; }
-        .sb-link-sm { font-size:12px!important;padding:7px 12px!important; }
-        .sb-link-colored { font-weight:700!important; }
-      `}</style>
       {/* Header */}
       <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 64, flexShrink: 0 }}>
         <div style={{ flex: 1, minWidth: 0 }}>

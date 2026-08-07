@@ -393,3 +393,41 @@ html.light .alert-info    { background: #ede9fe; border-color: #a5b4fc; color: #
   .show-mobile { display: none !important; }
   .hide-desktop { display: none !important; }
 }
+
+/* ── Sidebar admin ── */
+.sb-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 10px;
+  font-size: 13px; font-weight: 500;
+  color: rgba(255,255,255,0.82);
+  background: transparent;
+  text-decoration: none;
+  transition: background 0.12s, color 0.12s;
+  cursor: pointer; border: none;
+  width: 100%; text-align: left; box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+.sb-link:hover,
+.sb-link:focus-visible {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+.sb-link:active {
+  background: rgba(255,255,255,0.16);
+  color: #fff;
+}
+.sb-link.ativo {
+  background: rgba(255,255,255,0.13);
+  color: #fff;
+  font-weight: 600;
+}
+.sb-link.ativo:hover {
+  background: rgba(255,255,255,0.18);
+}
+.sb-link-sm {
+  font-size: 12px !important;
+  padding: 7px 12px !important;
+}
+.sb-link-colored {
+  font-weight: 700 !important;
+}
