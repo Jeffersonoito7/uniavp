@@ -8,7 +8,7 @@ import {
   Trophy, Cog, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper,
   Star, Menu, X, ChevronDown, GraduationCap,
   Link2, FileText, ScrollText, Video, MessageSquare, Library,
-  UserPlus, HelpCircle, Activity, ClipboardList,
+  UserPlus, HelpCircle, Activity, ClipboardList, Send,
 } from 'lucide-react'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import LogoutButton from '@/app/components/LogoutButton'
@@ -59,8 +59,9 @@ const nav: NavGroup[] = [
   {
     title: 'Comercial',
     items: [
-      { kind: 'leaf', href: '/admin/captacao',  label: 'Links de Captação', icon: Link2 },
-      { kind: 'leaf', href: '/admin/contratos', label: 'Contratos',         icon: ScrollText },
+      { kind: 'leaf', href: '/admin/captacao',           label: 'Links de Captacao', icon: Link2 },
+      { kind: 'leaf', href: '/admin/contratos',          label: 'Contratos',         icon: ScrollText },
+      { kind: 'leaf', href: '/admin/contratos/disparar', label: 'Disparar Contratos', icon: Send },
     ],
   },
   {

@@ -75,6 +75,17 @@ export default async function ContratosPage() {
         templateAtualId={templateObrigatorioId}
       />
 
+      {/* Destaque: Disparar em Massa */}
+      <div style={{ background: 'var(--avp-accent)15', border: '1px solid var(--avp-accent)40', borderRadius: 12, padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <div style={{ fontWeight: 700, color: 'var(--avp-text)', fontSize: 15 }}>Disparar Contratos em Massa</div>
+          <div style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 2 }}>Envie contratos para multiplos alunos de uma vez via WhatsApp.</div>
+        </div>
+        <Link href="/admin/contratos/disparar" style={{ background: 'var(--avp-accent)', color: '#fff', borderRadius: 8, padding: '10px 22px', fontWeight: 700, fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+          Disparar contratos
+        </Link>
+      </div>
+
       {/* Acoes rapidas */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 28, flexWrap: 'wrap' }}>
         <Link href="/admin/contratos/novo" style={{ background: 'var(--avp-green)', color: '#fff', borderRadius: 8, padding: '10px 22px', fontWeight: 700, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>

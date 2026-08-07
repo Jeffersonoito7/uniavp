@@ -39,7 +39,19 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
   // Indica se o destinatario ainda precisa preencher os proprios dados
   const precisaPreencher = !assinante.nome
 
-  return NextResponse.json({ assinante, contrato, precisaPreencher })
+  // Renderiza o corpo on-the-fly com dados do assinante (documento original permanece imutavel)
+  let corpoExibicao = contrato.corpo_renderizado ?? ''
+  if (assinante.nome && corpoExibicao) {
+    corpoExibicao = renderizarTemplate(corpoExibicao, {
+      nome: assinante.nome ?? '',
+      cpf: assinante.cpf ?? '',
+      email: assinante.email ?? '',
+      endereco: '',
+      data: new Date().toLocaleDateString('pt-BR'),
+    })
+  }
+
+  return NextResponse.json({ assinante, contrato: { ...contrato, corpo_renderizado: corpoExibicao }, precisaPreencher })
 }
 
 // PATCH — destinatario salva os proprios dados e o contrato e re-renderizado com eles
@@ -61,30 +73,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { token: str
   const { nome, cpf, email, endereco } = await req.json()
   if (!nome?.trim()) return NextResponse.json({ error: 'Nome obrigatorio.' }, { status: 400 })
 
-  // Salva dados do destinatario
+  // Salva dados do contratado APENAS no assinante — o corpo_renderizado original nao e modificado
+  // (imutabilidade do documento: a substituicao das variaveis ocorre on-the-fly na exibicao)
   await adminClient.from('contrato_assinantes').update({
     nome: nome.trim(),
     cpf: cpf?.trim() || null,
     email: email?.trim() || null,
+    whatsapp: (assinante as any).whatsapp ?? null,
   }).eq('id', assinante.id)
-
-  // Re-renderiza o corpo do contrato substituindo as variaveis com os dados reais
-  const { data: contrato } = await adminClient
-    .from('contratos_digitais')
-    .select('id, corpo_renderizado, titulo, numero_registro')
-    .eq('id', assinante.contrato_id)
-    .maybeSingle()
-
-  if (contrato?.corpo_renderizado) {
-    const corpoAtualizado = renderizarTemplate(contrato.corpo_renderizado, {
-      nome: nome.trim(),
-      cpf: cpf?.trim() || '',
-      email: email?.trim() || '',
-      endereco: endereco?.trim() || '',
-      data: new Date().toLocaleDateString('pt-BR'),
-    })
-    await adminClient.from('contratos_digitais').update({ corpo_renderizado: corpoAtualizado }).eq('id', assinante.contrato_id)
-  }
 
   return NextResponse.json({ ok: true })
 }

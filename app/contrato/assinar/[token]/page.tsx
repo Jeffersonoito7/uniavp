@@ -1,4 +1,5 @@
 import { createServiceRoleClient } from '@/lib/supabase-server'
+import { renderizarTemplate } from '@/lib/contrato-digital'
 import AssinaturaDigital from './AssinaturaDigital'
 
 export const dynamic = 'force-dynamic'
@@ -58,6 +59,18 @@ export default async function AssinarContratoPage({ params }: { params: { token:
     await adminClient.from('contrato_assinantes').update({ status: 'visualizado' }).eq('id', assinante.id)
   }
 
+  // Renderiza o corpo on-the-fly com dados do assinante (documento original permanece imutavel)
+  let corpoExibicao = contrato.corpo_renderizado ?? ''
+  if (assinante.nome && corpoExibicao) {
+    corpoExibicao = renderizarTemplate(corpoExibicao, {
+      nome: assinante.nome ?? '',
+      cpf: assinante.cpf ?? '',
+      email: assinante.email ?? '',
+      endereco: '',
+      data: new Date().toLocaleDateString('pt-BR'),
+    })
+  }
+
   return (
     <AssinaturaDigital
       token={params.token}
@@ -66,7 +79,7 @@ export default async function AssinarContratoPage({ params }: { params: { token:
       cpfAssinante={assinante.cpf}
       tituloContrato={contrato.titulo}
       numeroRegistro={contrato.numero_registro}
-      corpoHtml={contrato.corpo_renderizado ?? ''}
+      corpoHtml={corpoExibicao}
       jaAssinou={assinante.status === 'assinado'}
       precisaPreencher={!assinante.nome}
     />
