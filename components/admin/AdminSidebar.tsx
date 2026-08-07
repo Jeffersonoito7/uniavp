@@ -15,8 +15,8 @@ import LogoutButton from '@/app/components/LogoutButton'
 
 const BG = 'linear-gradient(180deg, #0a2240 0%, #063a2e 100%)'
 const BORDER = 'rgba(255,255,255,0.08)'
-const TEXT_DIM = 'rgba(255,255,255,0.5)'
-const TEXT_MUTED = 'rgba(255,255,255,0.25)'
+const TEXT_DIM = 'rgba(255,255,255,0.82)'
+const TEXT_MUTED = 'rgba(255,255,255,0.45)'
 
 type NavLeaf = { kind: 'leaf'; href: string; label: string; icon: React.ElementType }
 type NavSub  = { kind: 'sub';  id: string;  label: string; icon: React.ElementType; children: NavLeaf[] }
