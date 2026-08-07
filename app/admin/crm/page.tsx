@@ -177,7 +177,7 @@ export default async function CRMPage() {
  <span style={{ fontSize: 12, color: 'var(--avp-text-dim)' }}>{qty}</span>
  </div>
  <div style={{ background: 'var(--avp-black)', borderRadius: 100, height: 5, overflow: 'hidden' }}>
- <div style={{ width: `${pct}%`, background: 'var(--grad-brand)', height: '100%', borderRadius: 100 }} />
+ <div style={{ width: `${pct}%`, background: 'var(--avp-blue)', height: '100%', borderRadius: 100 }} />
  </div>
  </div>
  )
@@ -198,7 +198,7 @@ export default async function CRMPage() {
  return (
  <div key={key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, height: '100%', justifyContent: 'flex-end' }}>
  <span style={{ fontSize: 12, color: 'var(--avp-text-dim)', fontWeight: 600 }}>{qty}</span>
- <div style={{ width: '100%', height: `${pct}%`, minHeight: 4, background: 'var(--grad-brand)', borderRadius: 6, transition: 'height 0.4s' }} />
+ <div style={{ width: '100%', height: `${pct}%`, minHeight: 4, background: 'var(--avp-blue)', borderRadius: 6, transition: 'height 0.4s' }} />
  <span style={{ fontSize: 11, color: 'var(--avp-text-dim)', textTransform: 'capitalize' }}>{nomeMes}</span>
  </div>
  )
@@ -209,7 +209,7 @@ export default async function CRMPage() {
  {/* Tabela de consultores */}
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden' }}>
  <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--avp-border)' }}>
- <p style={{ fontWeight: 700, fontSize: 15 }}>UNIAVP FREE — Detalhado</p>
+ <p style={{ fontWeight: 700, fontSize: 15 }}>UNIAVP FREE: Detalhado</p>
  </div>
  <div style={{ overflowX: 'auto' }}>
  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
@@ -234,7 +234,7 @@ export default async function CRMPage() {
  <td style={{ padding: '10px 16px' }}>
  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
  <div style={{ width: 60, background: 'var(--avp-black)', borderRadius: 100, height: 5, overflow: 'hidden' }}>
- <div style={{ width: `${pct}%`, background: 'var(--grad-brand)', height: '100%', borderRadius: 100 }} />
+ <div style={{ width: `${pct}%`, background: 'var(--avp-blue)', height: '100%', borderRadius: 100 }} />
  </div>
  <span style={{ color: 'var(--avp-text-dim)', fontSize: 11 }}>{concluidas}/{totalAulas}</span>
  </div>
