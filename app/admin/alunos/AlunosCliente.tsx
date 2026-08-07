@@ -67,6 +67,7 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
   const [editForm, setEditForm] = useState({
     nome: '', whatsapp: '', email: '', cpf: '', status: 'ativo',
     plano: 'Free' as 'PRO' | 'Free', plano_vencimento: '',
+    nova_senha: '', confirmar_senha: '',
   })
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState<{ tipo: 'ok' | 'err'; texto: string } | null>(null)
@@ -91,6 +92,8 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
       status: a.status,
       plano: a.plano,
       plano_vencimento: a.plano_vencimento ? a.plano_vencimento.split('T')[0] : vencimentoPadrao(),
+      nova_senha: '',
+      confirmar_senha: '',
     })
     setEditando(a)
   }
@@ -98,6 +101,14 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
   async function salvar(e: React.FormEvent) {
     e.preventDefault()
     if (!editando) return
+    if (editForm.nova_senha && editForm.nova_senha.length < 6) {
+      flash('err', 'A nova senha deve ter pelo menos 6 caracteres.')
+      return
+    }
+    if (editForm.nova_senha && editForm.nova_senha !== editForm.confirmar_senha) {
+      flash('err', 'As senhas não coincidem.')
+      return
+    }
     setSalvando(true)
     const body: Record<string, unknown> = {
       nome: editForm.nome,
@@ -107,6 +118,7 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
       status: editForm.status,
       plano: editForm.plano,
       plano_vencimento: editForm.plano === 'PRO' ? editForm.plano_vencimento : null,
+      ...(editForm.nova_senha ? { nova_senha: editForm.nova_senha } : {}),
     }
     const res = await fetch(`/api/admin/alunos/${editando.id}/editar`, {
       method: 'POST',
@@ -196,6 +208,37 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
                   <input type="date" style={inp} value={editForm.plano_vencimento} onChange={e => setEditForm(p => ({ ...p, plano_vencimento: e.target.value }))} required />
                 </div>
               )}
+
+              {/* Alteração de senha */}
+              <div style={{ borderTop: '1px solid var(--avp-border)', paddingTop: 16, marginTop: 4 }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--avp-text-dim)', marginBottom: 14 }}>
+                  Alterar senha (deixe em branco para manter a atual)
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  <div>
+                    <label style={lbl}>Nova senha</label>
+                    <input
+                      type="password"
+                      style={inp}
+                      value={editForm.nova_senha}
+                      onChange={e => setEditForm(p => ({ ...p, nova_senha: e.target.value }))}
+                      placeholder="Mínimo 6 caracteres"
+                      autoComplete="new-password"
+                    />
+                  </div>
+                  <div>
+                    <label style={lbl}>Confirmar nova senha</label>
+                    <input
+                      type="password"
+                      style={inp}
+                      value={editForm.confirmar_senha}
+                      onChange={e => setEditForm(p => ({ ...p, confirmar_senha: e.target.value }))}
+                      placeholder="Repita a senha"
+                      autoComplete="new-password"
+                    />
+                  </div>
+                </div>
+              </div>
 
               {msg && (
                 <div style={{ padding: '10px 14px', background: msg.tipo === 'ok' ? '#02A15320' : '#e6394620', border: `1px solid ${msg.tipo === 'ok' ? 'var(--avp-green)' : 'var(--avp-danger)'}`, borderRadius: 8, color: msg.tipo === 'ok' ? 'var(--avp-green)' : 'var(--avp-danger)', fontSize: 13 }}>

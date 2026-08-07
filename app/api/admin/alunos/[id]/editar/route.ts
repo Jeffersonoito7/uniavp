@@ -16,9 +16,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params
   const tid = (adminRecord?.tenant_id ?? null) as string | null
   const body = await req.json()
-  const { nome, whatsapp, email, cpf, status, plano, plano_vencimento } = body as {
+  const { nome, whatsapp, email, cpf, status, plano, plano_vencimento, nova_senha } = body as {
     nome: string; whatsapp: string; email: string; cpf: string | null
     status: string; plano: 'PRO' | 'Free'; plano_vencimento: string | null
+    nova_senha?: string
   }
 
   // Verificar que o aluno pertence ao tenant
@@ -26,6 +27,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (tid) qAluno = (qAluno as any).eq('tenant_id', tid)
   const { data: aluno, error: erroAluno } = await (qAluno as any).maybeSingle()
   if (erroAluno || !aluno) return NextResponse.json({ error: 'Aluno não encontrado.' }, { status: 404 })
+
+  // Alterar senha — apenas admin, super_admin ou o próprio usuário
+  if (nova_senha) {
+    if (nova_senha.length < 6) return NextResponse.json({ error: 'A senha deve ter pelo menos 6 caracteres.' }, { status: 400 })
+
+    const userId = (aluno as any).user_id as string | null
+
+    // Verifica se quem está pedindo é o próprio aluno, um admin do tenant ou um super_admin
+    const ehProprioUsuario = userId && user.id === userId
+    const temPermissao = ehProprioUsuario || adminRecord || superRecord
+
+    if (!temPermissao || !userId) {
+      return NextResponse.json({ error: 'Sem permissão para alterar a senha deste aluno.' }, { status: 403 })
+    }
+
+    const { error: errSenha } = await adminClient.auth.admin.updateUserById(userId, { password: nova_senha })
+    if (errSenha) return NextResponse.json({ error: 'Erro ao alterar a senha: ' + errSenha.message }, { status: 500 })
+  }
 
   // Atualizar tabela alunos
   const { error: errUpd } = await adminClient.from('alunos').update({ nome, whatsapp, email, cpf: cpf || null, status }).eq('id', id)
