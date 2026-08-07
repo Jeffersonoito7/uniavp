@@ -81,7 +81,7 @@ export default function DisparadorContratos({ templates, alunos }: Props) {
       setResultado({ enviados: json.enviados, erros: json.erros ?? [] })
       setSelecionados(new Set())
     } catch {
-      setErro('Falha na requisicao. Verifique a conexao.')
+      setErro('Falha na requisição. Verifique a conexão.')
     } finally {
       setDisparando(false)
     }
@@ -91,9 +91,9 @@ export default function DisparadorContratos({ templates, alunos }: Props) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* Template e opcoes */}
+      {/* Template e opções */}
       <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--avp-text)', marginBottom: 20 }}>Configuracao do Disparo</h2>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--avp-text)', marginBottom: 20 }}>Configuração do Disparo</h2>
         <div style={{ display: 'grid', gap: 20 }}>
           <div>
             <label style={labelStyle}>Template de contrato</label>
@@ -118,7 +118,7 @@ export default function DisparadorContratos({ templates, alunos }: Props) {
             }}>
               {contratadoPreenche && <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>&#10003;</span>}
             </div>
-            <span style={{ color: 'var(--avp-text)', fontSize: 14 }}>Contratado preenche os proprios dados ao abrir o link</span>
+            <span style={{ color: 'var(--avp-text)', fontSize: 14 }}>Contratado preenche os próprios dados ao abrir o link</span>
           </div>
         </div>
       </div>
@@ -139,7 +139,7 @@ export default function DisparadorContratos({ templates, alunos }: Props) {
         </div>
 
         <div style={{ maxHeight: 400, overflowY: 'auto', borderRadius: 8, border: '1px solid var(--avp-border)' }}>
-          {/* Cabecalho */}
+          {/* Cabeçalho */}
           <div
             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', background: 'var(--avp-black)', borderBottom: '1px solid var(--avp-border)', cursor: 'pointer', position: 'sticky', top: 0 }}
             onClick={toggleTodos}
@@ -205,7 +205,7 @@ export default function DisparadorContratos({ templates, alunos }: Props) {
         </div>
       )}
 
-      {/* Botao */}
+      {/* Botão */}
       <div>
         <button
           onClick={disparar}

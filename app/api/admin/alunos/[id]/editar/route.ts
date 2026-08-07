@@ -25,7 +25,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   let qAluno = adminClient.from('alunos').select('id, user_id').eq('id', id)
   if (tid) qAluno = (qAluno as any).eq('tenant_id', tid)
   const { data: aluno, error: erroAluno } = await (qAluno as any).maybeSingle()
-  if (erroAluno || !aluno) return NextResponse.json({ error: 'Aluno nao encontrado.' }, { status: 404 })
+  if (erroAluno || !aluno) return NextResponse.json({ error: 'Aluno não encontrado.' }, { status: 404 })
 
   // Atualizar tabela alunos
   const { error: errUpd } = await adminClient.from('alunos').update({ nome, whatsapp, email, cpf: cpf || null, status }).eq('id', id)

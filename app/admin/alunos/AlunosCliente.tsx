@@ -150,7 +150,7 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
           <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 16, padding: 32, width: 540, maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto' }}
             onMouseDown={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <h2 style={{ fontSize: 18, fontWeight: 700 }}>Editar aluno — {editando.nome}</h2>
+              <h2 style={{ fontSize: 18, fontWeight: 700 }}>Editar aluno: {editando.nome}</h2>
               <button onClick={() => setEditando(null)} style={{ background: 'none', border: 'none', color: 'var(--avp-text-dim)', cursor: 'pointer', fontSize: 22 }}>x</button>
             </div>
             <form onSubmit={salvar} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -263,7 +263,7 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
                     <BadgePlano plano={a.plano} />
                     {a.plano === 'PRO' && a.plano_vencimento && (
                       <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--avp-text-dim)' }}>
-                        ate {new Date(a.plano_vencimento).toLocaleDateString('pt-BR')}
+                        até {new Date(a.plano_vencimento).toLocaleDateString('pt-BR')}
                       </p>
                     )}
                   </td>
