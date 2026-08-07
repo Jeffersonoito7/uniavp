@@ -7,13 +7,17 @@ import {
   LayoutDashboard, BookOpen, Users, ShieldCheck,
   Trophy, Cog, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper,
   Star, Menu, X, ChevronDown, GraduationCap,
-  Link2, FileText, ScrollText, Video, Activity, MessageSquare, Library,
-  UserPlus, HelpCircle,
+  Link2, FileText, ScrollText, Video, MessageSquare, Library,
+  UserPlus, HelpCircle, Activity,
 } from 'lucide-react'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import LogoutButton from '@/app/components/LogoutButton'
 
-// ── Estrutura de navegação ───────────────────────────────────────────
+const BG = '#0f1729'
+const BORDER = 'rgba(255,255,255,0.08)'
+const TEXT_DIM = 'rgba(255,255,255,0.5)'
+const TEXT_MUTED = 'rgba(255,255,255,0.25)'
+
 type NavLeaf = { kind: 'leaf'; href: string; label: string; icon: React.ElementType }
 type NavSub  = { kind: 'sub';  id: string;  label: string; icon: React.ElementType; children: NavLeaf[] }
 type NavGroup = { title: string; items: (NavLeaf | NavSub)[] }
@@ -77,35 +81,34 @@ const nav: NavGroup[] = [
   },
 ]
 
-const ALUNOS_PATHS = ['/admin/consultores', '/admin/gestores']
-
-type Props = {
-  logoUrl: string
-  siteNome: string
-}
+type Props = { logoUrl: string; siteNome: string }
 
 export default function AdminSidebar({ logoUrl, siteNome }: Props) {
   const pathname = usePathname()
   const [aberto, setAberto] = useState(false)
   const [logoError, setLogoError] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
-  const alunosAtivo = ALUNOS_PATHS.some(p => pathname.startsWith(p))
+  const alunosAtivo = ['/admin/consultores', '/admin/gestores'].some(p => pathname.startsWith(p))
   const [openSubs, setOpenSubs] = useState<Set<string>>(
     () => new Set(alunosAtivo ? ['alunos'] : [])
   )
 
-  // Fecha drawer ao navegar
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   useEffect(() => { setAberto(false) }, [pathname])
 
-  // Expande submenu automaticamente quando a rota é filha
   useEffect(() => {
     if (alunosAtivo) setOpenSubs(s => new Set([...s, 'alunos']))
   }, [pathname, alunosAtivo])
 
-  // Bloqueia scroll do body quando drawer aberto
   useEffect(() => {
-    if (aberto) document.body.style.overflow = 'hidden'
-    else document.body.style.overflow = ''
+    document.body.style.overflow = aberto ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [aberto])
 
@@ -121,22 +124,25 @@ export default function AdminSidebar({ logoUrl, siteNome }: Props) {
     return href === '/admin' ? pathname === '/admin' : pathname.startsWith(href)
   }
 
+  function linkStyle(ativo: boolean): React.CSSProperties {
+    return {
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: '9px 12px', borderRadius: 10,
+      fontSize: 13, fontWeight: ativo ? 600 : 500,
+      color: ativo ? '#fff' : TEXT_DIM,
+      background: ativo ? 'rgba(255,255,255,0.12)' : 'transparent',
+      textDecoration: 'none', transition: 'background 0.15s, color 0.15s',
+      cursor: 'pointer', border: 'none', width: '100%', textAlign: 'left',
+    }
+  }
+
   function LeafItem({ item }: { item: NavLeaf }) {
     const ativo = isAtivo(item.href)
     const Icon = item.icon
     return (
-      <Link
-        href={item.href}
-        aria-current={ativo ? 'page' : undefined}
-        className={[
-          'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition',
-          ativo
-            ? 'bg-white/15 text-white'
-            : 'text-white/65 hover:bg-white/10 hover:text-white',
-        ].join(' ')}
-      >
-        <Icon size={17} strokeWidth={1.8} className="flex-shrink-0" />
-        <span className="flex-1">{item.label}</span>
+      <Link href={item.href} aria-current={ativo ? 'page' : undefined} style={linkStyle(ativo)}>
+        <Icon size={16} strokeWidth={1.8} style={{ flexShrink: 0 }} />
+        <span style={{ flex: 1 }}>{item.label}</span>
       </Link>
     )
   }
@@ -145,48 +151,27 @@ export default function AdminSidebar({ logoUrl, siteNome }: Props) {
     const Icon = item.icon
     const open = openSubs.has(item.id)
     const algumAtivo = item.children.some(c => pathname.startsWith(c.href))
-
     return (
       <div>
         <button
           type="button"
           aria-expanded={open}
           onClick={() => toggleSub(item.id)}
-          className={[
-            'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition',
-            algumAtivo && !open
-              ? 'bg-white/15 text-white'
-              : 'text-white/65 hover:bg-white/10 hover:text-white',
-          ].join(' ')}
+          style={linkStyle(algumAtivo && !open)}
         >
-          <Icon size={17} strokeWidth={1.8} className="flex-shrink-0" />
-          <span className="flex-1 text-left">{item.label}</span>
-          <ChevronDown
-            size={14}
-            strokeWidth={2.5}
-            className="flex-shrink-0 transition-transform duration-200"
-            style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
-          />
+          <Icon size={16} strokeWidth={1.8} style={{ flexShrink: 0 }} />
+          <span style={{ flex: 1 }}>{item.label}</span>
+          <ChevronDown size={13} strokeWidth={2.5} style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
         </button>
-
         {open && (
-          <div className="mt-0.5 mb-1 flex flex-col gap-0.5 pl-4">
+          <div style={{ paddingLeft: 16, marginTop: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
             {item.children.map(child => {
               const ativo = pathname.startsWith(child.href)
               const CIcon = child.icon
               return (
-                <Link
-                  key={child.href}
-                  href={child.href}
-                  aria-current={ativo ? 'page' : undefined}
-                  className={[
-                    'flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition',
-                    ativo
-                      ? 'text-white font-semibold'
-                      : 'text-white/55 hover:bg-white/10 hover:text-white',
-                  ].join(' ')}
-                >
-                  <CIcon size={14} strokeWidth={2} className="flex-shrink-0" />
+                <Link key={child.href} href={child.href} aria-current={ativo ? 'page' : undefined}
+                  style={{ ...linkStyle(ativo), fontSize: 12, padding: '7px 12px' }}>
+                  <CIcon size={14} strokeWidth={2} style={{ flexShrink: 0 }} />
                   <span>{child.label}</span>
                 </Link>
               )
@@ -197,44 +182,36 @@ export default function AdminSidebar({ logoUrl, siteNome }: Props) {
     )
   }
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full" style={{ background: '#0f1729' }}>
+  const content = (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG }}>
       {/* Header */}
-      <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between gap-2 min-h-[64px]">
-        <div className="flex-1 min-w-0">
+      <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 64, flexShrink: 0 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           {logoUrl && !logoError ? (
-            <img
-              src={logoUrl}
-              alt={siteNome}
-              style={{ height: 48, objectFit: 'contain' }}
-              onError={() => setLogoError(true)}
-            />
+            <img src={logoUrl} alt={siteNome} style={{ height: 44, maxWidth: 160, objectFit: 'contain', display: 'block' }} onError={() => setLogoError(true)} />
           ) : (
-            <span className="font-bold text-white text-sm truncate block">
-              {siteNome || 'Admin'}
-            </span>
+            <span style={{ fontWeight: 700, color: '#fff', fontSize: 14 }}>{siteNome || 'Admin'}</span>
           )}
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
           <ThemeToggle inline />
-          <button
-            onClick={() => setAberto(false)}
-            className="md:hidden text-white/40 hover:text-white transition p-1"
-            aria-label="Fechar menu"
-          >
-            <X size={18} />
-          </button>
+          {isMobile && (
+            <button onClick={() => setAberto(false)} aria-label="Fechar menu"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: TEXT_DIM, padding: 4, display: 'flex' }}>
+              <X size={18} />
+            </button>
+          )}
         </div>
       </div>
 
       {/* Nav */}
-      <nav aria-label="Menu principal" className="flex-1 px-3 py-4 overflow-y-auto space-y-4">
+      <nav aria-label="Menu principal" style={{ flex: 1, overflowY: 'auto', padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: 20 }}>
         {nav.map(group => (
-          <div key={group.title} role="group" aria-label={group.title}>
-            <div className="px-3 mb-1.5 text-[9px] font-bold uppercase tracking-widest text-white/25">
+          <div key={group.title}>
+            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: TEXT_MUTED, padding: '0 12px', marginBottom: 6 }}>
               {group.title}
             </div>
-            <div className="space-y-0.5">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {group.items.map(item =>
                 item.kind === 'leaf'
                   ? <LeafItem key={item.href} item={item} />
@@ -244,32 +221,23 @@ export default function AdminSidebar({ logoUrl, siteNome }: Props) {
           </div>
         ))}
 
-        {/* Acesso rápido */}
-        <div role="group" aria-label="Visualizar como">
-          <div className="px-3 mb-1.5 text-[9px] font-bold uppercase tracking-widest text-white/25">
+        <div>
+          <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: TEXT_MUTED, padding: '0 12px', marginBottom: 6 }}>
             Visualizar como
           </div>
-          <div className="space-y-0.5">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {[
               { href: '/admin/ver-pro',  label: 'Painel PRO',  color: '#4ade80' },
               { href: '/admin/ver-free', label: 'Painel FREE', color: '#60a5fa' },
             ].map(qa => (
-              <Link
-                key={qa.href}
-                href={qa.href}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition hover:bg-white/10"
-                style={{ color: qa.color }}
-              >
+              <Link key={qa.href} href={qa.href}
+                style={{ ...linkStyle(false), color: qa.color, fontWeight: 700 }}>
                 <span>{qa.label}</span>
               </Link>
             ))}
-            <a
-              href="/manual.html"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition text-white/50 hover:bg-white/10 hover:text-white"
-            >
-              <HelpCircle size={16} strokeWidth={1.8} className="flex-shrink-0" />
+            <a href="/manual.html" target="_blank" rel="noreferrer"
+              style={{ ...linkStyle(false), color: TEXT_DIM, textDecoration: 'none' }}>
+              <HelpCircle size={15} strokeWidth={1.8} style={{ flexShrink: 0 }} />
               <span>Manual da Plataforma</span>
             </a>
           </div>
@@ -277,59 +245,46 @@ export default function AdminSidebar({ logoUrl, siteNome }: Props) {
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-4 border-t border-white/10 flex-shrink-0">
-        <LogoutButton
-          style={{
-            width: '100%',
-            textAlign: 'center',
-            borderColor: 'rgba(255,255,255,0.15)',
-            color: 'rgba(255,255,255,0.5)',
-          }}
-        />
+      <div style={{ padding: '12px 16px', borderTop: `1px solid ${BORDER}`, flexShrink: 0 }}>
+        <LogoutButton style={{ width: '100%', textAlign: 'center', borderColor: BORDER, color: TEXT_DIM }} />
       </div>
     </div>
   )
 
+  const sidebarStyle: React.CSSProperties = {
+    width: 248, background: BG, display: 'flex', flexDirection: 'column',
+    position: 'fixed', top: 0, left: 0, height: '100%', zIndex: 40,
+  }
+
   return (
     <>
-      {/* Hamburger mobile */}
-      <button
-        onClick={() => setAberto(true)}
-        className="md:hidden fixed top-3 left-3 z-50 text-white p-2 rounded-xl shadow-lg"
-        style={{ background: '#0f1729' }}
-        aria-label="Abrir menu"
-      >
-        <Menu size={20} />
-      </button>
+      {/* Hamburger — só mobile */}
+      {isMobile && (
+        <button onClick={() => setAberto(true)} aria-label="Abrir menu"
+          style={{ position: 'fixed', top: 12, left: 12, zIndex: 50, background: BG, border: 'none', cursor: 'pointer', color: '#fff', padding: 8, borderRadius: 10, display: 'flex' }}>
+          <Menu size={20} />
+        </button>
+      )}
 
       {/* Sidebar desktop */}
-      <aside
-        className="hidden md:flex w-64 flex-col fixed h-full z-40"
-        style={{ background: '#0f1729' }}
-      >
-        <SidebarContent />
-      </aside>
+      {!isMobile && (
+        <aside style={sidebarStyle}>
+          {content}
+        </aside>
+      )}
 
       {/* Overlay mobile */}
-      {aberto && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/60 z-40"
-          style={{ backdropFilter: 'blur(2px)' }}
-          onClick={() => setAberto(false)}
-          aria-hidden="true"
-        />
+      {isMobile && aberto && (
+        <div onClick={() => setAberto(false)} aria-hidden="true"
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 40, backdropFilter: 'blur(2px)' }} />
       )}
 
       {/* Drawer mobile */}
-      <aside
-        className={[
-          'md:hidden fixed top-0 left-0 h-full w-72 z-50 transform transition-transform duration-300',
-          aberto ? 'translate-x-0' : '-translate-x-full',
-        ].join(' ')}
-        style={{ background: '#0f1729' }}
-      >
-        <SidebarContent />
-      </aside>
+      {isMobile && (
+        <aside style={{ ...sidebarStyle, width: 280, zIndex: 50, transform: aberto ? 'translateX(0)' : 'translateX(-100%)', transition: 'transform 0.3s ease' }}>
+          {content}
+        </aside>
+      )}
     </>
   )
 }

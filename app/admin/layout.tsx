@@ -11,7 +11,9 @@ export default async function AdminRootLayout({ children }: { children: React.Re
       <AdminSidebar logoUrl={config.logoMenuUrl} siteNome={config.nome} />
 
       {/* Conteúdo principal */}
-      <main className="flex-1 min-w-0 md:ml-64" style={{ padding: 'clamp(72px, 5vw, 32px) clamp(14px, 3vw, 32px) 40px' }}>
+      <main style={{ flex: 1, minWidth: 0, marginLeft: 248, padding: '28px 28px 40px' }}
+        className="admin-main">
+        <style>{`@media (max-width: 767px) { .admin-main { margin-left: 0 !important; padding: 64px 14px 40px !important; } }`}</style>
         {children}
       </main>
     </div>
