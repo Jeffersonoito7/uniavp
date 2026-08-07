@@ -8,7 +8,7 @@ import {
   Trophy, Cog, Gift, UserCog, BarChart3, Calendar, Palette, Newspaper,
   Star, Menu, X, ChevronDown, GraduationCap,
   Link2, FileText, ScrollText, Video, MessageSquare, Library,
-  UserPlus, HelpCircle, Activity,
+  UserPlus, HelpCircle, Activity, ClipboardList,
 } from 'lucide-react'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import LogoutButton from '@/app/components/LogoutButton'
@@ -75,8 +75,9 @@ const nav: NavGroup[] = [
   {
     title: 'Sistema',
     items: [
-      { kind: 'leaf', href: '/admin/configuracoes', label: 'Configurações', icon: Cog },
-      { kind: 'leaf', href: '/admin/audit',         label: 'Audit Log',    icon: Activity },
+      { kind: 'leaf', href: '/admin/relatorio-conclusao', label: 'Relatório Conclusão', icon: ClipboardList },
+      { kind: 'leaf', href: '/admin/configuracoes',       label: 'Configurações',        icon: Cog },
+      { kind: 'leaf', href: '/admin/audit',               label: 'Audit Log',            icon: Activity },
     ],
   },
 ]
