@@ -7,19 +7,26 @@ export default async function RankingPage() {
  const { data: { user } } = await supabase.auth.getUser()
  if (!user) redirect('/entrar?p=adm')
  const adminClient = createServiceRoleClient()
- const { data: adminRecord } = await adminClient.from('admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+ const { data: adminRecord } = await adminClient.from('admins').select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
  if (!adminRecord) redirect('/entrar?p=adm')
+ const tid = adminRecord.tenant_id as string | null
+ const tq = (q: any) => tid ? q.eq('tenant_id', tid) : q
 
- const { data: pontos } = await adminClient.from('aluno_pontos').select('aluno_id, quantidade')
+ const { data: alunosTenant } = await tq(adminClient.from('alunos').select('id, nome'))
+ const alunoIds = (alunosTenant ?? []).map((a: any) => a.id)
+
+ const { data: pontos } = alunoIds.length > 0
+   ? await adminClient.from('aluno_pontos').select('aluno_id, quantidade').in('aluno_id', alunoIds)
+   : { data: [] }
+
  const totais: Record<string, number> = {}
  for (const p of pontos ?? []) {
  totais[p.aluno_id] = (totais[p.aluno_id] ?? 0) + p.quantidade
  }
  const ranking = Object.entries(totais).sort((a, b) => b[1] - a[1])
 
- const { data: alunos } = await adminClient.from('alunos').select('id, nome').in('id', ranking.map(r => r[0]))
  const alunoMap: Record<string, string> = {}
- for (const a of alunos ?? []) alunoMap[a.id] = a.nome
+ for (const a of alunosTenant ?? []) alunoMap[a.id] = a.nome
 
  return (
     <>

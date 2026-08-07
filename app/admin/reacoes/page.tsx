@@ -8,17 +8,22 @@ export default async function ReacoesPage() {
  if (!user) redirect('/entrar?p=adm')
 
  const adminClient = createServiceRoleClient()
- const { data: adminRecord } = await adminClient.from('admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+ const { data: adminRecord } = await adminClient.from('admins').select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
  if (!adminRecord) redirect('/entrar?p=adm')
+ const tid = adminRecord.tenant_id as string | null
+ const tq = (q: any) => tid ? q.eq('tenant_id', tid) : q
+
+ const { data: alunos } = await tq(adminClient.from('alunos').select('id, nome, whatsapp'))
+ const alunoIds = (alunos ?? []).map((a: any) => a.id)
 
  const [
  { data: reacoes },
  { data: aulas },
- { data: alunos },
  ] = await Promise.all([
- adminClient.from('reacoes_aula').select('*').order('created_at', { ascending: false }),
+ alunoIds.length > 0
+   ? adminClient.from('reacoes_aula').select('*').in('aluno_id', alunoIds).order('created_at', { ascending: false })
+   : Promise.resolve({ data: [] }),
  adminClient.from('aulas').select('id, titulo, modulo_id'),
- adminClient.from('alunos').select('id, nome, whatsapp'),
  ])
 
  const reacoesData = reacoes ?? []

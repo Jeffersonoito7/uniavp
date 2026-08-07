@@ -22,6 +22,25 @@ export function calcularHash(conteudo: string): string {
   return createHash('sha256').update(conteudo).digest('hex')
 }
 
+// ── Calcula hash final incluindo dados de todos os assinantes ──────────────
+export function calcularHashFinal(
+  corpo: string,
+  assinantes: Array<{
+    ip_assinatura?: string | null
+    assinatura_url?: string | null
+    assinado_em?: string | null
+    nome?: string | null
+  }>
+): string {
+  const partes = [
+    corpo,
+    ...assinantes.map(a =>
+      [a.nome ?? '', a.ip_assinatura ?? '', a.assinatura_url ?? '', a.assinado_em ?? ''].join('|')
+    ),
+  ]
+  return createHash('sha256').update(partes.join('\n')).digest('hex')
+}
+
 // ── Gera token de acesso para assinante ───────────────────────────────────
 export function gerarTokenAssinante(): { token: string; expira: Date } {
   const token = randomUUID().replace(/-/g, '')
@@ -76,12 +95,13 @@ export async function atualizarStatusContrato(
 ): Promise<void> {
   const { data: assinantes } = await adminClient
     .from('contrato_assinantes')
-    .select('status, papel')
+    .select('status, papel, ip_assinatura, assinatura_url, assinado_em, nome')
     .eq('contrato_id', contratoId)
 
   if (!assinantes || assinantes.length === 0) return
 
-  const pendentes = assinantes.filter(a => a.papel !== 'avp' && a.status !== 'assinado')
+  // Fix 4: todos os assinantes (incluindo papel 'avp') devem ter assinado
+  const pendentes = assinantes.filter(a => a.status !== 'assinado')
   const algumAssinado = assinantes.some(a => a.status === 'assinado')
 
   let novoStatus: 'enviado' | 'parcialmente_assinado' | 'concluido'
@@ -100,13 +120,16 @@ export async function atualizarStatusContrato(
       .eq('id', contratoId)
       .maybeSingle()
 
-    const conteudoFinal = JSON.stringify({
-      numero: contrato?.numero_registro,
-      corpo: contrato?.corpo_renderizado,
-      assinantes: assinantes.map(a => ({ papel: a.papel, status: a.status })),
-      concluido_em: new Date().toISOString(),
-    })
-    const hash = calcularHash(conteudoFinal)
+    // Fix 1: hash inclui corpo + dados individuais de cada assinante
+    const hash = calcularHashFinal(
+      contrato?.corpo_renderizado ?? '',
+      assinantes.map(a => ({
+        nome: a.nome,
+        ip_assinatura: a.ip_assinatura,
+        assinatura_url: a.assinatura_url,
+        assinado_em: a.assinado_em,
+      }))
+    )
 
     await adminClient
       .from('contratos_digitais')

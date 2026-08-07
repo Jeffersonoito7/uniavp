@@ -8,21 +8,33 @@ export default async function CRMPage() {
  if (!user) redirect('/entrar?p=adm')
 
  const adminClient = createServiceRoleClient()
- const { data: adminRecord } = await adminClient.from('admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
+ const { data: adminRecord } = await adminClient.from('admins').select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
  if (!adminRecord) redirect('/entrar?p=adm')
+ const tid = adminRecord.tenant_id as string | null
+ const tq = (q: any) => tid ? q.eq('tenant_id', tid) : q
 
  const [
  { data: alunos },
- { data: progressoRows },
  { data: aulasPublicadas },
  { data: modulos },
- { data: pontosRows },
  ] = await Promise.all([
- adminClient.from('alunos').select('id, nome, whatsapp, status, created_at, gestor_nome').order('created_at', { ascending: false }).limit(5000),
- adminClient.from('progresso').select('aluno_id, aula_id, aprovado').eq('aprovado', true).limit(50000),
+ tq(adminClient.from('alunos').select('id, nome, whatsapp, status, created_at, gestor_nome')).order('created_at', { ascending: false }).limit(5000),
  adminClient.from('aulas').select('id, modulo_id, modulo:modulos!inner(perfis_permitidos)').eq('publicado', true).eq('modulos.publicado', true),
  adminClient.from('modulos').select('id, titulo, ordem').eq('publicado', true).order('ordem'),
- adminClient.from('aluno_pontos').select('aluno_id, quantidade').limit(50000),
+ ])
+
+ const alunoIds = (alunos ?? []).map((a: any) => a.id)
+
+ const [
+ { data: progressoRows },
+ { data: pontosRows },
+ ] = await Promise.all([
+ alunoIds.length > 0
+   ? adminClient.from('progresso').select('aluno_id, aula_id, aprovado').eq('aprovado', true).in('aluno_id', alunoIds).limit(50000)
+   : Promise.resolve({ data: [] }),
+ alunoIds.length > 0
+   ? adminClient.from('aluno_pontos').select('aluno_id, quantidade').in('aluno_id', alunoIds).limit(50000)
+   : Promise.resolve({ data: [] }),
  ])
 
  const allAlunos = alunos ?? []

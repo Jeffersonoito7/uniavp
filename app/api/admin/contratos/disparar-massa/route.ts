@@ -60,10 +60,31 @@ export async function POST(req: NextRequest) {
   const appUrl = await getAppUrl(ctx.tenantId)
 
   const erros: string[] = []
+  const jaPossui: string[] = []
   let enviados = 0
 
   for (const aluno of alunos) {
     try {
+      // Fix 2: idempotencia — pula aluno que ja possui contrato ativo com este template
+      const { data: contratoExistente } = await adminClient
+        .from('contratos_digitais')
+        .select('id')
+        .eq('template_id', templateId)
+        .neq('status', 'cancelado')
+        .in('id',
+          (await adminClient
+            .from('contrato_assinantes')
+            .select('contrato_id')
+            .eq('email', aluno.email ?? '')
+          ).data?.map((r: { contrato_id: string }) => r.contrato_id) ?? []
+        )
+        .maybeSingle()
+
+      if (contratoExistente) {
+        jaPossui.push(aluno.nome ?? aluno.id)
+        continue
+      }
+
       // Monta variaveis: contratante sempre substituida; contratado so se contratadoPreenche=false
       const varBase: Record<string, string> = {
         data: new Date().toLocaleDateString('pt-BR'),
@@ -137,5 +158,5 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, enviados, erros })
+  return NextResponse.json({ ok: true, enviados, ja_possui_contrato: jaPossui, erros })
 }

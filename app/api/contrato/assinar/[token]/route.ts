@@ -65,10 +65,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { token: str
     .maybeSingle()
 
   if (!assinante) return NextResponse.json({ error: 'Link inválido.' }, { status: 404 })
-  if (assinante.nome) return NextResponse.json({ error: 'Dados já preenchidos.' }, { status: 409 })
   if (assinante.token_expira_em && new Date(assinante.token_expira_em) < new Date()) {
     return NextResponse.json({ error: 'Link expirado.' }, { status: 410 })
   }
+
+  // Fix 3: impede alteracao em contrato ja concluido
+  const { data: contratoParaPatch } = await adminClient
+    .from('contratos_digitais')
+    .select('status')
+    .eq('id', assinante.contrato_id)
+    .maybeSingle()
+  if (contratoParaPatch?.status === 'concluido') {
+    return NextResponse.json({ erro: 'Este contrato já foi finalizado e não pode ser alterado.' }, { status: 409 })
+  }
+
+  if (assinante.nome) return NextResponse.json({ error: 'Dados já preenchidos.' }, { status: 409 })
 
   const { nome, cpf, email, endereco } = await req.json()
   if (!nome?.trim()) return NextResponse.json({ error: 'Nome obrigatorio.' }, { status: 400 })

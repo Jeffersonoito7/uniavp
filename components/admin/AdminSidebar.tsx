@@ -32,13 +32,7 @@ const nav: NavGroup[] = [
   {
     title: 'Gestão',
     items: [
-      {
-        kind: 'sub', id: 'alunos', label: 'Alunos', icon: GraduationCap,
-        children: [
-          { kind: 'leaf', href: '/admin/consultores', label: 'Free', icon: Users },
-          { kind: 'leaf', href: '/admin/gestores',    label: 'Pro',  icon: UserCog },
-        ],
-      },
+      { kind: 'leaf', href: '/admin/alunos', label: 'Alunos', icon: GraduationCap },
       { kind: 'leaf', href: '/admin/vincular-alunos', label: 'Vincular Alunos', icon: UserPlus },
       { kind: 'leaf', href: '/admin/admins',          label: 'Gerentes',        icon: ShieldCheck },
       { kind: 'leaf', href: '/admin/crm',             label: 'CRM',             icon: BarChart3 },
@@ -91,7 +85,7 @@ export default function AdminSidebar({ logoUrl, siteNome }: Props) {
   const [logoError, setLogoError] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
-  const alunosAtivo = ['/admin/consultores', '/admin/gestores'].some(p => pathname.startsWith(p))
+  const alunosAtivo = pathname.startsWith('/admin/alunos')
   const [openSubs, setOpenSubs] = useState<Set<string>>(
     () => new Set(alunosAtivo ? ['alunos'] : [])
   )
