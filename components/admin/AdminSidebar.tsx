@@ -121,23 +121,11 @@ export default function AdminSidebar({ logoUrl, siteNome }: Props) {
     return href === '/admin' ? pathname === '/admin' : pathname.startsWith(href)
   }
 
-  function linkStyle(ativo: boolean): React.CSSProperties {
-    return {
-      display: 'flex', alignItems: 'center', gap: 10,
-      padding: '9px 12px', borderRadius: 10,
-      fontSize: 13, fontWeight: ativo ? 600 : 500,
-      color: ativo ? '#fff' : TEXT_DIM,
-      background: ativo ? 'rgba(255,255,255,0.12)' : 'transparent',
-      textDecoration: 'none', transition: 'background 0.15s, color 0.15s',
-      cursor: 'pointer', border: 'none', width: '100%', textAlign: 'left',
-    }
-  }
-
   function LeafItem({ item }: { item: NavLeaf }) {
     const ativo = isAtivo(item.href)
     const Icon = item.icon
     return (
-      <Link href={item.href} aria-current={ativo ? 'page' : undefined} style={linkStyle(ativo)}>
+      <Link href={item.href} aria-current={ativo ? 'page' : undefined} className={`sb-link${ativo ? ' ativo' : ''}`}>
         <Icon size={16} strokeWidth={1.8} style={{ flexShrink: 0 }} />
         <span style={{ flex: 1 }}>{item.label}</span>
       </Link>
@@ -154,7 +142,7 @@ export default function AdminSidebar({ logoUrl, siteNome }: Props) {
           type="button"
           aria-expanded={open}
           onClick={() => toggleSub(item.id)}
-          style={linkStyle(algumAtivo && !open)}
+          className={`sb-link${algumAtivo && !open ? ' ativo' : ''}`}
         >
           <Icon size={16} strokeWidth={1.8} style={{ flexShrink: 0 }} />
           <span style={{ flex: 1 }}>{item.label}</span>
@@ -167,7 +155,7 @@ export default function AdminSidebar({ logoUrl, siteNome }: Props) {
               const CIcon = child.icon
               return (
                 <Link key={child.href} href={child.href} aria-current={ativo ? 'page' : undefined}
-                  style={{ ...linkStyle(ativo), fontSize: 12, padding: '7px 12px' }}>
+                  className={`sb-link sb-link-sm${ativo ? ' ativo' : ''}`}>
                   <CIcon size={14} strokeWidth={2} style={{ flexShrink: 0 }} />
                   <span>{child.label}</span>
                 </Link>
@@ -181,6 +169,13 @@ export default function AdminSidebar({ logoUrl, siteNome }: Props) {
 
   const content = (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG }}>
+      <style>{`
+        .sb-link { display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.82);background:transparent;text-decoration:none;transition:background 0.15s,color 0.15s;cursor:pointer;border:none;width:100%;text-align:left;box-sizing:border-box; }
+        .sb-link:hover { background:rgba(255,255,255,0.09);color:#fff; }
+        .sb-link.ativo { background:rgba(255,255,255,0.13);color:#fff;font-weight:600; }
+        .sb-link-sm { font-size:12px!important;padding:7px 12px!important; }
+        .sb-link-colored { font-weight:700!important; }
+      `}</style>
       {/* Header */}
       <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 64, flexShrink: 0 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -228,12 +223,11 @@ export default function AdminSidebar({ logoUrl, siteNome }: Props) {
               { href: '/admin/ver-free', label: 'Painel FREE', color: '#60a5fa' },
             ].map(qa => (
               <Link key={qa.href} href={qa.href}
-                style={{ ...linkStyle(false), color: qa.color, fontWeight: 700 }}>
+                className="sb-link sb-link-colored" style={{ color: qa.color }}>
                 <span>{qa.label}</span>
               </Link>
             ))}
-            <a href="/manual.html" target="_blank" rel="noreferrer"
-              style={{ ...linkStyle(false), color: TEXT_DIM, textDecoration: 'none' }}>
+            <a href="/manual.html" target="_blank" rel="noreferrer" className="sb-link">
               <HelpCircle size={15} strokeWidth={1.8} style={{ flexShrink: 0 }} />
               <span>Manual da Plataforma</span>
             </a>

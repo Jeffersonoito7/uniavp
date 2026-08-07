@@ -2,7 +2,7 @@ import { createServiceRoleClient } from '@/lib/supabase-server'
 import { getTenantId } from '@/lib/tenant'
 
 const configCache = new Map<string, { config: SiteConfig; ts: number }>()
-const CACHE_TTL = 60_000
+const CACHE_TTL = 300_000 // 5 minutos
 
 export type SiteConfig = {
   nome: string
@@ -48,9 +48,6 @@ const CONFIG_MASTER: SiteConfig = {
 }
 
 export async function getSiteConfig(host?: string): Promise<SiteConfig> {
-  const { unstable_noStore: noStore } = await import('next/cache')
-  noStore()
-
   const domain = (host ?? '').replace(/:\d+$/, '')
 
   if (domain === DOMINIO_MASTER || domain === 'localhost') return CONFIG_MASTER

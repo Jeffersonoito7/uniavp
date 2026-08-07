@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { getSiteConfig } from '@/lib/site-config'
 import RegisterSW from './components/RegisterSW'
@@ -6,6 +6,14 @@ import InstalarApp from './components/InstalarApp'
 import { headers } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#0f2556',
+}
 
 export async function generateMetadata(): Promise<Metadata> {
  const host = (await headers()).get('host') ?? ''
