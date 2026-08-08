@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
+import { enviarPushParaAluno } from '@/lib/push'
 import { alertarDiscord } from '@/lib/discord'
 import { getMensagem } from '@/lib/mensagem'
 import { captureException } from '@/lib/monitor'
@@ -86,13 +87,21 @@ export async function GET(req: NextRequest) {
     const msg = await getMensagem('lembrete_ao_vivo', vars, adminClient, tenantId)
 
     try {
+      const pushPayload = {
+        title: `Aula ao vivo em breve: ${aula.titulo}`,
+        body: `Comeca em aproximadamente 1 hora. Clique para acessar o link.`,
+        url: aula.link ?? undefined,
+      }
+
       if (!aula.gestor_id) {
         const instancia = await instanciaDo(null)
-        const { data: alunos } = await adminClient.from('alunos').select('whatsapp').eq('status', 'ativo')
+        const { data: alunos } = await adminClient.from('alunos').select('id, whatsapp').eq('status', 'ativo')
         const numeros = (alunos ?? []).map(a => a.whatsapp)
         const resultado = await enviarEmLotes(numeros, msg, instancia)
         totalEnviados += resultado.enviados
         totalErros += resultado.erros
+        // Push complementar
+        await Promise.allSettled((alunos ?? []).map(a => enviarPushParaAluno(a.id, pushPayload)))
       } else {
         const { data: gestor } = await adminClient
           .from('gestores')
@@ -104,13 +113,15 @@ export async function GET(req: NextRequest) {
           const instancia = gestor.whatsapp_instancia ?? await instanciaDo(gestor.tenant_id ?? null)
           const { data: alunos } = await adminClient
             .from('alunos')
-            .select('whatsapp')
+            .select('id, whatsapp')
             .eq('gestor_whatsapp', gestor.whatsapp)
             .eq('status', 'ativo')
           const numeros = (alunos ?? []).map(a => a.whatsapp)
           const resultado = await enviarEmLotes(numeros, msg, instancia)
           totalEnviados += resultado.enviados
           totalErros += resultado.erros
+          // Push complementar
+          await Promise.allSettled((alunos ?? []).map(a => enviarPushParaAluno(a.id, pushPayload)))
         }
       }
       await aulasTable(adminClient).update({ lembrete_enviado: true }).eq('id', aula.id)

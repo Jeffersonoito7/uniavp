@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp, getInstanciaGestorPorNome, getInstanciaTenant } from '@/lib/whatsapp'
+import { enviarPushParaAluno } from '@/lib/push'
 import { getAppUrl } from '@/lib/get-app-url'
 import { getSiteConfig } from '@/lib/site-config'
 import { alertarDiscord } from '@/lib/discord'
@@ -67,6 +68,13 @@ export async function GET(req: NextRequest) {
           if (ok) { await registrarEnvio(aluno.whatsapp, chaveAluno, aluno.tenant_id ?? null, adminClient); notificacoes++ }
         }
       }
+
+      // Push notification complementar (nao bloqueia se falhar)
+      enviarPushParaAluno(aluno.id, {
+        title: `${nomePlataforma} — Sentimos sua falta`,
+        body: `Faz ${dias} dia${dias > 1 ? 's' : ''} sem acessar. Continue de onde parou!`,
+        url: `${appUrl}/aluno/${aluno.whatsapp?.replace(/\D/g, '')}`,
+      }).catch(() => {})
 
       if (aluno.gestor_whatsapp) {
         const instanciaGestor = await getInstanciaGestorPorNome(aluno.gestor_nome ?? '', adminClient, aluno.tenant_id ?? undefined)
