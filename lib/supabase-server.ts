@@ -22,7 +22,10 @@ export async function createClient() {
 }
 
 function cleanEnv(val: string | undefined): string {
-  const lines = (val ?? '').split(/[\r\n]+/).map(l => l.trim()).filter(Boolean)
+  // Normaliza tanto \n literal (Vercel as vezes injeta "production\n" antes do valor)
+  // quanto quebras de linha reais, e retorna o ultimo segmento nao vazio
+  const normalized = (val ?? '').replace(/\\n/g, '\n')
+  const lines = normalized.split(/[\r\n]+/).map(l => l.trim()).filter(Boolean)
   return lines[lines.length - 1] ?? ''
 }
 
