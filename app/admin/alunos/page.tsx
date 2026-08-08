@@ -26,41 +26,49 @@ export default async function AlunosPage({
     adminClient.from('alunos')
       .select('id, nome, whatsapp, email, cpf, status, user_id, created_at, gestor_nome')
       .order('created_at', { ascending: false })
-      .limit(200) as any
+      .limit(500) as any
   )
 
-  // Verificar quais alunos são PRO via email (user_id pode ser null em gestores)
-  const emails = ((alunosRaw ?? []) as any[]).filter((a: any) => a.email).map((a: any) => a.email as string)
+  // Verificar quais alunos são PRO via email (normalizado em minusculo para evitar divergencia de case)
+  const emails = ((alunosRaw ?? []) as any[])
+    .filter((a: any) => a.email)
+    .map((a: any) => (a.email as string).toLowerCase())
   const CHUNK = 100
   const gestoresPorEmail: Record<string, { status_assinatura: string; plano_vencimento: string | null }> = {}
 
   if (emails.length > 0) {
     for (let i = 0; i < emails.length; i += CHUNK) {
-      let gq = adminClient
+      // Nao filtra por tenant_id: gestor pode ter sido criado sem tenant (null)
+      // e ainda assim pertencer ao aluno desta plataforma
+      const { data } = await adminClient
         .from('gestores')
         .select('email, status_assinatura, plano_vencimento')
         .in('email', emails.slice(i, i + CHUNK))
         .eq('ativo', true)
-      if (tid) gq = (gq as any).eq('tenant_id', tid)
-      const { data } = await gq
-      for (const g of data ?? []) gestoresPorEmail[(g as any).email] = g as any
+      for (const g of data ?? []) {
+        const emailKey = ((g as any).email as string).toLowerCase()
+        gestoresPorEmail[emailKey] = g as any
+      }
     }
   }
 
-  const alunos = ((alunosRaw ?? []) as any[]).map((a: any) => ({
-    id: a.id as string,
-    nome: a.nome as string,
-    whatsapp: a.whatsapp as string,
-    email: a.email as string,
-    cpf: (a.cpf ?? null) as string | null,
-    status: a.status as string,
-    user_id: (a.user_id ?? null) as string | null,
-    created_at: (a.created_at ?? null) as string | null,
-    gestor_nome: (a.gestor_nome ?? null) as string | null,
-    plano: (gestoresPorEmail[a.email ?? ''] ? 'PRO' : 'Free') as 'PRO' | 'Free',
-    plano_vencimento: gestoresPorEmail[a.email ?? '']?.plano_vencimento ?? null,
-    status_assinatura: gestoresPorEmail[a.email ?? '']?.status_assinatura ?? null,
-  }))
+  const alunos = ((alunosRaw ?? []) as any[]).map((a: any) => {
+    const emailKey = (a.email ?? '').toLowerCase()
+    return {
+      id: a.id as string,
+      nome: a.nome as string,
+      whatsapp: a.whatsapp as string,
+      email: a.email as string,
+      cpf: (a.cpf ?? null) as string | null,
+      status: a.status as string,
+      user_id: (a.user_id ?? null) as string | null,
+      created_at: (a.created_at ?? null) as string | null,
+      gestor_nome: (a.gestor_nome ?? null) as string | null,
+      plano: (gestoresPorEmail[emailKey] ? 'PRO' : 'Free') as 'PRO' | 'Free',
+      plano_vencimento: gestoresPorEmail[emailKey]?.plano_vencimento ?? null,
+      status_assinatura: gestoresPorEmail[emailKey]?.status_assinatura ?? null,
+    }
+  })
 
   const sp = await searchParams
   const q = sp?.q?.toLowerCase() ?? ''
