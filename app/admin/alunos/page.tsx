@@ -29,27 +29,19 @@ export default async function AlunosPage({
       .limit(500) as any
   )
 
-  // Verificar quais alunos são PRO via email (normalizado em minusculo para evitar divergencia de case)
-  const emails = ((alunosRaw ?? []) as any[])
-    .filter((a: any) => a.email)
-    .map((a: any) => (a.email as string).toLowerCase())
-  const CHUNK = 100
-  const gestoresPorEmail: Record<string, { status_assinatura: string; plano_vencimento: string | null }> = {}
+  // Buscar todos gestores ativos e fazer match por email em JS (case-insensitive)
+  // .in() do PostgREST e case-sensitive, entao nao usamos ele aqui
+  let gestoresQ = adminClient
+    .from('gestores')
+    .select('email, status_assinatura, plano_vencimento')
+    .eq('ativo', true)
+  if (tid) gestoresQ = (gestoresQ as any).eq('tenant_id', tid)
+  const { data: gestoresAtivos } = await gestoresQ
 
-  if (emails.length > 0) {
-    for (let i = 0; i < emails.length; i += CHUNK) {
-      // Nao filtra por tenant_id: gestor pode ter sido criado sem tenant (null)
-      // e ainda assim pertencer ao aluno desta plataforma
-      const { data } = await adminClient
-        .from('gestores')
-        .select('email, status_assinatura, plano_vencimento')
-        .in('email', emails.slice(i, i + CHUNK))
-        .eq('ativo', true)
-      for (const g of data ?? []) {
-        const emailKey = ((g as any).email as string).toLowerCase()
-        gestoresPorEmail[emailKey] = g as any
-      }
-    }
+  const gestoresPorEmail: Record<string, { status_assinatura: string; plano_vencimento: string | null }> = {}
+  for (const g of gestoresAtivos ?? []) {
+    const key = ((g as any).email as string ?? '').toLowerCase()
+    if (key) gestoresPorEmail[key] = g as any
   }
 
   const alunos = ((alunosRaw ?? []) as any[]).map((a: any) => {
