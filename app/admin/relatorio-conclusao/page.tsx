@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import Link from 'next/link'
+import { Download } from 'lucide-react'
 
 export default async function RelatorioConclusaoPage() {
   const supabase = await createClient()
@@ -114,11 +115,35 @@ export default async function RelatorioConclusaoPage() {
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto' }}>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--avp-text)', margin: 0 }}>Relatório de Conclusão</h1>
-        <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 4 }}>
-          Por que {totalAlunos} alunos e apenas {totalConcluidos} concluíram? Veja o diagnóstico completo.
-        </p>
+      <div style={{ marginBottom: 28, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--avp-text)', margin: 0 }}>Relatório de Conclusão</h1>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 4 }}>
+            Por que {totalAlunos} alunos e apenas {totalConcluidos} concluíram? Veja o diagnóstico completo.
+          </p>
+        </div>
+        <a
+          href="/api/admin/relatorio/exportar-csv"
+          download
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            background: 'var(--avp-card)',
+            color: 'var(--avp-text)',
+            border: '1px solid var(--avp-border)',
+            borderRadius: 8,
+            padding: '9px 18px',
+            fontSize: 13,
+            fontWeight: 600,
+            textDecoration: 'none',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+          }}
+        >
+          <Download size={14} />
+          Exportar CSV
+        </a>
       </div>
 
       {/* Cards gerais */}

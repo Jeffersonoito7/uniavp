@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
+import { Download } from 'lucide-react'
 
 export default async function CRMPage() {
  const supabase = await createClient()
@@ -125,10 +126,34 @@ export default async function CRMPage() {
 
  return (
     <>
- <div style={{ marginBottom: 28 }}>
- <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>CRM — Visão Geral</h1>
- <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Acompanhe o progresso e engajamento dos consultores</p>
- </div>
+ <div style={{ marginBottom: 28, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>CRM: Visao Geral</h1>
+          <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>Acompanhe o progresso e engajamento dos consultores</p>
+        </div>
+        <a
+          href="/api/admin/relatorio/exportar-csv"
+          download
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            background: 'var(--avp-card)',
+            color: 'var(--avp-text)',
+            border: '1px solid var(--avp-border)',
+            borderRadius: 8,
+            padding: '9px 18px',
+            fontSize: 13,
+            fontWeight: 600,
+            textDecoration: 'none',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+          }}
+        >
+          <Download size={14} />
+          Exportar CSV
+        </a>
+      </div>
 
  {/* Cards principais */}
  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
