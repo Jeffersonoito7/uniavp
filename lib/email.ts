@@ -1,7 +1,13 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-const EMAIL_FROM = process.env.EMAIL_FROM || 'Universidade <noreply@oito7digital.com.br>'
+// Inicializado lazy para nao executar no nivel de modulo durante o build do Next.js
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY)
+}
+
+function getEmailFrom() {
+  return process.env.EMAIL_FROM || 'Universidade <noreply@oito7digital.com.br>'
+}
 
 // ── Envia link de assinatura de contrato por e-mail ──────────────────────────
 export async function enviarEmailContrato({
@@ -42,8 +48,8 @@ export async function enviarEmailContrato({
   })
 
   try {
-    const { error } = await resend.emails.send({
-      from: EMAIL_FROM,
+    const { error } = await getResend().emails.send({
+      from: getEmailFrom(),
       to: email,
       subject: `Contrato para assinar: ${tituloContrato}`,
       html,
@@ -77,10 +83,10 @@ export async function enviarEmailRecuperacaoSenha({
   })
 
   try {
-    const { error } = await resend.emails.send({
-      from: EMAIL_FROM,
+    const { error } = await getResend().emails.send({
+      from: getEmailFrom(),
       to: email,
-      subject: `${siteNome} — Redefinição de senha`,
+      subject: `${siteNome}: Redefinicao de senha`,
       html,
     })
     return !error
