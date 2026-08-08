@@ -213,7 +213,7 @@ export default function DocumentosCliente({ documentosIniciais }: { documentosIn
  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
  <a href={form.pdf_url} target="_blank" rel="noreferrer"
  style={{ background: 'rgba(2,161,83,0.1)', border: '1px solid rgba(2,161,83,0.3)', color: '#02A153', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
- PDF carregado — Ver arquivo
+ PDF carregado. Ver arquivo
  </a>
  <button onClick={() => setForm(p => ({ ...p, pdf_url: '' }))}
  style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)', color: '#f87171', borderRadius: 8, padding: '8px 12px', fontSize: 13, cursor: 'pointer' }}>

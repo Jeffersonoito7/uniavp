@@ -92,7 +92,7 @@ export default function AdminsCliente({ adminsIniciais, meuUserId }: { adminsIni
  <div>
  <h1 style={{ fontSize: 24, fontWeight: 800 }}>Gerentes / Admins</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>
- Pessoas da empresa com acesso ao painel — {admins.length} cadastrado{admins.length !== 1 ? 's' : ''}
+ Pessoas da empresa com acesso ao painel: {admins.length} cadastrado{admins.length !== 1 ? 's' : ''}
  </p>
  </div>
  <button onClick={() => setShowForm(s => !s)}

@@ -78,7 +78,7 @@ export default async function AlunosPage({
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Alunos</h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>
-          {alunos.length} alunos — {totalPro} PRO / {totalFree} Free
+          {alunos.length} alunos: {totalPro} PRO / {totalFree} Free
         </p>
       </div>
       <AlunosCliente alunos={filtrados} buscaInicial={q} />

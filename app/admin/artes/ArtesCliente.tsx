@@ -210,7 +210,7 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 16, alignItems: 'start' }}>
  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
  <div>
- <label style={labelStyle}>Arte PNG (fundo transparente) — {aba === 'feed' ? '1080×1080px' : '1080×1920px'}</label>
+ <label style={labelStyle}>Arte PNG (fundo transparente), {aba === 'feed' ? '1080×1080px' : '1080×1920px'}</label>
  <div style={{ display: 'flex', gap: 8 }}>
  <input style={{ ...inputStyle, flex: 1 }}
  value={t.arte_url ?? ''}
@@ -258,7 +258,7 @@ export default function ArtesCliente({ inicial }: { inicial: Template[] }) {
  <label style={labelStyle}>Texto <span style={{ color: 'var(--avp-text-dim)', fontWeight: 400 }}>— use <code style={{ background: 'var(--avp-black)', padding: '1px 5px', borderRadius: 4 }}>{'{nome}'}</code> para inserir o nome</span></label>
  <input style={inputStyle} value={t.texto_template ?? '{nome}'} onChange={e => atualizar(t.id, 'texto_template', e.target.value)} placeholder="Ex: Parabéns, {nome}! " />
  <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>
- Exemplos: <em>Parabéns, {'{nome}'}!</em> · <em>Seja bem-vindo, {'{nome}'}!</em> · <em>{'{nome}'} — Placa 40</em>
+ Exemplos: <em>Parabéns, {'{nome}'}!</em> · <em>Seja bem-vindo, {'{nome}'}!</em> · <em>{'{nome}'}: Placa 40</em>
  </p>
  </div>
  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>

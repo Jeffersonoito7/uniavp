@@ -88,7 +88,7 @@ export default function VincularAlunosCliente({
               <option value=''>-- Selecione o PRO --</option>
               {gestores.map(g => (
                 <option key={g.id} value={g.id}>
-                  {g.nome} ({g.whatsapp}) {g.ativo ? '' : '— INATIVO'}
+                  {g.nome} ({g.whatsapp}) {g.ativo ? '' : '(INATIVO)'}
                 </option>
               ))}
             </select>
