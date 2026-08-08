@@ -30,7 +30,7 @@ export default async function RelatorioConclusaoPage() {
     tq(adminClient.from('alunos').select('id', { count: 'exact', head: true })).eq('status', 'ativo'),
     tq(adminClient.from('alunos').select('id', { count: 'exact', head: true })).eq('status', 'concluido'),
     tq(adminClient.from('alunos').select('id', { count: 'exact', head: true })).eq('status', 'inativo'),
-    tq(adminClient.from('alunos').select('id', { count: 'exact', head: true })).not('numero_registro', 'is', null),
+    tq(adminClient.from('alunos').select('id', { count: 'exact', head: true })).not('numero_registro', 'is', null).neq('numero_registro', ''),
     tq(adminClient.from('alunos').select('id', { count: 'exact', head: true })).is('user_id', null),
   ])
 
