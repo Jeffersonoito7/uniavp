@@ -4,6 +4,7 @@ import { getAdminContext } from '@/lib/admin-context'
 import { renderizarTemplate, gerarNumeroContrato, gerarTokenAssinante } from '@/lib/contrato-digital'
 import { enviarWhatsAppComFila, getInstanciaTenant } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
+import { enviarEmailContrato } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,6 +59,13 @@ export async function POST(req: NextRequest) {
 
   const instancia = await getInstanciaTenant(ctx.tenantId, adminClient)
   const appUrl = await getAppUrl(ctx.tenantId)
+
+  let siteNome = 'Plataforma'
+  if (ctx.tenantId) {
+    const { data: cfg } = await adminClient.from('configuracoes')
+      .select('valor').eq('chave', 'site_nome').eq('tenant_id', ctx.tenantId).maybeSingle()
+    try { siteNome = JSON.parse(String(cfg?.valor ?? '')) || siteNome } catch { /* */ }
+  }
 
   const erros: string[] = []
   const jaPossui: string[] = []
@@ -150,6 +158,18 @@ export async function POST(req: NextRequest) {
       if (wpp && instancia) {
         await enviarWhatsAppComFila(wpp, mensagem, instancia, adminClient, ctx.tenantId)
           .catch(() => {})
+      }
+
+      if (aluno.email) {
+        await enviarEmailContrato({
+          nome: nome,
+          email: aluno.email,
+          token,
+          tituloContrato: template.nome,
+          appUrl,
+          contratadoPreenche,
+          siteNome,
+        }).catch(() => {})
       }
 
       enviados++

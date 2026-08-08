@@ -1,5 +1,6 @@
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsApp } from '@/lib/whatsapp'
+import { enviarEmailContrato } from '@/lib/email'
 import { createHash, randomUUID } from 'crypto'
 
 // ── Renderiza variaveis no template ────────────────────────────────────────
@@ -77,15 +78,16 @@ export async function enviarLinkAssinaturaEmail({
   token,
   tituloContrato,
   appUrl,
+  siteNome,
 }: {
   nome: string
   email: string
   token: string
   tituloContrato: string
   appUrl: string
+  siteNome?: string
 }): Promise<void> {
-  const link = `${appUrl}/contrato/assinar/${token}`
-  console.log(`[contrato-digital] Link para ${email}: ${link}`)
+  await enviarEmailContrato({ nome, email, token, tituloContrato, appUrl, siteNome })
 }
 
 // ── Atualiza status do contrato com base nos assinantes ───────────────────

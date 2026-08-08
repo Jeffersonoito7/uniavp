@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
+import { enviarEmailRecuperacaoSenha } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 
@@ -91,10 +92,12 @@ export async function POST(req: NextRequest) {
     enviadoWpp = await enviarLinkWhatsApp(ctx.whatsapp, link, ctx.instancia, siteNome)
   }
 
+  const enviadoEmail = await enviarEmailRecuperacaoSenha({ email, link, siteNome })
+
   return NextResponse.json({
     ok: true,
     link,
-    enviadoEmail: true,
+    enviadoEmail,
     enviadoWpp,
     whatsappMask: ctx?.whatsapp
       ? `*${ctx.whatsapp.slice(-4).padStart(ctx.whatsapp.length, '*')}`
