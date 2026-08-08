@@ -25,8 +25,7 @@ export default async function AlunosPage({
   const { data: alunosRaw } = await tq(
     adminClient.from('alunos')
       .select('id, nome, whatsapp, email, cpf, status, user_id, created_at, gestor_nome')
-      .order('created_at', { ascending: false })
-      .limit(500) as any
+      .order('created_at', { ascending: false }) as any
   )
 
   // Buscar todos gestores ativos e fazer match por email em JS (case-insensitive)
