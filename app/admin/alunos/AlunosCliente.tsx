@@ -63,6 +63,7 @@ function BadgePlano({ plano }: { plano: 'PRO' | 'Free' }) {
 export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '' }: { alunos: Aluno[]; buscaInicial?: string }) {
   const [alunos, setAlunos] = useState<Aluno[]>(alunosIniciais)
   const [busca, setBusca] = useState(buscaInicial)
+  const [filtroPlano, setFiltroPlano] = useState<'todos' | 'PRO' | 'Free'>('todos')
   const [editando, setEditando] = useState<Aluno | null>(null)
   const [editForm, setEditForm] = useState({
     nome: '', whatsapp: '', email: '', cpf: '', status: 'ativo',
@@ -145,11 +146,14 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
     setSalvando(false)
   }
 
-  const filtrados = alunos.filter(a =>
-    a.nome.toLowerCase().includes(busca.toLowerCase()) ||
-    a.whatsapp.includes(busca) ||
-    a.email.toLowerCase().includes(busca.toLowerCase())
-  )
+  const filtrados = alunos.filter(a => {
+    const buscaOk = !busca ||
+      a.nome.toLowerCase().includes(busca.toLowerCase()) ||
+      a.whatsapp.includes(busca) ||
+      a.email.toLowerCase().includes(busca.toLowerCase())
+    const planoOk = filtroPlano === 'todos' || a.plano === filtroPlano
+    return buscaOk && planoOk
+  })
 
   return (
     <>
@@ -263,13 +267,38 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
         </div>
       )}
 
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
         <input
           placeholder="Buscar por nome, WhatsApp ou e-mail..."
           style={{ ...inp, width: 320 }}
           value={busca}
           onChange={e => setBusca(e.target.value)}
         />
+        {(['todos', 'PRO', 'Free'] as const).map(op => (
+          <button
+            key={op}
+            onClick={() => setFiltroPlano(op)}
+            style={{
+              padding: '8px 18px',
+              borderRadius: 20,
+              border: '1px solid',
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all .15s',
+              ...(filtroPlano === op
+                ? op === 'PRO'
+                  ? { background: '#4ade8020', color: '#4ade80', borderColor: '#4ade8060' }
+                  : op === 'Free'
+                  ? { background: '#60a5fa20', color: '#60a5fa', borderColor: '#60a5fa60' }
+                  : { background: 'var(--avp-blue)', color: '#fff', borderColor: 'var(--avp-blue)' }
+                : { background: 'transparent', color: 'var(--avp-text-dim)', borderColor: 'var(--avp-border)' }
+              ),
+            }}
+          >
+            {op === 'todos' ? 'Todos' : op}
+          </button>
+        ))}
       </div>
 
       <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, overflow: 'hidden' }}>
