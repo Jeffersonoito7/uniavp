@@ -29,19 +29,21 @@ export default async function AlunosPage({
       .limit(200) as any
   )
 
-  // Verificar quais alunos são PRO
-  const userIds = ((alunosRaw ?? []) as any[]).filter((a: any) => a.user_id).map((a: any) => a.user_id as string)
+  // Verificar quais alunos são PRO via email (user_id pode ser null em gestores)
+  const emails = ((alunosRaw ?? []) as any[]).filter((a: any) => a.email).map((a: any) => a.email as string)
   const CHUNK = 100
-  const gestoresMap: Record<string, { status_assinatura: string; plano_vencimento: string | null }> = {}
+  const gestoresPorEmail: Record<string, { status_assinatura: string; plano_vencimento: string | null }> = {}
 
-  if (userIds.length > 0) {
-    for (let i = 0; i < userIds.length; i += CHUNK) {
-      const { data } = await adminClient
+  if (emails.length > 0) {
+    for (let i = 0; i < emails.length; i += CHUNK) {
+      let gq = adminClient
         .from('gestores')
-        .select('user_id, status_assinatura, plano_vencimento, ativo')
-        .in('user_id', userIds.slice(i, i + CHUNK))
+        .select('email, status_assinatura, plano_vencimento')
+        .in('email', emails.slice(i, i + CHUNK))
         .eq('ativo', true)
-      for (const g of data ?? []) gestoresMap[(g as any).user_id] = g as any
+      if (tid) gq = (gq as any).eq('tenant_id', tid)
+      const { data } = await gq
+      for (const g of data ?? []) gestoresPorEmail[(g as any).email] = g as any
     }
   }
 
@@ -55,9 +57,9 @@ export default async function AlunosPage({
     user_id: (a.user_id ?? null) as string | null,
     created_at: (a.created_at ?? null) as string | null,
     gestor_nome: (a.gestor_nome ?? null) as string | null,
-    plano: (gestoresMap[a.user_id ?? ''] ? 'PRO' : 'Free') as 'PRO' | 'Free',
-    plano_vencimento: gestoresMap[a.user_id ?? '']?.plano_vencimento ?? null,
-    status_assinatura: gestoresMap[a.user_id ?? '']?.status_assinatura ?? null,
+    plano: (gestoresPorEmail[a.email ?? ''] ? 'PRO' : 'Free') as 'PRO' | 'Free',
+    plano_vencimento: gestoresPorEmail[a.email ?? '']?.plano_vencimento ?? null,
+    status_assinatura: gestoresPorEmail[a.email ?? '']?.status_assinatura ?? null,
   }))
 
   const sp = await searchParams
