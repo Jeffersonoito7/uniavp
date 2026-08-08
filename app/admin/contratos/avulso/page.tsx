@@ -18,14 +18,14 @@ export default async function ContratoAvulsoPage() {
   if (!adminRecord && !superRecord) redirect('/entrar?p=adm')
   const tid = (adminRecord?.tenant_id ?? null) as string | null
 
-  // Templates ativos
+  // Templates nao arquivados (filtragem de ativo feita no JS, igual a pagina principal)
   let tq = (adminClient.from('contrato_templates' as any) as any)
-    .select('id, nome')
-    .eq('ativo', true)
+    .select('id, nome, ativo')
     .eq('arquivado', false)
     .order('nome', { ascending: true })
   if (tid) tq = tq.eq('tenant_id', tid)
-  const { data: templates } = await tq
+  const { data: templatesRaw } = await tq
+  const templates = (templatesRaw ?? []).filter((t: any) => t.ativo).map((t: any) => ({ id: t.id, nome: t.nome }))
 
   // Todos os alunos ativos
   let aq = adminClient.from('alunos')
