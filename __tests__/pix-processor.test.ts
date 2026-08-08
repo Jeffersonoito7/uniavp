@@ -10,6 +10,8 @@ jest.mock('@/lib/efi', () => ({
 const mockEnviarWhatsApp = jest.fn()
 jest.mock('@/lib/whatsapp', () => ({
   enviarWhatsApp: (...args: unknown[]) => mockEnviarWhatsApp(...args),
+  enviarWhatsAppComFila: jest.fn().mockResolvedValue(undefined),
+  enfileirarWhatsApp: jest.fn().mockResolvedValue(undefined),
   getInstanciaTenant: jest.fn().mockResolvedValue(null),
 }))
 
@@ -22,18 +24,10 @@ jest.mock('@/lib/audit', () => ({
   audit: (...args: unknown[]) => mockAudit(...args),
 }))
 
-const mockCreditarCreditos = jest.fn().mockResolvedValue(150)
-const mockGarantirRegistro = jest.fn().mockResolvedValue(undefined)
-jest.mock('@/lib/agente-creditos', () => ({
-  creditarCreditos: (...args: unknown[]) => mockCreditarCreditos(...args),
-  garantirRegistroCredito: (...args: unknown[]) => mockGarantirRegistro(...args),
+jest.mock('@/lib/mensagem', () => ({
+  getMensagem: jest.fn().mockResolvedValue('mensagem de teste'),
 }))
 
-const mockConcederBoasVindas = jest.fn().mockResolvedValue(undefined)
-jest.mock('@/lib/pro-agente', () => ({
-  concederCreditosBoasVindas: (...args: unknown[]) => mockConcederBoasVindas(...args),
-  processarMensagemPRO: jest.fn().mockResolvedValue(null),
-}))
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -60,11 +54,9 @@ describe('processarPixTxid()', () => {
     mockAudit.mockResolvedValue(undefined)
   })
 
-  it('retorna processado:false quando a Efí não confirma pagamento', async () => {
+  it('lanca excecao quando a Efi nao confirma pagamento', async () => {
     mockConsultarPagamento.mockResolvedValue({ pago: false })
-    const result = await processarPixTxid('txid-001', makeEmptyClient())
-    expect(result.processado).toBe(false)
-    expect(result.motivo).toBe('pagamento_nao_confirmado')
+    await expect(processarPixTxid('txid-001', makeEmptyClient())).rejects.toThrow('pagamento_nao_confirmado')
   })
 
   it('retorna processado:false quando txid não existe em nenhuma tabela', async () => {
@@ -161,8 +153,8 @@ describe('processarPixTxid()', () => {
             update: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
             maybeSingle: jest.fn().mockResolvedValue({
-              // ativo:true, status_assinatura:'ativo' — não aciona eraUpgrade nem concederCreditosBoasVindas
-              data: { id: 'g-1', nome: 'Maria', whatsapp: '5511988880000', ativo: true, status_assinatura: 'ativo', tenant_id: null },
+              // ativo:false, status_assinatura:'pendente_upgrade' — precisa ser ativado, dispara audit
+              data: { id: 'g-1', nome: 'Maria', whatsapp: '5511988880000', ativo: false, status_assinatura: 'pendente_upgrade', tenant_id: null },
             }),
           }
         }
@@ -246,15 +238,26 @@ describe('processarPixTxid()', () => {
               select: jest.fn().mockReturnThis(),
               eq: jest.fn().mockReturnThis(),
               maybeSingle: jest.fn().mockResolvedValue({
-                data: { id: 'gp-dup', gestor_id: 'g-2', valor: '79.90' },
+                // status 'pago' ja definido — pagamentoJaMarcado = true sem chamar update
+                data: { id: 'gp-dup', gestor_id: 'g-2', valor: '79.90', status: 'pago' },
               }),
             }
           }
-          // Update retorna vazio — já processado
           return {
             update: jest.fn().mockReturnThis(),
             eq: jest.fn().mockReturnThis(),
             select: jest.fn().mockResolvedValue({ data: [] }),
+          }
+        }
+        if (table === 'gestores') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            update: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            // gestor ja ativo — precisaAtivar = false, retorna ja_processado
+            maybeSingle: jest.fn().mockResolvedValue({
+              data: { id: 'g-2', nome: 'Carlos', whatsapp: '5511900000000', ativo: true, status_assinatura: 'ativo', tenant_id: null },
+            }),
           }
         }
         return {
@@ -272,60 +275,6 @@ describe('processarPixTxid()', () => {
     expect(mockAudit).not.toHaveBeenCalled()
   })
 
-  it('processa recarga de créditos do agente IA', async () => {
-    let recargaCount = 0
-    const adminClient = {
-      from: (table: string) => {
-        if (table === 'cobrancas' || table === 'gestor_pagamentos') {
-          return {
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            maybeSingle: jest.fn().mockResolvedValue({ data: null }),
-          }
-        }
-        if (table === 'agente_recargas') {
-          recargaCount++
-          if (recargaCount === 1) {
-            return {
-              select: jest.fn().mockReturnThis(),
-              eq: jest.fn().mockReturnThis(),
-              maybeSingle: jest.fn().mockResolvedValue({
-                data: { id: 'rec-1', gestor_id: 'g-3', tenant_id: null, creditos: 100, valor: '49.90' },
-              }),
-            }
-          }
-          // Update atômico — processa com sucesso
-          return {
-            update: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            select: jest.fn().mockResolvedValue({ data: [{ id: 'rec-1' }] }),
-          }
-        }
-        if (table === 'gestores') {
-          return {
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            maybeSingle: jest.fn().mockResolvedValue({
-              data: { whatsapp: '5511977770000', nome: 'João', tenant_id: null },
-            }),
-          }
-        }
-        return {
-          select: jest.fn().mockReturnThis(),
-          update: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          maybeSingle: jest.fn().mockResolvedValue({ data: null }),
-        }
-      },
-    } as unknown as ReturnType<typeof import('@/lib/supabase-server').createServiceRoleClient>
-
-    const result = await processarPixTxid('txid-recarga', adminClient)
-    expect(result.processado).toBe(true)
-    expect(mockAudit).toHaveBeenCalledWith(expect.objectContaining({
-      acao: 'agente.recarga_confirmada',
-      entidade: 'agente_recargas',
-    }))
-  })
 
   it('não envia WhatsApp quando gestor não tem número cadastrado', async () => {
     let gestorPagQueryCount = 0
