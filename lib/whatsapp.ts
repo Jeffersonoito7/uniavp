@@ -54,6 +54,31 @@ export async function enviarWhatsApp(numero: string, mensagem: string, instancia
 }
 
 /**
+ * Insere a mensagem diretamente na fila sem tentar envio inline.
+ * Use em operacoes em massa para nao bloquear a requisicao HTTP.
+ * O cron /api/cron/processar-whatsapp envia a cada 2 minutos.
+ */
+export async function enfileirarWhatsApp(
+  numero: string,
+  mensagem: string,
+  instancia: string | null | undefined,
+  adminClient: AdminClient,
+  tenantId?: string | null,
+): Promise<void> {
+  try {
+    await adminClient.from('fila_whatsapp').insert({
+      numero,
+      mensagem,
+      instancia: instancia ?? null,
+      status: 'pendente',
+      ...(tenantId ? { tenant_id: tenantId } : {}),
+    })
+  } catch (e) {
+    log.error('falha ao enfileirar mensagem whatsapp', { numero, err: String(e) })
+  }
+}
+
+/**
  * Envia WhatsApp com fallback para fila persistente.
  * Se os 3 retries inline falharem, salva em fila_whatsapp para o cron retentar.
  */

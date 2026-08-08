@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { getAdminContext } from '@/lib/admin-context'
 import { renderizarTemplate, gerarNumeroContrato, gerarTokenAssinante } from '@/lib/contrato-digital'
-import { enviarWhatsAppComFila, getInstanciaTenant } from '@/lib/whatsapp'
+import { enfileirarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
 import { enviarEmailContrato } from '@/lib/email'
 
@@ -155,9 +155,8 @@ export async function POST(req: NextRequest) {
       const mensagem = `Ola, ${nome}!\n\n${instrucao}\n${link}\n\nO link expira em 30 dias.`
 
       const wpp = aluno.whatsapp ? aluno.whatsapp.replace(/\D/g, '') : null
-      if (wpp && instancia) {
-        await enviarWhatsAppComFila(wpp, mensagem, instancia, adminClient, ctx.tenantId)
-          .catch(() => {})
+      if (wpp) {
+        await enfileirarWhatsApp(wpp, mensagem, instancia, adminClient, ctx.tenantId)
       }
 
       if (aluno.email) {
