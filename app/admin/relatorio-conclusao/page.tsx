@@ -66,21 +66,28 @@ export default async function RelatorioConclusaoPage() {
   const totalAulasObrig = aulasObrigatorias.length
   const idsAulasObrig = aulasObrigatorias.map((a: any) => a.id as string)
 
-  // ── 3. Progresso dos alunos ativos ──
+  // ── 3. Alunos ativos e concluídos (para calcular progresso) ──
   const { data: alunosAtivosRows } = await tq(
     adminClient.from('alunos').select('id').eq('status', 'ativo')
   )
   const idsAtivos = (alunosAtivosRows ?? []).map((a: any) => a.id as string)
 
-  // Aprovações por aluno (batches de 100)
+  // Todos os alunos que já passaram pelo curso (ativos + concluídos)
+  const { data: alunosConcluidosRows } = await tq(
+    adminClient.from('alunos').select('id').eq('status', 'concluido')
+  )
+  const idsConcluidos = (alunosConcluidosRows ?? []).map((a: any) => a.id as string)
+  const idsTodosCursando = [...idsAtivos, ...idsConcluidos]
+
+  // Aprovações por aluno (batches de 100) — para ativos (funil) e para todos (módulo 1)
   const aprovacoesPorAlunoEAula: Record<string, Set<string>> = {}
   const CHUNK = 100
-  if (idsAtivos.length > 0 && idsAulasObrig.length > 0) {
-    for (let i = 0; i < idsAtivos.length; i += CHUNK) {
+  if (idsTodosCursando.length > 0 && idsAulasObrig.length > 0) {
+    for (let i = 0; i < idsTodosCursando.length; i += CHUNK) {
       const { data: prog } = await adminClient.from('progresso')
         .select('aluno_id, aula_id')
         .eq('aprovado', true)
-        .in('aluno_id', idsAtivos.slice(i, i + CHUNK))
+        .in('aluno_id', idsTodosCursando.slice(i, i + CHUNK))
         .in('aula_id', idsAulasObrig)
       for (const p of prog ?? []) {
         if (!aprovacoesPorAlunoEAula[p.aluno_id]) aprovacoesPorAlunoEAula[p.aluno_id] = new Set()
@@ -89,7 +96,7 @@ export default async function RelatorioConclusaoPage() {
     }
   }
 
-  // Contagem geral para o funil global
+  // Contagem geral para o funil global (só ativos)
   const nuncaComecou = idsAtivos.filter((id: string) => !aprovacoesPorAlunoEAula[id]).length
   const emAndamento = idsAtivos.filter((id: string) => {
     const n = aprovacoesPorAlunoEAula[id]?.size ?? 0
@@ -99,8 +106,20 @@ export default async function RelatorioConclusaoPage() {
     (aprovacoesPorAlunoEAula[id]?.size ?? 0) >= totalAulasObrig
   ).length
 
-  // ── 4. Stats por módulo ──
-  const statsPorModulo = modulos.map(mod => {
+  // ── 4. Stats por módulo (ativos para funil; todos para módulo 1) ──
+  const modulo1 = modulos[0] ?? null
+  const aulasMod1 = modulo1 ? new Set(modulo1.aulaIds) : new Set<string>()
+
+  // Quem concluiu o Módulo 1 (ativos + concluídos)
+  const concluiramMod1 = idsTodosCursando.filter((id: string) => {
+    if (aulasMod1.size === 0) return false
+    const aprovadas = aprovacoesPorAlunoEAula[id]
+    if (!aprovadas) return false
+    for (const aid of aulasMod1) { if (!aprovadas.has(aid)) return false }
+    return true
+  }).length
+
+  const statsPorModulo = modulos.map((mod, idx) => {
     const totalAulas = mod.aulaIds.length
     const aulaSet = new Set(mod.aulaIds)
 
@@ -108,7 +127,9 @@ export default async function RelatorioConclusaoPage() {
     let emAndamentoModulo = 0
     let nuncaComecouModulo = 0
 
-    for (const id of idsAtivos) {
+    // Módulo 1: contar sobre todos (ativos+concluídos); demais: só ativos
+    const baseIds = idx === 0 ? idsTodosCursando : idsAtivos
+    for (const id of baseIds) {
       const aprovadas = aprovacoesPorAlunoEAula[id]
       let qtd = 0
       if (aprovadas) {
@@ -121,7 +142,7 @@ export default async function RelatorioConclusaoPage() {
       else emAndamentoModulo++
     }
 
-    const totalAtivosNum = idsAtivos.length
+    const totalAtivosNum = idx === 0 ? idsTodosCursando.length : idsAtivos.length
     return { ...mod, totalAulas, concluiramModulo, emAndamentoModulo, nuncaComecouModulo, totalAtivosNum }
   })
 
@@ -176,7 +197,7 @@ export default async function RelatorioConclusaoPage() {
         {card('Ativos', totalAtivos ?? 0, pct(totalAtivos ?? 0, totalAlunos ?? 1) + ' do total', '#60a5fa')}
         {card('Concluíram', totalConcluidos ?? 0, pct(totalConcluidos ?? 0, totalAlunos ?? 1) + ' do total', '#4ade80')}
         {card('Inativos', totalInativos ?? 0, pct(totalInativos ?? 0, totalAlunos ?? 1) + ' do total', '#f87171')}
-        {card('Com Certificado', comCertificado ?? 0, 'número de registro emitido', '#fbbf24')}
+        {card('Concluíram Módulo 1', concluiramMod1, 'ativos + concluídos que passaram em todas as aulas', '#fbbf24')}
         {card('Nunca Acessaram', semUserid ?? 0, 'sem user_id — nunca logaram', '#94a3b8')}
       </div>
 
@@ -284,7 +305,7 @@ export default async function RelatorioConclusaoPage() {
         <div>
           <p style={{ fontWeight: 700, fontSize: 14, color: '#fff', margin: '0 0 4px' }}>Resumo</p>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0 }}>
-            De {totalAlunos} alunos: {semUserid} nunca acessaram, {totalInativos} estão inativos, {nuncaComecou} ativos nunca começaram, {emAndamento} estão em andamento. Por isso apenas {totalConcluidos} concluíram — e {comCertificado} receberam certificado (somente após o Módulo 1).
+            De {totalAlunos} alunos: {semUserid} nunca acessaram, {totalInativos} estão inativos, {nuncaComecou} ativos nunca começaram, {emAndamento} estão em andamento. {totalConcluidos} concluíram a trilha toda — {concluiramMod1} passaram em todas as aulas do Módulo 1 (critério real do certificado).
           </p>
         </div>
         <Link href="/admin" style={{ background: '#4f46e5', color: '#fff', padding: '10px 20px', borderRadius: 8, textDecoration: 'none', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', flexShrink: 0 }}>
