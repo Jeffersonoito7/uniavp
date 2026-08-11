@@ -72,22 +72,27 @@ export default async function RelatorioConclusaoPage() {
   )
   const idsAtivos = (alunosAtivosRows ?? []).map((a: any) => a.id as string)
 
-  // Todos os alunos que já passaram pelo curso (ativos + concluídos)
+  // Todos os alunos do sistema (para contar quem concluiu o Módulo 1)
+  const { data: todosAlunosRows } = await tq(
+    adminClient.from('alunos').select('id')
+  )
+  const idsTodos = (todosAlunosRows ?? []).map((a: any) => a.id as string)
+  // Ativos + concluídos para o funil de progresso
   const { data: alunosConcluidosRows } = await tq(
     adminClient.from('alunos').select('id').eq('status', 'concluido')
   )
   const idsConcluidos = (alunosConcluidosRows ?? []).map((a: any) => a.id as string)
   const idsTodosCursando = [...idsAtivos, ...idsConcluidos]
 
-  // Aprovações por aluno (batches de 100) — para ativos (funil) e para todos (módulo 1)
+  // Aprovações por aluno (batches de 100) — para todos os alunos do sistema
   const aprovacoesPorAlunoEAula: Record<string, Set<string>> = {}
   const CHUNK = 100
-  if (idsTodosCursando.length > 0 && idsAulasObrig.length > 0) {
-    for (let i = 0; i < idsTodosCursando.length; i += CHUNK) {
+  if (idsTodos.length > 0 && idsAulasObrig.length > 0) {
+    for (let i = 0; i < idsTodos.length; i += CHUNK) {
       const { data: prog } = await adminClient.from('progresso')
         .select('aluno_id, aula_id')
         .eq('aprovado', true)
-        .in('aluno_id', idsTodosCursando.slice(i, i + CHUNK))
+        .in('aluno_id', idsTodos.slice(i, i + CHUNK))
         .in('aula_id', idsAulasObrig)
       for (const p of prog ?? []) {
         if (!aprovacoesPorAlunoEAula[p.aluno_id]) aprovacoesPorAlunoEAula[p.aluno_id] = new Set()
@@ -110,8 +115,8 @@ export default async function RelatorioConclusaoPage() {
   const modulo1 = modulos[0] ?? null
   const aulasMod1 = modulo1 ? new Set(modulo1.aulaIds) : new Set<string>()
 
-  // Quem concluiu o Módulo 1 (ativos + concluídos)
-  const concluiramMod1 = idsTodosCursando.filter((id: string) => {
+  // Quem concluiu o Módulo 1 — TODOS os alunos do sistema (ativos, concluídos, inativos)
+  const concluiramMod1 = idsTodos.filter((id: string) => {
     if (aulasMod1.size === 0) return false
     const aprovadas = aprovacoesPorAlunoEAula[id]
     if (!aprovadas) return false
