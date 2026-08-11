@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase-server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import LinksTeste from './LinksTeste'
 import Link from 'next/link'
+import { DashboardBI } from './DashboardGraficos'
 
 import { DOMINIO_MASTER } from '@/lib/constants'
 
@@ -81,6 +82,59 @@ export default async function AdminDashboard() {
    }
  }
 
+ // Funil real: todos os alunos x progresso no Módulo 1
+ // Busca Módulo 1 e suas aulas
+ let aulasQ = (adminClient.from('aulas') as any)
+   .select('id, modulo_id, modulo:modulos!inner(id, ordem, perfis_permitidos, publicado)')
+   .eq('publicado', true)
+   .eq('modulos.publicado', true)
+ if (tid) aulasQ = aulasQ.eq('tenant_id', tid)
+ const { data: aulasRaw } = await aulasQ
+ const aulasMod1: string[] = []
+ {
+   const obrig = (aulasRaw ?? []).filter((a: any) => {
+     const perfis = a.modulo?.perfis_permitidos ?? []
+     return Array.isArray(perfis) && perfis.includes('consultor')
+   })
+   const mod1Ordem = Math.min(...obrig.map((a: any) => a.modulo?.ordem ?? 999))
+   for (const a of obrig) {
+     if ((a.modulo?.ordem ?? 999) === mod1Ordem) aulasMod1.push(a.id as string)
+   }
+ }
+
+ // Todos os alunos com id para calcular o funil real
+ const { data: todosAlunosRows } = await tq(adminClient.from('alunos').select('id'))
+ const idsTodosGlobal = (todosAlunosRows ?? []).map((a: any) => a.id as string)
+
+ let nuncaAbriu = 0
+ let cursandoMod1 = 0
+ let concluiuMod1 = 0
+ {
+   const CHUNK = 100
+   const progPorAluno: Record<string, Set<string>> = {}
+   const aulasMod1Set = new Set(aulasMod1)
+   for (let i = 0; i < idsTodosGlobal.length; i += CHUNK) {
+     const { data } = await adminClient.from('progresso')
+       .select('aluno_id, aula_id')
+       .eq('aprovado', true)
+       .in('aluno_id', idsTodosGlobal.slice(i, i + CHUNK))
+     for (const p of data ?? []) {
+       if (!progPorAluno[p.aluno_id]) progPorAluno[p.aluno_id] = new Set()
+       progPorAluno[p.aluno_id].add(p.aula_id)
+     }
+   }
+   for (const id of idsTodosGlobal) {
+     const aulasFeitoSet = progPorAluno[id]
+     if (!aulasFeitoSet || aulasFeitoSet.size === 0) {
+       nuncaAbriu++
+     } else if (aulasMod1Set.size > 0 && aulasMod1.every(aid => aulasFeitoSet.has(aid))) {
+       concluiuMod1++
+     } else {
+       cursandoMod1++
+     }
+   }
+ }
+
  const seteAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
  const { count: novosAlunos } = await tq(adminClient.from('alunos').select('id', { count: 'exact', head: true })).gte('created_at', seteAtras)
 
@@ -90,21 +144,21 @@ export default async function AdminDashboard() {
  )
 
  const stats = [
-   { label: 'Total de Alunos', value: totalAlunos ?? 0, sub: `${alunosAtivos ?? 0} ativos`, cor: '#818cf8' },
-   { label: 'Concluíram', value: alunosConcluidos ?? 0, sub: `${taxaConclusao}% de conclusão`, cor: '#4ade80' },
-   { label: 'Progresso Médio', value: `${mediaProgresso}%`, sub: 'entre alunos ativos', cor: '#818cf8' },
-   { label: 'Novos (7 dias)', value: novosAlunos ?? 0, sub: 'novos cadastros', cor: '#c084fc' },
+   { label: 'Total Cadastrados', value: totalAlunos ?? 0, sub: `${alunosAtivos ?? 0} ativos`, cor: '#818cf8' },
+   { label: 'Nunca abriu aula', value: nuncaAbriu, sub: `${totalAlunos ? Math.round(nuncaAbriu / (totalAlunos ?? 1) * 100) : 0}% do total`, cor: '#f87171' },
+   { label: 'Cursando', value: cursandoMod1, sub: 'pelo menos 1 aula feita', cor: '#fbbf24' },
+   { label: 'Concluiram Mod. 1', value: concluiuMod1, sub: 'todas as aulas do Módulo 1', cor: '#4ade80' },
    { label: 'PROs Ativos', value: gestoresAtivos ?? 0, sub: `de ${totalGestores ?? 0} cadastrados`, cor: '#38bdf8' },
-   { label: 'Aulas Publicadas', value: aulasPublicadas ?? 0, sub: `de ${totalAulas ?? 0} criadas`, cor: '#38bdf8' },
+   { label: 'Novos (7 dias)', value: novosAlunos ?? 0, sub: 'novos cadastros', cor: '#c084fc' },
  ]
 
  const atalhos = [
    { href: '/admin/alunos', label: 'Alunos', desc: 'Gerenciar cadastros' },
+   { href: '/admin/sem-acesso', label: 'Sem acesso', desc: `${nuncaAbriu} nunca abriram aulas` },
    { href: '/admin/modulos', label: 'Módulos', desc: 'Organizar conteúdo' },
    { href: '/admin/aulas-ao-vivo', label: 'Aulas ao Vivo', desc: 'Agendar transmissões' },
    { href: '/admin/contratos', label: 'Contratos', desc: 'Contratos digitais' },
    { href: '/admin/crm', label: 'CRM', desc: 'Interações e notas' },
-   { href: '/admin/ranking', label: 'Ranking', desc: 'Desempenho dos alunos' },
    { href: '/admin/gestores', label: 'Gestores PRO', desc: 'Planos ativos' },
    { href: '/admin/relatorio-conclusao', label: 'Relatório de Conclusão', desc: 'Diagnóstico completo' },
  ]
@@ -129,37 +183,19 @@ export default async function AdminDashboard() {
 
      {isMaster && <LinksTeste />}
 
-     {/* Cards de métricas */}
-     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 28 }}>
-       {stats.map(s => (
-         <div key={s.label} style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '16px 18px' }}>
-           <p style={{ color: 'var(--avp-text-dim)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10 }}>{s.label}</p>
-           <p style={{ fontSize: 28, fontWeight: 700, color: s.cor, margin: '0 0 4px', letterSpacing: '-0.02em' }}>{s.value}</p>
-           <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>{s.sub}</p>
-         </div>
-       ))}
-     </div>
+     {/* BI visual — gráfico de rosca + cards */}
+     <DashboardBI
+       totalAlunos={totalAlunos ?? 0}
+       nuncaAbriu={nuncaAbriu}
+       cursandoMod1={cursandoMod1}
+       concluiuMod1={concluiuMod1}
+       gestoresAtivos={gestoresAtivos ?? 0}
+       totalGestores={totalGestores ?? 0}
+       novosAlunos={novosAlunos ?? 0}
+       alunosConcluidos={alunosConcluidos ?? 0}
+     />
 
-     {/* Funil visual dos ativos */}
-     {(alunosAtivos ?? 0) > 0 && (
-       <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '18px 20px', marginBottom: 20 }}>
-         <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--avp-text-dim)', marginBottom: 14 }}>
-           Funil — {alunosAtivos} alunos ativos
-         </p>
-         <div style={{ display: 'flex', gap: 0, height: 10, borderRadius: 6, overflow: 'hidden', marginBottom: 12 }}>
-           <div style={{ flex: concluiuMasNaoMarcado, background: '#f97316' }} title="Completaram mas não marcados" />
-           <div style={{ flex: emAndamento, background: '#fbbf24' }} title="Em andamento" />
-           <div style={{ flex: nuncaComecou, background: '#f87171' }} title="Nunca começaram" />
-         </div>
-         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px', fontSize: 12 }}>
-           <span style={{ color: '#f87171' }}>{nuncaComecou} nunca começaram</span>
-           <span style={{ color: '#fbbf24' }}>{emAndamento} em andamento</span>
-           <span style={{ color: '#f97316' }}>{concluiuMasNaoMarcado} completaram (pendente marcar)</span>
-         </div>
-       </div>
-     )}
-
-     {/* Alerta de ação */}
+     {/* Alerta: concluiram mas não marcados */}
      {concluiuMasNaoMarcado > 0 && (
        <div style={{ background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.35)', borderRadius: 10, padding: '14px 18px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
          <div>
