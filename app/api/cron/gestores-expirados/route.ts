@@ -106,7 +106,40 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // ── 2. Verifica PROs no plano FREE que voltaram a ter rede completa ──
+  // ── 2. Reativa gestores FREE/suspenso que tenham pagamento confirmado ──
+  // Cobre o caso: gestor caiu para free mas já tem pagamento pago no banco
+  const { data: gestoresComPagamentoPendente } = await admin.from('gestores')
+    .select('id, nome, whatsapp, tenant_id')
+    .eq('ativo', true)
+    .in('status_assinatura', ['free', 'suspenso'])
+
+  let reativadosPorPagamento = 0
+  for (const g of gestoresComPagamentoPendente ?? []) {
+    const { data: pagamento } = await admin.from('gestor_pagamentos')
+      .select('id, plano_meses, created_at')
+      .eq('gestor_id', g.id)
+      .eq('status', 'pago')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (!pagamento) continue
+
+    const meses = (pagamento.plano_meses as number) ?? 1
+    const novoVencimento = vencimentoMeses(meses)
+    await admin.from('gestores')
+      .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: novoVencimento })
+      .eq('id', g.id)
+
+    const instancia = await instanciaDo(g.tenant_id)
+    const appUrl2 = await getAppUrl(g.tenant_id)
+    await enviarWhatsApp(g.whatsapp,
+      await getMensagem('pro_reativado_gratuito', { gestorNome: g.nome, totalAtivos: '1', limite: '1', appUrl: appUrl2 }, admin, g.tenant_id),
+      instancia).catch(() => {})
+    reativadosPorPagamento++
+  }
+
+  // ── 3. Verifica PROs no plano FREE que voltaram a ter rede completa ──
   // (caso alguém da rede renove → reativa PRO gratuito)
   const { data: gestoresSuspensos } = await admin.from('gestores')
     .select('id, nome, whatsapp, status_assinatura, tenant_id')
@@ -138,7 +171,7 @@ export async function GET(req: NextRequest) {
     ])
   }
 
-  return NextResponse.json({ ok: true, avisos, suspensos, alertasRede })
+  return NextResponse.json({ ok: true, avisos, suspensos, alertasRede, reativadosPorPagamento })
   } catch (e: any) {
     await alertarDiscord('critico', 'Cron gestores-expirados falhou', e?.message ?? String(e))
     return NextResponse.json({ ok: false, error: e?.message }, { status: 500 })
