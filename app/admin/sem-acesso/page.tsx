@@ -105,7 +105,7 @@ export default async function SemAcessoPage() {
                   {g.whatsapp && <span style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginLeft: 8 }}>{g.whatsapp}</span>}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
-                  <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+                  <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'var(--avp-border)', overflow: 'hidden' }}>
                     <div style={{ height: '100%', borderRadius: 3, background: '#f87171', width: `${Math.round(g.count / semAcesso.length * 100)}%` }} />
                   </div>
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#f87171', minWidth: 28, textAlign: 'right' }}>{g.count}</span>

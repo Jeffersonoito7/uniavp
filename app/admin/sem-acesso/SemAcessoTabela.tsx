@@ -92,7 +92,7 @@ export function SemAcessoTabela({ alunos }: { alunos: Aluno[] }) {
               const dt = new Date(a.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })
               const jaEnviou = enviados[a.id]
               return (
-                <tr key={a.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <tr key={a.id} style={{ borderBottom: '1px solid var(--avp-border)' }}>
                   <td style={{ padding: '10px 12px', color: 'var(--avp-text)', fontWeight: 600 }}>
                     {a.nome}
                     {a.email && <div style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 2 }}>{a.email}</div>}
@@ -122,8 +122,8 @@ export function SemAcessoTabela({ alunos }: { alunos: Aluno[] }) {
                         disabled={enviando[a.id] || !a.whatsapp}
                         style={{
                           padding: '5px 12px',
-                          background: a.whatsapp ? 'rgba(74,222,128,0.12)' : 'rgba(255,255,255,0.05)',
-                          border: `1px solid ${a.whatsapp ? 'rgba(74,222,128,0.35)' : 'rgba(255,255,255,0.1)'}`,
+                          background: a.whatsapp ? 'rgba(74,222,128,0.12)' : 'var(--avp-border)',
+                          border: `1px solid ${a.whatsapp ? 'rgba(74,222,128,0.35)' : 'var(--avp-border)'}`,
                           borderRadius: 6,
                           color: a.whatsapp ? '#4ade80' : 'var(--avp-text-dim)',
                           fontSize: 12,

@@ -202,7 +202,7 @@ export default async function AdminDashboard() {
            <p style={{ fontWeight: 700, fontSize: 13, color: '#f97316', margin: '0 0 2px' }}>
              {concluiuMasNaoMarcado} aluno{concluiuMasNaoMarcado > 1 ? 's' : ''} completaram todas as aulas mas ainda não foram marcados como concluídos
            </p>
-           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>Use "Recalcular Conclusões" para corrigir automaticamente.</p>
+           <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>Use "Recalcular Conclusões" para corrigir automaticamente.</p>
          </div>
          <Link href="/admin/relatorio-conclusao" style={{ background: '#f97316', color: '#fff', padding: '8px 16px', borderRadius: 8, textDecoration: 'none', fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0 }}>
            Ver Relatório
@@ -220,7 +220,7 @@ export default async function AdminDashboard() {
              <Link
                key={a.href}
                href={a.href}
-               style={{ display: 'block', padding: '10px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, textDecoration: 'none', transition: 'background .15s' }}
+               style={{ display: 'block', padding: '10px 12px', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 8, textDecoration: 'none', transition: 'background .15s' }}
              >
                <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--avp-text)', margin: '0 0 2px' }}>{a.label}</p>
                <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: 0 }}>{a.desc}</p>
