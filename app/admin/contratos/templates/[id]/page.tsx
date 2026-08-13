@@ -172,8 +172,18 @@ export default function EditarTemplatePage() {
       )}
 
       {preview ? (
-        <div style={{ background: '#fff', borderRadius: 12, padding: 40, color: '#111', fontSize: 14, lineHeight: 1.7, minHeight: 400 }}
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(renderPreview()) }} />
+        <>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 40, color: '#111', fontSize: 14, lineHeight: 1.7, minHeight: 400 }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(renderPreview()) }} />
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20, gap: 12 }}>
+            <button
+              onClick={() => setPreview(false)}
+              style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+            >
+              Editar HTML
+            </button>
+          </div>
+        </>
       ) : (
         <form onSubmit={salvar} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>

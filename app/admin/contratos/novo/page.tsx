@@ -569,20 +569,31 @@ export default function NovoContratoPage() {
           </div>
 
           {preview ? (
-            <div style={{ background: '#fff', borderRadius: 10, padding: '28px 32px', color: '#111', fontSize: 14, lineHeight: 1.8, minHeight: 300 }}
-              dangerouslySetInnerHTML={{ __html: substituirVariaveis(corpoHtml, {
-                nome: contratado.nome || '{{nome}}',
-                cpf: contratado.cpf || '{{cpf}}',
-                whatsapp: contratado.whatsapp || '{{whatsapp}}',
-                email: contratado.email || '{{email}}',
-                endereco: contratado.endereco || '{{endereco}}',
-                data: new Date().toLocaleDateString('pt-BR'),
-                contratante_razao_social: contratante.nome || '{{contratante_razao_social}}',
-                contratante_cnpj: contratante.cnpj || '{{contratante_cnpj}}',
-                contratante_endereco: contratante.endereco || '{{contratante_endereco}}',
-                contratante_representante: contratante.representante || '{{contratante_representante}}',
-                contratante_cargo: contratante.cargo || '{{contratante_cargo}}',
-              }) }} />
+            <>
+              <div style={{ background: '#fff', borderRadius: 10, padding: '28px 32px', color: '#111', fontSize: 14, lineHeight: 1.8, minHeight: 300 }}
+                dangerouslySetInnerHTML={{ __html: substituirVariaveis(corpoHtml, {
+                  nome: contratado.nome || '{{nome}}',
+                  cpf: contratado.cpf || '{{cpf}}',
+                  whatsapp: contratado.whatsapp || '{{whatsapp}}',
+                  email: contratado.email || '{{email}}',
+                  endereco: contratado.endereco || '{{endereco}}',
+                  data: new Date().toLocaleDateString('pt-BR'),
+                  contratante_razao_social: contratante.nome || '{{contratante_razao_social}}',
+                  contratante_cnpj: contratante.cnpj || '{{contratante_cnpj}}',
+                  contratante_endereco: contratante.endereco || '{{contratante_endereco}}',
+                  contratante_representante: contratante.representante || '{{contratante_representante}}',
+                  contratante_cargo: contratante.cargo || '{{contratante_cargo}}',
+                }) }} />
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+                <button
+                  type="button"
+                  onClick={() => setPreview(false)}
+                  style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 24px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
+                >
+                  Editar HTML
+                </button>
+              </div>
+            </>
           ) : (
             <textarea
               ref={textareaRef}
