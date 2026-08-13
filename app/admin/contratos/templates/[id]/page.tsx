@@ -73,6 +73,14 @@ export default function EditarTemplatePage() {
   const [msg, setMsg] = useState<{ tipo: 'ok' | 'err'; texto: string } | null>(null)
   const [extraindo, setExtraindo] = useState(false)
   const editorRef = useRef<HTMLDivElement>(null)
+  // Injeta o HTML no editor visual uma unica vez ao entrar no modo visual
+  // NAO usar dangerouslySetInnerHTML em contenteditable — React re-renderiza e apaga o que o usuario digitou
+  useEffect(() => {
+    if (modo === 'visual' && editorRef.current) {
+      editorRef.current.innerHTML = DOMPurify.sanitize(form.corpo_html)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modo])
 
   useEffect(() => {
     fetch(`/api/admin/contrato-templates/${id}`)
@@ -215,7 +223,6 @@ export default function EditarTemplatePage() {
             ref={editorRef}
             contentEditable
             suppressContentEditableWarning
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(form.corpo_html) }}
             style={{ background: '#fff', borderRadius: 10, padding: '28px 36px', color: '#111', fontSize: 14, lineHeight: 1.8, minHeight: 500, outline: 'none', border: '2px solid #818cf8' }}
           />
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 12 }}>
