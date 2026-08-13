@@ -84,6 +84,7 @@ export default function NovoContratoPage() {
   const [preview, setPreview] = useState(false)
   const [salvando, setSalvando] = useState(false)
   const [msg, setMsg] = useState<{ tipo: 'ok' | 'err'; texto: string } | null>(null)
+  const [extraindo, setExtraindo] = useState(false)
 
   // Contratante
   const [perfis, setPerfis] = useState<Perfil[]>([])
@@ -275,6 +276,34 @@ export default function NovoContratoPage() {
     } else {
       setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao criar contrato.' })
       setSalvando(false)
+    }
+  }
+
+  async function extrairArquivo(e: React.ChangeEvent<HTMLInputElement>) {
+    const arquivo = e.target.files?.[0]
+    if (!arquivo) return
+    if (corpoHtml.trim() && !confirm('Isso vai substituir o corpo atual pelo conteudo do arquivo. Continuar?')) {
+      e.target.value = ''
+      return
+    }
+    setExtraindo(true)
+    setMsg(null)
+    try {
+      const fd = new FormData()
+      fd.append('arquivo', arquivo)
+      const res = await fetch('/api/admin/contrato-templates/extrair-arquivo', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok || !data.ok) {
+        setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao extrair arquivo.' })
+      } else {
+        setCorpoHtml(data.html)
+        setMsg({ tipo: 'ok', texto: `Conteudo extraido com sucesso (${data.tipo.toUpperCase()}). Revise e clique em Criar.` })
+      }
+    } catch {
+      setMsg({ tipo: 'err', texto: 'Erro de conexao ao enviar arquivo.' })
+    } finally {
+      setExtraindo(false)
+      e.target.value = ''
     }
   }
 
@@ -512,12 +541,24 @@ export default function NovoContratoPage() {
                 HTML com variáveis: <code style={{ background: 'var(--avp-black)', padding: '1px 5px', borderRadius: 4 }}>{'{{nome}}'}</code> <code style={{ background: 'var(--avp-black)', padding: '1px 5px', borderRadius: 4 }}>{'{{cpf}}'}</code> <code style={{ background: 'var(--avp-black)', padding: '1px 5px', borderRadius: 4 }}>{'{{contratante_razao_social}}'}</code> <code style={{ background: 'var(--avp-black)', padding: '1px 5px', borderRadius: 4 }}>{'{{data}}'}</code>
               </p>
             </div>
-            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
               {!templateId && (
-                <button type="button" onClick={inserirEstruturaPadrao}
-                  style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
-                  Estrutura padrão
-                </button>
+                <>
+                  <label style={{
+                    background: extraindo ? '#444' : 'rgba(99,102,241,0.15)',
+                    border: '1px solid rgba(99,102,241,0.4)',
+                    color: extraindo ? 'var(--avp-text-dim)' : '#818cf8',
+                    borderRadius: 8, padding: '7px 14px', fontSize: 13, fontWeight: 600,
+                    cursor: extraindo ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap',
+                  }}>
+                    {extraindo ? 'Extraindo...' : 'Carregar arquivo'}
+                    <input type="file" accept=".docx,.pdf,.txt,.html,.htm" onChange={extrairArquivo} disabled={extraindo} style={{ display: 'none' }} />
+                  </label>
+                  <button type="button" onClick={inserirEstruturaPadrao}
+                    style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                    Estrutura padrão
+                  </button>
+                </>
               )}
               <button type="button" onClick={() => setPreview(p => !p)}
                 style={{ background: preview ? 'var(--avp-blue)' : 'none', border: '1px solid var(--avp-border)', color: preview ? '#fff' : 'var(--avp-text-dim)', borderRadius: 8, padding: '7px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>

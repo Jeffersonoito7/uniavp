@@ -70,6 +70,7 @@ export default function EditarTemplatePage() {
   const [salvando, setSalvando] = useState(false)
   const [preview, setPreview] = useState(false)
   const [msg, setMsg] = useState<{ tipo: 'ok' | 'err'; texto: string } | null>(null)
+  const [extraindo, setExtraindo] = useState(false)
 
   useEffect(() => {
     fetch(`/api/admin/contrato-templates/${id}`)
@@ -100,6 +101,34 @@ export default function EditarTemplatePage() {
     }
     setSalvando(false)
     setTimeout(() => setMsg(null), 3000)
+  }
+
+  async function extrairArquivo(e: React.ChangeEvent<HTMLInputElement>) {
+    const arquivo = e.target.files?.[0]
+    if (!arquivo) return
+    if (form.corpo_html.trim() && !confirm('Isso vai substituir o corpo atual pelo conteudo do arquivo. Continuar?')) {
+      e.target.value = ''
+      return
+    }
+    setExtraindo(true)
+    setMsg(null)
+    try {
+      const fd = new FormData()
+      fd.append('arquivo', arquivo)
+      const res = await fetch('/api/admin/contrato-templates/extrair-arquivo', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok || !data.ok) {
+        setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao extrair arquivo.' })
+      } else {
+        setForm(p => ({ ...p, corpo_html: data.html }))
+        setMsg({ tipo: 'ok', texto: `Conteudo extraido com sucesso (${data.tipo.toUpperCase()}). Revise e salve.` })
+      }
+    } catch {
+      setMsg({ tipo: 'err', texto: 'Erro de conexao ao enviar arquivo.' })
+    } finally {
+      setExtraindo(false)
+      e.target.value = ''
+    }
   }
 
   // Substitui variaveis no preview com valores de exemplo
@@ -171,23 +200,46 @@ export default function EditarTemplatePage() {
             <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4 }}>Use no corpo como: {'{{nome}}'}, {'{{cpf}}'}, {'{{data}}'}</p>
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, gap: 10, flexWrap: 'wrap' }}>
               <label style={{ ...labelStyle, marginBottom: 0 }}>Corpo do contrato (HTML) *</label>
-              <button
-                type="button"
-                onClick={() => {
-                  if (form.corpo_html.trim() && !confirm('Isso vai substituir o corpo atual. Continuar?')) return
-                  setForm(p => ({
-                    ...p,
-                    corpo_html: ESTRUTURA_PADRAO,
-                    variaveis: 'nome, cpf, whatsapp, email, endereco, data',
-                  }))
-                }}
-                style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
-              >
-                Estrutura padrao
-              </button>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {/* Upload de arquivo para extrair conteudo */}
+                <label style={{
+                  background: extraindo ? '#444' : 'rgba(99,102,241,0.15)',
+                  border: '1px solid rgba(99,102,241,0.4)',
+                  color: extraindo ? 'var(--avp-text-dim)' : '#818cf8',
+                  borderRadius: 6, padding: '5px 12px', fontSize: 12, fontWeight: 700,
+                  cursor: extraindo ? 'not-allowed' : 'pointer',
+                  whiteSpace: 'nowrap',
+                }}>
+                  {extraindo ? 'Extraindo...' : 'Carregar arquivo'}
+                  <input
+                    type="file"
+                    accept=".docx,.pdf,.txt,.html,.htm"
+                    onChange={extrairArquivo}
+                    disabled={extraindo}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (form.corpo_html.trim() && !confirm('Isso vai substituir o corpo atual. Continuar?')) return
+                    setForm(p => ({
+                      ...p,
+                      corpo_html: ESTRUTURA_PADRAO,
+                      variaveis: 'nome, cpf, whatsapp, email, endereco, data',
+                    }))
+                  }}
+                  style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                >
+                  Estrutura padrao
+                </button>
+              </div>
             </div>
+            <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginBottom: 8 }}>
+              Formatos aceitos para upload: DOCX, PDF, TXT, HTML
+            </p>
             <textarea
               style={{ ...inputStyle, minHeight: 420, fontFamily: 'monospace', fontSize: 13, resize: 'vertical' }}
               value={form.corpo_html}
