@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import DOMPurify from 'isomorphic-dompurify'
@@ -68,9 +68,11 @@ export default function EditarTemplatePage() {
   const [form, setForm] = useState({ nome: '', descricao: '', corpo_html: '', variaveis: '', ativo: true })
   const [loading, setLoading] = useState(true)
   const [salvando, setSalvando] = useState(false)
-  const [preview, setPreview] = useState(false)
+  // modo: 'visual' = editor WYSIWYG, 'html' = textarea HTML bruto, 'preview' = visualizacao final
+  const [modo, setModo] = useState<'visual' | 'html' | 'preview'>('html')
   const [msg, setMsg] = useState<{ tipo: 'ok' | 'err'; texto: string } | null>(null)
   const [extraindo, setExtraindo] = useState(false)
+  const editorRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetch(`/api/admin/contrato-templates/${id}`)
@@ -121,8 +123,8 @@ export default function EditarTemplatePage() {
         setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao extrair arquivo.' })
       } else {
         setForm(p => ({ ...p, corpo_html: data.html }))
-        setPreview(true)
-        setMsg({ tipo: 'ok', texto: `Arquivo extraido (${data.tipo.toUpperCase()}). Veja o preview abaixo. Clique em "Editar" para ajustar o HTML e depois salve.` })
+        setModo('visual')
+        setMsg({ tipo: 'ok', texto: `Arquivo extraido (${data.tipo.toUpperCase()}). Edite o texto diretamente e clique em Salvar.` })
       }
     } catch {
       setMsg({ tipo: 'err', texto: 'Erro de conexao ao enviar arquivo.' })
@@ -158,10 +160,26 @@ export default function EditarTemplatePage() {
           <Link href="/admin/contratos/templates" style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none' }}>← Templates</Link>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--avp-text)', marginTop: 6 }}>Editar Template</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={() => setPreview(p => !p)} style={{ background: preview ? 'var(--avp-blue)' : 'none', border: '1px solid var(--avp-border)', color: preview ? '#fff' : 'var(--avp-text-dim)', borderRadius: 8, padding: '8px 18px', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
-            {preview ? 'Editar' : 'Preview'}
-          </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {(['visual', 'html', 'preview'] as const).map(m => (
+            <button
+              key={m}
+              onClick={() => {
+                if (m !== 'html' && modo === 'visual' && editorRef.current) {
+                  setForm(p => ({ ...p, corpo_html: editorRef.current!.innerHTML }))
+                }
+                setModo(m)
+              }}
+              style={{
+                background: modo === m ? 'var(--avp-blue)' : 'none',
+                border: '1px solid var(--avp-border)',
+                color: modo === m ? '#fff' : 'var(--avp-text-dim)',
+                borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600,
+              }}
+            >
+              {m === 'visual' ? 'Editar texto' : m === 'html' ? 'Editar HTML' : 'Preview'}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -171,16 +189,68 @@ export default function EditarTemplatePage() {
         </div>
       )}
 
-      {preview ? (
+      {modo === 'preview' ? (
         <>
           <div style={{ background: '#fff', borderRadius: 12, padding: 40, color: '#111', fontSize: 14, lineHeight: 1.7, minHeight: 400 }}
             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(renderPreview()) }} />
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20, gap: 12 }}>
+            <button onClick={() => setModo('visual')} style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+              Editar texto
+            </button>
+          </div>
+        </>
+      ) : modo === 'visual' ? (
+        <>
+          {/* Editor WYSIWYG — o usuario edita o texto como no Word */}
+          <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '10px 14px', marginBottom: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <button type="button" onMouseDown={e => { e.preventDefault(); document.execCommand('bold') }} style={{ background: 'none', border: '1px solid var(--avp-border)', borderRadius: 5, padding: '3px 10px', cursor: 'pointer', fontWeight: 700, color: 'var(--avp-text)', fontSize: 13 }}>N</button>
+            <button type="button" onMouseDown={e => { e.preventDefault(); document.execCommand('italic') }} style={{ background: 'none', border: '1px solid var(--avp-border)', borderRadius: 5, padding: '3px 10px', cursor: 'pointer', fontStyle: 'italic', color: 'var(--avp-text)', fontSize: 13 }}>I</button>
+            <button type="button" onMouseDown={e => { e.preventDefault(); document.execCommand('underline') }} style={{ background: 'none', border: '1px solid var(--avp-border)', borderRadius: 5, padding: '3px 10px', cursor: 'pointer', textDecoration: 'underline', color: 'var(--avp-text)', fontSize: 13 }}>S</button>
+            <span style={{ borderLeft: '1px solid var(--avp-border)', margin: '0 4px' }} />
+            <button type="button" onMouseDown={e => { e.preventDefault(); document.execCommand('justifyLeft') }} style={{ background: 'none', border: '1px solid var(--avp-border)', borderRadius: 5, padding: '3px 10px', cursor: 'pointer', color: 'var(--avp-text-dim)', fontSize: 12 }}>Esq</button>
+            <button type="button" onMouseDown={e => { e.preventDefault(); document.execCommand('justifyCenter') }} style={{ background: 'none', border: '1px solid var(--avp-border)', borderRadius: 5, padding: '3px 10px', cursor: 'pointer', color: 'var(--avp-text-dim)', fontSize: 12 }}>Centro</button>
+            <button type="button" onMouseDown={e => { e.preventDefault(); document.execCommand('justifyFull') }} style={{ background: 'none', border: '1px solid var(--avp-border)', borderRadius: 5, padding: '3px 10px', cursor: 'pointer', color: 'var(--avp-text-dim)', fontSize: 12 }}>Justif</button>
+          </div>
+          <div
+            ref={editorRef}
+            contentEditable
+            suppressContentEditableWarning
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(form.corpo_html) }}
+            style={{ background: '#fff', borderRadius: 10, padding: '28px 36px', color: '#111', fontSize: 14, lineHeight: 1.8, minHeight: 500, outline: 'none', border: '2px solid #818cf8' }}
+          />
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 12 }}>
             <button
-              onClick={() => setPreview(false)}
-              style={{ background: 'var(--avp-blue)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+              type="button"
+              onClick={() => {
+                if (editorRef.current) setForm(p => ({ ...p, corpo_html: editorRef.current!.innerHTML }))
+                setModo('preview')
+              }}
+              style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '9px 20px', cursor: 'pointer', fontSize: 13 }}
             >
-              Editar HTML
+              Ver preview
+            </button>
+            <button
+              type="button"
+              disabled={salvando}
+              onClick={async () => {
+                if (editorRef.current) setForm(p => ({ ...p, corpo_html: editorRef.current!.innerHTML }))
+                const htmlAtual = editorRef.current?.innerHTML ?? form.corpo_html
+                setSalvando(true)
+                const variaveis = form.variaveis.split(',').map(v => v.trim()).filter(Boolean)
+                const res = await fetch(`/api/admin/contrato-templates/${id}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ nome: form.nome, descricao: form.descricao || null, corpo_html: htmlAtual, variaveis, ativo: form.ativo }),
+                })
+                const data = await res.json()
+                if (data.ok) setMsg({ tipo: 'ok', texto: 'Template salvo com sucesso!' })
+                else setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao salvar.' })
+                setSalvando(false)
+                setTimeout(() => setMsg(null), 3000)
+              }}
+              style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 24px', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: salvando ? 0.6 : 1 }}
+            >
+              {salvando ? 'Salvando...' : 'Salvar template'}
             </button>
           </div>
         </>
