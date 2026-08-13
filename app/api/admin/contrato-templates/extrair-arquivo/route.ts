@@ -27,7 +27,13 @@ export async function POST(req: NextRequest) {
     if (nome.endsWith('.docx')) {
       const mammoth = await import('mammoth')
       const result = await mammoth.convertToHtml({ buffer })
-      return NextResponse.json({ ok: true, html: result.value, tipo: 'docx' })
+      // Limpa tags vazias e envolve em div com estilo de documento para o preview
+      const limpo = result.value
+        .replace(/<p>\s*<\/p>/g, '')
+        .replace(/<p><br\/>\s*<\/p>/g, '')
+        .trim()
+      const html = `<div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.7; color: #111; max-width: 700px; margin: 0 auto;">\n${limpo}\n</div>`
+      return NextResponse.json({ ok: true, html, tipo: 'docx' })
     }
 
     if (nome.endsWith('.pdf')) {

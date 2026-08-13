@@ -297,7 +297,8 @@ export default function NovoContratoPage() {
         setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao extrair arquivo.' })
       } else {
         setCorpoHtml(data.html)
-        setMsg({ tipo: 'ok', texto: `Conteudo extraido com sucesso (${data.tipo.toUpperCase()}). Revise e clique em Criar.` })
+        setPreview(true)
+        setMsg({ tipo: 'ok', texto: `Arquivo extraido (${data.tipo.toUpperCase()}). Veja o preview abaixo. Clique em "Editar" para ajustar e depois em Criar.` })
       }
     } catch {
       setMsg({ tipo: 'err', texto: 'Erro de conexao ao enviar arquivo.' })

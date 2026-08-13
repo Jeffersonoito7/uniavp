@@ -121,7 +121,8 @@ export default function EditarTemplatePage() {
         setMsg({ tipo: 'err', texto: data.error ?? 'Erro ao extrair arquivo.' })
       } else {
         setForm(p => ({ ...p, corpo_html: data.html }))
-        setMsg({ tipo: 'ok', texto: `Conteudo extraido com sucesso (${data.tipo.toUpperCase()}). Revise e salve.` })
+        setPreview(true)
+        setMsg({ tipo: 'ok', texto: `Arquivo extraido (${data.tipo.toUpperCase()}). Veja o preview abaixo. Clique em "Editar" para ajustar o HTML e depois salve.` })
       }
     } catch {
       setMsg({ tipo: 'err', texto: 'Erro de conexao ao enviar arquivo.' })
