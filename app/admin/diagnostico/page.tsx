@@ -32,11 +32,11 @@ export default async function DiagnosticoPage() {
   ])
 
   const Section = ({ title, count, color, children }: { title: string; count: number; color: string; children: React.ReactNode }) => (
-    <div style={{ background: '#0f0f1a', border: `1px solid ${count > 0 ? color : 'rgba(255,255,255,0.08)'}`, borderRadius: 12, padding: '20px 24px', marginBottom: 20 }}>
+    <div style={{ background: 'var(--avp-card)', border: `1px solid ${count > 0 ? color : 'var(--avp-border)'}`, borderRadius: 12, padding: '20px 24px', marginBottom: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: count > 0 ? 16 : 0 }}>
-        <span style={{ background: count > 0 ? color : '#4ade80', color: '#000', borderRadius: 6, padding: '2px 10px', fontWeight: 800, fontSize: 13 }}>{count}</span>
-        <span style={{ fontWeight: 700, fontSize: 16, color: count > 0 ? '#fff' : 'rgba(255,255,255,0.5)' }}>{title}</span>
-        {count === 0 && <span style={{ color: '#4ade80', fontSize: 13 }}>Sem anomalias</span>}
+        <span style={{ background: count > 0 ? color : 'var(--avp-green)', color: '#000', borderRadius: 6, padding: '2px 10px', fontWeight: 800, fontSize: 13 }}>{count}</span>
+        <span style={{ fontWeight: 700, fontSize: 16, color: count > 0 ? 'var(--avp-text)' : 'var(--avp-text-dim)' }}>{title}</span>
+        {count === 0 && <span style={{ color: 'var(--avp-green)', fontSize: 13 }}>Sem anomalias</span>}
       </div>
       {count > 0 && children}
     </div>
@@ -48,15 +48,15 @@ export default async function DiagnosticoPage() {
         <thead>
           <tr>
             {cols.map(c => (
-              <th key={c.key} style={{ textAlign: 'left', padding: '8px 12px', color: 'rgba(255,255,255,0.4)', borderBottom: '1px solid rgba(255,255,255,0.06)', whiteSpace: 'nowrap' }}>{c.label}</th>
+              <th key={c.key} style={{ textAlign: 'left', padding: '8px 12px', color: 'var(--avp-text-dim)', borderBottom: '1px solid var(--avp-border)', whiteSpace: 'nowrap' }}>{c.label}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+            <tr key={i} style={{ borderBottom: '1px solid var(--avp-border)' }}>
               {cols.map(c => (
-                <td key={c.key} style={{ padding: '7px 12px', color: 'rgba(255,255,255,0.75)' }}>{row[c.key] ?? '-'}</td>
+                <td key={c.key} style={{ padding: '7px 12px', color: 'var(--avp-text)' }}>{row[c.key] ?? '-'}</td>
               ))}
             </tr>
           ))}
@@ -66,15 +66,15 @@ export default async function DiagnosticoPage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07070f', color: '#fff', padding: '32px 24px', maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--avp-bg)', color: 'var(--avp-text)', padding: '32px 24px', maxWidth: 900, margin: '0 auto' }}>
       <div style={{ marginBottom: 32 }}>
-        <a href="/admin" style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, textDecoration: 'none' }}>Painel Admin</a>
-        <span style={{ color: 'rgba(255,255,255,0.2)', margin: '0 8px' }}>/</span>
-        <span style={{ color: '#fff', fontSize: 13 }}>Diagnostico de Dados</span>
+        <a href="/admin" style={{ color: 'var(--avp-text-dim)', fontSize: 13, textDecoration: 'none' }}>Painel Admin</a>
+        <span style={{ color: 'var(--avp-border)', margin: '0 8px' }}>/</span>
+        <span style={{ color: 'var(--avp-text)', fontSize: 13 }}>Diagnostico de Dados</span>
       </div>
 
       <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Diagnostico de Dados</h1>
-      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, marginBottom: 32 }}>
+      <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 32 }}>
         Anomalias detectadas no banco. Os contadores incluem apenas registros do tenant atual.
       </p>
 

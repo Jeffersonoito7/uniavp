@@ -167,10 +167,10 @@ export default async function RelatorioConclusaoPage() {
   const meses = Object.entries(porMes).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 12) as [string, number][]
 
   const card = (label: string, value: number | string, sub: string, cor: string) => (
-    <div style={{ background: '#0f1729', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '20px 22px' }}>
-      <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>{label}</p>
+    <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '20px 22px' }}>
+      <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--avp-text-dim)', marginBottom: 8 }}>{label}</p>
       <p style={{ fontSize: 32, fontWeight: 800, color: cor, margin: '0 0 4px', letterSpacing: '-0.02em' }}>{value}</p>
-      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{sub}</p>
+      <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>{sub}</p>
     </div>
   )
 
@@ -219,7 +219,7 @@ export default async function RelatorioConclusaoPage() {
           return (
             <div
               key={mod.id}
-              style={{ background: '#0f1729', border: emiteCertificado ? '1px solid rgba(251,191,36,0.4)' : '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '20px 24px' }}
+              style={{ background: 'var(--avp-card)', border: emiteCertificado ? '1px solid rgba(251,191,36,0.4)' : '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '20px 24px' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -227,8 +227,8 @@ export default async function RelatorioConclusaoPage() {
                     <span style={{ fontSize: 14, fontWeight: 800, color: emiteCertificado ? '#fbbf24' : '#818cf8' }}>{idx + 1}</span>
                   </div>
                   <div>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: 0 }}>{mod.titulo}</p>
-                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: 0 }}>
+                    <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--avp-text)', margin: 0 }}>{mod.titulo}</p>
+                    <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>
                       {mod.totalAulas} aula{mod.totalAulas !== 1 ? 's' : ''}
                       {emiteCertificado ? ' — emite certificado' : ''}
                     </p>
@@ -237,21 +237,21 @@ export default async function RelatorioConclusaoPage() {
                 <div style={{ display: 'flex', gap: 12 }}>
                   <div style={{ textAlign: 'center' }}>
                     <p style={{ fontSize: 22, fontWeight: 800, color: '#4ade80', margin: 0 }}>{mod.concluiramModulo}</p>
-                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: 0 }}>concluíram</p>
+                    <p style={{ fontSize: 10, color: 'var(--avp-text-dim)', margin: 0 }}>concluíram</p>
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <p style={{ fontSize: 22, fontWeight: 800, color: '#fbbf24', margin: 0 }}>{mod.emAndamentoModulo}</p>
-                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: 0 }}>em andamento</p>
+                    <p style={{ fontSize: 10, color: 'var(--avp-text-dim)', margin: 0 }}>em andamento</p>
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <p style={{ fontSize: 22, fontWeight: 800, color: '#f87171', margin: 0 }}>{mod.nuncaComecouModulo}</p>
-                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: 0 }}>não começaram</p>
+                    <p style={{ fontSize: 10, color: 'var(--avp-text-dim)', margin: 0 }}>não começaram</p>
                   </div>
                 </div>
               </div>
 
               {/* Barra de progresso */}
-              <div style={{ height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden', display: 'flex' }}>
+              <div style={{ height: 8, background: 'var(--avp-border)', borderRadius: 4, overflow: 'hidden', display: 'flex' }}>
                 <div style={{ height: '100%', width: `${pctConc}%`, background: '#4ade80' }} />
                 <div style={{ height: '100%', width: `${pctAnd}%`, background: '#fbbf24' }} />
               </div>
@@ -266,7 +266,7 @@ export default async function RelatorioConclusaoPage() {
       </div>
 
       {/* Funil global dos ativos */}
-      <div style={{ background: '#0f1729', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '24px 28px', marginBottom: 24 }}>
+      <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '24px 28px', marginBottom: 24 }}>
         <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 20px', color: 'var(--avp-text)' }}>
           Situação geral dos {totalAtivos} ativos (trilha completa)
         </h2>
@@ -276,13 +276,13 @@ export default async function RelatorioConclusaoPage() {
           { label: 'Em andamento', value: emAndamento, cor: '#fbbf24', desc: 'Aprovaram pelo menos 1 aula mas não completaram a trilha toda' },
           { label: 'Completaram mas não foram marcados como concluídos', value: concluiuMasNaoMarcado, cor: '#f97316', desc: 'Clique em "Recalcular Conclusões" no dashboard para corrigir' },
         ].map(item => (
-          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12, padding: '12px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
+          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12, padding: '12px 14px', background: 'var(--avp-border)', borderRadius: 8 }}>
             <div style={{ width: 48, height: 48, borderRadius: 10, background: item.cor + '20', border: `2px solid ${item.cor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <span style={{ fontSize: 18, fontWeight: 800, color: item.cor }}>{item.value}</span>
             </div>
             <div style={{ flex: 1 }}>
-              <p style={{ fontWeight: 700, fontSize: 13, color: '#fff', margin: '0 0 2px' }}>{item.label}</p>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{item.desc}</p>
+              <p style={{ fontWeight: 700, fontSize: 13, color: 'var(--avp-text)', margin: '0 0 2px' }}>{item.label}</p>
+              <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>{item.desc}</p>
             </div>
             <span style={{ fontSize: 13, fontWeight: 700, color: item.cor, flexShrink: 0 }}>{pct(item.value, totalAtivos ?? 1)}</span>
           </div>
@@ -293,7 +293,7 @@ export default async function RelatorioConclusaoPage() {
             <p style={{ color: '#f97316', fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>
               Acao necessaria: {concluiuMasNaoMarcado} aluno{concluiuMasNaoMarcado > 1 ? 's' : ''} precisam ser marcado{concluiuMasNaoMarcado > 1 ? 's' : ''} como concluídos
             </p>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, margin: 0 }}>
+            <p style={{ color: 'var(--avp-text-dim)', fontSize: 12, margin: 0 }}>
               Va ao Dashboard e clique em "Recalcular Conclusões".
             </p>
           </div>
@@ -306,10 +306,10 @@ export default async function RelatorioConclusaoPage() {
       </div>
 
       {/* Resumo */}
-      <div style={{ background: '#0f1729', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
+      <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
         <div>
           <p style={{ fontWeight: 700, fontSize: 14, color: '#fff', margin: '0 0 4px' }}>Resumo</p>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0 }}>
+          <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', margin: 0 }}>
             De {totalAlunos} alunos: {semUserid} nunca acessaram, {totalInativos} estão inativos, {nuncaComecou} ativos nunca começaram, {emAndamento} estão em andamento. {totalConcluidos} concluíram a trilha toda — {concluiramMod1} passaram em todas as aulas do Módulo 1 (critério real do certificado).
           </p>
         </div>

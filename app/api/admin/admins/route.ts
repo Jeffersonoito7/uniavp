@@ -17,19 +17,27 @@ export async function POST(req: NextRequest) {
   if (!nome || !email || !senha || senha.length < 6)
     return NextResponse.json({ error: 'Nome, e-mail e senha (mín. 6 caracteres) são obrigatórios' }, { status: 400 })
 
-  // Criar usuário no auth
-  const { data: authUser, error: authErr } = await adminClient.auth.admin.createUser({
-    email, password: senha, email_confirm: true,
-  })
-  if (authErr) return NextResponse.json({ error: authErr.message }, { status: 400 })
+  try {
+    // Criar usuário no auth
+    const { data: authUser, error: authErr } = await adminClient.auth.admin.createUser({
+      email, password: senha, email_confirm: true,
+    })
+    if (authErr) return NextResponse.json({ error: authErr.message }, { status: 400 })
 
-  // Inserir na tabela admins herdando o tenant do admin que criou
-  const { data: novo, error: dbErr } = await adminClient.from('admins')
-    .insert({ user_id: authUser.user!.id, nome, email, ativo: true, role: 'admin', tenant_id: me.tenant_id ?? null })
-    .select('id, nome, email, role, ativo, created_at').single()
-  if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 400 })
+    // Inserir na tabela admins herdando o tenant do admin que criou
+    const { data: novo, error: dbErr } = await adminClient.from('admins')
+      .insert({ user_id: authUser.user!.id, nome, email, ativo: true, role: 'admin', tenant_id: me.tenant_id ?? null })
+      .select('id, nome, email, role, ativo, created_at').single()
+    if (dbErr) {
+      await adminClient.auth.admin.deleteUser(authUser.user!.id).catch(() => {})
+      return NextResponse.json({ error: dbErr.message }, { status: 400 })
+    }
 
-  return NextResponse.json({ admin: novo })
+    return NextResponse.json({ admin: novo })
+  } catch (err) {
+    console.error('admins POST:', err)
+    return NextResponse.json({ error: 'Erro interno ao criar admin' }, { status: 500 })
+  }
 }
 
 export async function DELETE(req: NextRequest) {
@@ -45,14 +53,19 @@ export async function DELETE(req: NextRequest) {
   const { id } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  // Não deixar excluir a si mesmo
-  const { data: target } = await adminClient.from('admins')
-    .select('user_id').eq('id', id).maybeSingle()
-  if (target?.user_id === user.id)
-    return NextResponse.json({ error: 'Você não pode excluir sua própria conta' }, { status: 400 })
+  try {
+    // Não deixar excluir a si mesmo
+    const { data: target } = await adminClient.from('admins')
+      .select('user_id').eq('id', id).maybeSingle()
+    if (target?.user_id === user.id)
+      return NextResponse.json({ error: 'Você não pode excluir sua própria conta' }, { status: 400 })
 
-  await adminClient.from('admins').delete().eq('id', id)
-  return NextResponse.json({ ok: true })
+    await adminClient.from('admins').delete().eq('id', id)
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('admins DELETE:', err)
+    return NextResponse.json({ error: 'Erro interno ao excluir admin' }, { status: 500 })
+  }
 }
 
 export async function PUT(req: NextRequest) {
@@ -68,17 +81,22 @@ export async function PUT(req: NextRequest) {
   const { id, ativo, nova_senha } = await req.json()
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  if (nova_senha) {
-    const { data: target } = await adminClient.from('admins')
-      .select('user_id').eq('id', id).maybeSingle()
-    if (target?.user_id) {
-      await adminClient.auth.admin.updateUserById(target.user_id, { password: nova_senha })
+  try {
+    if (nova_senha) {
+      const { data: target } = await adminClient.from('admins')
+        .select('user_id').eq('id', id).maybeSingle()
+      if (target?.user_id) {
+        await adminClient.auth.admin.updateUserById(target.user_id, { password: nova_senha })
+      }
     }
-  }
 
-  if (ativo !== undefined) {
-    await adminClient.from('admins').update({ ativo }).eq('id', id)
-  }
+    if (ativo !== undefined) {
+      await adminClient.from('admins').update({ ativo }).eq('id', id)
+    }
 
-  return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('admins PUT:', err)
+    return NextResponse.json({ error: 'Erro interno ao atualizar admin' }, { status: 500 })
+  }
 }

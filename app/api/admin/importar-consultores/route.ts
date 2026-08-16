@@ -14,12 +14,23 @@ export async function POST(req: NextRequest) {
   const ctx = await getAdminContext(user.id, adminClient)
   if (!ctx) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
-  const formData = await req.formData()
+  let formData: FormData
+  try {
+    formData = await req.formData()
+  } catch {
+    return NextResponse.json({ error: 'Erro ao ler o arquivo enviado' }, { status: 400 })
+  }
   const file = formData.get('arquivo') as File | null
   if (!file) return NextResponse.json({ error: 'Arquivo não enviado' }, { status: 400 })
 
-  const buffer = await file.arrayBuffer()
-  const wb = XLSX.read(buffer, { type: 'array' })
+  let buffer: ArrayBuffer
+  let wb: XLSX.WorkBook
+  try {
+    buffer = await file.arrayBuffer()
+    wb = XLSX.read(buffer, { type: 'array' })
+  } catch {
+    return NextResponse.json({ error: 'Arquivo inválido ou corrompido' }, { status: 400 })
+  }
   const ws = wb.Sheets[wb.SheetNames[0]]
   const rows = XLSX.utils.sheet_to_json<{ nome: string; whatsapp: string; email: string; senha: string; gestor_nome?: string; gestor_whatsapp?: string }>(ws)
 
