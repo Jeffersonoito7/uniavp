@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import PhoneInput from '@/app/components/PhoneInput'
 import Link from 'next/link'
 import { maskCPF, maskCNPJ, maskCEP } from '@/lib/masks'
+import DOMPurify from 'isomorphic-dompurify'
 
 type Template = { id: string; nome: string; variaveis: string[]; corpo_html: string }
 type ContratoBase = { id: string; titulo: string; numero_registro: string }
@@ -571,7 +572,7 @@ export default function NovoContratoPage() {
           {preview ? (
             <>
               <div style={{ background: '#fff', borderRadius: 10, padding: '28px 32px', color: '#111', fontSize: 14, lineHeight: 1.8, minHeight: 300 }}
-                dangerouslySetInnerHTML={{ __html: substituirVariaveis(corpoHtml, {
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(substituirVariaveis(corpoHtml, {
                   nome: contratado.nome || '{{nome}}',
                   cpf: contratado.cpf || '{{cpf}}',
                   whatsapp: contratado.whatsapp || '{{whatsapp}}',
@@ -583,7 +584,7 @@ export default function NovoContratoPage() {
                   contratante_endereco: contratante.endereco || '{{contratante_endereco}}',
                   contratante_representante: contratante.representante || '{{contratante_representante}}',
                   contratante_cargo: contratante.cargo || '{{contratante_cargo}}',
-                }) }} />
+                })) }} />
               <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
                 <button
                   type="button"

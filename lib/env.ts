@@ -19,6 +19,8 @@ const REQUIRED: EnvVar[] = [
   { key: 'EVOLUTION_API_URL',           description: 'URL da Evolution API (WhatsApp)' },
   { key: 'EVOLUTION_API_KEY',           description: 'API Key da Evolution API' },
   // Opcionais — degradam graciosamente se ausentes
+  { key: 'EFI_CERT_BASE64',             description: 'Certificado mTLS da Efí Bank em base64 (PIX)', optional: true },
+  { key: 'EFI_PIX_KEY',               description: 'Chave PIX da Efí Bank', optional: true },
   { key: 'RESEND_API_KEY',              description: 'API Key do Resend (e-mail)', optional: true },
   { key: 'ANTHROPIC_API_KEY',           description: 'API Key da Anthropic (IA)', optional: true },
   { key: 'DISCORD_WEBHOOK_URL',         description: 'Webhook do Discord para alertas', optional: true },

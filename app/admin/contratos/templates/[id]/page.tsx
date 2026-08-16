@@ -173,7 +173,7 @@ export default function EditarTemplatePage() {
             <button
               key={m}
               onClick={() => {
-                if (m !== 'html' && modo === 'visual' && editorRef.current) {
+                if (modo === 'visual' && editorRef.current) {
                   setForm(p => ({ ...p, corpo_html: editorRef.current!.innerHTML }))
                 }
                 setModo(m)
