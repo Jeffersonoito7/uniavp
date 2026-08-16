@@ -4,6 +4,10 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+
   const aulaId = req.nextUrl.searchParams.get('aula_id')
   if (!aulaId) return NextResponse.json({ error: 'aula_id obrigatório' }, { status: 400 })
 

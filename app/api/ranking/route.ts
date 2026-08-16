@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server'
-import { createServiceRoleClient } from '@/lib/supabase-server'
+import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 
 export const dynamic = 'force-dynamic'
-// Revalida a cada 10 minutos para não sobrecarregar o banco
-export const revalidate = 600
 
 export async function GET() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+
   const admin = createServiceRoleClient()
 
   // Busca os top 10 por pontos totais entre consultores ativos

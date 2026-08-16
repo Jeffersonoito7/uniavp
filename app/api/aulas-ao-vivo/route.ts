@@ -8,6 +8,10 @@ const aulasTable = (client: ReturnType<typeof createServiceRoleClient>) =>
   client.from('aulas_ao_vivo')
 
 export async function GET(req: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+
   const { searchParams } = new URL(req.url)
   const modo = searchParams.get('modo')
   const gestorId = searchParams.get('gestor_id')
