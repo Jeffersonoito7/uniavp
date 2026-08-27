@@ -16,7 +16,7 @@ export default async function ConsultoresPage() {
  const tid = (adminRecord?.tenant_id ?? null) as string | null
 
  let q = (adminClient.from('alunos') as any)
- .select('id, nome, whatsapp, email, status, created_at, user_id, gestor_nome, gestor_whatsapp, cpf, especialista, indicador:indicadores(nome, whatsapp)')
+ .select('id, nome, whatsapp, email, status, created_at, user_id, gestor_nome, gestor_whatsapp, cpf, especialista, funil_estado, indicador:indicadores(nome, whatsapp)')
  .order('created_at', { ascending: false })
  if (tid) q = q.eq('tenant_id', tid)
  const { data: consultores } = await q

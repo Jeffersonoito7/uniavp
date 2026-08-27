@@ -57,6 +57,7 @@ type Consultor = {
  gestor_whatsapp?: string | null
  cpf?: string | null
  especialista?: boolean | null
+ funil_estado?: number | null
 }
 
 const statusColor: Record<string, string> = {
@@ -79,6 +80,25 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  const [salvando, setSalvando] = useState(false)
  const [msg, setMsg] = useState<{ tipo: 'ok' | 'err'; texto: string } | null>(null)
  const [verSenha, setVerSenha] = useState(false)
+ const [iniciandoFunil, setIniciandoFunil] = useState<string | null>(null)
+
+ async function iniciarFunil(c: Consultor) {
+   if (!confirm(`Iniciar funil de onboarding para ${c.nome}? Uma mensagem sera enviada pelo WhatsApp.`)) return
+   setIniciandoFunil(c.id)
+   const res = await fetch('/api/admin/funil-consultor/iniciar', {
+     method: 'POST',
+     headers: { 'Content-Type': 'application/json' },
+     body: JSON.stringify({ aluno_id: c.id }),
+   })
+   const json = await res.json()
+   if (res.ok) {
+     setConsultores(cs => cs.map(x => x.id === c.id ? { ...x, funil_estado: 1 } : x))
+     setMsg({ tipo: 'ok', texto: `Funil iniciado para ${c.nome}` })
+   } else {
+     setMsg({ tipo: 'err', texto: json.error ?? 'Erro ao iniciar funil' })
+   }
+   setIniciandoFunil(null)
+ }
 
  // Modal de desempenho/notas
  type DesempenhoModulo = { modulo: string; ordem: number; aulas: { aula_titulo: string; nota: number; aprovacao_minima: number; aprovado: boolean; data: string }[] }
@@ -439,6 +459,17 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  style={{ background: '#f59e0b20', border: '1px solid #f59e0b40', color: '#f59e0b', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
  Reenviar
  </button>
+ )}
+ {c.funil_estado !== 4 && (
+ <button
+   onClick={() => iniciarFunil(c)}
+   disabled={iniciandoFunil === c.id}
+   style={{ background: c.funil_estado && c.funil_estado > 0 ? '#f59e0b20' : '#6366f120', border: `1px solid ${c.funil_estado && c.funil_estado > 0 ? '#f59e0b40' : '#6366f140'}`, color: c.funil_estado && c.funil_estado > 0 ? '#f59e0b' : '#6366f1', borderRadius: 6, padding: '5px 10px', cursor: iniciandoFunil === c.id ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 600, opacity: iniciandoFunil === c.id ? 0.6 : 1 }}>
+   {iniciandoFunil === c.id ? '...' : c.funil_estado && c.funil_estado > 0 ? `Funil E${c.funil_estado}` : 'Funil'}
+ </button>
+ )}
+ {c.funil_estado === 4 && (
+ <span style={{ background: '#4ade8020', border: '1px solid #4ade8040', color: '#4ade80', borderRadius: 6, padding: '5px 10px', fontSize: 12, fontWeight: 600 }}>Integrado</span>
  )}
  <button onClick={() => excluirConsultor(c)}
  style={{ background: 'var(--avp-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>

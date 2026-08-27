@@ -161,6 +161,7 @@ export default async function AdminDashboard() {
    { href: '/admin/crm', label: 'CRM', desc: 'Interações e notas' },
    { href: '/admin/gestores', label: 'Gestores PRO', desc: 'Planos ativos' },
    { href: '/admin/relatorio-conclusao', label: 'Relatório de Conclusão', desc: 'Diagnóstico completo' },
+   { href: '/admin/funil-consultor', label: 'Funil Onboarding', desc: 'Quiz e perguntas do funil' },
  ]
 
  const statusCor: Record<string, string> = {
