@@ -11,6 +11,7 @@ import SupportChat from '@/app/components/SupportChat'
 import RankingWidget from '@/app/components/RankingWidget'
 import RetomarPopup from '@/app/components/RetomarPopup'
 import IndicacaoCard from '@/app/components/IndicacaoCard'
+import MeusCertificados from './MeusCertificados'
 import IndicadorPopup from '@/app/components/IndicadorPopup'
 import InactivityReload from '@/app/components/InactivityReload'
 import ProTeaser from '@/app/components/ProTeaser'
@@ -419,6 +420,21 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  </div>
  </div>
  )}
+
+        {/* ── MEUS CERTIFICADOS ── */}
+        <MeusCertificados
+          modulos={modulos}
+          moduloCerts={moduloCerts}
+          mostrarCarteira={mostrarCarteira}
+          whatsapp={params.whatsapp}
+          nomeAluno={aluno.nome}
+          numRegistro={aluno.numero_registro}
+          carteiraLogoEsq={certMap['carteira_logo_esquerda']}
+          carteiraLogoDir={certMap['carteira_logo_direita']}
+          carteiraAssinaturaUrl={certMap['carteira_assinatura_url']}
+          carteiraAssinaturaNome={certMap['carteira_assinatura_nome']}
+          carteiraAssinaturaCargo={certMap['carteira_assinatura_cargo']}
+        />
 
  {/* ── BANNER DE FORMAÇÃO / CARTEIRA ── */}
  {mostrarCarteira && (

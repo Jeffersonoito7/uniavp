@@ -6,10 +6,54 @@ import { createServiceRoleClient } from '@/lib/supabase-server'
 import LinksTeste from './LinksTeste'
 import Link from 'next/link'
 import { DashboardBI } from './DashboardGraficos'
+import DashboardFiltro from './DashboardFiltro'
+import DashboardPeriodo from './DashboardPeriodo'
 
 import { DOMINIO_MASTER } from '@/lib/constants'
 
-export default async function AdminDashboard() {
+function calcularPeriodo(periodo: string, inicioStr?: string, fimStr?: string) {
+  const agora = new Date()
+  let inicio: Date, fim: Date, label: string
+
+  if (periodo === 'mes_anterior') {
+    inicio = new Date(agora.getFullYear(), agora.getMonth() - 1, 1)
+    fim = new Date(agora.getFullYear(), agora.getMonth(), 0, 23, 59, 59, 999)
+    label = inicio.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+  } else if (periodo === '3_meses') {
+    inicio = new Date(agora.getFullYear(), agora.getMonth() - 2, 1)
+    fim = new Date(agora.getFullYear(), agora.getMonth() + 1, 0, 23, 59, 59, 999)
+    label = 'Últimos 3 meses'
+  } else if (periodo === '6_meses') {
+    inicio = new Date(agora.getFullYear(), agora.getMonth() - 5, 1)
+    fim = new Date(agora.getFullYear(), agora.getMonth() + 1, 0, 23, 59, 59, 999)
+    label = 'Últimos 6 meses'
+  } else if (periodo === 'ano_atual') {
+    inicio = new Date(agora.getFullYear(), 0, 1)
+    fim = new Date(agora.getFullYear(), 11, 31, 23, 59, 59, 999)
+    label = `Ano ${agora.getFullYear()}`
+  } else if (periodo === 'personalizado' && inicioStr && fimStr) {
+    inicio = new Date(inicioStr + 'T00:00:00')
+    fim = new Date(fimStr + 'T23:59:59')
+    label = `${new Date(inicioStr).toLocaleDateString('pt-BR')} a ${new Date(fimStr).toLocaleDateString('pt-BR')}`
+  } else {
+    // mes_atual (default)
+    inicio = new Date(agora.getFullYear(), agora.getMonth(), 1)
+    fim = new Date(agora.getFullYear(), agora.getMonth() + 1, 0, 23, 59, 59, 999)
+    label = agora.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+  }
+
+  const diffMs = fim.getTime() - inicio.getTime()
+  const inicioPrev = new Date(inicio.getTime() - diffMs - 1)
+  const fimPrev = new Date(inicio.getTime() - 1)
+
+  return { inicio, fim, label, inicioPrev, fimPrev }
+}
+
+export default async function AdminDashboard({
+  searchParams,
+}: {
+  searchParams?: { periodo?: string; inicio?: string; fim?: string }
+}) {
  const host = (await headers()).get('host')?.replace(/:\d+$/, '') ?? ''
  const isMaster = host === DOMINIO_MASTER || host === 'localhost'
 
@@ -135,8 +179,39 @@ export default async function AdminDashboard() {
    }
  }
 
- const seteAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
- const { count: novosAlunos } = await tq(adminClient.from('alunos').select('id', { count: 'exact', head: true })).gte('created_at', seteAtras)
+ const periodo = searchParams?.periodo ?? 'mes_atual'
+ const periodoInfo = calcularPeriodo(periodo, searchParams?.inicio, searchParams?.fim)
+
+ const agora = new Date()
+ const seisAtras = new Date(agora.getFullYear(), agora.getMonth() - 5, 1).toISOString()
+
+ const [
+   { count: novosNoPeriodo },
+   { count: novosNoPrev },
+   { data: cadastrosMensaisRaw },
+ ] = await Promise.all([
+   tq(adminClient.from('alunos').select('id', { count: 'exact', head: true }))
+     .gte('created_at', periodoInfo.inicio.toISOString())
+     .lte('created_at', periodoInfo.fim.toISOString()),
+   tq(adminClient.from('alunos').select('id', { count: 'exact', head: true }))
+     .gte('created_at', periodoInfo.inicioPrev.toISOString())
+     .lte('created_at', periodoInfo.fimPrev.toISOString()),
+   tq(adminClient.from('alunos').select('created_at')).gte('created_at', seisAtras),
+ ])
+
+ const mesesCadastro: Record<string, number> = {}
+ for (const r of (cadastrosMensaisRaw ?? []) as { created_at: string }[]) {
+   const d = new Date(r.created_at)
+   const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+   mesesCadastro[key] = (mesesCadastro[key] ?? 0) + 1
+ }
+ const mesesLabels = Array.from({ length: 6 }, (_, i) => {
+   const d = new Date(agora.getFullYear(), agora.getMonth() - 5 + i, 1)
+   const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+   return { label: d.toLocaleDateString('pt-BR', { month: 'short' }), total: mesesCadastro[key] ?? 0, key }
+ })
+
+ const novosAlunos = novosNoPeriodo ?? 0
 
  // Últimos 8 alunos cadastrados
  const { data: ultimosAlunos } = await tq(
@@ -149,7 +224,7 @@ export default async function AdminDashboard() {
    { label: 'Cursando', value: cursandoMod1, sub: 'pelo menos 1 aula feita', cor: '#fbbf24' },
    { label: 'Concluiram Mod. 1', value: concluiuMod1, sub: 'todas as aulas do Módulo 1', cor: '#4ade80' },
    { label: 'PROs Ativos', value: gestoresAtivos ?? 0, sub: `de ${totalGestores ?? 0} cadastrados`, cor: '#38bdf8' },
-   { label: 'Novos (7 dias)', value: novosAlunos ?? 0, sub: 'novos cadastros', cor: '#c084fc' },
+   { label: 'Novos no Período', value: novosNoPeriodo ?? 0, sub: `Anterior: ${novosNoPrev ?? 0}`, cor: '#c084fc' },
  ]
 
  const atalhos = [
@@ -179,10 +254,14 @@ export default async function AdminDashboard() {
    <>
      <div style={{ marginBottom: 24 }}>
        <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--avp-text)', letterSpacing: '-0.02em' }}>Dashboard</h1>
-       <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 4 }}>Visão geral da plataforma</p>
+       <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginTop: 4 }}>
+         Visão geral da plataforma <span style={{ color: '#818cf8', fontWeight: 600 }}>{periodoInfo.label}</span>
+       </p>
      </div>
 
      {isMaster && <LinksTeste />}
+
+     <DashboardFiltro periodoAtual={periodo} inicioAtual={searchParams?.inicio} fimAtual={searchParams?.fim} />
 
      {/* BI visual — gráfico de rosca + cards */}
      <DashboardBI
@@ -195,6 +274,8 @@ export default async function AdminDashboard() {
        novosAlunos={novosAlunos ?? 0}
        alunosConcluidos={alunosConcluidos ?? 0}
      />
+
+     <DashboardPeriodo meses={mesesLabels} />
 
      {/* Alerta: concluiram mas não marcados */}
      {concluiuMasNaoMarcado > 0 && (
