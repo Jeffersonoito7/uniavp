@@ -20,20 +20,26 @@ export default function DashboardFiltro({ periodoAtual, inicioAtual, fimAtual }:
   const [inicio, setInicio] = useState(inicioAtual ?? '')
   const [fim, setFim] = useState(fimAtual ?? '')
 
-  function aplicar() {
+  function navegar(p: string, ini: string, f: string) {
     const params = new URLSearchParams()
-    params.set('periodo', periodo)
-    if (periodo === 'personalizado') {
-      if (inicio) params.set('inicio', inicio)
-      if (fim) params.set('fim', fim)
+    params.set('periodo', p)
+    if (p === 'personalizado') {
+      if (ini) params.set('inicio', ini)
+      if (f) params.set('fim', f)
     }
     router.push(`${pathname}?${params.toString()}`)
+  }
+
+  function onChangePeriodo(e: React.ChangeEvent<HTMLSelectElement>) {
+    const novo = e.target.value
+    setPeriodo(novo)
+    if (novo !== 'personalizado') navegar(novo, inicio, fim)
   }
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 20, padding: '14px 18px', background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10 }}>
       <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--avp-text-dim)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Período</p>
-      <select value={periodo} onChange={e => setPeriodo(e.target.value)}
+      <select value={periodo} onChange={onChangePeriodo}
         style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid var(--avp-border)', background: 'var(--avp-bg)', color: 'var(--avp-text)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
         {PERIODOS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
       </select>
@@ -44,12 +50,12 @@ export default function DashboardFiltro({ periodoAtual, inicioAtual, fimAtual }:
           <span style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>até</span>
           <input type="date" value={fim} onChange={e => setFim(e.target.value)}
             style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--avp-border)', background: 'var(--avp-bg)', color: 'var(--avp-text)', fontSize: 13 }} />
+          <button onClick={() => navegar(periodo, inicio, fim)}
+            style={{ padding: '7px 16px', borderRadius: 8, background: '#818cf8', color: '#fff', border: 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+            Aplicar
+          </button>
         </>
       )}
-      <button onClick={aplicar}
-        style={{ padding: '7px 16px', borderRadius: 8, background: '#818cf8', color: '#fff', border: 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
-        Aplicar
-      </button>
     </div>
   )
 }

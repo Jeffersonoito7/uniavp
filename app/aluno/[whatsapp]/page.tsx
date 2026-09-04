@@ -141,11 +141,32 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
 
  const setupLinkParceiro = aluno.link_externo || gestorLink?.link_externo || indicadorAluno?.link_externo || certMap['captacao_link_externo'] || undefined
 
- const { data: gestorAtivo } = await adminClient.from('gestores')
- .select('id')
- .eq('user_id', user.id)
- .eq('ativo', true)
- .maybeSingle()
+ let gestorAtivo: { id: string } | null = null
+ {
+   // Primeira tentativa: por user_id (caminho normal)
+   const { data: g1 } = await adminClient.from('gestores')
+     .select('id, user_id')
+     .eq('user_id', user.id)
+     .eq('ativo', true)
+     .maybeSingle()
+   if (g1) {
+     gestorAtivo = g1
+   } else if (user.email) {
+     // Fallback: admin pode ter promovido antes do aluno fazer o primeiro login
+     const { data: g2 } = await (adminClient.from('gestores') as any)
+       .select('id, user_id')
+       .ilike('email', user.email)
+       .eq('ativo', true)
+       .maybeSingle() as { data: { id: string; user_id: string | null } | null }
+     if (g2) {
+       gestorAtivo = g2
+       // Vincular user_id agora que o aluno está logando
+       if (!g2.user_id) {
+         await adminClient.from('gestores').update({ user_id: user.id } as any).eq('id', g2.id)
+       }
+     }
+   }
+ }
  if (gestorAtivo && !isAdminPreview) redirect('/pro')
 
  const { data: limiteRow } = await adminClient.from('configuracoes')
