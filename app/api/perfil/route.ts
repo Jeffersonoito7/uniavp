@@ -19,7 +19,12 @@ export async function PUT(req: NextRequest) {
     .eq('id', aluno_id)
     .maybeSingle()
 
-  if (!aluno || aluno.user_id !== user.id) {
+  if (!aluno) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+
+  // Se user_id ainda não está vinculado, vincula agora (aluno criado pelo admin antes do primeiro login)
+  if (!aluno.user_id) {
+    await adminClient.from('alunos').update({ user_id: user.id } as any).eq('id', aluno_id)
+  } else if (aluno.user_id !== user.id) {
     return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
   }
 
