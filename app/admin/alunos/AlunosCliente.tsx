@@ -64,6 +64,7 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
   const [alunos, setAlunos] = useState<Aluno[]>(alunosIniciais)
   const [busca, setBusca] = useState(buscaInicial)
   const [filtroPlano, setFiltroPlano] = useState<'todos' | 'PRO' | 'Free'>('todos')
+  const [filtroStatus, setFiltroStatus] = useState<'todos' | 'ativo' | 'inativo'>('todos')
   const [editando, setEditando] = useState<Aluno | null>(null)
   const [editForm, setEditForm] = useState({
     nome: '', whatsapp: '', email: '', cpf: '', status: 'ativo',
@@ -173,7 +174,8 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
       a.whatsapp.includes(busca) ||
       a.email.toLowerCase().includes(busca.toLowerCase())
     const planoOk = filtroPlano === 'todos' || a.plano === filtroPlano
-    return buscaOk && planoOk
+    const statusOk = filtroStatus === 'todos' || a.status === filtroStatus
+    return buscaOk && planoOk && statusOk
   })
 
   return (
@@ -318,6 +320,36 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
             }}
           >
             {op === 'todos' ? 'Todos' : op}
+          </button>
+        ))}
+        <span style={{ width: 1, height: 24, background: 'var(--avp-border)', alignSelf: 'center' }} />
+        {([
+          { val: 'todos', label: 'Todos' },
+          { val: 'ativo', label: 'Ativos' },
+          { val: 'inativo', label: 'Inativos' },
+        ] as const).map(op => (
+          <button
+            key={op.val}
+            onClick={() => setFiltroStatus(op.val)}
+            style={{
+              padding: '8px 18px',
+              borderRadius: 20,
+              border: '1px solid',
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all .15s',
+              ...(filtroStatus === op.val
+                ? op.val === 'ativo'
+                  ? { background: '#02A15320', color: '#02A153', borderColor: '#02A15360' }
+                  : op.val === 'inativo'
+                  ? { background: '#e6394620', color: '#e63946', borderColor: '#e6394660' }
+                  : { background: 'var(--avp-blue)', color: '#fff', borderColor: 'var(--avp-blue)' }
+                : { background: 'transparent', color: 'var(--avp-text-dim)', borderColor: 'var(--avp-border)' }
+              ),
+            }}
+          >
+            {op.label}
           </button>
         ))}
         {alunos.some(a => a.status === 'inativo') && (
