@@ -55,6 +55,7 @@ const nav: NavGroup[] = [
     title: 'Comercial',
     items: [
       { kind: 'leaf', href: '/admin/captacao',           label: 'Links de Captacao', icon: Link2 },
+      { kind: 'leaf', href: '/admin/boleto-avulso',      label: 'Boleto Avulso',      icon: FileText },
       { kind: 'leaf', href: '/admin/contratos',          label: 'Contratos',          icon: ScrollText },
       { kind: 'leaf', href: '/admin/contratos/avulso',   label: 'Contrato Avulso',    icon: FileText },
       { kind: 'leaf', href: '/admin/contratos/disparar', label: 'Disparar em Massa',  icon: Send },
