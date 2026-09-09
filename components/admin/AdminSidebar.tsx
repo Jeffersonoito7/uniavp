@@ -32,9 +32,10 @@ const nav: NavGroup[] = [
   {
     title: 'Gestão',
     items: [
-      { kind: 'leaf', href: '/admin/alunos', label: 'Alunos', icon: GraduationCap },
-      { kind: 'leaf', href: '/admin/vincular-alunos', label: 'Vincular Alunos', icon: UserPlus },
-      { kind: 'leaf', href: '/admin/admins',          label: 'Gerentes',        icon: ShieldCheck },
+      { kind: 'leaf', href: '/admin/alunos',          label: 'Alunos',          icon: GraduationCap },
+      { kind: 'leaf', href: '/admin/gestores',         label: 'Gestores PRO',    icon: UserCog },
+      { kind: 'leaf', href: '/admin/vincular-alunos',  label: 'Vincular Alunos', icon: UserPlus },
+      { kind: 'leaf', href: '/admin/admins',           label: 'Gerentes',        icon: ShieldCheck },
       { kind: 'leaf', href: '/admin/crm',             label: 'CRM',             icon: BarChart3 },
     ],
   },
