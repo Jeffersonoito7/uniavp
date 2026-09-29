@@ -64,6 +64,8 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  const [gerandoPix, setGerandoPix] = useState<string | null>(null)
  const [cobrancaMsg, setCobrancaMsg] = useState('')
  const [registrandoWebhook, setRegistrandoWebhook] = useState(false)
+ const [webhookStatus, setWebhookStatus] = useState<{ registrado: boolean; webhookUrl?: string; erro?: string } | null>(null)
+ const [carregandoWebhook, setCarregandoWebhook] = useState(false)
  const [form, setForm] = useState({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 })
  const [salvando, setSalvando] = useState(false)
  const [msg, setMsg] = useState('')
@@ -89,6 +91,17 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  fetch('/api/super/planos').then(r => r.json()).then(data => { setPlanos(data); setPlanosCarregados(true) }).catch(() => {})
  }
  }, [aba, planosCarregados])
+
+ useEffect(() => {
+ if (aba === 'cobranca' && webhookStatus === null) {
+ setCarregandoWebhook(true)
+ fetch('/api/super/webhook-efi')
+ .then(r => r.json())
+ .then(d => setWebhookStatus(d))
+ .catch(() => setWebhookStatus({ registrado: false, erro: 'Falha ao consultar' }))
+ .finally(() => setCarregandoWebhook(false))
+ }
+ }, [aba, webhookStatus])
 
  async function salvarPlanos() {
  setSalvandoPlanos(true); setMsgPlanos('')
@@ -882,12 +895,29 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  const res = await fetch('/api/super/webhook-efi', { method: 'POST' })
  const data = await res.json()
  setRegistrandoWebhook(false)
- setCobrancaMsg(res.ok ? `Webhook Efí registrado: ${data.webhookUrl}` : `Erro webhook: ${data.error}`)
+ if (res.ok) {
+ setWebhookStatus({ registrado: true, webhookUrl: data.webhookUrl })
+ setCobrancaMsg(`Webhook Efí registrado: ${data.webhookUrl}`)
+ } else {
+ setCobrancaMsg(`Erro webhook: ${data.error}`)
+ }
  }}
  style={{ ...btnGhost, opacity: registrandoWebhook ? 0.6 : 1, cursor: registrandoWebhook ? 'not-allowed' : 'pointer' }}>
  {registrandoWebhook ? 'Registrando...' : 'Registrar Webhook Efí'}
  </button>
  </div>
+ {carregandoWebhook && (
+ <div style={{ fontSize: 12, color: C.dim, marginBottom: 8 }}>Verificando webhook...</div>
+ )}
+ {!carregandoWebhook && webhookStatus !== null && (
+ <div style={{ background: webhookStatus.registrado ? '#052e16' : '#1a0a0a', border: `1px solid ${webhookStatus.registrado ? '#166534' : '#3f1515'}`, borderRadius: 8, padding: '10px 16px', fontSize: 13, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+ <span style={{ width: 8, height: 8, borderRadius: '50%', background: webhookStatus.registrado ? '#4ade80' : '#f87171', flexShrink: 0 }} />
+ {webhookStatus.registrado
+ ? <span style={{ color: '#4ade80' }}>Webhook ativo: <span style={{ color: C.dim, wordBreak: 'break-all' }}>{webhookStatus.webhookUrl}</span></span>
+ : <span style={{ color: '#f87171' }}>Webhook não registrado na Efi. {webhookStatus.erro ? `(${webhookStatus.erro})` : 'Clique em Registrar.'}</span>
+ }
+ </div>
+ )}
  {cobrancaMsg && (
  <div style={{ background: cobrancaMsg.includes('Erro') ? '#1a0a0a' : '#052e16', border: `1px solid ${cobrancaMsg.includes('Erro') ? '#3f1515' : '#166534'}`, borderRadius: 8, padding: '10px 16px', color: cobrancaMsg.includes('Erro') ? '#f87171' : '#4ade80', fontSize: 13, marginBottom: 16 }}>
  {cobrancaMsg}
