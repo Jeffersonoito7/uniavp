@@ -23,12 +23,32 @@ export async function POST(req: NextRequest) {
 
   const vencimento = new Date(Date.now() + dias * 24 * 60 * 60 * 1000).toISOString()
 
-  let q = adminClient.from('gestores')
-    .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: vencimento, pix_txid: null })
-    .eq('id', gestor_id)
-  if (ctx.tenantId) q = q.eq('tenant_id', ctx.tenantId)
+  // Garante que o gestor pertence ao escopo do admin antes de atualizar.
+  // Admins de tenant só enxergam o próprio tenant; gestores com tenant_id NULL
+  // (criados, por ex., via promoção aluno→PRO sem tenant) também são aceitos e
+  // têm o tenant_id corrigido (back-fill) no mesmo passo. Super admins (tenantId
+  // null) têm acesso global.
+  let qSel = adminClient.from('gestores').select('id, nome, whatsapp, tenant_id').eq('id', gestor_id)
+  if (ctx.tenantId) qSel = qSel.or(`tenant_id.eq.${ctx.tenantId},tenant_id.is.null`)
+  const { data: alvo, error: erroSel } = await qSel.maybeSingle()
+  if (erroSel) return NextResponse.json({ error: traduzirErro(erroSel) }, { status: 400 })
+  if (!alvo) return NextResponse.json({ error: 'Gestor não encontrado' }, { status: 404 })
 
-  const { data: gestor, error } = await q.select('id, nome, whatsapp').single()
+  const updates: Record<string, unknown> = {
+    ativo: true,
+    status_assinatura: 'ativo',
+    plano_vencimento: vencimento,
+    pix_txid: null,
+  }
+  // Back-fill: se o gestor estava sem tenant, vincula ao tenant do admin agora,
+  // eliminando a inconsistência que impedia futuras atualizações por tenant.
+  if (ctx.tenantId && !alvo.tenant_id) updates.tenant_id = ctx.tenantId
+
+  const { data: gestor, error } = await (adminClient.from('gestores') as any)
+    .update(updates)
+    .eq('id', gestor_id)
+    .select('id, nome, whatsapp')
+    .maybeSingle()
   if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
 
   // Reconcilia equipe: migra alunos captados quando era FREE (indicador_id) e corrige DDI
@@ -48,7 +68,13 @@ export async function POST(req: NextRequest) {
     }
     const instancia = await getInstanciaTenant(ctx.tenantId, adminClient)
     enviarWhatsApp(gestor.whatsapp,
-      `✅ *Acesso PRO ativado!*\n\nOlá, ${gestor.nome}!\n\nSeu acesso ${nomePlataforma} PRO foi ativado por *${dias} dias*.\n\n👉 ${appUrl}/pro`,
+      `✓ *Acesso PRO ativado!*
+
+Olá, ${gestor.nome}!
+
+Seu acesso ${nomePlataforma} PRO foi ativado por *${dias} dias*.
+
+👉 ${appUrl}/pro`,
       instancia
     ).catch(() => {})
   }
