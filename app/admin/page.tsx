@@ -10,6 +10,7 @@ import DashboardFiltro from './DashboardFiltro'
 import DashboardPeriodo from './DashboardPeriodo'
 
 import { DOMINIO_MASTER } from '@/lib/constants'
+import { getAdminContext } from '@/lib/admin-context'
 import {
   filtrarAulasConsultor,
   aulasDoModulo1,
