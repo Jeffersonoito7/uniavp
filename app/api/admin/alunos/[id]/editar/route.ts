@@ -1,94 +1,81 @@
-import { traduzirErro } from '@/lib/erros'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import { getAdminContext } from '@/lib/admin-context'
-import { enviarWhatsApp, getInstanciaTenant } from '@/lib/whatsapp'
-import { getAppUrl } from '@/lib/get-app-url'
-import { audit, getIp } from '@/lib/audit'
-import { reconciliarEquipeGestor } from '@/lib/pix-processor'
 
-export const dynamic = 'force-dynamic'
-
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: 'Nao autorizado.' }, { status: 401 })
 
   const adminClient = createServiceRoleClient()
-  const ctx = await getAdminContext(user.id, adminClient)
-  if (!ctx) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+  const [{ data: adminRecord }, { data: superRecord }] = await Promise.all([
+    adminClient.from('admins').select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle(),
+    adminClient.from('super_admins').select('id').eq('user_id', user.id).eq('ativo', true).maybeSingle(),
+  ])
+  if (!adminRecord && !superRecord) return NextResponse.json({ error: 'Nao autorizado.' }, { status: 403 })
 
-  const { gestor_id, dias = 30 } = await req.json()
-  if (!gestor_id) return NextResponse.json({ error: 'gestor_id obrigatório' }, { status: 400 })
-
-  const vencimento = new Date(Date.now() + dias * 24 * 60 * 60 * 1000).toISOString()
-
-  // Garante que o gestor pertence ao escopo do admin antes de atualizar.
-  // Admins de tenant só enxergam o próprio tenant; gestores com tenant_id NULL
-  // (criados, por ex., via promoção aluno→PRO sem tenant) também são aceitos e
-  // têm o tenant_id corrigido (back-fill) no mesmo passo. Super admins (tenantId
-  // null) têm acesso global.
-  let qSel = adminClient.from('gestores').select('id, nome, whatsapp, tenant_id').eq('id', gestor_id)
-  if (ctx.tenantId) qSel = qSel.or(`tenant_id.eq.${ctx.tenantId},tenant_id.is.null`)
-  const { data: alvo, error: erroSel } = await qSel.maybeSingle()
-  if (erroSel) return NextResponse.json({ error: traduzirErro(erroSel) }, { status: 400 })
-  if (!alvo) return NextResponse.json({ error: 'Gestor não encontrado' }, { status: 404 })
-
-  const updates: Record<string, unknown> = {
-    ativo: true,
-    status_assinatura: 'ativo',
-    plano_vencimento: vencimento,
-    pix_txid: null,
-  }
-  // Back-fill: se o gestor estava sem tenant, vincula ao tenant do admin agora,
-  // eliminando a inconsistência que impedia futuras atualizações por tenant.
-  if (ctx.tenantId && !alvo.tenant_id) updates.tenant_id = ctx.tenantId
-
-  const { data: gestor, error } = await (adminClient.from('gestores') as any)
-    .update(updates)
-    .eq('id', gestor_id)
-    .select('id, nome, whatsapp')
-    .maybeSingle()
-  if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
-
-  // Reconcilia equipe: migra alunos captados quando era FREE (indicador_id) e corrige DDI
-  if (gestor?.whatsapp) {
-    reconciliarEquipeGestor(gestor.whatsapp, gestor.nome, adminClient).catch(() => {})
+  const { id } = await params
+  const tid = (adminRecord?.tenant_id ?? null) as string | null
+  const body = await req.json()
+  const { nome, whatsapp, email, cpf, status, plano, plano_vencimento, nova_senha } = body as {
+    nome: string; whatsapp: string; email: string; cpf: string | null
+    status: string; plano: 'PRO' | 'Free'; plano_vencimento: string | null
+    nova_senha?: string
   }
 
-  // Notifica o gestor via WhatsApp (fire-and-forget)
-  if (gestor?.whatsapp) {
-    const appUrl = await getAppUrl(ctx.tenantId)
-    // Busca nome da plataforma do tenant
-    let nomePlataforma = 'Plataforma PRO'
-    if (ctx.tenantId) {
-      const { data: cfg } = await adminClient.from('configuracoes')
-        .select('valor').eq('chave', 'site_nome').eq('tenant_id', ctx.tenantId).maybeSingle()
-      try { nomePlataforma = JSON.parse(String(cfg?.valor ?? '')) || nomePlataforma } catch { /**/ }
+  // Verificar que o aluno pertence ao tenant
+  let qAluno = adminClient.from('alunos').select('id, user_id').eq('id', id)
+  if (tid) qAluno = (qAluno as any).eq('tenant_id', tid)
+  const { data: aluno, error: erroAluno } = await (qAluno as any).maybeSingle()
+  if (erroAluno || !aluno) return NextResponse.json({ error: 'Aluno não encontrado.' }, { status: 404 })
+
+  // Alterar senha — apenas admin, super_admin ou o próprio usuário
+  if (nova_senha) {
+    if (nova_senha.length < 6) return NextResponse.json({ error: 'A senha deve ter pelo menos 6 caracteres.' }, { status: 400 })
+
+    const userId = (aluno as any).user_id as string | null
+
+    // Verifica se quem está pedindo é o próprio aluno, um admin do tenant ou um super_admin
+    const ehProprioUsuario = userId && user.id === userId
+    const temPermissao = ehProprioUsuario || adminRecord || superRecord
+
+    if (!temPermissao || !userId) {
+      return NextResponse.json({ error: 'Sem permissão para alterar a senha deste aluno.' }, { status: 403 })
     }
-    const instancia = await getInstanciaTenant(ctx.tenantId, adminClient)
-    enviarWhatsApp(gestor.whatsapp,
-      `✓ *Acesso PRO ativado!*
 
-Olá, ${gestor.nome}!
-
-Seu acesso ${nomePlataforma} PRO foi ativado por *${dias} dias*.
-
-👉 ${appUrl}/pro`,
-      instancia
-    ).catch(() => {})
+    const { error: errSenha } = await adminClient.auth.admin.updateUserById(userId, { password: nova_senha })
+    if (errSenha) return NextResponse.json({ error: 'Erro ao alterar a senha: ' + errSenha.message }, { status: 500 })
   }
 
-  await audit({
-    acao: 'gestor.ativado',
-    entidade: 'gestores',
-    entidade_id: gestor_id,
-    tenant_id: ctx.tenantId,
-    usuario_id: user.id,
-    usuario_tipo: 'admin',
-    dados_novos: { dias, vencimento, origem: 'manual_admin' },
-    ip: getIp(req),
-  })
+  // Atualizar tabela alunos
+  const { error: errUpd } = await adminClient.from('alunos').update({ nome, whatsapp, email, cpf: cpf || null, status }).eq('id', id)
+  if (errUpd) return NextResponse.json({ error: errUpd.message }, { status: 500 })
 
-  return NextResponse.json({ ok: true, vencimento })
+  const userId = (aluno as any).user_id as string | null
+
+  if (userId) {
+    if (plano === 'PRO') {
+      const { data: gestor } = await adminClient.from('gestores').select('id, tenant_id').eq('user_id', userId).maybeSingle()
+      if (gestor) {
+        const updGestor: Record<string, unknown> = { ativo: true, status_assinatura: 'ativo', plano_vencimento: plano_vencimento ?? null }
+        // Back-fill de tenant quando o gestor estava sem vínculo, evitando que
+        // futuras atualizações por tenant (ex.: Ativar PRO) deixem de encontrá-lo.
+        if (tid && !(gestor as any).tenant_id) updGestor.tenant_id = tid
+        await (adminClient.from('gestores') as any).update(updGestor).eq('user_id', userId)
+      } else {
+        await adminClient.from('gestores').insert({
+          user_id: userId, nome, whatsapp, email, ativo: true,
+          status_assinatura: 'ativo', plano_vencimento: plano_vencimento ?? null,
+          ...(tid ? { tenant_id: tid } : {}),
+        } as any)
+      }
+    } else {
+      // Rebaixar para Free
+      const { data: gestor } = await adminClient.from('gestores').select('id').eq('user_id', userId).maybeSingle()
+      if (gestor) {
+        await adminClient.from('gestores').update({ ativo: false, status_assinatura: 'free' }).eq('user_id', userId)
+      }
+    }
+  }
+
+  return NextResponse.json({ ok: true })
 }
