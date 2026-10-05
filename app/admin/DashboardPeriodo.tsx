@@ -1,6 +1,7 @@
 'use client'
 
 export default function DashboardPeriodo({ meses }: { meses: { label: string; total: number }[] }) {
+  if (!meses || meses.length === 0) return null
   const max = Math.max(...meses.map(m => m.total), 1)
   const H = 120, W = 400, barW = Math.floor(W / meses.length) - 8
 
