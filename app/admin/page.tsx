@@ -10,6 +10,13 @@ import DashboardFiltro from './DashboardFiltro'
 import DashboardPeriodo from './DashboardPeriodo'
 
 import { DOMINIO_MASTER } from '@/lib/constants'
+import {
+  filtrarAulasConsultor,
+  aulasDoModulo1,
+  calcularFunilMod1,
+  calcularProgressoAtivos,
+  type AulaComModulo,
+} from '@/lib/dashboard-metrics'
 
 function calcularPeriodo(periodo: string, inicioStr?: string, fimStr?: string) {
   const agora = new Date()
@@ -86,98 +93,57 @@ export default async function AdminDashboard({
 
  const taxaConclusao = totalAlunos ? Math.round(((alunosConcluidos ?? 0) / (totalAlunos ?? 1)) * 100) : 0
 
- // Progresso médio dos ativos
- const totalAulasPublicadasN = aulasPublicadas ?? 1
- let mediaProgresso = 0
- let nuncaComecou = 0
- let emAndamento = 0
- let concluiuMasNaoMarcado = 0
- {
-   const { data: alunosAtivosRows } = await tq(
-     adminClient.from('alunos').select('id').eq('status', 'ativo')
-   )
-   const idsAtivos = (alunosAtivosRows ?? []).map((a: any) => a.id as string)
-   if (idsAtivos.length > 0) {
-     const CHUNK = 100
-     const aprovacoesPorAluno: Record<string, number> = {}
-     for (let i = 0; i < idsAtivos.length; i += CHUNK) {
-       const { data } = await adminClient
-         .from('progresso')
-         .select('aluno_id')
-         .eq('aprovado', true)
-         .in('aluno_id', idsAtivos.slice(i, i + CHUNK))
-       for (const r of data ?? []) {
-         const id = (r as any).aluno_id
-         aprovacoesPorAluno[id] = (aprovacoesPorAluno[id] ?? 0) + 1
-       }
-     }
-     const vals = Object.values(aprovacoesPorAluno) as number[]
-     const soma = vals.reduce((s, v) => s + Math.min(100, Math.round((v / totalAulasPublicadasN) * 100)), 0)
-     mediaProgresso = Math.round(soma / idsAtivos.length)
-
-     nuncaComecou = idsAtivos.filter((id: string) => !aprovacoesPorAluno[id]).length
-     emAndamento = idsAtivos.filter((id: string) => {
-       const n = aprovacoesPorAluno[id] ?? 0
-       return n > 0 && n < totalAulasPublicadasN
-     }).length
-     concluiuMasNaoMarcado = idsAtivos.filter((id: string) =>
-       (aprovacoesPorAluno[id] ?? 0) >= totalAulasPublicadasN
-     ).length
-   }
- }
-
- // Funil real: todos os alunos x progresso no Módulo 1
- // Busca Módulo 1 e suas aulas
+ // ── Universo canônico de aulas que contam para o aluno ────────────────────
+ // Aulas publicadas, de módulos publicados e liberadas para o perfil 'consultor'.
+ // Este MESMO conjunto é usado como denominador do progresso médio E do funil,
+ // garantindo que numerador e denominador meçam o mesmo universo.
  let aulasQ = (adminClient.from('aulas') as any)
    .select('id, modulo_id, modulo:modulos!inner(id, ordem, perfis_permitidos, publicado)')
    .eq('publicado', true)
    .eq('modulos.publicado', true)
  if (tid) aulasQ = aulasQ.eq('tenant_id', tid)
  const { data: aulasRaw } = await aulasQ
- const aulasMod1: string[] = []
- {
-   const obrig = (aulasRaw ?? []).filter((a: any) => {
-     const perfis = a.modulo?.perfis_permitidos ?? []
-     return Array.isArray(perfis) && perfis.includes('consultor')
-   })
-   const mod1Ordem = Math.min(...obrig.map((a: any) => a.modulo?.ordem ?? 999))
-   for (const a of obrig) {
-     if ((a.modulo?.ordem ?? 999) === mod1Ordem) aulasMod1.push(a.id as string)
-   }
- }
 
- // Todos os alunos com id para calcular o funil real
- const { data: todosAlunosRows } = await tq(adminClient.from('alunos').select('id'))
- const idsTodosGlobal = (todosAlunosRows ?? []).map((a: any) => a.id as string)
+ // Aulas do perfil consultor (as que efetivamente aparecem para o aluno)
+ const aulasConsultor = filtrarAulasConsultor((aulasRaw ?? []) as AulaComModulo[])
+ const aulasConsultorSet = new Set<string>(aulasConsultor.map((a) => a.id))
 
- let nuncaAbriu = 0
- let cursandoMod1 = 0
- let concluiuMod1 = 0
+ // Detecção do Módulo 1 (menor 'ordem' do perfil consultor). Vazio => não configurado.
+ const aulasMod1 = aulasDoModulo1(aulasConsultor)
+ const mod1Configurado = aulasMod1.length > 0
+
+ // ── Progresso por aluno: Set de aula_id DISTINTAS (nunca conta linhas) ─────
+ // Lido uma única vez para TODOS os alunos; alimenta funil + progresso médio.
+ const { data: todosAlunosRows } = await tq(adminClient.from('alunos').select('id, status'))
+ const idsTodosGlobal: string[] = (todosAlunosRows ?? []).map((a: any) => a.id as string)
+ const idsAtivos: string[] = (todosAlunosRows ?? [])
+   .filter((a: any) => a.status === 'ativo')
+   .map((a: any) => a.id as string)
+
+ const progPorAluno: Record<string, Set<string>> = {}
  {
    const CHUNK = 100
-   const progPorAluno: Record<string, Set<string>> = {}
-   const aulasMod1Set = new Set(aulasMod1)
+   const lotes = []
    for (let i = 0; i < idsTodosGlobal.length; i += CHUNK) {
-     const { data } = await adminClient.from('progresso')
-       .select('aluno_id, aula_id')
-       .eq('aprovado', true)
-       .in('aluno_id', idsTodosGlobal.slice(i, i + CHUNK))
+     lotes.push(
+       adminClient.from('progresso')
+         .select('aluno_id, aula_id')
+         .eq('aprovado', true)
+         .in('aluno_id', idsTodosGlobal.slice(i, i + CHUNK))
+     )
+   }
+   const resultados = await Promise.all(lotes)
+   for (const { data } of resultados) {
      for (const p of data ?? []) {
        if (!progPorAluno[p.aluno_id]) progPorAluno[p.aluno_id] = new Set()
        progPorAluno[p.aluno_id].add(p.aula_id)
      }
    }
-   for (const id of idsTodosGlobal) {
-     const aulasFeitoSet = progPorAluno[id]
-     if (!aulasFeitoSet || aulasFeitoSet.size === 0) {
-       nuncaAbriu++
-     } else if (aulasMod1Set.size > 0 && aulasMod1.every(aid => aulasFeitoSet.has(aid))) {
-       concluiuMod1++
-     } else {
-       cursandoMod1++
-     }
-   }
  }
+
+ // Funil + progresso médio derivados do MESMO universo de aulas (lib pura/testável)
+ const { nuncaAbriu, cursandoMod1, concluiuMod1 } = calcularFunilMod1(idsTodosGlobal, progPorAluno, aulasMod1)
+ const { mediaProgresso, concluiuMasNaoMarcado } = calcularProgressoAtivos(idsAtivos, progPorAluno, aulasConsultorSet)
 
  const periodo = searchParams?.periodo ?? 'mes_atual'
  const periodoInfo = calcularPeriodo(periodo, searchParams?.inicio, searchParams?.fim)
@@ -272,7 +238,7 @@ export default async function AdminDashboard({
        gestoresAtivos={gestoresAtivos ?? 0}
        totalGestores={totalGestores ?? 0}
        novosAlunos={novosAlunos ?? 0}
-       alunosConcluidos={alunosConcluidos ?? 0}
+       mod1Configurado={mod1Configurado}
      />
 
      <DashboardPeriodo meses={mesesLabels} />
