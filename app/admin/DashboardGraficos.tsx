@@ -161,7 +161,7 @@ export function DashboardBI({
   gestoresAtivos,
   totalGestores,
   novosAlunos,
-  alunosConcluidos,
+  mod1Configurado = true,
 }: {
   totalAlunos: number
   nuncaAbriu: number
@@ -170,7 +170,7 @@ export function DashboardBI({
   gestoresAtivos: number
   totalGestores: number
   novosAlunos: number
-  alunosConcluidos: number
+  mod1Configurado?: boolean
 }) {
   const pctNunca = totalAlunos > 0 ? Math.round(nuncaAbriu / totalAlunos * 100) : 0
   const pctConcluiu = totalAlunos > 0 ? Math.round(concluiuMod1 / totalAlunos * 100) : 0
@@ -198,12 +198,27 @@ export function DashboardBI({
             Ver quem nunca acessou
           </a>
         </div>
-        <GraficoRosca
-          nuncaAbriu={nuncaAbriu}
-          cursando={cursandoMod1}
-          concluiu={concluiuMod1}
-          total={totalAlunos}
-        />
+        {mod1Configurado ? (
+          <GraficoRosca
+            nuncaAbriu={nuncaAbriu}
+            cursando={cursandoMod1}
+            concluiu={concluiuMod1}
+            total={totalAlunos}
+          />
+        ) : (
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            gap: 6, padding: '32px 16px', textAlign: 'center',
+          }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--avp-text)', margin: 0 }}>
+              Módulo 1 ainda não configurado
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0, maxWidth: 420, lineHeight: 1.5 }}>
+              Publique ao menos um módulo com aulas liberadas para o perfil <strong>consultor</strong> para
+              que o funil de engajamento (nunca abriram / cursando / concluíram) possa ser calculado.
+            </p>
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 20 }}>
@@ -216,10 +231,10 @@ export function DashboardBI({
         />
         <StatCard
           label="Concluiram Modulo 1"
-          valor={concluiuMod1.toLocaleString('pt-BR')}
-          sub="todas as aulas obrigatorias"
+          valor={mod1Configurado ? concluiuMod1.toLocaleString('pt-BR') : '—'}
+          sub={mod1Configurado ? 'todas as aulas do perfil consultor' : 'Módulo 1 não configurado'}
           cor="#22c55e"
-          pct={pctConcluiu}
+          pct={mod1Configurado ? pctConcluiu : undefined}
         />
         <StatCard
           label="PROs Ativos"
