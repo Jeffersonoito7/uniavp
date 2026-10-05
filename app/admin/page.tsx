@@ -69,9 +69,12 @@ export default async function AdminDashboard({
  const { data: { user } } = await supabase.auth.getUser()
  if (!user) redirect('/entrar?p=adm')
  const adminClient = createServiceRoleClient()
- const { data: adminRecord } = await adminClient.from('admins').select('id, tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle()
- if (!adminRecord) redirect('/entrar?p=adm')
- const tid = adminRecord.tenant_id as string | null
+ // Autorização uniforme com as demais telas admin: aceita admins (com tenant)
+ // e super_admins (acesso global, tenantId null). Antes só reconhecia admins,
+ // o que redirecionava super_admins para fora apenas no dashboard.
+ const ctx = await getAdminContext(user.id, adminClient)
+ if (!ctx) redirect('/entrar?p=adm')
+ const tid = ctx.tenantId
  const tq = (q: any) => tid ? q.eq('tenant_id', tid) : q
 
  const [
