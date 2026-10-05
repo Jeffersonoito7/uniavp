@@ -19,6 +19,9 @@ function GraficoRosca({ nuncaAbriu, cursando, concluiu, total }: FunilProps) {
     { valor: nuncaAbriu, cor: '#ef4444', label: 'Nunca abriram' },
   ]
 
+  // Arcos desenhados na MESMA ordem da legenda (concluiu → cursando → nunca),
+  // em sentido horário a partir do topo (12h). O grupo <g> aplica rotate(-90)
+  // para que offset 0 comece no topo, então strokeDashoffset usa apenas -offset.
   let offset = 0
   const arcos = segmentos.map(s => {
     const pct = total > 0 ? s.valor / total : 0
@@ -28,42 +31,46 @@ function GraficoRosca({ nuncaAbriu, cursando, concluiu, total }: FunilProps) {
     return resultado
   })
 
-  const maiorIdx = segmentos.reduce((max, s, i) => s.valor > segmentos[max].valor ? i : max, 0)
-  const maior = segmentos[maiorIdx]
-  const maiorPct = total > 0 ? Math.round(maior.valor / total * 100) : 0
+  // KPI central FIXO: sempre "% que concluiu o Módulo 1" (métrica estável,
+  // não muda de significado conforme a distribuição dos dados).
+  const kpiCentral = segmentos[0] // concluiu
+  const kpiCentralPct = total > 0 ? Math.round(kpiCentral.valor / total * 100) : 0
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap' }}>
       <div style={{ position: 'relative', width: 220, height: 220, flexShrink: 0 }}>
-        <svg width={220} height={220} viewBox="0 0 220 220">
+        <svg width={220} height={220} viewBox="0 0 220 220" role="img"
+          aria-label={`Funil de engajamento: ${kpiCentralPct}% concluíram o Módulo 1`}>
           <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--avp-border)" strokeWidth={28} />
-          {arcos.map((a, i) => (
-            a.comprimento > 0 && (
-              <circle
-                key={i}
-                cx={cx}
-                cy={cy}
-                r={r}
-                fill="none"
-                stroke={a.cor}
-                strokeWidth={28}
-                strokeDasharray={`${a.comprimento} ${circunferencia - a.comprimento}`}
-                strokeDashoffset={-a.offset + circunferencia / 4}
-                strokeLinecap="butt"
-              />
-            )
-          ))}
+          <g transform={`rotate(-90 ${cx} ${cy})`}>
+            {arcos.map((a, i) => (
+              a.comprimento > 0 && (
+                <circle
+                  key={i}
+                  cx={cx}
+                  cy={cy}
+                  r={r}
+                  fill="none"
+                  stroke={a.cor}
+                  strokeWidth={28}
+                  strokeDasharray={`${a.comprimento} ${circunferencia - a.comprimento}`}
+                  strokeDashoffset={-a.offset}
+                  strokeLinecap="butt"
+                />
+              )
+            ))}
+          </g>
           <circle cx={cx} cy={cy} r={54} fill="var(--avp-card)" />
         </svg>
         <div style={{
           position: 'absolute', inset: 0,
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         }}>
-          <span style={{ fontSize: 32, fontWeight: 800, color: maior.cor, letterSpacing: '-0.03em', lineHeight: 1 }}>
-            {maiorPct}%
+          <span style={{ fontSize: 32, fontWeight: 800, color: kpiCentral.cor, letterSpacing: '-0.03em', lineHeight: 1 }}>
+            {kpiCentralPct}%
           </span>
           <span style={{ fontSize: 11, color: 'var(--avp-text-dim)', marginTop: 4, textAlign: 'center', maxWidth: 80, lineHeight: 1.3 }}>
-            {maior.label}
+            {kpiCentral.label}
           </span>
         </div>
       </div>
