@@ -143,7 +143,31 @@ input, select, textarea { font-family: inherit; }
 ::-webkit-scrollbar-thumb { background: var(--avp-border); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--avp-text-dim); }
 
+/* ── Foco visível para navegação por teclado (WCAG 2.4.7) ── */
+/* Só aparece em navegação por teclado (focus-visible), não no clique de mouse. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--avp-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Respeita preferência de redução de movimento (WCAG 2.3.3) ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ── Design System Components ── */
+
 
 .btn {
   cursor: pointer;
