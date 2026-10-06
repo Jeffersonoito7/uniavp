@@ -16,8 +16,6 @@ export const viewport: Viewport = {
   themeColor: '#0f2556',
 }
 
-}
-
 export async function generateMetadata(): Promise<Metadata> {
  const host = (await headers()).get('host') ?? ''
  const config = await getSiteConfig(host)
