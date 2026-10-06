@@ -163,7 +163,7 @@ export default function AulaInterativa({
  {temQuiz && !videoTerminou && (
  <div style={{ padding: '16px 24px' }}>
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, color: 'var(--avp-text-dim)', fontSize: 14 }}>
- <span style={{ fontSize: 20 }}></span>
+  <Lock size={20} style={{ flexShrink: 0 }} aria-hidden="true" />
  <span>O quiz desta aula será liberado ao final do vídeo.</span>
  </div>
  </div>
