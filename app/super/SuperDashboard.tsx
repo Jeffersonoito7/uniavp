@@ -1714,6 +1714,9 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
  const [certLoading, setCertLoading] = useState(false)
  const [certMsg, setCertMsg] = useState('')
  const [verSenha, setVerSenha] = useState(false)
+ const [pemMode, setPemMode] = useState(false)
+ const [keyPemFile, setKeyPemFile] = useState<File | null>(null)
+ const [certPemFile, setCertPemFile] = useState<File | null>(null)
  const [form, setForm] = useState({ valor: '', descricao: '', tomador_doc: '', tomador_nome: '', tomador_email: '' })
  const [emitindo, setEmitindo] = useState(false)
  const [resultado, setResultado] = useState<{ ok: boolean; texto: string } | null>(null)
@@ -1782,6 +1785,19 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
   const d = await r.json()
   if (d.ok) { setCertStatus({ configurado: true, validoAte: d.validoAte, titular: d.titular }); setCertMsg('Certificado salvo com sucesso.') }
   else setCertMsg(d.error ?? 'Erro ao salvar certificado.')
+  setCertLoading(false)
+ }
+
+ async function enviarPem() {
+  if (!keyPemFile || !certPemFile) return
+  setCertLoading(true); setCertMsg('')
+  const fd = new FormData()
+  fd.append('key_pem', keyPemFile)
+  fd.append('cert_pem', certPemFile)
+  const r = await fetch('/api/super/nfse/certificado-pem', { method: 'POST', body: fd })
+  const d = await r.json()
+  if (d.ok) { setCertStatus({ configurado: true, validoAte: d.validoAte, titular: d.titular }); setCertMsg('Certificado PEM salvo com sucesso.') }
+  else setCertMsg(d.error ?? 'Erro ao salvar certificado PEM.')
   setCertLoading(false)
  }
 
@@ -2059,24 +2075,47 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
         Certificado ativo{certStatus.titular ? ` — ${certStatus.titular}` : ''}{certStatus.validoAte ? ` · valido ate ${new Date(certStatus.validoAte).toLocaleDateString('pt-BR')}` : ''}
        </div>
       )}
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 12 }}>
-       <div style={{ flex: 1, minWidth: 200 }}>
-        <label style={lbl}>Senha do certificado</label>
-        <div style={{ position: 'relative' }}>
-         <input style={{ ...fc, paddingRight: 36 }} type={verSenha ? 'text' : 'password'} placeholder="Senha do .pfx" value={certSenha} onChange={e => setCertSenha(e.target.value)} autoComplete="new-password" />
-         <button onClick={() => setVerSenha(v => !v)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: C.dim, display: 'flex' }}>
-          {verSenha ? <EyeOff size={15} /> : <Eye size={15} />}
-         </button>
-        </div>
-       </div>
-       <div>
-        <label style={lbl}>Arquivo .pfx</label>
-        <input type="file" accept=".pfx,.p12" style={{ ...fc, padding: '6px 10px' }} onChange={e => setCertFile(e.target.files?.[0] ?? null)} />
-       </div>
-       <button style={{ ...btn, display: 'flex', alignItems: 'center', gap: 6, opacity: certLoading || !certFile ? 0.55 : 1 }} onClick={enviarCert} disabled={certLoading || !certFile}>
-        <Upload size={14} /> {certLoading ? 'Enviando...' : 'Enviar certificado'}
-       </button>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+       <button onClick={() => { setPemMode(false); setCertMsg('') }} style={{ ...(!pemMode ? btn : btnGhost), fontSize: 12, padding: '5px 12px' }}>Subir .pfx</button>
+       <button onClick={() => { setPemMode(true); setCertMsg('') }} style={{ ...(pemMode ? btn : btnGhost), fontSize: 12, padding: '5px 12px' }}>Subir PEM (alternativa)</button>
       </div>
+      {!pemMode ? (
+       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 12 }}>
+        <div style={{ flex: 1, minWidth: 200 }}>
+         <label style={lbl}>Senha do certificado</label>
+         <div style={{ position: 'relative' }}>
+          <input style={{ ...fc, paddingRight: 36 }} type={verSenha ? 'text' : 'password'} placeholder="Senha do .pfx" value={certSenha} onChange={e => setCertSenha(e.target.value)} autoComplete="new-password" />
+          <button onClick={() => setVerSenha(v => !v)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: C.dim, display: 'flex' }}>
+           {verSenha ? <EyeOff size={15} /> : <Eye size={15} />}
+          </button>
+         </div>
+        </div>
+        <div>
+         <label style={lbl}>Arquivo .pfx</label>
+         <input type="file" accept=".pfx,.p12" style={{ ...fc, padding: '6px 10px' }} onChange={e => setCertFile(e.target.files?.[0] ?? null)} />
+        </div>
+        <button style={{ ...btn, display: 'flex', alignItems: 'center', gap: 6, opacity: certLoading || !certFile ? 0.55 : 1 }} onClick={enviarCert} disabled={certLoading || !certFile}>
+         <Upload size={14} /> {certLoading ? 'Enviando...' : 'Enviar certificado'}
+        </button>
+       </div>
+      ) : (
+       <div>
+        <p style={{ fontSize: 12, color: C.dim, marginBottom: 12 }}>Use se o .pfx der erro de senha. Exporte os PEMs do Mac pelo Acesso a Chaves ou com openssl no terminal.</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
+         <div>
+          <label style={lbl}>Chave privada (key.pem)</label>
+          <input type="file" accept=".pem,.key" style={{ ...fc, padding: '6px 10px' }} onChange={e => setKeyPemFile(e.target.files?.[0] ?? null)} />
+         </div>
+         <div>
+          <label style={lbl}>Certificado (cert.pem)</label>
+          <input type="file" accept=".pem,.crt,.cer" style={{ ...fc, padding: '6px 10px' }} onChange={e => setCertPemFile(e.target.files?.[0] ?? null)} />
+         </div>
+        </div>
+        <button style={{ ...btn, display: 'flex', alignItems: 'center', gap: 6, opacity: certLoading || !keyPemFile || !certPemFile ? 0.55 : 1 }} onClick={enviarPem} disabled={certLoading || !keyPemFile || !certPemFile}>
+         <Upload size={14} /> {certLoading ? 'Enviando...' : 'Enviar PEM'}
+        </button>
+       </div>
+      )}
       {certMsg && (
        <p style={{ marginTop: 12, fontSize: 13, color: certMsg.includes('sucesso') ? '#22c55e' : '#f87171' }}>{certMsg}</p>
       )}
