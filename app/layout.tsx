@@ -10,9 +10,12 @@ export const dynamic = 'force-dynamic'
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // Zoom habilitado (WCAG 1.4.4): não travar maximumScale/userScalable para
+  // não bloquear ampliação por usuários com baixa visão.
+  maximumScale: 5,
   themeColor: '#0f2556',
+}
+
 }
 
 export async function generateMetadata(): Promise<Metadata> {
