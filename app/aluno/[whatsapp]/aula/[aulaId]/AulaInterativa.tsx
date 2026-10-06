@@ -189,7 +189,7 @@ export default function AulaInterativa({
  </div>
  ) : (
  <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
- <span style={{ fontSize: 20 }}></span>
+  <CheckCircle size={20} style={{ color: '#22c55e', flexShrink: 0 }} aria-hidden="true" />
  <p style={{ margin: 0, fontSize: 14, color: '#22c55e', fontWeight: 600 }}>Plataforma parceira acessada!</p>
  </div>
  )}
