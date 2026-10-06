@@ -58,8 +58,8 @@ export default function AlunoHeader({ whatsapp, aluno, siteConfig }: Props) {
  <PWAInstallButton />
  <MuralNoticias />
  <EventosWidget />
- <a href={`/aluno/${whatsapp}/perfil`} style={{ display: 'flex', alignItems: 'center', gap: 7, textDecoration: 'none', marginLeft: 4 }}>
- <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg, #22c55e, #4f46e5)', border: '2px solid rgba(74,222,128,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, color: '#fff', flexShrink: 0, boxShadow: '0 0 14px rgba(34,197,94,0.4), 0 0 6px rgba(79,70,229,0.3)' }}>
+ <a href={`/aluno/${whatsapp}/perfil`} aria-label="Meu perfil" style={{ display: 'flex', alignItems: 'center', gap: 7, textDecoration: 'none', marginLeft: 4 }}>
+ <div aria-hidden="true" style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg, #22c55e, #4f46e5)', border: '2px solid rgba(74,222,128,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, color: '#fff', flexShrink: 0, boxShadow: '0 0 14px rgba(34,197,94,0.4), 0 0 6px rgba(79,70,229,0.3)' }}>
  {aluno.nome.charAt(0).toUpperCase()}
  </div>
  <span className="hide-mobile" style={{ fontSize: 13, fontWeight: 600, color: 'var(--avp-text)' }}>{aluno.nome.split(' ')[0]}</span>
