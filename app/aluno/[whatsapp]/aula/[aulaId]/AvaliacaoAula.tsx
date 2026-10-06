@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { Star } from 'lucide-react'
 
 export default function AvaliacaoAula({ aulaId, estrelasIniciais, sugestaoInicial }: {
  aulaId: string
@@ -48,17 +49,27 @@ export default function AvaliacaoAula({ aulaId, estrelasIniciais, sugestaoInicia
 
  {/* Estrelas */}
  <div style={{ display: 'flex', gap: 6, marginBottom: expandido ? 16 : 0 }}>
- {[1, 2, 3, 4, 5].map(n => (
+ {[1, 2, 3, 4, 5].map(n => {
+ const ativa = (hover || estrelas) >= n
+ return (
  <button
  key={n}
  onClick={() => salvar(n)}
  onMouseEnter={() => setHover(n)}
  onMouseLeave={() => setHover(0)}
- style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 36, padding: '0 2px', transition: 'transform 0.1s', transform: hover>= n || estrelas>= n ? 'scale(1.15)' : 'scale(1)' }}
->
- <span style={{ color: (hover || estrelas)>= n ? '#f59e0b' : 'var(--avp-border)', transition: 'color 0.15s' }}></span>
+ aria-label={`Avaliar com ${n} estrela${n > 1 ? 's' : ''}`}
+ aria-pressed={estrelas === n}
+ style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', lineHeight: 0, transition: 'transform 0.1s', transform: hover >= n || estrelas >= n ? 'scale(1.15)' : 'scale(1)' }}
+ >
+ <Star
+ size={32}
+ style={{ transition: 'color 0.15s, fill 0.15s' }}
+ color={ativa ? '#f59e0b' : 'var(--avp-border)'}
+ fill={ativa ? '#f59e0b' : 'none'}
+ />
  </button>
- ))}
+ )
+ })}
  {estrelas> 0 && (
  <span style={{ alignSelf: 'center', marginLeft: 8, fontSize: 13, color: 'var(--avp-text-dim)' }}>
  {['', 'Ruim', 'Regular', 'Bom', 'Ótimo', 'Excelente!'][estrelas]}
