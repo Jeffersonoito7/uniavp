@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Lock, CheckCircle, Smartphone } from 'lucide-react'
 import VideoPlayer from '@/app/components/VideoPlayer'
 import NavegacaoAulas from './NavegacaoAulas'
 import Quiz from './Quiz'
