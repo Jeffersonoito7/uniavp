@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { Star, CheckCircle } from 'lucide-react'
 
 export default function ReacaoAula({ aulaId, alunoId, jaReagiu }: {
  aulaId: string; alunoId: string; jaReagiu: boolean
@@ -26,7 +27,7 @@ export default function ReacaoAula({ aulaId, alunoId, jaReagiu }: {
  if (enviado) {
  return (
  <div style={{ background: '#02A15315', border: '1px solid var(--avp-green)', borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 10 }}>
- <span style={{ fontSize: 22 }}></span>
+ <CheckCircle size={22} style={{ color: 'var(--avp-green)', flexShrink: 0 }} aria-hidden="true" />
  <p style={{ color: 'var(--avp-green)', fontWeight: 600, fontSize: 14 }}>Obrigado pela sua avaliação!</p>
  </div>
  )
@@ -38,20 +39,26 @@ export default function ReacaoAula({ aulaId, alunoId, jaReagiu }: {
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 16 }}>Sua opinião ajuda a melhorar o conteúdo.</p>
 
  <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
- {[1, 2, 3, 4, 5].map(n => (
+ {[1, 2, 3, 4, 5].map(n => {
+ const ativa = (hover || nota) >= n
+ return (
  <button
  key={n}
  onClick={() => setNota(n)}
  onMouseEnter={() => setHover(n)}
  onMouseLeave={() => setHover(0)}
+ aria-label={`Avaliar com ${n} estrela${n > 1 ? 's' : ''}`}
+ aria-pressed={nota === n}
  style={{
- fontSize: 32, background: 'none', border: 'none', cursor: 'pointer',
- opacity: (hover || nota)>= n ? 1 : 0.3,
+ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', lineHeight: 0,
  transform: hover === n ? 'scale(1.2)' : 'scale(1)',
  transition: 'all 0.15s',
  }}
-></button>
- ))}
+ >
+ <Star size={30} color={ativa ? '#f59e0b' : 'var(--avp-border)'} fill={ativa ? '#f59e0b' : 'none'} />
+ </button>
+ )
+ })}
  </div>
 
  {(hover> 0 || nota> 0) && (
