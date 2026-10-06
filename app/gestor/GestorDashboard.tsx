@@ -430,9 +430,14 @@ export default function GestorDashboard({
 
  async function carregarAulasVivo() {
  if (aulasVivoCarregadas) return
- const res = await fetch(`/api/aulas-ao-vivo?modo=gestor&gestor_id=${gestor.id}`)
- if (res.ok) setAulasVivo(await res.json())
+  const res = await fetch(`/api/aulas-ao-vivo?modo=gestor&gestor_id=${gestor.id}`)
+ if (res.ok) {
+ const data = await res.json()
+ // Defensivo: só aceita array (a API pode responder {error} em alguns caminhos).
+ setAulasVivo(Array.isArray(data) ? data : [])
+ }
  setAulasVivoCarregadas(true)
+
  }
 
  async function criarAulaVivo(e: React.FormEvent) {
