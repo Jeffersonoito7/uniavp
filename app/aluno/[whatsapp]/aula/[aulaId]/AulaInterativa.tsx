@@ -201,13 +201,13 @@ export default function AulaInterativa({
  <div style={{ padding: '0 24px 8px' }}>
  <div style={{ background: exigeApp && !appClicado ? 'rgba(251,191,36,0.05)' : 'var(--avp-card)', border: `${exigeApp && !appClicado ? '2px solid rgba(251,191,36,0.35)' : '1px solid var(--avp-border)'}`, borderRadius: 14, padding: '20px 24px', textAlign: 'center' }}>
  {appClicado ? (
- <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
- <span style={{ fontSize: 20 }}></span>
+  <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
+ <CheckCircle size={20} style={{ color: '#22c55e', flexShrink: 0 }} aria-hidden="true" />
  <p style={{ margin: 0, fontSize: 14, color: '#22c55e', fontWeight: 600 }}>App acessado!</p>
  </div>
  ) : (
  <>
- <div style={{ fontSize: 32, marginBottom: 8 }}></div>
+ <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}><Smartphone size={32} aria-hidden="true" /></div>
  <p style={{ fontWeight: 800, fontSize: 15, marginBottom: 4 }}>
  {exigeApp ? 'Baixe o app — passo obrigatório' : 'Baixe o app consultor'}
  </p>
