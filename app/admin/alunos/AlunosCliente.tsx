@@ -25,6 +25,17 @@ const statusColor: Record<string, string> = {
   inativo: '#e63946',
 }
 
+// Rótulos exibidos ao usuário. "desligado" é o status real no banco, mostrado
+// como "Inativo" na interface (decisão de produto: inativo == desligado).
+const statusLabel: Record<string, string> = {
+  ativo: 'Ativo',
+  pausado: 'Pausado',
+  concluido: 'Formado',
+  desligado: 'Inativo',
+  inativo: 'Inativo',
+}
+
+
 const inp: React.CSSProperties = {
   background: 'var(--avp-black)',
   border: '1px solid var(--avp-border)',
