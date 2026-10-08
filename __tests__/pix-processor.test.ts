@@ -9,7 +9,7 @@ jest.mock('@/lib/efi', () => ({
 
 const mockEnviarWhatsApp = jest.fn()
 jest.mock('@/lib/whatsapp', () => ({
-  enviarWhatsApp: (...args: unknown[]) => mockEnviarWhatsApp(...args),
+    enviarWhatsApp: (...args: unknown[]) => mockEnviarWhatsApp(...args),
   enviarWhatsAppComFila: jest.fn().mockResolvedValue(undefined),
   enfileirarWhatsApp: jest.fn().mockResolvedValue(undefined),
   getInstanciaTenant: jest.fn().mockResolvedValue(null),
