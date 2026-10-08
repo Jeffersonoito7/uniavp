@@ -223,11 +223,10 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
                 </div>
                 <div>
                   <label style={lbl}>Status</label>
-                  <select style={{ ...inp, cursor: 'pointer' }} value={editForm.status} onChange={e => setEditForm(p => ({ ...p, status: e.target.value }))}>
+                    <select style={{ ...inp, cursor: 'pointer' }} value={editForm.status} onChange={e => setEditForm(p => ({ ...p, status: e.target.value }))}>
                     <option value="ativo">Ativo</option>
-                    <option value="inativo">Inativo</option>
+                    <option value="desligado">Inativo</option>
                     <option value="concluido">Formado</option>
-                    <option value="desligado">Desligado</option>
                     <option value="pausado">Pausado</option>
                   </select>
                 </div>
