@@ -355,10 +355,11 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
                   : op.val === 'desligado'
                   ? { background: '#e6394620', color: '#e63946', borderColor: '#e6394660' }
                   : { background: 'var(--avp-blue)', color: '#fff', borderColor: 'var(--avp-blue)' }
-                : { background: 'transparent', color: 'var(--avp-text-dim)', borderColor: 'var(--avp-border)' }
+                                : { background: 'transparent', color: 'var(--avp-text-dim)', borderColor: 'var(--avp-border)' }
               ),
+            }}
+          >
 
-              ),
             }}
           >
             {op.label}
