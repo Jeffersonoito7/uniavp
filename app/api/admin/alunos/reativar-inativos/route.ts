@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
 
   const tid = (adminRecord?.tenant_id ?? null) as string | null
 
-  let q = adminClient.from('alunos').update({ status: 'ativo' } as any).eq('status', 'inativo')
+   let q = adminClient.from('alunos').update({ status: 'ativo' } as any).eq('status', 'desligado')
   if (tid) q = (q as any).eq('tenant_id', tid)
 
   const { count, error } = await (q as any).select('id', { count: 'exact' })
