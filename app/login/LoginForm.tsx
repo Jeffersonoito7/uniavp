@@ -449,9 +449,9 @@ export default function LoginForm({
                           )}
                         </button>
                       </div>
-                      <button type="button" className="lp-forgot" onClick={() => { setRecuperando(true); setErro('') }}>
+                      <a href="/recuperar-senha/questionario" className="lp-forgot" style={{ display: 'inline-block', textDecoration: 'none' }}>
                         Esqueci minha senha
-                      </button>
+                      </a>
                     </div>
 
                     <button type="submit" className="lp-btn" disabled={loading}>
