@@ -349,20 +349,22 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
               fontWeight: 700,
               cursor: 'pointer',
               transition: 'all .15s',
-              ...(filtroStatus === op.val
-                 : op.val === 'desligado'
-                  ? { background: '#e6394620', color: '#e63946', borderColor: '#e6394660' }
-                  : op.val === 'inativo'
+                            ...(filtroStatus === op.val
+                ? op.val === 'ativo'
+                  ? { background: '#02A15320', color: '#02A153', borderColor: '#02A15360' }
+                  : op.val === 'desligado'
                   ? { background: '#e6394620', color: '#e63946', borderColor: '#e6394660' }
                   : { background: 'var(--avp-blue)', color: '#fff', borderColor: 'var(--avp-blue)' }
                 : { background: 'transparent', color: 'var(--avp-text-dim)', borderColor: 'var(--avp-border)' }
+              ),
+
               ),
             }}
           >
             {op.label}
           </button>
         ))}
-              {alunos.some(a => a.status === 'desligado') && (
+        {alunos.some(a => a.status === 'desligado') && (
           <button
             onClick={reativarInativos}
             disabled={reativando}
