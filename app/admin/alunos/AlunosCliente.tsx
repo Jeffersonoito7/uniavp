@@ -359,9 +359,6 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
               ),
             }}
           >
-
-            }}
-          >
             {op.label}
           </button>
         ))}
