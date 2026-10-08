@@ -14,6 +14,50 @@ function formatarNumero(numero: string): string {
   return limpo.startsWith('55') ? limpo : `55${limpo}`
 }
 
+/**
+ * Gera TODAS as variações plausíveis de um número de WhatsApp brasileiro para
+ * usar em comparações `.in(...)` (ex.: vínculo aluno↔gestor via gestor_whatsapp).
+ *
+ * O vínculo é feito por STRING de telefone, mas o mesmo número pode ter sido
+ * gravado em formatos diferentes ao longo do tempo:
+ *   - com ou sem o DDI `55`
+ *   - com ou sem o 9º dígito (celulares pré-2016 / importações legadas)
+ *
+ * A heurística antiga (`startsWith('55') && length > 11 ? slice(2) : wpp`)
+ * falhava para números sem DDI e para variações do 9º dígito, deixando alunos
+ * de fora da equipe do gestor. Esta função é PURA (sem I/O) e testável.
+ *
+ * @returns lista de variações distintas, apenas dígitos. Vazia se entrada vazia.
+ */
+export function variacoesWhatsapp(raw: string | null | undefined): string[] {
+  const d = (raw ?? '').replace(/\D/g, '')
+  if (!d) return []
+
+  const set = new Set<string>()
+  set.add(d)
+
+  const semDDI = d.startsWith('55') ? d.slice(2) : d
+  const comDDI = d.startsWith('55') ? d : `55${d}`
+  set.add(semDDI)
+  set.add(comDDI)
+
+  // 9º dígito: estrutura DDD(2) + [9] + 8 dígitos finais.
+  // Para cada base (com e sem DDI) adiciona a forma com e sem o 9.
+  for (const base of [semDDI, comDDI]) {
+    const m = base.match(/^(55)?(\d{2})9?(\d{8})$/)
+    if (m) {
+      const ddi = m[1] ?? ''
+      const ddd = m[2]
+      const num = m[3]
+      set.add(`${ddi}${ddd}${num}`) // sem o 9
+      set.add(`${ddi}${ddd}9${num}`) // com o 9
+    }
+  }
+
+  return [...set].filter(Boolean)
+}
+
+
 // Tenta enviar até 3 vezes com backoff de 1s entre tentativas.
 // Erros 4xx (cliente) não fazem retry pois não vão melhorar.
 export async function enviarWhatsApp(numero: string, mensagem: string, instancia?: string | null): Promise<boolean> {
