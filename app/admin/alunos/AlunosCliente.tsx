@@ -336,7 +336,7 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
         {([
           { val: 'todos', label: 'Todos' },
           { val: 'ativo', label: 'Ativos' },
-          { val: 'inativo', label: 'Inativos' },
+          { val: 'desligado', label: 'Inativos' },
         ] as const).map(op => (
           <button
             key={op.val}
