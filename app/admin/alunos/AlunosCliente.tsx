@@ -413,8 +413,9 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
                   </td>
                   <td style={{ padding: '14px 16px' }}>
                     <span style={{ background: (statusColor[a.status] ?? '#888') + '20', color: statusColor[a.status] ?? '#888', borderRadius: 20, padding: '3px 10px', fontSize: 12, fontWeight: 600 }}>
-                      {a.status}
+                    {statusLabel[a.status] ?? a.status}
                     </span>
+
                   </td>
                   <td style={{ padding: '14px 16px', color: 'var(--avp-text-dim)', fontSize: 13 }}>
                     {a.created_at ? new Date(a.created_at).toLocaleDateString('pt-BR') : '-'}
