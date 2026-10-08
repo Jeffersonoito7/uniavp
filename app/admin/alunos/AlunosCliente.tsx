@@ -362,13 +362,13 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
             {op.label}
           </button>
         ))}
-        {alunos.some(a => a.status === 'inativo') && (
+              {alunos.some(a => a.status === 'desligado') && (
           <button
             onClick={reativarInativos}
             disabled={reativando}
             style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid rgba(249,115,22,0.4)', background: 'rgba(249,115,22,0.08)', color: '#f97316', fontWeight: 700, fontSize: 12, cursor: reativando ? 'default' : 'pointer', opacity: reativando ? 0.6 : 1, whiteSpace: 'nowrap' }}
           >
-            {reativando ? 'Reativando...' : `Reativar inativos (${alunos.filter(a => a.status === 'inativo').length})`}
+            {reativando ? 'Reativando...' : `Reativar inativos (${alunos.filter(a => a.status === 'desligado').length})`}
           </button>
         )}
       </div>
