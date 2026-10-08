@@ -4,7 +4,7 @@
  */
 
 import { createServiceRoleClient } from '@/lib/supabase-server'
-import { enviarWhatsAppComFila, getInstanciaTenant } from '@/lib/whatsapp'
+import { enviarWhatsAppComFila, getInstanciaTenant, variacoesWhatsapp } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
 import { consultarPagamento } from '@/lib/efi'
 import { audit } from '@/lib/audit'
