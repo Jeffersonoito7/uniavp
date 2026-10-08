@@ -212,13 +212,18 @@ export default async function AdminDashboard({
  const statusCor: Record<string, string> = {
    ativo: '#4ade80',
    concluido: '#818cf8',
+   pausado: '#f59e0b',
+   desligado: '#f87171',
    inativo: '#f87171',
  }
  const statusLabel: Record<string, string> = {
    ativo: 'Ativo',
    concluido: 'Concluído',
+   pausado: 'Pausado',
+   desligado: 'Inativo',
    inativo: 'Inativo',
  }
+
 
  return (
    <>
