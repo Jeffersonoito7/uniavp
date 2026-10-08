@@ -64,12 +64,11 @@ export async function migrarAlunosDeIndicadorParaGestor(
   gestorNome: string,
   adminClient: ReturnType<typeof createServiceRoleClient>
 ): Promise<{ atualizados: number }> {
-  const wpp = gestorWhatsapp
-  const wppSemDDI = wpp.startsWith('55') && wpp.length > 11 ? wpp.slice(2) : wpp
-  const wppComDDI = wpp.startsWith('55') ? wpp : `55${wpp}`
-  const variacoes = [...new Set([wpp, wppSemDDI, wppComDDI])]
+   const wpp = gestorWhatsapp
+  const variacoes = variacoesWhatsapp(wpp)
 
   // Busca o registro do consultor na tabela indicadores (pode estar em qualquer formato de DDI)
+
   const { data: indicadorRows } = await adminClient
     .from('indicadores')
     .select('id')
