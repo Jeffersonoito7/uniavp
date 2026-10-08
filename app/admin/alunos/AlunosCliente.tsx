@@ -350,8 +350,8 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
               cursor: 'pointer',
               transition: 'all .15s',
               ...(filtroStatus === op.val
-                ? op.val === 'ativo'
-                  ? { background: '#02A15320', color: '#02A153', borderColor: '#02A15360' }
+                 : op.val === 'desligado'
+                  ? { background: '#e6394620', color: '#e63946', borderColor: '#e6394660' }
                   : op.val === 'inativo'
                   ? { background: '#e6394620', color: '#e63946', borderColor: '#e6394660' }
                   : { background: 'var(--avp-blue)', color: '#fff', borderColor: 'var(--avp-blue)' }
