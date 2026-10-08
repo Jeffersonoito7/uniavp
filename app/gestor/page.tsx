@@ -6,6 +6,7 @@ import { getSiteConfig } from '@/lib/site-config'
 import { headers } from 'next/headers'
 import { getLimitePROGratuito } from '@/lib/pros-indicados'
 import { getAppUrl } from '@/lib/get-app-url'
+import { variacoesWhatsapp } from '@/lib/whatsapp'
 import GestorDashboard from './GestorDashboard'
 import IndicadorPopup from '@/app/components/IndicadorPopup'
 import CpfAlertPopup from '@/app/components/CpfAlertPopup'
@@ -70,12 +71,11 @@ export default async function GestorPage({ searchParams }: { searchParams?: { pr
 
  const gestorFoto: string | null = gestor.foto_perfil ?? null
 
- // Normaliza variações de DDI: alunos antigos podem ter sido registrados
- // com ou sem o prefixo 55, enquanto o gestor pode ter whatsapp em formato diferente
- const wpp = gestor.whatsapp
- const wppSemDDI = wpp.startsWith('55') && wpp.length > 11 ? wpp.slice(2) : wpp
- const wppComDDI = wpp.startsWith('55') ? wpp : `55${wpp}`
- const variacoesWpp = [...new Set([wpp, wppSemDDI, wppComDDI])]
+ // Normaliza variações de DDI e 9º dígito: alunos podem ter sido registrados
+ // com ou sem o prefixo 55 e com ou sem o 9º dígito, enquanto o gestor pode ter
+ // o whatsapp em outro formato. Usa a função canônica (lib/whatsapp) para cobrir
+ // todas as variações e não deixar consultores de fora da equipe.
+ const variacoesWpp = variacoesWhatsapp(gestor.whatsapp)
 
  const { data: consultores } = await adminClient.from('alunos')
  .select('id, nome, whatsapp, email, status, created_at, ultimo_estudo_em, streak_atual')
