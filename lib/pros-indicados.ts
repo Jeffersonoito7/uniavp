@@ -1,4 +1,6 @@
 import type { createServiceRoleClient } from '@/lib/supabase-server'
+import { variacoesWhatsapp } from '@/lib/whatsapp'
+
 
 type AdminClient = ReturnType<typeof createServiceRoleClient>
 
@@ -50,11 +52,8 @@ export async function contarPROsAtivosIndicados(
   for (const g of pathA ?? []) gestorIdsEncontrados.add(g.id)
 
   // ── Path B: captados via link FREE (indicador_id → alunos → gestores) ─────
-  const wppSemDDI = gestorWhatsapp.startsWith('55') && gestorWhatsapp.length > 11
-    ? gestorWhatsapp.slice(2)
-    : gestorWhatsapp
-  const wppComDDI = gestorWhatsapp.startsWith('55') ? gestorWhatsapp : `55${gestorWhatsapp}`
-  const variacoes = [...new Set([gestorWhatsapp, wppSemDDI, wppComDDI])]
+  const variacoes = variacoesWhatsapp(gestorWhatsapp)
+
 
   const { data: indicadorRows } = await admin
     .from('indicadores')
