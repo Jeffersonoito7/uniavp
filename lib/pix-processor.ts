@@ -24,14 +24,13 @@ export async function vincularAlunosDoGestorNoFree(
   gestorNome: string,
   adminClient: ReturnType<typeof createServiceRoleClient>
 ): Promise<{ atualizados: number }> {
-    const wpp = gestorWhatsapp
+  const wpp = gestorWhatsapp
   // Variações do número em outros formatos (sem o próprio formato canônico 'wpp'),
   // pois o objetivo é justamente achar alunos gravados num formato DIFERENTE e
   // reescrevê-los para o canônico.
   const variacoes = variacoesWhatsapp(wpp).filter(v => v !== wpp)
 
   if (variacoes.length === 0) return { atualizados: 0 }
-}
 
   const { data: alunosErrados } = await adminClient
     .from('alunos')
