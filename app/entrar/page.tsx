@@ -367,7 +367,8 @@ function EntrarForm() {
                       )}
                     </button>
                   </div>
-                  <a href="/recuperar-senha" className="ep-forgot">Esqueci minha senha</a>
+                  <a href="/recuperar-senha/questionario" className="ep-forgot">Esqueci minha senha</a>
+
                 </div>
 
                 <button
