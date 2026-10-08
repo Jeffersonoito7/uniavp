@@ -13,6 +13,9 @@ jest.mock('@/lib/whatsapp', () => ({
   enviarWhatsAppComFila: jest.fn().mockResolvedValue(undefined),
   enfileirarWhatsApp: jest.fn().mockResolvedValue(undefined),
   getInstanciaTenant: jest.fn().mockResolvedValue(null),
+  // Função pura (sem I/O) usada pela reconciliação de equipe no upgrade:
+  // reusa a implementação real para não quebrar o fluxo nos testes.
+  variacoesWhatsapp: jest.requireActual('@/lib/whatsapp').variacoesWhatsapp,
 }))
 
 jest.mock('@/lib/get-app-url', () => ({
