@@ -92,7 +92,7 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
   }
 
   async function reativarInativos() {
-    const qtd = alunos.filter(a => a.status === 'inativo').length
+        const qtd = alunos.filter(a => a.status === 'desligado').length
     if (qtd === 0) { flash('ok', 'Nenhum aluno inativo encontrado.'); return }
     if (!confirm(`Reativar ${qtd} aluno(s) inativo(s)? O status será alterado para "ativo".`)) return
     setReativando(true)
@@ -100,7 +100,7 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
       const res = await fetch('/api/admin/alunos/reativar-inativos', { method: 'POST' })
       const data = await res.json()
       if (data.ok) {
-        setAlunos(prev => prev.map(a => a.status === 'inativo' ? { ...a, status: 'ativo' } : a))
+        setAlunos(prev => prev.map(a => a.status === 'desligado' ? { ...a, status: 'ativo' } : a))
         flash('ok', `${data.reativados ?? qtd} aluno(s) reativado(s) com sucesso.`)
       } else {
         flash('err', data.error ?? 'Erro ao reativar.')
