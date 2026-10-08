@@ -337,7 +337,7 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
           { val: 'todos', label: 'Todos' },
           { val: 'ativo', label: 'Ativos' },
           { val: 'desligado', label: 'Inativos' },
-        ] as const).map(op => (
+               ] as const).map(op => (
           <button
             key={op.val}
             onClick={() => setFiltroStatus(op.val)}
@@ -349,13 +349,13 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
               fontWeight: 700,
               cursor: 'pointer',
               transition: 'all .15s',
-                            ...(filtroStatus === op.val
+              ...(filtroStatus === op.val
                 ? op.val === 'ativo'
                   ? { background: '#02A15320', color: '#02A153', borderColor: '#02A15360' }
                   : op.val === 'desligado'
                   ? { background: '#e6394620', color: '#e63946', borderColor: '#e6394660' }
                   : { background: 'var(--avp-blue)', color: '#fff', borderColor: 'var(--avp-blue)' }
-                                : { background: 'transparent', color: 'var(--avp-text-dim)', borderColor: 'var(--avp-border)' }
+                : { background: 'transparent', color: 'var(--avp-text-dim)', borderColor: 'var(--avp-border)' }
               ),
             }}
           >
