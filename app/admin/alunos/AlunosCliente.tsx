@@ -75,7 +75,7 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
   const [alunos, setAlunos] = useState<Aluno[]>(alunosIniciais)
   const [busca, setBusca] = useState(buscaInicial)
   const [filtroPlano, setFiltroPlano] = useState<'todos' | 'PRO' | 'Free'>('todos')
-  const [filtroStatus, setFiltroStatus] = useState<'todos' | 'ativo' | 'inativo'>('todos')
+    const [filtroStatus, setFiltroStatus] = useState<'todos' | 'ativo' | 'desligado'>('todos')
   const [editando, setEditando] = useState<Aluno | null>(null)
   const [editForm, setEditForm] = useState({
     nome: '', whatsapp: '', email: '', cpf: '', status: 'ativo',
