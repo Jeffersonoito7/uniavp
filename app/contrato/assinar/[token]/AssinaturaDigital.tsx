@@ -190,7 +190,7 @@ export default function AssinaturaDigital({
           <p style={{ color: '#6b7280', fontSize: 13, fontFamily: 'monospace' }}>N. {numeroRegistro}</p>
           {email && (
             <p style={{ fontSize: 13, color: '#6b7280', marginTop: 20, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px' }}>
-              Voce receberá uma copia do documento para <strong>{email}</strong> quando todos os assinantes concluirem.
+              Você receberá uma cópia do documento para <strong>{email}</strong> quando todos os assinantes concluírem.
             </p>
           )}
         </div>
@@ -339,7 +339,7 @@ export default function AssinaturaDigital({
             <div style={{ background: '#f1f5f9', borderRadius: 10, padding: '14px 18px', marginBottom: 20, fontSize: 13, color: '#475569' }}>
               Esta assinatura tem validade juridica conforme a Lei 14.063/2020 e o Marco Civil da Internet (Lei 12.965/2014).
               Seu IP, data, hora e hash do documento serao registrados.
-              {email && <> Uma copia sera enviada para <strong>{email}</strong> quando todos assinarem.</>}
+              {email && <> Uma cópia será enviada para <strong>{email}</strong> quando todos assinarem.</>}
             </div>
 
             {erro && (

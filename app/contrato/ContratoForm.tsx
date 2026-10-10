@@ -612,7 +612,7 @@ export default function ContratoForm({ nomeInicial='', whatsappInicial='', email
  ['ESTADO CIVIL', estadoCivil || '—'],
  ['NACIONALIDADE', nacionalidade || '—'],
  ['CPF', form.cpf || '—'],
- ['CNPJ MEI', semCnpj ? 'Pendente — sera informado apos abertura' : form.cnpj_mei],
+ ['CNPJ MEI', semCnpj ? 'Pendente — será informado após abertura' : form.cnpj_mei],
  ]
  if (!semCnpj) dadosConfirmar.push(['SEDE MEI', sedeMei])
  dadosConfirmar.push(

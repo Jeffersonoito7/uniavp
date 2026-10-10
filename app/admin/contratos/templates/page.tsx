@@ -56,7 +56,7 @@ export default function TemplatesPage() {
   }
 
   async function arquivar(id: string) {
-    if (!confirm('Arquivar este template? Contratos existentes nao sao afetados.')) return
+    if (!confirm('Arquivar este template? Contratos existentes não são afetados.')) return
     await fetch(`/api/admin/contrato-templates/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ arquivado: true }) })
     setTemplates(prev => prev.filter(t => t.id !== id))
   }

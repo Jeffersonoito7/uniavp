@@ -1245,7 +1245,7 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  <div>
  <p style={{ fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><ScrollText size={15} style={{ opacity: 0.6 }} />Contratos Digitais</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginTop: 4 }}>
- Envie contratos individuais por WhatsApp ou email. O destinatario abre o link, preenche os proprios dados, le e assina digitalmente. Todos recebem copia por email apos conclusao.
+ Envie contratos individuais por WhatsApp ou email. O destinatário abre o link, preenche os próprios dados, lê e assina digitalmente. Todos recebem cópia por email após conclusão.
  </p>
  </div>
  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -1263,10 +1263,10 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
  <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 12px' }}>Como funciona</p>
  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
  {[
- { n: '1', titulo: 'Voce cria o contrato', desc: 'Escreve o corpo em HTML com variaveis como {{nome}}, {{cpf}}, {{data}}. Pode usar um template ou escrever do zero.' },
- { n: '2', titulo: 'Voce informa o contato do destinatario', desc: 'Apenas WhatsApp ou email. Nao precisa preencher nome nem CPF: o proprio destinatario preenche ao abrir.' },
- { n: '3', titulo: 'Destinatario recebe o link', desc: 'Preenche nome e CPF, le o contrato com os dados inseridos, e assina digitalmente com validade juridica (Lei 14.063/2020).' },
- { n: '4', titulo: 'Copia por email', desc: 'Quando todos assinam, cada parte com email cadastrado recebe uma copia completa do documento.' },
+ { n: '1', titulo: 'Você cria o contrato', desc: 'Escreve o corpo em HTML com variáveis como {{nome}}, {{cpf}}, {{data}}. Pode usar um template ou escrever do zero.' },
+ { n: '2', titulo: 'Você informa o contato do destinatário', desc: 'Apenas WhatsApp ou email. Não precisa preencher nome nem CPF: o próprio destinatário preenche ao abrir.' },
+ { n: '3', titulo: 'Destinatário recebe o link', desc: 'Preenche nome e CPF, lê o contrato com os dados inseridos, e assina digitalmente com validade jurídica (Lei 14.063/2020).' },
+ { n: '4', titulo: 'Cópia por email', desc: 'Quando todos assinam, cada parte com email cadastrado recebe uma cópia completa do documento.' },
  ].map(p => (
  <div key={p.n} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0, marginTop: 1 }}>{p.n}</div>
@@ -1281,9 +1281,9 @@ export default function ConfiguracoesCliente({ configs, isMaster = false }: { co
 
  {/* Dados da Contratante */}
  <div style={{ background: 'var(--avp-black)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
- <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>Dados da Contratante (sua associacao)</p>
+ <p style={{ fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>Dados da Contratante (sua associação)</p>
  <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 14px', lineHeight: 1.5 }}>
-  Preenchidos uma vez aqui e substituidos automaticamente como variaveis nos contratos:
+  Preenchidos uma vez aqui e substituídos automaticamente como variáveis nos contratos:
   <code style={{ background: 'var(--avp-card)', padding: '1px 5px', borderRadius: 4, fontSize: 11, marginLeft: 4 }}>{'{{contratante_razao_social}}'}</code>
   <code style={{ background: 'var(--avp-card)', padding: '1px 5px', borderRadius: 4, fontSize: 11, marginLeft: 4 }}>{'{{contratante_cnpj}}'}</code>
   <code style={{ background: 'var(--avp-card)', padding: '1px 5px', borderRadius: 4, fontSize: 11, marginLeft: 4 }}>{'{{contratante_endereco}}'}</code>

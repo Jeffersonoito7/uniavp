@@ -92,7 +92,7 @@ export default function IndicadorPopup({ entityId, entityWhatsapp, tipo }: Props
           {concluido ? (
             <div style={{ textAlign: 'center', padding: '12px 0' }}>
               <div style={{ fontSize: 40, marginBottom: 10 }}>✅</div>
-              <p style={{ color: 'var(--avp-text)', fontWeight: 700, fontSize: 16, margin: 0 }}>Indicacao registrada!</p>
+              <p style={{ color: 'var(--avp-text)', fontWeight: 700, fontSize: 16, margin: 0 }}>Indicação registrada!</p>
               <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 6 }}>Obrigado por reconhecer quem te indicou.</p>
             </div>
           ) : (

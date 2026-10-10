@@ -86,7 +86,7 @@ export default function LiberacoesPendentes() {
       <div style={{ display: 'flex', borderBottom: '1px solid var(--avp-border)' }}>
         <button onClick={() => setAba('manual')}
           style={{ flex: 1, padding: '14px 20px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: aba === 'manual' ? 700 : 400, color: aba === 'manual' ? 'var(--avp-text)' : 'var(--avp-text-dim)', borderBottom: aba === 'manual' ? '2px solid var(--avp-blue)' : '2px solid transparent' }}>
-          Liberacao manual {totalManual > 0 && <span style={{ background: 'var(--avp-blue)', color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: 11, marginLeft: 4 }}>{totalManual}</span>}
+          Liberação manual {totalManual > 0 && <span style={{ background: 'var(--avp-blue)', color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: 11, marginLeft: 4 }}>{totalManual}</span>}
         </button>
         <button onClick={() => setAba('tempo')}
           style={{ flex: 1, padding: '14px 20px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: aba === 'tempo' ? 700 : 400, color: aba === 'tempo' ? 'var(--avp-text)' : 'var(--avp-text-dim)', borderBottom: aba === 'tempo' ? '2px solid #f59e0b' : '2px solid transparent' }}>

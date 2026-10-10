@@ -83,7 +83,7 @@ export default function ConsultoresCliente({ consultoresIniciais }: { consultore
  const [iniciandoFunil, setIniciandoFunil] = useState<string | null>(null)
 
  async function iniciarFunil(c: Consultor) {
-   if (!confirm(`Iniciar funil de onboarding para ${c.nome}? Uma mensagem sera enviada pelo WhatsApp.`)) return
+   if (!confirm(`Iniciar funil de onboarding para ${c.nome}? Uma mensagem será enviada pelo WhatsApp.`)) return
    setIniciandoFunil(c.id)
    const res = await fetch('/api/admin/funil-consultor/iniciar', {
      method: 'POST',

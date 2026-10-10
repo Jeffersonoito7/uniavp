@@ -50,7 +50,7 @@ export default function LinkParceiroCard({ alunoId, linkAtual, whatsapp, baseUrl
         Meu link da plataforma parceira
       </p>
       <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px' }}>
-        Cole aqui o seu link de indicacao. Aparece para quem voce recrutar ao completar certas aulas.
+        Cole aqui o seu link de indicação. Aparece para quem você recrutar ao completar certas aulas.
       </p>
       <form onSubmit={salvar} style={{ display: 'flex', gap: 8 }}>
         <input

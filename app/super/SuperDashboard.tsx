@@ -1773,7 +1773,7 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
   setSalvandoCfg(true); setCfgMsg('')
   const r = await fetch('/api/super/nfse/config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cfg) })
   const d = await r.json()
-  setCfgMsg(d.ok ? 'Configuracao salva.' : (d.error ?? 'Erro.'))
+  setCfgMsg(d.ok ? 'Configuração salva.' : (d.error ?? 'Erro.'))
   setSalvandoCfg(false)
  }
 
@@ -1888,8 +1888,8 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
 
    {/* Tabs */}
    <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
-    {tabBtn('emitir', 'Emitir / Historico')}
-    {tabBtn('config', 'Configuracao')}
+    {tabBtn('emitir', 'Emitir / Histórico')}
+    {tabBtn('config', 'Configuração')}
    </div>
 
    {/* ── Emitir + Historico ── */}
@@ -2021,7 +2021,7 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
       {secH(Building2, 'Dados do emissor')}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
        {ci('cnpj', 'CNPJ', '62.302.560/0001-58')}
-       {ci('inscricao_municipal', 'Inscricao Municipal')}
+       {ci('inscricao_municipal', 'Inscrição Municipal')}
        {ci('codigo_municipio_ibge', 'Codigo IBGE', '2611101')}
        {ci('url_servico', 'URL SOAP (WSDL)', 'https://...')}
        {ci('item_lista_servico', 'Item LC116', '17.06')}

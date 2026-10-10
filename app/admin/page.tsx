@@ -192,7 +192,7 @@ export default async function AdminDashboard({
    { label: 'Total Cadastrados', value: totalAlunos ?? 0, sub: `${alunosAtivos ?? 0} ativos`, cor: '#818cf8' },
    { label: 'Nunca abriu aula', value: nuncaAbriu, sub: `${totalAlunos ? Math.round(nuncaAbriu / (totalAlunos ?? 1) * 100) : 0}% do total`, cor: '#f87171' },
    { label: 'Cursando', value: cursandoMod1, sub: 'pelo menos 1 aula feita', cor: '#fbbf24' },
-   { label: 'Concluiram Mod. 1', value: concluiuMod1, sub: 'todas as aulas do Módulo 1', cor: '#4ade80' },
+   { label: 'Concluíram Mod. 1', value: concluiuMod1, sub: 'todas as aulas do Módulo 1', cor: '#4ade80' },
    { label: 'PROs Ativos', value: gestoresAtivos ?? 0, sub: `de ${totalGestores ?? 0} cadastrados`, cor: '#38bdf8' },
    { label: 'Novos no Período', value: novosNoPeriodo ?? 0, sub: `Anterior: ${novosNoPrev ?? 0}`, cor: '#c084fc' },
  ]

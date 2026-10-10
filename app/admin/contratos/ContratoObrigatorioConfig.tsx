@@ -46,10 +46,10 @@ export default function ContratoObrigatorioConfig({
     <div style={card}>
       <div style={{ marginBottom: 14 }}>
         <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--avp-text)', margin: '0 0 4px' }}>
-          Contrato obrigatorio
+          Contrato obrigatório
         </h2>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, margin: 0 }}>
-          Quando ativo, todo aluno (FREE ou PRO) sera redirecionado para assinar o contrato antes de acessar o painel. Funciona uma unica vez: apos assinar, nao e mais exibido.
+          Quando ativo, todo aluno (FREE ou PRO) será redirecionado para assinar o contrato antes de acessar o painel. Funciona uma única vez: após assinar, não é mais exibido.
         </p>
       </div>
 

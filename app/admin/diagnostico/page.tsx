@@ -96,7 +96,7 @@ export default async function DiagnosticoPage() {
         ]} />
       </Section>
 
-      <Section title="Gestores (PRO) ativos sem link de indicacao" count={gestoresSemLink?.length ?? 0} color="rgba(248,113,113,0.8)">
+      <Section title="Gestores (PRO) ativos sem link de indicação" count={gestoresSemLink?.length ?? 0} color="rgba(248,113,113,0.8)">
         <Table rows={gestoresSemLink ?? []} cols={[
           { key: 'nome', label: 'Nome' },
           { key: 'whatsapp', label: 'WhatsApp' },

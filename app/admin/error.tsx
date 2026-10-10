@@ -41,10 +41,10 @@ export default function AdminError({
         </div>
 
         <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 8, color: 'var(--avp-text)' }}>
-          Erro ao carregar a pagina
+          Erro ao carregar a página
         </h2>
         <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', marginBottom: 24, lineHeight: 1.6 }}>
-          Nao foi possivel carregar o conteudo. Verifique sua conexao e tente novamente.
+          Não foi possível carregar o conteúdo. Verifique sua conexão e tente novamente.
         </p>
 
         {isDev && (

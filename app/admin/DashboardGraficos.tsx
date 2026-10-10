@@ -237,7 +237,7 @@ export function DashboardBI({
           pct={pctNunca}
         />
         <StatCard
-          label="Concluiram Modulo 1"
+          label="Concluíram Módulo 1"
           valor={mod1Configurado ? concluiuMod1.toLocaleString('pt-BR') : '—'}
           sub={mod1Configurado ? 'todas as aulas do perfil consultor' : 'Módulo 1 não configurado'}
           cor="#22c55e"

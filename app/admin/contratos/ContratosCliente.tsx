@@ -146,7 +146,7 @@ function ModelosAcordo({ acordosIniciais }: { acordosIniciais: Acordo[] }) {
  <input value={novoNome} onChange={e => setNovoNome(e.target.value)} placeholder="Ex: Acordo Padrao AVP, Acordo Especial 200 fichas..." style={inp2} />
  </div>
  <div>
- <label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, color: 'var(--avp-text-dim)', display: 'block', marginBottom: 5 }}>Regra de bonificacao *</label>
+ <label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, color: 'var(--avp-text-dim)', display: 'block', marginBottom: 5 }}>Regra de bonificação *</label>
  <textarea value={novaRegra} onChange={e => setNovaRegra(e.target.value)}
  placeholder={'Ex:\n10 filiações = R$ 500,00\n20 filiações = R$ 1.500,00\nRecorrência de 5% com 300+ veículos ativos.'}
  rows={5} style={{ ...inp2, resize: 'vertical', fontFamily: 'Inter, sans-serif' } as React.CSSProperties} />
@@ -175,7 +175,7 @@ function ModelosAcordo({ acordosIniciais }: { acordosIniciais: Acordo[] }) {
  <input value={editando.nome} onChange={e => setEditando(p => p ? { ...p, nome: e.target.value } : p)} style={inp2} />
  </div>
  <div>
- <label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, color: 'var(--avp-text-dim)', display: 'block', marginBottom: 5 }}>Regra de bonificacao</label>
+ <label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, color: 'var(--avp-text-dim)', display: 'block', marginBottom: 5 }}>Regra de bonificação</label>
  <textarea value={editando.regra_bonificacao} onChange={e => setEditando(p => p ? { ...p, regra_bonificacao: e.target.value } : p)}
  rows={6} style={{ ...inp2, resize: 'vertical', fontFamily: 'Inter, sans-serif' } as React.CSSProperties} />
  </div>
@@ -222,14 +222,14 @@ function PainelEnvioContrato({ formadosSemContrato }: { formadosSemContrato: num
  <div>
  <p style={{ fontWeight: 800, fontSize: 15, margin: 0 }}>Enviar contrato para formados</p>
  <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', margin: '4px 0 0' }}>
- <strong style={{ color: '#818cf8' }}>{formadosSemContrato}</strong> consultor(es) formado(s) ainda nao assinaram o contrato.
+ <strong style={{ color: '#818cf8' }}>{formadosSemContrato}</strong> consultor(es) formado(s) ainda não assinaram o contrato.
  </p>
  </div>
  <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
  <button
  onClick={() => setExpandido(v => !v)}
  style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', borderRadius: 8, padding: '8px 16px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
- {expandido ? 'Ocultar previa' : 'Ver mensagem'}
+ {expandido ? 'Ocultar prévia' : 'Ver mensagem'}
  </button>
  <button
  onClick={enviarParaTodos}
@@ -242,17 +242,17 @@ function PainelEnvioContrato({ formadosSemContrato }: { formadosSemContrato: num
 
  {expandido && (
  <div style={{ marginTop: 16, background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 10, padding: '14px 16px' }}>
- <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, margin: '0 0 10px' }}>Previa da mensagem enviada</p>
- <pre style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--avp-text)', whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'Inter, sans-serif' }}>{`Contrato de Representacao
+ <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, margin: '0 0 10px' }}>Prévia da mensagem enviada</p>
+ <pre style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--avp-text)', whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'Inter, sans-serif' }}>{`Contrato de Representação
 
-Ola, [Nome do consultor]!
+Olá, [Nome do consultor]!
 
-Voce concluiu o treinamento e esta apto(a) a assinar seu contrato de representacao.
+Você concluiu o treinamento e está apto(a) a assinar seu contrato de representação.
 
 Acesse o link abaixo e assine digitalmente em poucos minutos:
 [link do contrato]
 
-Apos assinar, voce recebera o PDF aqui no WhatsApp.`}</pre>
+Após assinar, você receberá o PDF aqui no WhatsApp.`}</pre>
  </div>
  )}
 
@@ -374,7 +374,7 @@ function GeradorLinkPersonalizado({ acordos }: { acordos: Acordo[] }) {
  </div>
  <div>
  <label style={{ fontSize: 11, color: 'var(--avp-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>
- Regra de bonificacao {acordos.length> 0 ? '(preenchida ao selecionar modelo)' : '*'}
+ Regra de bonificação {acordos.length> 0 ? '(preenchida ao selecionar modelo)' : '*'}
  </label>
  <textarea
  value={regra} onChange={e => { setRegra(e.target.value); setModeloId('') }}
@@ -531,9 +531,9 @@ export default function ContratosCliente({
  <>
  <div style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
  <div>
- <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Contratos de Representacao</h1>
+ <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Contratos de Representação</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>
- Visao geral de assinaturas de todos os alunos
+ Visão geral de assinaturas de todos os alunos
  </p>
  </div>
  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -543,7 +543,7 @@ export default function ContratosCliente({
  </a>
  <a href="/contrato" target="_blank" rel="noreferrer"
  style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', borderRadius: 8, padding: '8px 16px', fontWeight: 700, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap' }}>
- Abrir pagina do contrato
+ Abrir página do contrato
  </a>
  </div>
  </div>

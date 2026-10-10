@@ -51,7 +51,7 @@ export default function LinkParceiroCardGestor({
         Meu link da plataforma parceira
       </p>
       <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: '0 0 12px' }}>
-        Aparece para os FREE que voce recrutar ao completar certas aulas.
+        Aparece para os FREE que você recrutar ao completar certas aulas.
       </p>
       <form onSubmit={salvar} style={{ display: 'flex', gap: 8 }}>
         <input

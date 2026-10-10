@@ -108,7 +108,7 @@ export default function DetalheContratoPage() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
                   <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>{a.nome}</p>
-                  <span style={{ background: '#6b728020', color: '#6b7280', borderRadius: 6, padding: '1px 6px', fontSize: 11 }}>{a.papel === 'destinatario' ? 'Destinatario' : 'Terceiro'}</span>
+                  <span style={{ background: '#6b728020', color: '#6b7280', borderRadius: 6, padding: '1px 6px', fontSize: 11 }}>{a.papel === 'destinatario' ? 'Destinatário' : 'Terceiro'}</span>
                 </div>
                 <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', margin: 0 }}>
                   {a.whatsapp && <>{a.whatsapp}</>}
@@ -136,7 +136,7 @@ export default function DetalheContratoPage() {
         <div style={card}>
           <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 8 }}>Hash de integridade</p>
           <p style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--avp-text-dim)', wordBreak: 'break-all', margin: 0 }}>{contrato.hash_final}</p>
-          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 6 }}>SHA-256 gerado automaticamente apos todas as assinaturas. Garante que o documento nao foi alterado.</p>
+          <p style={{ fontSize: 12, color: 'var(--avp-text-dim)', marginTop: 6 }}>SHA-256 gerado automaticamente após todas as assinaturas. Garante que o documento não foi alterado.</p>
         </div>
       )}
 
