@@ -70,7 +70,7 @@ export default function LinkParceiroCard({ alunoId, linkAtual, whatsapp, baseUrl
 
       <div style={{ marginTop: 16, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 10, padding: '12px 14px' }}>
         <p style={{ fontSize: 11, fontWeight: 700, color: '#22c55e', textTransform: 'uppercase' as const, letterSpacing: 1, margin: '0 0 6px' }}>
-          Seu link de captacao
+          Seu link de captação
         </p>
         <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', margin: '0 0 10px', lineHeight: 1.5 }}>
           {linkSalvo
