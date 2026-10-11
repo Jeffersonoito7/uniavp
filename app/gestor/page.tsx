@@ -50,11 +50,22 @@ export default async function GestorPage({ searchParams }: { searchParams?: { pr
  gestor.trial_expira_em = trialExpira
  }
 
- // Verifica acesso: trial ativo, plano ativo, ou plano ativo sem data (legado)
+  // Verifica acesso: trial ativo, plano ativo, ou plano ativo sem data (legado).
+ // IMPORTANTE: o acesso é decidido pela regra de negócio (status_assinatura +
+ // vencimento), NÃO pelo flag booleano `ativo`. Isso corrige o loop em que a
+ // tela /gestor/assinar mostrava "Plano ativo" (ela não filtra por `ativo`),
+ // mas o painel recusava o gestor por exigir `ativo = true`, deixando-o preso.
  const agora = new Date()
  const trialAtivo = gestor.status_assinatura === 'trial' && gestor.trial_expira_em && new Date(gestor.trial_expira_em)> agora
  const planoAtivo = gestor.status_assinatura === 'ativo' && (!gestor.plano_vencimento || new Date(gestor.plano_vencimento)> agora)
  if (!isAdminPreview && !trialAtivo && !planoAtivo) redirect('/gestor/assinar')
+
+ // Back-fill defensivo: se o acesso é válido mas o flag `ativo` ficou
+ // dessincronizado (false), corrige na origem para não repetir a inconsistência.
+ if (!isAdminPreview && (trialAtivo || planoAtivo) && (gestor as any).ativo === false) {
+ await adminClient.from('gestores').update({ ativo: true }).eq('id', gestor.id)
+ }
+
 
  // Verifica contrato digital obrigatorio
  if (!isAdminPreview) {
