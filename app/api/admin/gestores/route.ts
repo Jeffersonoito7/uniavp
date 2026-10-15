@@ -91,16 +91,25 @@ export async function PUT(request: NextRequest) {
   const { id, ativo, nome, email, whatsapp, nova_senha, cpf } = body
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
-  const updates: { ativo?: boolean; nome?: string; email?: string; whatsapp?: string } = {}
+  // 1) Valida escopo: próprio tenant OU tenant_id NULL (gestores legados/promovidos)
+  let qSel = adminClient.from('gestores').select('id, tenant_id, user_id').eq('id', id)
+  if (ctx.tenantId) qSel = qSel.or(`tenant_id.eq.${ctx.tenantId},tenant_id.is.null`)
+  const { data: alvo } = await qSel.maybeSingle()
+  if (!alvo) return NextResponse.json({ error: 'Gestor não encontrado' }, { status: 404 })
+
+  // 2) Monta updates + back-fill de tenant_id se estava NULL
+  const updates: { ativo?: boolean; nome?: string; email?: string; whatsapp?: string; tenant_id?: string } = {}
   if (ativo !== undefined) updates.ativo = ativo
   if (nome !== undefined) updates.nome = nome
   if (email !== undefined) updates.email = email
   if (whatsapp !== undefined) updates.whatsapp = whatsapp.replace?.(/\D/g, '') ?? whatsapp
+  if (ctx.tenantId && !alvo.tenant_id) updates.tenant_id = ctx.tenantId
 
-  let updateQuery = adminClient.from('gestores').update(updates).eq('id', id)
-  if (ctx.tenantId) updateQuery = updateQuery.eq('tenant_id', ctx.tenantId)
-  const { data: gestor, error } = await updateQuery.select('*').single()
+  // 3) UPDATE por id (escopo já validado acima)
+  const { data: gestor, error } = await adminClient.from('gestores')
+    .update(updates).eq('id', id).select('*').maybeSingle()
   if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
+  if (!gestor) return NextResponse.json({ error: 'Falha ao salvar: gestor não encontrado' }, { status: 404 })
 
   if (cpf !== undefined) {
     const cpfLimpo = cpf ? String(cpf).replace(/\D/g, '') || null : null
