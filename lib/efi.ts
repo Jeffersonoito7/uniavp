@@ -376,7 +376,7 @@ export async function consultarWebhook(): Promise<{ webhookUrl?: string; registr
 export async function registrarWebhook(webhookUrl: string): Promise<void> {
   const token = await getToken()
   const chave = process.env.EFI_PIX_KEY!
-  const { status, data } = await httpsRequest(`${BASE}/v2/webhook/${chave}`, {
+  const { status, data } = await httpsRequest(`${BASE}/v2/webhook/${chave}?x-skip-mtls-checking=true`, {
     method: 'PUT',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ webhookUrl }),
