@@ -1719,7 +1719,7 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
  const [certPemFile, setCertPemFile] = useState<File | null>(null)
  const [form, setForm] = useState({ valor: '', descricao: '', tomador_doc: '', tomador_nome: '', tomador_email: '' })
  const [emitindo, setEmitindo] = useState(false)
- const [resultado, setResultado] = useState<{ ok: boolean; texto: string } | null>(null)
+ const [resultado, setResultado] = useState<{ ok: boolean; texto: string; bruta?: string } | null>(null)
  const [tomadores, setTomadores] = useState<any[]>(TOMADORES_PADRAO)
  const [buscandoCnpj, setBuscandoCnpj] = useState(false)
  const [notas, setNotas] = useState<any[]>([])
@@ -1830,7 +1830,7 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
     setForm({ valor: '', descricao: '', tomador_doc: '', tomador_nome: '', tomador_email: '' })
     loadNotas()
    } else {
-    setResultado({ ok: false, texto: d.error ?? 'A prefeitura recusou a nota. Confira os dados e a configuracao.' })
+    setResultado({ ok: false, texto: d.error ?? 'A prefeitura recusou a nota. Confira os dados e a configuracao.', bruta: d.respostaBruta })
    }
   } catch (e: any) {
    setResultado({ ok: false, texto: e?.message ?? 'Erro ao emitir.' })
@@ -1952,7 +1952,14 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
      {resultado && (
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: resultado.ok ? (darkMode ? '#052e16' : '#f0fdf4') : (darkMode ? '#1a0505' : '#fff1f2'), border: `1px solid ${resultado.ok ? '#166534' : '#fca5a5'}`, borderRadius: 12, padding: '12px 16px', marginBottom: 16, fontSize: 13, color: resultado.ok ? '#22c55e' : '#f87171' }}>
        {resultado.ok ? <CheckCircle2 size={15} style={{ marginTop: 1, flexShrink: 0 }} /> : <XCircle size={15} style={{ marginTop: 1, flexShrink: 0 }} />}
-       <span>{resultado.texto}</span>
+       <div style={{ flex: 1 }}>
+        <span>{resultado.texto}</span>
+        {resultado.bruta && (
+         <pre style={{ marginTop: 8, fontSize: 11, whiteSpace: 'pre-wrap', wordBreak: 'break-all', background: darkMode ? '#0a0a0a' : '#fff8f8', border: '1px solid #f87171', borderRadius: 6, padding: '8px 10px', color: darkMode ? '#fca5a5' : '#b91c1c', maxHeight: 200, overflow: 'auto' }}>
+          {resultado.bruta}
+         </pre>
+        )}
+       </div>
       </div>
      )}
 
