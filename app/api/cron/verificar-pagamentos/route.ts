@@ -55,24 +55,35 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Fase 1: gestor_pagamentos.status='pago' mas gestor inativo (crash entre as duas updates)
+  // Fase 2: gestor_pagamentos.status='pago' mas gestor não está PRO
+  // Cobre dois cenários: gestor.ativo=false (crash) OU gestor.status_assinatura!='ativo' (downgrade indevido)
   const { data: pagamentosPagos } = await admin
     .from('gestor_pagamentos')
-    .select('id, gestor_id, valor, plano_meses, txid')
+    .select('id, gestor_id, valor, plano_meses, txid, pago_em')
     .eq('status', 'pago')
+    .not('pago_em', 'is', null)
     .order('pago_em', { ascending: false })
     .limit(50)
 
   if (pagamentosPagos?.length) {
-    const gestorIds = pagamentosPagos.map((p: any) => p.gestor_id)
-    const { data: gestoresInativos } = await admin
+    const gestorIds = [...new Set(pagamentosPagos.map((p: any) => p.gestor_id))]
+    const { data: gestoresNaoPro } = await admin
       .from('gestores')
-      .select('id, nome, whatsapp, tenant_id, plano_vencimento')
+      .select('id, nome, whatsapp, tenant_id, plano_vencimento, status_assinatura, ativo')
       .in('id', gestorIds)
-      .eq('ativo', false)
+      .or('ativo.eq.false,status_assinatura.neq.ativo')
+
+    // Para cada gestor fora do PRO, usa o pagamento mais recente para calcular o vencimento
+    const pagamentoPorGestor = new Map<string, any>()
     for (const pag of pagamentosPagos) {
-      const gestor = gestoresInativos?.find((g: any) => g.id === pag.gestor_id)
-      if (!gestor) continue
+      if (!pagamentoPorGestor.has(pag.gestor_id)) {
+        pagamentoPorGestor.set(pag.gestor_id, pag)
+      }
+    }
+
+    for (const gestor of (gestoresNaoPro ?? [])) {
+      const pag = pagamentoPorGestor.get(gestor.id)
+      if (!pag) continue
       const venc = vencimentoMeses(pag.plano_meses ?? 1)
       await admin.from('gestores')
         .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: venc, pix_txid: null })
