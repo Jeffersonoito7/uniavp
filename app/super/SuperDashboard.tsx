@@ -1830,10 +1830,10 @@ function NfsePanel({ C, inp, btn, btnGhost, lbl, darkMode }: { C: any; inp: any;
     setForm({ valor: '', descricao: '', tomador_doc: '', tomador_nome: '', tomador_email: '' })
     loadNotas()
    } else {
-    setResultado({ ok: false, texto: d.error ?? 'A prefeitura recusou a nota. Confira os dados e a configuracao.', bruta: d.respostaBruta })
+    setResultado({ ok: false, texto: d.error || `Erro HTTP ${d.httpStatus || r.status}. Veja detalhes abaixo.`, bruta: d.respostaBruta })
    }
   } catch (e: any) {
-   setResultado({ ok: false, texto: e?.message ?? 'Erro ao emitir.' })
+   setResultado({ ok: false, texto: e?.message || String(e) || 'Erro ao emitir.', bruta: e?.message })
   }
   setEmitindo(false)
  }
