@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
     resultado['post_sem_cert_erro'] = e.message
   }
 
-  // Testa 3: POST vazio COM cert
+  // Testa 3: POST com varios nomes de campo (detecta qual o servidor aceita)
   if (cfg.key_pem_enc && cfg.cert_pem_enc) {
     try {
       const keyPem = decCert(cfg.key_pem_enc).toString('utf8')
@@ -59,15 +59,26 @@ export async function GET(req: NextRequest) {
       resultado['cert_titular'] = certInfo.titular
 
       const agent = new https.Agent({ key: keyPem, cert: certPem, rejectUnauthorized: false })
-      const r = await axios.post(cfg.url_servico, {}, {
-        httpsAgent: agent,
-        headers: { 'Content-Type': 'application/json' },
-        validateStatus: () => true,
-        timeout: 10000,
-      })
-      resultado['post_com_cert_status'] = r.status
-      resultado['post_com_cert_body'] = String(r.data ?? '').slice(0, 500)
-      resultado['post_com_cert_headers'] = r.headers
+      const opts = { httpsAgent: agent, headers: { 'Content-Type': 'application/json' }, validateStatus: () => true, timeout: 10000 }
+      const DUMMY = 'AAAA'
+
+      // Testa variantes de nome de campo (qual muda o comportamento?)
+      const variantes: Record<string, object> = {
+        vazio: {},
+        dpsXmlGZipB64: { dpsXmlGZipB64: DUMMY },
+        dpsXmlB64: { dpsXmlB64: DUMMY },
+        dpsXml: { dpsXml: DUMMY },
+        xml: { xml: DUMMY },
+        nfseXmlGZipB64: { nfseXmlGZipB64: DUMMY },
+        xmlGZipB64: { xmlGZipB64: DUMMY },
+      }
+
+      const resVariantes: Record<string, unknown> = {}
+      for (const [nome, payload] of Object.entries(variantes)) {
+        const r = await axios.post(cfg.url_servico, payload, opts)
+        resVariantes[nome] = { status: r.status, body: String(r.data ?? '').slice(0, 200) || '(vazio)' }
+      }
+      resultado['variantes_campo'] = resVariantes
     } catch (e: any) {
       resultado['post_com_cert_erro'] = e.message
     }
