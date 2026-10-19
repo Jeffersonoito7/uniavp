@@ -339,7 +339,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  {menuAberto ? Icons.close : Icons.menu}
  </button>
  <span style={{ fontSize: 14, fontWeight: 700, color: 'rgba(255,255,255,0.92)', letterSpacing: '-0.01em' }}>Oito7 Digital</span>
- <span style={{ fontSize: 9, fontWeight: 700, color: '#5b50f0', letterSpacing: '0.1em', textTransform: 'uppercase', background: 'rgba(91,80,240,0.15)', border: '1px solid rgba(91,80,240,0.3)', borderRadius: 4, padding: '2px 6px', marginLeft: 2 }}>MASTER</span>
+ <span style={{ fontSize: 9, fontWeight: 700, color: '#9cc0f6', letterSpacing: '0.14em', textTransform: 'uppercase', border: '1px solid rgba(121,176,250,.35)', borderRadius: 999, padding: '2px 8px', marginLeft: 2 }}>MASTER</span>
  </div>
  )}
 
@@ -366,12 +366,12 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  <div style={{ padding: colapsada ? '14px 8px' : '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: colapsada ? 'center' : 'space-between', gap: 8, minHeight: 60 }}>
  {!colapsada && (
  <div style={{ flex: 1, minWidth: 0 }}>
- <p style={{ fontSize: 13, fontWeight: 800, color: 'rgba(255,255,255,0.92)', margin: 0, letterSpacing: '-0.01em' }}>Oito7 Digital</p>
- <span style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, color: '#5b50f0', letterSpacing: '0.1em', textTransform: 'uppercase', background: 'rgba(91,80,240,0.15)', border: '1px solid rgba(91,80,240,0.3)', borderRadius: 4, padding: '2px 6px', marginTop: 4 }}>MASTER</span>
+ <p style={{ fontSize: 14, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.01em' }}>Oito7 Digital</p>
+ <span style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, color: '#9cc0f6', letterSpacing: '0.14em', textTransform: 'uppercase', border: '1px solid rgba(121,176,250,.35)', borderRadius: 999, padding: '2px 8px', marginTop: 5 }}>MASTER</span>
  </div>
  )}
  {colapsada && (
- <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(91,80,240,0.2)', border: '1px solid rgba(91,80,240,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#5b50f0' }}>O</div>
+ <div style={{ width: 34, height: 34, borderRadius: 9, background: 'radial-gradient(120% 120% at 20% 10%, #3b8ef5, #1559d6 60%, #0a1b33)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff' }}>O</div>
  )}
  {!isMobile && (
  <button onClick={() => setColapsada(c => !c)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4, borderRadius: 4, flexShrink: 0 }}
@@ -388,25 +388,25 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  </div>
 
  {/* Navegação com grupos */}
- <nav style={{ flex: 1, padding: colapsada ? '8px 6px' : '8px', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+ <nav style={{ flex: 1, padding: colapsada ? '8px 6px' : '8px 10px', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
  {navGroups.map(group => (
  <div key={group.group} style={{ marginBottom: 2 }}>
  {!colapsada && (
- <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.2)', padding: '14px 10px 5px' }}>
+ <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#c7d6ee', opacity: 0.5, padding: '14px 12px 6px' }}>
  {group.group}
  </div>
  )}
- {colapsada && <div style={{ height: 14 }} />}
+ {colapsada && <div style={{ height: 12 }} />}
  {group.items.map(item => {
  const active = aba === item.id
  return (
  <button key={item.id}
  onClick={() => { setAba(item.id as any); if (item.id !== 'novo') { setEditando(null); setTipoNovo(''); setForm({ nome: '', dominio: '', contato_nome: '', contato_whatsapp: '', contato_email: '', observacoes: '', gestor_ativo: false, limite_consultores: 30 }) } if (isMobile) setMenuAberto(false) }}
  title={colapsada ? item.label : undefined}
- onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)' }}
+ onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)' }}
  onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
- style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 10, justifyContent: colapsada ? 'center' : 'flex-start', padding: colapsada ? '10px 0' : '9px 10px', borderRadius: 7, fontSize: 13, fontWeight: active ? 600 : 400, color: active ? '#5b50f0' : 'rgba(255,255,255,0.62)', background: active ? 'rgba(91,80,240,0.12)' : 'transparent', borderLeft: !colapsada && active ? '3px solid #5b50f0' : !colapsada ? '3px solid transparent' : 'none', border: colapsada ? (active ? '1px solid rgba(91,80,240,0.3)' : '1px solid transparent') : undefined, cursor: 'pointer', textAlign: 'left', width: '100%', whiteSpace: 'nowrap', transition: 'background 0.12s' }}>
- <span style={{ flexShrink: 0, color: active ? '#5b50f0' : 'rgba(255,255,255,0.5)' }}>{item.icon}</span>
+ style={{ display: 'flex', alignItems: 'center', gap: colapsada ? 0 : 10, justifyContent: colapsada ? 'center' : 'flex-start', padding: colapsada ? '10px 4px' : '10px 12px', borderRadius: 9, fontSize: 14, fontWeight: active ? 650 : 400, color: active ? '#fff' : '#a9bfe0', background: active ? 'linear-gradient(90deg, rgba(28,110,242,.9), rgba(21,89,214,.7))' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%', whiteSpace: 'nowrap', transition: 'background 0.12s' }}>
+ <span style={{ flexShrink: 0, color: active ? '#fff' : 'rgba(169,191,224,0.7)' }}>{item.icon}</span>
  {!colapsada && <span>{item.label}</span>}
  </button>
  )
@@ -415,13 +415,13 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  ))}
  {!colapsada && clientes.filter(c => c.ativo).length > 0 && (
  <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
- <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.2)', padding: '6px 10px 5px' }}>Painéis dos Clientes</div>
+ <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#c7d6ee', opacity: 0.5, padding: '6px 12px 5px' }}>Painéis</div>
  {clientes.filter(c => c.ativo).map(c => (
  <a key={c.id} href={c.dominio ? `https://${c.dominio}/admin` : '/admin'} target="_blank"
- style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 7, fontSize: 12, color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}
- onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.8)')}
- onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}>
- <span style={{ width: 6, height: 6, background: '#22c55e', borderRadius: '50%', flexShrink: 0 }} />
+ style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', borderRadius: 9, fontSize: 13, color: '#a9bfe0', textDecoration: 'none' }}
+ onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
+ onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+ <span style={{ width: 6, height: 6, background: '#21b573', borderRadius: '50%', flexShrink: 0 }} />
  {c.nome.split('—')[0].trim()}
  </a>
  ))}
@@ -441,11 +441,11 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  {/* Rodapé */}
  <div style={{ padding: colapsada ? '12px 6px' : '12px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 6, alignItems: colapsada ? 'center' : 'stretch' }}>
  {!colapsada && (
- <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0' }}>
- <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #1e3a5f 0%, #0f2540 100%)', border: '1px solid rgba(91,80,240,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#5b50f0', flexShrink: 0 }}>O</div>
+ <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 2px 8px' }}>
+ <div style={{ width: 30, height: 30, borderRadius: 8, background: 'radial-gradient(120% 120% at 20% 10%, #3b8ef5, #1559d6 60%, #0a1b33)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0 }}>O</div>
  <div style={{ minWidth: 0 }}>
- <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.7)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nome}</p>
- <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: 0 }}>Administrador</p>
+ <p style={{ fontSize: 12, fontWeight: 700, color: '#c7d6ee', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nome}</p>
+ <p style={{ fontSize: 11, color: '#8797ae', margin: 0 }}>Administrador</p>
  </div>
  </div>
  )}
