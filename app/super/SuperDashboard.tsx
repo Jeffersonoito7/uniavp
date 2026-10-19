@@ -273,20 +273,20 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  return meses[m] || String(m)
  }
 
- // Shared styles
+ // Shared styles — paleta Renamix (navy + azul #1c6ef2)
  const C = {
- bg: darkMode ? '#07070e' : '#eef0f6',
- card: darkMode ? '#0d0d1a' : '#ffffff',
- border: darkMode ? '#1a1b2e' : '#dde1eb',
- accent: '#5b50f0',
- text: darkMode ? '#eef0f8' : '#111827',
- dim: darkMode ? '#565d70' : '#6b7280',
- muted: darkMode ? '#8892a4' : '#7c8ba0',
+ bg: darkMode ? '#071628' : '#eef2f8',
+ card: darkMode ? '#0c1e35' : '#ffffff',
+ border: darkMode ? '#162d48' : '#d4dce9',
+ accent: '#1c6ef2',
+ text: darkMode ? '#e8f0fb' : '#111827',
+ dim: darkMode ? '#5a7499' : '#6b7280',
+ muted: darkMode ? '#8097b8' : '#7c8ba0',
  }
- const inp: React.CSSProperties = { width: '100%', background: darkMode ? '#06060f' : '#f7f8fd', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 13px', color: C.text, fontSize: 13, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.15s' }
+ const inp: React.CSSProperties = { width: '100%', background: darkMode ? '#071020' : '#f4f7fd', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 13px', color: C.text, fontSize: 13, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.15s' }
  const lbl: React.CSSProperties = { display: 'block', color: C.dim, fontSize: 11, fontWeight: 700, marginBottom: 5, letterSpacing: '0.06em', textTransform: 'uppercase' }
- const card: React.CSSProperties = { background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: darkMode ? '0 1px 3px rgba(0,0,0,0.5)' : '0 1px 3px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.02)' }
- const btn: React.CSSProperties = { background: C.accent, color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, fontSize: 13, cursor: 'pointer', letterSpacing: '0.01em', transition: 'opacity 0.15s' }
+ const card: React.CSSProperties = { background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: darkMode ? '0 2px 8px rgba(0,0,0,0.35)' : '0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)' }
+ const btn: React.CSSProperties = { background: 'linear-gradient(135deg, #1c6ef2, #1559d6)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, fontSize: 13, cursor: 'pointer', letterSpacing: '0.01em', transition: 'opacity 0.15s' }
  const btnGhost: React.CSSProperties = { background: 'none', border: `1px solid ${C.border}`, color: C.dim, borderRadius: 8, padding: '9px 16px', fontWeight: 500, fontSize: 13, cursor: 'pointer', transition: 'border-color 0.15s' }
 
  // ── Estado para contratos ──────────────────────────────────────────
@@ -478,7 +478,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
 
  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 24 }}>
  {[
- { label: 'FREE', valor: stats.totalAlunos, color: '#6366f1' },
+ { label: 'FREE', valor: stats.totalAlunos, color: '#1c6ef2' },
  { label: 'PRO', valor: stats.totalGestores, color: '#f59e0b' },
  { label: 'Admins', valor: stats.totalAdmins, color: '#22c55e' },
  { label: 'Módulos', valor: stats.totalModulos, color: '#3b82f6' },
@@ -621,7 +621,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  {getTipoCliente(c) === 'lideranca' ? (
  <span style={{ background: '#3d1c00', border: '1px solid #78350f', color: '#fbbf24', borderRadius: 4, padding: '1px 8px', fontSize: 11, fontWeight: 600 }}>Liderança</span>
  ) : (
- <span style={{ background: '#0d0d1f', border: `1px solid ${C.accent}40`, color: '#818cf8', borderRadius: 4, padding: '1px 8px', fontSize: 11, fontWeight: 600 }}>Associação</span>
+ <span style={{ background: '#071e40', border: `1px solid ${C.accent}40`, color: '#7cb3f8', borderRadius: 4, padding: '1px 8px', fontSize: 11, fontWeight: 600 }}>Associação</span>
  )}
  {c.gestor_ativo && <span style={{ background: '#052e16', border: '1px solid #166534', color: '#4ade80', borderRadius: 4, padding: '1px 8px', fontSize: 11, fontWeight: 600 }}>+ PRO</span>}
  </div>
@@ -885,13 +885,13 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  </div>
 
  <div style={{ marginBottom: 12 }}>
- <span style={{ fontSize: 24, fontWeight: 700, color: p.preco> 0 ? '#818cf8' : C.dim, letterSpacing: '-0.02em' }}>
+ <span style={{ fontSize: 24, fontWeight: 700, color: p.preco> 0 ? '#7cb3f8' : C.dim, letterSpacing: '-0.02em' }}>
  {p.preco> 0 ? `R$ ${p.preco.toLocaleString('pt-BR')}` : (p.preco_label || 'Sob consulta')}
  </span>
  {p.preco> 0 && <span style={{ fontSize: 12, color: C.dim }}>/mês</span>}
  </div>
 
- {p.destaque && <span style={{ background: `${C.accent}15`, border: `1px solid ${C.accent}30`, color: '#818cf8', fontSize: 11, fontWeight: 600, borderRadius: 4, padding: '2px 8px', display: 'inline-block', marginBottom: 10 }}>Destaque</span>}
+ {p.destaque && <span style={{ background: `${C.accent}15`, border: `1px solid ${C.accent}30`, color: '#7cb3f8', fontSize: 11, fontWeight: 600, borderRadius: 4, padding: '2px 8px', display: 'inline-block', marginBottom: 10 }}>Destaque</span>}
 
  <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 12 }}>
  {p.recursos.map((r, i) => (
@@ -947,7 +947,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  <div style={{ marginTop: 20, ...card, padding: 16 }}>
  <p style={{ fontWeight: 600, fontSize: 12, color: C.text, marginBottom: 8 }}>Fluxo de vendas</p>
  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: C.dim }}>
- <p>A associação acessa <span style={{ color: '#818cf8' }}>/landing</span>, escolhe plano e vai para <span style={{ color: '#818cf8' }}>/comecar</span></p>
+ <p>A associação acessa <span style={{ color: '#7cb3f8' }}>/landing</span>, escolhe plano e vai para <span style={{ color: '#7cb3f8' }}>/comecar</span></p>
  <p>Preenche dados, paga via PIX e recebe credenciais automaticamente no WhatsApp</p>
  <p>Planos com preço 0 mostram "Sob consulta" e redirecionam para o WhatsApp de contato</p>
  </div>
@@ -1065,7 +1065,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  setGerandoPix(null)
  setCobrancaMsg(res.ok ? `PIX gerado para ${c.nome}.` : `Erro: ${data.error}`)
  }}
- style={{ background: `${C.accent}18`, border: `1px solid ${C.accent}30`, color: '#818cf8', borderRadius: 7, padding: '7px 12px', cursor: gerandoPix === c.id ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', opacity: gerandoPix === c.id ? 0.6 : 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+ style={{ background: `${C.accent}18`, border: `1px solid ${C.accent}30`, color: '#7cb3f8', borderRadius: 7, padding: '7px 12px', cursor: gerandoPix === c.id ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', opacity: gerandoPix === c.id ? 0.6 : 1, display: 'flex', alignItems: 'center', gap: 6 }}>
  {Icons.pix} {gerandoPix === c.id ? 'Gerando...' : 'Gerar PIX'}
  </button>
  {st === 'suspenso' && (
@@ -1089,7 +1089,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  <p style={{ fontWeight: 600, color: C.text, marginBottom: 8 }}>Como funciona</p>
  <p>Defina a mensalidade da associação e o valor PRO e clique fora para salvar · Clique em Gerar PIX para criar cobrança e enviar por WhatsApp</p>
  <p>O sistema gera cobranças automaticamente 5 dias antes do vencimento e suspende após 3 dias de atraso</p>
- <p style={{ marginTop: 6, color: '#818cf8' }}>Endpoint do webhook: <span style={{ fontFamily: 'monospace' }}>{BASE_URL}/api/webhooks/pix</span></p>
+ <p style={{ marginTop: 6, color: '#7cb3f8' }}>Endpoint do webhook: <span style={{ fontFamily: 'monospace' }}>{BASE_URL}/api/webhooks/pix</span></p>
  </div>
  </div>
  )}
@@ -1145,7 +1145,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  </div>
  {bAvulsoResultado.pdfUrl && (
  <a href={bAvulsoResultado.pdfUrl} target="_blank" rel="noreferrer"
- style={{ display: 'block', background: `${C.accent}15`, border: `1px solid ${C.accent}30`, color: '#818cf8', borderRadius: 8, padding: '10px', textAlign: 'center', textDecoration: 'none', fontWeight: 600, fontSize: 13, marginBottom: 10 }}>
+ style={{ display: 'block', background: `${C.accent}15`, border: `1px solid ${C.accent}30`, color: '#7cb3f8', borderRadius: 8, padding: '10px', textAlign: 'center', textDecoration: 'none', fontWeight: 600, fontSize: 13, marginBottom: 10 }}>
  Abrir PDF do Boleto
  </a>
  )}
@@ -1188,7 +1188,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  if (res.ok) setHealthData(await res.json())
  setHealthLoading(false)
  }}
- style={{ background: `${C.accent}18`, border: `1px solid ${C.accent}30`, color: '#818cf8', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+ style={{ background: `${C.accent}18`, border: `1px solid ${C.accent}30`, color: '#7cb3f8', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
  {healthLoading ? 'Analisando...' : '↻ Atualizar'}
  </button>
  </div>
@@ -1219,7 +1219,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
 
  {healthData && !healthLoading && (() => {
  const { metricas: m, previsao: p, alertas } = healthData
- const nivelCor: Record<string, string> = { critico: '#f87171', aviso: '#fbbf24', info: '#818cf8' }
+ const nivelCor: Record<string, string> = { critico: '#f87171', aviso: '#fbbf24', info: '#7cb3f8' }
  const nivelBg: Record<string, string> = { critico: '#1a0a0a', aviso: '#3d1c00', info: '#0d0f1e' }
  const nivelBorder: Record<string, string> = { critico: '#3f1515', aviso: '#78350f', info: '#2d3270' }
  const nivelEmoji: Record<string, string> = { critico: '🔴', aviso: '⚠️', info: 'ℹ️' }
@@ -1283,7 +1283,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  <p style={{ fontSize: 12, fontWeight: 700, color: C.dim, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Métricas Atuais</p>
  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 }}>
  {[
- { label: 'Alunos total', valor: m.totalAlunos, sub: `+${m.alunosNovosHoje} hoje`, cor: '#818cf8' },
+ { label: 'Alunos total', valor: m.totalAlunos, sub: `+${m.alunosNovosHoje} hoje`, cor: '#7cb3f8' },
  { label: 'Novos (30 dias)', valor: m.alunosUltimos30, sub: m.crescimento30 != null ? `${m.crescimento30>= 0 ? '+' : ''}${m.crescimento30}% vs anterior` : 'Sem histórico', cor: m.crescimento30 != null && m.crescimento30> 0 ? '#4ade80' : '#f87171' },
  { label: 'Crescimento/dia', valor: `${m.crescDiario}`, sub: 'média últimos 30d', cor: '#a78bfa' },
  { label: 'Gestores PRO ativos', valor: m.totalGestoresAtivos, sub: `${m.gestoresSuspensos} suspensos`, cor: '#22c55e' },
@@ -1353,7 +1353,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
 
  {[
  {
- num: '1', titulo: 'Assinar o Contrato (antes de tudo)', cor: '#818cf8',
+ num: '1', titulo: 'Assinar o Contrato (antes de tudo)', cor: '#7cb3f8',
  steps: [
  'Acesse a aba Contratos e preencha os dados do cliente',
  'Clique em Visualizar Contrato → Imprimir / Baixar PDF',
@@ -1394,7 +1394,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  ],
  },
  {
- num: '5', titulo: 'Executar o Onboarding', cor: '#818cf8',
+ num: '5', titulo: 'Executar o Onboarding', cor: '#7cb3f8',
  steps: [
  'Na lista de Clientes, clique em Onboarding no card do cliente',
  'Preencha: Nome do Admin, E-mail do Admin, Domínio e Instância WhatsApp (ex: assoc-xyz)',
@@ -1489,7 +1489,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  <div key={r.nome} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 1fr', gap: '4px 16px', color: C.text, padding: '4px 0', borderTop: `1px solid ${C.border}` }}>
  <span style={{ color: '#22c55e' }}>{r.nome}</span>
  <span style={{ color: C.dim }}>{r.tipo}</span>
- <span style={{ color: '#818cf8' }}>{r.destino}</span>
+ <span style={{ color: '#7cb3f8' }}>{r.destino}</span>
  </div>
  ))}
  </div>
@@ -1746,7 +1746,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  ))}
  <div style={{ background: darkMode ? '#080810' : '#f8fafc', borderRadius: 8, padding: '10px 12px', fontSize: 11, color: C.dim, lineHeight: 1.7 }}>
  <p style={{ color: C.muted, fontWeight: 600, marginBottom: 4 }}>Instância WhatsApp</p>
- <p>Crie a instância em <span style={{ color: '#818cf8' }}>evolution.oito7digital.com.br</span>, conecte pelo QR Code e informe o nome aqui. As notificações do cliente sairão pelo número dele.</p>
+ <p>Crie a instância em <span style={{ color: '#7cb3f8' }}>evolution.oito7digital.com.br</span>, conecte pelo QR Code e informe o nome aqui. As notificações do cliente sairão pelo número dele.</p>
  </div>
  </div>
  {onboardingMsg.length> 0 && (
