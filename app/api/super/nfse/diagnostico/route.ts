@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { decCert, carregarCertificadoDePem } from '@/lib/nfse-engine'
 import https from 'https'
+import zlib from 'zlib'
+import { promisify } from 'util'
 import axios from 'axios'
+
+const gzipAsync = promisify(zlib.gzip)
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
