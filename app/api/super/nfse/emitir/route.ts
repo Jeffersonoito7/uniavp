@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       error: erroTexto,
       httpStatus: r.httpStatus,
-      respostaBruta: r.respostaBruta ?? '(sem corpo na resposta)',
+      respostaBruta: r.respostaBruta || '(sem corpo na resposta)',
     }, { status: 422 })
   } catch (e: any) {
     // Erro de conexao/rede: ai sim reverte o contador (a prefeitura nao recebeu)

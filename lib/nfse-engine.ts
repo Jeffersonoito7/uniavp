@@ -215,6 +215,8 @@ function montarDps(cfg: NfseConfig, dados: DadosEmissao): { xml: string; id: str
   }
 
   const optSimp = cfg.optanteSimples ? '1' : '2'
+  // regEspTrib deve ser coerente com opSimpNac: 6=ME/EPP Simples Nacional, 0=nenhum
+  const regEspTrib = cfg.optanteSimples ? '6' : '0'
 
   const infDps =
     `<infDPS Id="${id}">` +
@@ -231,7 +233,7 @@ function montarDps(cfg: NfseConfig, dados: DadosEmissao): { xml: string; id: str
     (im ? `<IM>${im}</IM>` : '') +
     `<regTrib>` +
     `<opSimpNac>${optSimp}</opSimpNac>` +
-    `<regEspTrib>0</regEspTrib>` +
+    `<regEspTrib>${regEspTrib}</regEspTrib>` +
     `</regTrib>` +
     `</prest>` +
     tomaXml +
