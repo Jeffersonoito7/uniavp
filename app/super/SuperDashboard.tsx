@@ -275,19 +275,19 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
 
  // Shared styles
  const C = {
- bg: darkMode ? '#0a0a0f' : '#f1f5f9',
- card: darkMode ? '#0f0f17' : '#ffffff',
- border: darkMode ? '#1e1f2e' : '#e2e8f0',
- accent: '#4f46e5',
- text: darkMode ? '#f1f5f9' : '#0f172a',
- dim: darkMode ? '#64748b' : '#64748b',
- muted: darkMode ? '#94a3b8' : '#94a3b8',
+ bg: darkMode ? '#07070e' : '#eef0f6',
+ card: darkMode ? '#0d0d1a' : '#ffffff',
+ border: darkMode ? '#1a1b2e' : '#dde1eb',
+ accent: '#5b50f0',
+ text: darkMode ? '#eef0f8' : '#111827',
+ dim: darkMode ? '#565d70' : '#6b7280',
+ muted: darkMode ? '#8892a4' : '#7c8ba0',
  }
- const inp: React.CSSProperties = { width: '100%', background: darkMode ? '#080810' : '#f8fafc', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', color: C.text, fontSize: 13, outline: 'none', boxSizing: 'border-box' }
- const lbl: React.CSSProperties = { display: 'block', color: C.muted, fontSize: 11, fontWeight: 700, marginBottom: 5, letterSpacing: '0.04em', textTransform: 'uppercase' }
- const card: React.CSSProperties = { background: C.card, border: `1px solid ${C.border}`, borderRadius: 10 }
- const btn: React.CSSProperties = { background: C.accent, color: '#fff', border: 'none', borderRadius: 8, padding: '10px 18px', fontWeight: 600, fontSize: 13, cursor: 'pointer', letterSpacing: '0.01em' }
- const btnGhost: React.CSSProperties = { background: 'none', border: `1px solid ${C.border}`, color: C.dim, borderRadius: 8, padding: '9px 16px', fontWeight: 500, fontSize: 13, cursor: 'pointer' }
+ const inp: React.CSSProperties = { width: '100%', background: darkMode ? '#06060f' : '#f7f8fd', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 13px', color: C.text, fontSize: 13, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.15s' }
+ const lbl: React.CSSProperties = { display: 'block', color: C.dim, fontSize: 11, fontWeight: 700, marginBottom: 5, letterSpacing: '0.06em', textTransform: 'uppercase' }
+ const card: React.CSSProperties = { background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: darkMode ? '0 1px 3px rgba(0,0,0,0.5)' : '0 1px 3px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.02)' }
+ const btn: React.CSSProperties = { background: C.accent, color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, fontSize: 13, cursor: 'pointer', letterSpacing: '0.01em', transition: 'opacity 0.15s' }
+ const btnGhost: React.CSSProperties = { background: 'none', border: `1px solid ${C.border}`, color: C.dim, borderRadius: 8, padding: '9px 16px', fontWeight: 500, fontSize: 13, cursor: 'pointer', transition: 'border-color 0.15s' }
 
  // ── Estado para contratos ──────────────────────────────────────────
  const contratoDefault = {
@@ -351,8 +351,8 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  <div style={{ padding: colapsada ? '16px 8px' : '16px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: colapsada ? 'center' : 'space-between', gap: 8 }}>
  {!colapsada && (
  <div style={{ flex: 1 }}>
- <p style={{ fontSize: 13, fontWeight: 700, color: C.text, margin: 0 }}>Oito7 Digital</p>
- <p style={{ fontSize: 11, color: C.dim, margin: '2px 0 0' }}>Painel Master</p>
+ <p style={{ fontSize: 13, fontWeight: 700, color: C.text, margin: 0, letterSpacing: '-0.01em' }}>Oito7 Digital</p>
+ <p style={{ fontSize: 10, color: C.dim, margin: '2px 0 0', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600 }}>Painel Master</p>
  </div>
  )}
  {!isMobile && (
@@ -427,28 +427,28 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  {aba === 'dashboard' && (
  <div>
  <div style={{ marginBottom: 28 }}>
- <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, letterSpacing: '-0.02em' }}>Dashboard</h1>
+ <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4, letterSpacing: '-0.03em', color: C.text }}>Dashboard</h1>
  <p style={{ color: C.dim, fontSize: 13 }}>Visão geral da plataforma</p>
  </div>
 
  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 24 }}>
  {[
- { label: 'FREE', valor: stats.totalAlunos },
- { label: 'PRO', valor: stats.totalGestores },
- { label: 'Admins', valor: stats.totalAdmins },
- { label: 'Módulos', valor: stats.totalModulos },
- { label: 'Aulas', valor: stats.totalAulas },
+ { label: 'FREE', valor: stats.totalAlunos, color: '#6366f1' },
+ { label: 'PRO', valor: stats.totalGestores, color: '#f59e0b' },
+ { label: 'Admins', valor: stats.totalAdmins, color: '#22c55e' },
+ { label: 'Módulos', valor: stats.totalModulos, color: '#3b82f6' },
+ { label: 'Aulas', valor: stats.totalAulas, color: '#a855f7' },
  ].map(s => (
- <div key={s.label} style={{ ...card, padding: '16px 20px' }}>
- <p style={{ fontSize: 26, fontWeight: 700, marginBottom: 2, letterSpacing: '-0.02em', color: C.text }}>{s.valor}</p>
- <p style={{ fontSize: 12, color: C.dim }}>{s.label}</p>
+ <div key={s.label} style={{ ...card, padding: '18px 20px', borderTop: `3px solid ${s.color}` }}>
+ <p style={{ fontSize: 28, fontWeight: 800, marginBottom: 4, letterSpacing: '-0.03em', color: C.text, fontVariantNumeric: 'tabular-nums' }}>{s.valor}</p>
+ <p style={{ fontSize: 11, color: C.dim, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{s.label}</p>
  </div>
  ))}
  </div>
 
  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
  <div style={{ ...card, padding: '20px 24px' }}>
- <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 16, color: C.text }}>Clientes Ativos</p>
+ <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 16, color: C.text, letterSpacing: '-0.01em' }}>Clientes Ativos</p>
  {clientes.filter(c => c.ativo).map(c => (
  <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${C.border}` }}>
  <div>
@@ -462,7 +462,7 @@ export default function SuperDashboard({ nome, clientes: inicial, stats, recente
  </div>
 
  <div style={{ ...card, padding: '20px 24px' }}>
- <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 16, color: C.text }}>Últimos Consultores</p>
+ <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 16, color: C.text, letterSpacing: '-0.01em' }}>Últimos Consultores</p>
  {recentesAlunos.map((a, i) => (
  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${C.border}` }}>
  <div>
