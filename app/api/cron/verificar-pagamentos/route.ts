@@ -4,6 +4,7 @@ import { processarPixTxid, reconciliarEquipeGestor } from '@/lib/pix-processor'
 import { vencimentoMeses } from '@/lib/date-utils'
 import { captureException } from '@/lib/monitor'
 import { alertarDiscord } from '@/lib/discord'
+import { consultarStatusCharge } from '@/lib/efi'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -124,5 +125,57 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, ativados, verificados: txids.length })
+  // Fase 3: reconcilia pagamentos cartão pendentes consultando diretamente a Efi por charge_id
+  // Cobre casos onde o webhook não foi chamado (notification_url mal configurada ou falha Efi)
+  const { data: cartoesPendentes } = await admin
+    .from('gestor_pagamentos')
+    .select('id, gestor_id, valor, plano_meses, charge_id, pago_em')
+    .eq('status', 'pendente')
+    .eq('tipo', 'cartao')
+    .not('charge_id', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  let ativadosCartao = 0
+  for (const pag of cartoesPendentes ?? []) {
+    try {
+      const { pago } = await consultarStatusCharge(pag.charge_id as number)
+      if (!pago) continue
+
+      // Marca pagamento como pago (idempotente)
+      const { data: marcado } = await admin.from('gestor_pagamentos')
+        .update({ status: 'pago', pago_em: new Date().toISOString() })
+        .eq('id', pag.id)
+        .eq('status', 'pendente')
+        .select('id')
+      if (!marcado?.length) continue // já processado por corrida
+
+      const meses = (pag.plano_meses as number) ?? 12
+      const venc = new Date()
+      venc.setMonth(venc.getMonth() + meses)
+
+      const { data: gestor } = await admin.from('gestores')
+        .select('id, nome, whatsapp, tenant_id')
+        .eq('id', pag.gestor_id)
+        .maybeSingle()
+      if (!gestor) continue
+
+      const { error: updErr } = await admin.from('gestores')
+        .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: venc.toISOString(), pix_txid: null })
+        .eq('id', gestor.id)
+      if (updErr) {
+        await alertarDiscord('aviso', 'Cartão: falha ao ativar gestor', updErr.message, [
+          { nome: 'Gestor', valor: gestor.nome },
+        ]).catch(() => {})
+        continue
+      }
+
+      await reconciliarEquipeGestor(gestor.whatsapp, gestor.nome, admin).catch(() => {})
+      ativadosCartao++
+    } catch (eCartao: any) {
+      captureException(eCartao, { endpoint: 'cron/verificar-pagamentos/cartao', extra: { charge_id: pag.charge_id } })
+    }
+  }
+
+  return NextResponse.json({ ok: true, ativados, ativadosCartao, verificados: txids.length })
 }

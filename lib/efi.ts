@@ -315,11 +315,12 @@ export async function criarLinkCartaoAnual(params: {
   })
 
   // 3. Gera link de pagamento cartão (Efí hospeda a página)
+  // notification_url deve ir no body do link, não via metadata
   const expire = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   const { data: link } = await httpsRequestSimples(`${BASE_BOLETO}/v1/charge/${chargeId}/link`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ payment_method: 'credit_card', expire_at: expire, message: params.descricao || 'Assinatura Anual PRO', request_delivery_address: false }),
+    body: JSON.stringify({ payment_method: 'credit_card', expire_at: expire, message: params.descricao || 'Assinatura Anual PRO', request_delivery_address: false, notification_url: params.notificationUrl }),
   })
   const l = link as EfiLinkResponse
   const paymentUrl = l.data?.payment_url || l.data?.link || ''
