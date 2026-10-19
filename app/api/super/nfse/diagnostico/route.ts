@@ -60,23 +60,28 @@ export async function GET(req: NextRequest) {
 
       const agent = new https.Agent({ key: keyPem, cert: certPem, rejectUnauthorized: false })
       const opts = { httpsAgent: agent, headers: { 'Content-Type': 'application/json' }, validateStatus: () => true, timeout: 10000 }
-      const DUMMY = 'AAAA'
+      const DUMMY_XML = '<?xml version="1.0" encoding="UTF-8"?><DPS versao="1.00" xmlns="http://www.sped.fazenda.gov.br/nfse"><infDPS Id="DPS00000000000000000000000000000000000000"/></DPS>'
+      const DUMMY_B64 = Buffer.from(DUMMY_XML, 'utf-8').toString('base64')
+      const DUMMY_GZIP_B64 = (await gzipAsync(Buffer.from(DUMMY_XML, 'utf-8'))).toString('base64')
 
-      // Testa variantes de nome de campo (qual muda o comportamento?)
-      const variantes: Record<string, object> = {
-        vazio: {},
-        dpsXmlGZipB64: { dpsXmlGZipB64: DUMMY },
-        dpsXmlB64: { dpsXmlB64: DUMMY },
-        dpsXml: { dpsXml: DUMMY },
-        xml: { xml: DUMMY },
-        nfseXmlGZipB64: { nfseXmlGZipB64: DUMMY },
-        xmlGZipB64: { xmlGZipB64: DUMMY },
-      }
+      // Testa formatos de body (qual muda o status/body da resposta?)
+      const testes: Array<{ nome: string; body: unknown; ct: string }> = [
+        { nome: 'json_vazio', body: {}, ct: 'application/json' },
+        { nome: 'json_dpsXmlGZipB64', body: { dpsXmlGZipB64: DUMMY_GZIP_B64 }, ct: 'application/json' },
+        { nome: 'json_dpsXmlB64', body: { dpsXmlB64: DUMMY_B64 }, ct: 'application/json' },
+        { nome: 'xml_direto', body: DUMMY_XML, ct: 'application/xml' },
+        { nome: 'xml_direto_text', body: DUMMY_XML, ct: 'text/xml' },
+        { nome: 'json_dpsXmlGZipB64_accept_json', body: { dpsXmlGZipB64: DUMMY_GZIP_B64 }, ct: 'application/json' },
+      ]
 
       const resVariantes: Record<string, unknown> = {}
-      for (const [nome, payload] of Object.entries(variantes)) {
-        const r = await axios.post(cfg.url_servico, payload, opts)
-        resVariantes[nome] = { status: r.status, body: String(r.data ?? '').slice(0, 200) || '(vazio)' }
+      for (const t of testes) {
+        const r = await axios.post(cfg.url_servico, t.body, {
+          ...opts,
+          headers: { 'Content-Type': t.ct, Accept: 'application/json, application/xml, */*' },
+          transformResponse: (x: string) => x,
+        })
+        resVariantes[t.nome] = { status: r.status, body: (String(r.data ?? '').slice(0, 300) || '(vazio)'), connClose: r.headers?.['connection'] === 'close' }
       }
       resultado['variantes_campo'] = resVariantes
     } catch (e: any) {
