@@ -293,22 +293,33 @@ async function enviarDpsRest(
   keyPem: string,
   certPem: string
 ): Promise<{ status: number; body: string }> {
+  const agent = new https.Agent({ key: keyPem, cert: certPem, rejectUnauthorized: false })
+  const axiosOpts = {
+    httpsAgent: agent,
+    headers: { 'Content-Type': 'application/json' },
+    timeout: 60000,
+    transformResponse: (x: string) => x,
+    validateStatus: () => true,
+  }
+
+  // Tentativa 1: com GZip (padrao nacional)
   const xmlGzip = await gzipAsync(Buffer.from(xmlAssinado, 'utf-8'))
   const dpsXmlGZipB64 = xmlGzip.toString('base64')
+  const r1 = await axios.post(endpoint, { dpsXmlGZipB64 }, axiosOpts)
+  const body1 = String(r1.data ?? '')
+  if (r1.status !== 400 || body1.trim()) {
+    return { status: r1.status as number, body: body1 }
+  }
 
-  const agent = new https.Agent({ key: keyPem, cert: certPem, rejectUnauthorized: false })
-  const resp = await axios.post(
-    endpoint,
-    { dpsXmlGZipB64 },
-    {
-      httpsAgent: agent,
-      headers: { 'Content-Type': 'application/json' },
-      timeout: 60000,
-      transformResponse: (x: string) => x,
-      validateStatus: () => true,
-    }
-  )
-  return { status: resp.status as number, body: String(resp.data ?? '') }
+  // Tentativa 2: sem GZip (algumas implementacoes e&L nao suportam compressao)
+  const dpsXmlB64 = Buffer.from(xmlAssinado, 'utf-8').toString('base64')
+  const r2 = await axios.post(endpoint, { dpsXmlB64 }, axiosOpts)
+  const body2 = String(r2.data ?? '')
+  const headers2 = JSON.stringify(r2.headers ?? {})
+
+  // Retorna a resposta mais informativa das duas tentativas
+  const bodyFinal = body2.trim() ? body2 : `[GZip:${r1.status}vazio | semGzip:${r2.status}] headers:${headers2.slice(0, 400)}`
+  return { status: r2.status as number, body: bodyFinal }
 }
 
 function parseRespostaNacional(json: string): {
