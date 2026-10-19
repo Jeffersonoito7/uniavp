@@ -55,41 +55,72 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Fase 2: gestor_pagamentos.status='pago' mas gestor não está PRO
-  // Cobre dois cenários: gestor.ativo=false (crash) OU gestor.status_assinatura!='ativo' (downgrade indevido)
+  // Fase 2: gestor_pagamentos.status='pago' cujo período ainda vigora mas gestor não está PRO.
+  // Critério de "vigência": pago_em + plano_meses meses > agora (pagamento ainda dentro do período pago).
+  // Isso evita reativar gestores cujos planos antigos já expiraram naturalmente.
+  const limiteVigencia = new Date()
+  limiteVigencia.setFullYear(limiteVigencia.getFullYear() - 1) // pagamentos dos últimos 12 meses
   const { data: pagamentosPagos } = await admin
     .from('gestor_pagamentos')
     .select('id, gestor_id, valor, plano_meses, txid, pago_em')
     .eq('status', 'pago')
     .not('pago_em', 'is', null)
+    .gte('pago_em', limiteVigencia.toISOString())
     .order('pago_em', { ascending: false })
-    .limit(50)
+    .limit(200)
 
   if (pagamentosPagos?.length) {
-    const gestorIds = [...new Set(pagamentosPagos.map((p: any) => p.gestor_id))]
-    const { data: gestoresNaoPro } = await admin
-      .from('gestores')
-      .select('id, nome, whatsapp, tenant_id, plano_vencimento, status_assinatura, ativo')
-      .in('id', gestorIds)
-      .or('ativo.eq.false,status_assinatura.neq.ativo')
+    const agora = new Date()
+    // Filtra apenas pagamentos cujo período ainda não expirou
+    const pagamentosVigentes = pagamentosPagos.filter((p: any) => {
+      const pagoEm = new Date(p.pago_em)
+      const vencPag = new Date(pagoEm)
+      vencPag.setMonth(vencPag.getMonth() + (p.plano_meses ?? 1))
+      return vencPag > agora
+    })
 
-    // Para cada gestor fora do PRO, usa o pagamento mais recente para calcular o vencimento
-    const pagamentoPorGestor = new Map<string, any>()
-    for (const pag of pagamentosPagos) {
-      if (!pagamentoPorGestor.has(pag.gestor_id)) {
-        pagamentoPorGestor.set(pag.gestor_id, pag)
+    if (pagamentosVigentes.length) {
+      const gestorIds = [...new Set(pagamentosVigentes.map((p: any) => p.gestor_id))]
+      const { data: gestoresNaoPro } = await admin
+        .from('gestores')
+        .select('id, nome, whatsapp, tenant_id, plano_vencimento, status_assinatura, ativo')
+        .in('id', gestorIds)
+        .or('ativo.eq.false,status_assinatura.neq.ativo')
+
+      // Usa o pagamento vigente mais recente por gestor
+      const pagamentoPorGestor = new Map<string, any>()
+      for (const pag of pagamentosVigentes) {
+        if (!pagamentoPorGestor.has(pag.gestor_id)) {
+          pagamentoPorGestor.set(pag.gestor_id, pag)
+        }
       }
-    }
 
-    for (const gestor of (gestoresNaoPro ?? [])) {
-      const pag = pagamentoPorGestor.get(gestor.id)
-      if (!pag) continue
-      const venc = vencimentoMeses(pag.plano_meses ?? 1)
-      await admin.from('gestores')
-        .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: venc, pix_txid: null })
-        .eq('id', gestor.id)
-      await reconciliarEquipeGestor(gestor.whatsapp, gestor.nome, admin).catch(() => {})
-      ativados++
+      for (const gestor of (gestoresNaoPro ?? [])) {
+        try {
+          const pag = pagamentoPorGestor.get(gestor.id)
+          if (!pag) continue
+          // Vencimento: a partir do pago_em original (não de agora), para não "dar brinde" de dias extras
+          const pagoEm = new Date(pag.pago_em)
+          const venc = new Date(pagoEm)
+          venc.setMonth(venc.getMonth() + (pag.plano_meses ?? 1))
+          const { error: updErr } = await admin.from('gestores')
+            .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: venc.toISOString(), pix_txid: null })
+            .eq('id', gestor.id)
+          if (updErr) {
+            await alertarDiscord('aviso', 'Fase 2: falha ao ativar gestor', updErr.message, [
+              { nome: 'Gestor', valor: gestor.nome },
+              { nome: 'ID', valor: gestor.id },
+            ])
+            continue
+          }
+          await reconciliarEquipeGestor(gestor.whatsapp, gestor.nome, admin).catch(() => {})
+          ativados++
+        } catch (eGestor: any) {
+          await alertarDiscord('aviso', 'Fase 2: exceção ao ativar gestor', eGestor?.message ?? String(eGestor), [
+            { nome: 'Gestor', valor: gestor.nome },
+          ]).catch(() => {})
+        }
+      }
     }
   }
 

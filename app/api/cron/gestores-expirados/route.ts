@@ -106,8 +106,8 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // ── 2. Reativa gestores FREE/suspenso que tenham pagamento confirmado ──
-  // Cobre o caso: gestor caiu para free mas já tem pagamento pago no banco
+  // ── 2. Reativa gestores FREE/suspenso que tenham pagamento vigente confirmado ──
+  // Apenas reativa se o período do pagamento ainda não expirou (pago_em + plano_meses > agora)
   const { data: gestoresComPagamentoPendente } = await admin.from('gestores')
     .select('id, nome, whatsapp, tenant_id')
     .eq('ativo', true)
@@ -115,28 +115,42 @@ export async function GET(req: NextRequest) {
 
   let reativadosPorPagamento = 0
   for (const g of gestoresComPagamentoPendente ?? []) {
-    const { data: pagamento } = await admin.from('gestor_pagamentos')
-      .select('id, plano_meses, created_at')
-      .eq('gestor_id', g.id)
-      .eq('status', 'pago')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+    try {
+      // Pega o pagamento mais recente com pago_em preenchido
+      const { data: pagamento } = await admin.from('gestor_pagamentos')
+        .select('id, plano_meses, pago_em')
+        .eq('gestor_id', g.id)
+        .eq('status', 'pago')
+        .not('pago_em', 'is', null)
+        .order('pago_em', { ascending: false })
+        .limit(1)
+        .maybeSingle()
 
-    if (!pagamento) continue
+      if (!pagamento) continue
 
-    const meses = (pagamento.plano_meses as number) ?? 1
-    const novoVencimento = vencimentoMeses(meses)
-    await admin.from('gestores')
-      .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: novoVencimento })
-      .eq('id', g.id)
+      // Verifica se o período do plano ainda está vigente
+      const pagoEm = new Date(pagamento.pago_em)
+      const meses = (pagamento.plano_meses as number) ?? 1
+      const vencPagamento = new Date(pagoEm)
+      vencPagamento.setMonth(vencPagamento.getMonth() + meses)
 
-    const instancia = await instanciaDo(g.tenant_id)
-    const appUrl2 = await getAppUrl(g.tenant_id)
-    await enviarWhatsApp(g.whatsapp,
-      await getMensagem('pro_reativado_gratuito', { gestorNome: g.nome, totalAtivos: '1', limite: '1', appUrl: appUrl2 }, admin, g.tenant_id),
-      instancia).catch(() => {})
-    reativadosPorPagamento++
+      if (vencPagamento <= agora) continue // plano já expirou — não reativa
+
+      // Calcula o vencimento correto baseado na data de pagamento original
+      const venc = vencPagamento.toISOString()
+      const { error: updErr } = await admin.from('gestores')
+        .update({ ativo: true, status_assinatura: 'ativo', plano_vencimento: venc })
+        .eq('id', g.id)
+
+      if (updErr) continue
+
+      const instancia = await instanciaDo(g.tenant_id)
+      const appUrl2 = await getAppUrl(g.tenant_id)
+      await enviarWhatsApp(g.whatsapp,
+        await getMensagem('pro_reativado_gratuito', { gestorNome: g.nome, totalAtivos: '1', limite: '1', appUrl: appUrl2 }, admin, g.tenant_id),
+        instancia).catch(() => {})
+      reativadosPorPagamento++
+    } catch { /* não bloqueia os demais gestores */ }
   }
 
   // ── 3. Verifica PROs no plano FREE que voltaram a ter rede completa ──
