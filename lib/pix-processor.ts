@@ -7,6 +7,7 @@ import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarWhatsAppComFila, getInstanciaTenant, variacoesWhatsapp } from '@/lib/whatsapp'
 import { getAppUrl } from '@/lib/get-app-url'
 import { consultarPagamento } from '@/lib/efi'
+import { consultarPagamentoMP, isMpPaymentId } from '@/lib/mercadopago'
 import { audit } from '@/lib/audit'
 import { getMensagem } from '@/lib/mensagem'
 import { createLogger } from '@/lib/logger'
@@ -120,7 +121,9 @@ export async function processarPixTxid(
   txid: string,
   adminClient: ReturnType<typeof createServiceRoleClient>
 ): Promise<{ processado: boolean; motivo?: string }> {
-  const { pago } = await consultarPagamento(txid)
+  const { pago } = isMpPaymentId(txid)
+    ? await consultarPagamentoMP(txid)
+    : await consultarPagamento(txid)
   // Lança para que o webhook_event fique como 'erro' e seja reprocessado pelo cron.
   // O cron verificar-pagamentos também tem sua própria varredura, mas manter
   // webhook_events consistente facilita o diagnóstico de falhas.

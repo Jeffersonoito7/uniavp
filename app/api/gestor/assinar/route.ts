@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
-import { criarCobrancaPix } from '@/lib/efi'
-import { randomUUID } from 'crypto'
+import { criarCobrancaPixMP } from '@/lib/mercadopago'
 import { contarPROsAtivosIndicados, getLimitePROGratuito } from '@/lib/pros-indicados'
 import { reconciliarEquipeGestor } from '@/lib/pix-processor'
 import { captureException } from '@/lib/monitor'
@@ -88,21 +87,21 @@ export async function POST() {
   // Gera vencimento: 3 dias a partir de hoje
   const venc = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
   const vencimento = venc.toISOString().split('T')[0]
-  const txid = randomUUID().replace(/-/g, '').substring(0, 35)
 
   try {
-    const { pixCopiaECola, qrcodeBase64 } = await criarCobrancaPix({
-      txid,
+    const emailDevedor = user.email ?? `${gestor.id}@universidade.placeholder`
+    const { paymentId, pixCopiaECola, qrcodeBase64 } = await criarCobrancaPixMP({
       valor: valorPlano,
-      vencimento,
-      nomeDevedor: gestor.nome,
       descricao: 'Mensalidade Plataforma PRO',
+      nomeDevedor: gestor.nome,
+      emailDevedor,
+      vencimentoDias: 3,
     })
 
     const { data: pagamento } = await adminClient.from('gestor_pagamentos')
       .insert({
         gestor_id: gestor.id,
-        txid,
+        txid: paymentId,
         valor: valorPlano,
         status: 'pendente',
         pix_copia_cola: pixCopiaECola,
@@ -113,7 +112,7 @@ export async function POST() {
       .select().single()
 
     await adminClient.from('gestores')
-      .update({ pix_txid: txid })
+      .update({ pix_txid: paymentId })
       .eq('id', gestor.id)
 
     return NextResponse.json({ ok: true, pagamento })
