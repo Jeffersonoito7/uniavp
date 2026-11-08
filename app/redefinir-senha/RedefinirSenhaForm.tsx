@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 
-type Estado = 'validando' | 'formulario' | 'erro' | 'sucesso'
+type Estado = 'validando' | 'verificando_identidade' | 'formulario' | 'erro' | 'sucesso'
 
 export default function RedefinirSenhaForm({ logoUrl, siteNome }: { logoUrl: string; siteNome: string }) {
  const router = useRouter()
@@ -30,6 +30,34 @@ export default function RedefinirSenhaForm({ logoUrl, siteNome }: { logoUrl: str
  const [verConfirmar, setVerConfirmar] = useState(false)
  const done = useRef(false)
 
+ // Verificação de identidade
+ const [emailVerif, setEmailVerif] = useState('')
+ const [telefoneVerif, setTelefoneVerif] = useState('')
+ const [erroVerif, setErroVerif] = useState('')
+ const [loadingVerif, setLoadingVerif] = useState(false)
+
+ async function verificarIdentidade(e: React.FormEvent) {
+   e.preventDefault()
+   setErroVerif('')
+   setLoadingVerif(true)
+   try {
+     const res = await fetch('/api/auth/verificar-identidade', {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({ email: emailVerif, telefone: telefoneVerif }),
+     })
+     if (res.ok) {
+       setEstado('formulario')
+     } else {
+       setErroVerif('Os dados informados não conferem com nossa base. Verifique e tente novamente.')
+     }
+   } catch {
+     setErroVerif('Erro de conexão. Tente novamente.')
+   } finally {
+     setLoadingVerif(false)
+   }
+ }
+
  const supabase = createBrowserClient(
  process.env.NEXT_PUBLIC_SUPABASE_URL!,
  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -50,7 +78,7 @@ export default function RedefinirSenhaForm({ logoUrl, siteNome }: { logoUrl: str
  setMsgErro('expirado')
  setEstado('erro')
  } else {
- setEstado('formulario')
+ setEstado('verificando_identidade')
  }
  })
  return
@@ -62,7 +90,7 @@ export default function RedefinirSenhaForm({ logoUrl, siteNome }: { logoUrl: str
  if (event === 'PASSWORD_RECOVERY') {
  done.current = true
  window.history.replaceState({}, '', '/redefinir-senha')
- setEstado('formulario')
+ setEstado('verificando_identidade')
  subscription.unsubscribe()
  }
  })
@@ -121,6 +149,47 @@ export default function RedefinirSenhaForm({ logoUrl, siteNome }: { logoUrl: str
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 15, marginBottom: 8 }}>Validando seu link...</p>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13 }}>Aguarde alguns segundos</p>
  </>
+ )}
+
+ {/* Verificação de identidade */}
+ {estado === 'verificando_identidade' && (
+   <>
+     <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 6, textAlign: 'center' }}>Confirme sua identidade</h2>
+     <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, textAlign: 'center', marginBottom: 24 }}>
+       Informe o e-mail e telefone cadastrados para continuar.
+     </p>
+     <form onSubmit={verificarIdentidade} style={{ display: 'flex', flexDirection: 'column', gap: 16, textAlign: 'left' }}>
+       <div>
+         <label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>E-mail</label>
+         <input
+           type="email"
+           placeholder="seu@email.com"
+           value={emailVerif}
+           onChange={e => setEmailVerif(e.target.value)}
+           required
+           style={inp}
+         />
+       </div>
+       <div>
+         <label style={{ display: 'block', color: 'var(--avp-text-dim)', fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>Telefone / WhatsApp</label>
+         <input
+           type="tel"
+           placeholder="(00) 00000-0000"
+           value={telefoneVerif}
+           onChange={e => setTelefoneVerif(e.target.value)}
+           required
+           style={inp}
+         />
+       </div>
+       {erroVerif && (
+         <p style={{ color: '#ff4d4f', fontSize: 13, margin: 0 }}>{erroVerif}</p>
+       )}
+       <button type="submit" disabled={loadingVerif}
+         style={{ background: 'var(--grad-brand)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px', fontWeight: 700, fontSize: 15, cursor: loadingVerif ? 'not-allowed' : 'pointer', opacity: loadingVerif ? 0.7 : 1 }}>
+         {loadingVerif ? 'Verificando...' : 'Continuar'}
+       </button>
+     </form>
+   </>
  )}
 
  {/* Sucesso */}

@@ -33,7 +33,7 @@ export default async function GestorPage({ searchParams }: { searchParams?: { pr
  }
 
  const { data: gestor } = await (adminClient.from('gestores') as any)
-  .select('id, nome, email, whatsapp, foto_perfil, status_assinatura, trial_expira_em, plano_vencimento, tenant_id, indicado_por_gestor_id, link_externo, cpf, ativo')
+  .select('id, nome, email, whatsapp, foto_perfil, status_assinatura, trial_expira_em, plano_vencimento, tenant_id, indicado_por_gestor_id, link_externo, cpf, ativo, painel_gestao')
  .eq(isAdminPreview ? 'whatsapp' : 'user_id', isAdminPreview ? searchParams!.wpp! : user.id)
  .maybeSingle()
  if (!gestor) redirect(isAdminPreview ? '/admin/ver-pro' : '/entrar?p=pro')

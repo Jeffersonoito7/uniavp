@@ -13,3 +13,4 @@ build
 next-env.d.ts
 .vercel
 scripts/
+.env*

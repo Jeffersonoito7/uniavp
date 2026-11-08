@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen, Palette, UserCircle, Video } from 'lucide-react'
+import { Users, Calendar, Smartphone, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, BookOpen, Palette, UserCircle, Video, BarChart2 } from 'lucide-react'
 import SupportChat from '@/app/components/SupportChat'
 import ThemeToggle from '@/app/components/ThemeToggle'
 
@@ -22,12 +22,14 @@ export default function GestorLayout({
  setAba,
  nomeGestor,
  fotoPerfil,
+ painelGestao,
 }: {
  children: React.ReactNode
  aba: string
  setAba: (a: string) => void
  nomeGestor: string
  fotoPerfil?: string | null
+ painelGestao?: boolean
 }) {
  const [siteNome, setSiteNome] = useState('')
  const [siteLogoUrl, setSiteLogoUrl] = useState('')
@@ -208,6 +210,24 @@ export default function GestorLayout({
  </button>
  )
  })}
+ {painelGestao && (
+   <a href="/gestor/painel-equipe"
+     className="pro-nav-item"
+     title={colapsada && !isMobile ? 'Painel de Equipe' : undefined}
+     style={{
+       display: 'flex', alignItems: 'center', gap: colapsada && !isMobile ? 0 : 10,
+       padding: colapsada && !isMobile ? '10px 0' : '10px 12px',
+       justifyContent: colapsada && !isMobile ? 'center' : 'flex-start',
+       borderRadius: 9, cursor: 'pointer', border: 'none',
+       color: 'var(--avp-green)', fontWeight: 600, fontSize: 14,
+       width: '100%', textDecoration: 'none',
+       background: 'rgba(34,197,94,0.07)',
+       marginTop: 8,
+     }}>
+     <BarChart2 size={18} />
+     {(!colapsada || isMobile) && <span>Painel de Equipe</span>}
+   </a>
+ )}
  </nav>
 
  {/* Rodapé */}

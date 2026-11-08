@@ -611,7 +611,7 @@ export default function GestorDashboard({
  </div>
  )}
 
- <GestorLayout aba={aba} setAba={handleSetAba} nomeGestor={gestor.nome} fotoPerfil={fotoPerfilAtual}>
+ <GestorLayout aba={aba} setAba={handleSetAba} nomeGestor={gestor.nome} fotoPerfil={fotoPerfilAtual} painelGestao={(gestor as any).painel_gestao === true}>
 
  {/* ── DASHBOARD ── */}
  {aba === 'dashboard' && (
