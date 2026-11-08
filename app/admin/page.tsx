@@ -153,12 +153,20 @@ export default async function AdminDashboard({
  const periodoInfo = calcularPeriodo(periodo, searchParams?.inicio, searchParams?.fim)
 
  const agora = new Date()
- const seisAtras = new Date(agora.getFullYear(), agora.getMonth() - 5, 1).toISOString()
+
+ // Contagem por mês via queries paralelas (evita limite de 1000 linhas do Supabase)
+ const mesesRange = Array.from({ length: 6 }, (_, i) => {
+   const d = new Date(agora.getFullYear(), agora.getMonth() - 5 + i, 1)
+   const inicio = new Date(d.getFullYear(), d.getMonth(), 1).toISOString()
+   const fim = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999).toISOString()
+   const label = d.toLocaleDateString('pt-BR', { month: 'short' })
+   return { inicio, fim, label }
+ })
 
  const [
    { count: novosNoPeriodo },
    { count: novosNoPrev },
-   { data: cadastrosMensaisRaw },
+   ...mesesCountsRaw
  ] = await Promise.all([
    tq(adminClient.from('alunos').select('id', { count: 'exact', head: true }))
      .gte('created_at', periodoInfo.inicio.toISOString())
@@ -166,20 +174,17 @@ export default async function AdminDashboard({
    tq(adminClient.from('alunos').select('id', { count: 'exact', head: true }))
      .gte('created_at', periodoInfo.inicioPrev.toISOString())
      .lte('created_at', periodoInfo.fimPrev.toISOString()),
-   tq(adminClient.from('alunos').select('created_at')).gte('created_at', seisAtras),
+   ...mesesRange.map(m =>
+     tq(adminClient.from('alunos').select('id', { count: 'exact', head: true }))
+       .gte('created_at', m.inicio)
+       .lte('created_at', m.fim)
+   ),
  ])
 
- const mesesCadastro: Record<string, number> = {}
- for (const r of (cadastrosMensaisRaw ?? []) as { created_at: string }[]) {
-   const d = new Date(r.created_at)
-   const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-   mesesCadastro[key] = (mesesCadastro[key] ?? 0) + 1
- }
- const mesesLabels = Array.from({ length: 6 }, (_, i) => {
-   const d = new Date(agora.getFullYear(), agora.getMonth() - 5 + i, 1)
-   const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-   return { label: d.toLocaleDateString('pt-BR', { month: 'short' }), total: mesesCadastro[key] ?? 0, key }
- })
+ const mesesLabels = mesesRange.map((m, i) => ({
+   label: m.label,
+   total: mesesCountsRaw[i]?.count ?? 0,
+ }))
 
  const novosAlunos = novosNoPeriodo ?? 0
 
