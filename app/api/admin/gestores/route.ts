@@ -88,7 +88,7 @@ export async function PUT(request: NextRequest) {
   if (!ctx) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
   const body = await request.json()
-  const { id, ativo, nome, email, whatsapp, nova_senha, cpf } = body
+  const { id, ativo, painel_gestao, nome, email, whatsapp, nova_senha, cpf } = body
   if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
   // 1) Valida escopo: próprio tenant OU tenant_id NULL (gestores legados/promovidos)
@@ -98,8 +98,9 @@ export async function PUT(request: NextRequest) {
   if (!alvo) return NextResponse.json({ error: 'Gestor não encontrado' }, { status: 404 })
 
   // 2) Monta updates + back-fill de tenant_id se estava NULL
-  const updates: { ativo?: boolean; nome?: string; email?: string; whatsapp?: string; tenant_id?: string } = {}
+  const updates: { ativo?: boolean; painel_gestao?: boolean; nome?: string; email?: string; whatsapp?: string; tenant_id?: string } = {}
   if (ativo !== undefined) updates.ativo = ativo
+  if (painel_gestao !== undefined) updates.painel_gestao = painel_gestao
   if (nome !== undefined) updates.nome = nome
   if (email !== undefined) updates.email = email
   if (whatsapp !== undefined) updates.whatsapp = whatsapp.replace?.(/\D/g, '') ?? whatsapp

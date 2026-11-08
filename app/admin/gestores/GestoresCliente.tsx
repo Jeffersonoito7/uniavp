@@ -13,6 +13,7 @@ type Gestor = {
  plano_vencimento?: string | null
  trial_expira_em?: string | null
  cpf?: string | null
+ painel_gestao?: boolean | null
 }
 
 function LinkCopiavel({ label, url, desc }: { label: string; url: string; desc: string }) {
@@ -116,6 +117,13 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
  const res = await fetch('/api/admin/gestores', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: gestor.id, ativo: !gestor.ativo }) })
  const data = await res.json()
  if (data.gestor) setGestores(prev => prev.map(g => g.id === gestor.id ? { ...g, ativo: !g.ativo } : g))
+ }
+
+ async function togglePainelGestao(gestor: Gestor) {
+ const novo = !gestor.painel_gestao
+ const res = await fetch('/api/admin/gestores', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: gestor.id, painel_gestao: novo }) })
+ const data = await res.json()
+ if (data.gestor) setGestores(prev => prev.map(g => g.id === gestor.id ? { ...g, painel_gestao: novo } : g))
  }
 
  async function ativarPro(e: React.FormEvent) {
@@ -318,6 +326,11 @@ export default function GestoresCliente({ gestoresIniciais }: { gestoresIniciais
  </button>
  <button onClick={() => { setResetGestor(g); setNovaSenha('') }}
  style={{ background: '#6366f120', color: '#6366f1', border: '1px solid #6366f160', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Senha</button>
+ <button onClick={() => togglePainelGestao(g)}
+ title="Painel de Equipe (modulo gestor)"
+ style={{ background: g.painel_gestao ? '#f59e0b20' : '#6366f120', color: g.painel_gestao ? '#f59e0b' : '#6366f1', border: `1px solid ${g.painel_gestao ? '#f59e0b60' : '#6366f160'}`, borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>
+ {g.painel_gestao ? 'Painel ON' : 'Painel OFF'}
+ </button>
  <button onClick={() => excluirGestor(g)}
  style={{ background: 'var(--avp-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Excluir</button>
  </div>

@@ -16,7 +16,7 @@ export default async function GestoresPage() {
  const tid = (adminRecord?.tenant_id ?? null) as string | null
 
  let q = (adminClient.from('gestores') as any)
- .select('id, nome, email, whatsapp, ativo, created_at, status_assinatura, plano_vencimento, trial_expira_em, cpf')
+ .select('id, nome, email, whatsapp, ativo, created_at, status_assinatura, plano_vencimento, trial_expira_em, cpf, painel_gestao')
  .order('created_at', { ascending: false })
  if (tid) q = q.eq('tenant_id', tid)
  const { data: gestores } = await q
