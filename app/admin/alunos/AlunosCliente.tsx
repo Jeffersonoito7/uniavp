@@ -183,7 +183,8 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
     const buscaOk = !busca ||
       a.nome.toLowerCase().includes(busca.toLowerCase()) ||
       a.whatsapp.includes(busca) ||
-      a.email.toLowerCase().includes(busca.toLowerCase())
+      a.email.toLowerCase().includes(busca.toLowerCase()) ||
+      (a.cpf ?? '').replace(/\D/g, '').includes(busca.replace(/\D/g, ''))
     const planoOk = filtroPlano === 'todos' || a.plano === filtroPlano
     const statusOk = filtroStatus === 'todos' || a.status === filtroStatus
     return buscaOk && planoOk && statusOk
