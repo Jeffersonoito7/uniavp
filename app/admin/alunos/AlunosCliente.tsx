@@ -75,7 +75,7 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
   const [alunos, setAlunos] = useState<Aluno[]>(alunosIniciais)
   const [busca, setBusca] = useState(buscaInicial)
   const [filtroPlano, setFiltroPlano] = useState<'todos' | 'PRO' | 'Free'>('todos')
-    const [filtroStatus, setFiltroStatus] = useState<'todos' | 'ativo' | 'desligado'>('todos')
+    const [filtroStatus, setFiltroStatus] = useState<'todos' | 'ativo' | 'desligado' | 'concluido' | 'pausado'>('todos')
   const [editando, setEditando] = useState<Aluno | null>(null)
   const [editForm, setEditForm] = useState({
     nome: '', whatsapp: '', email: '', cpf: '', status: 'ativo',
@@ -303,7 +303,7 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
         <input
-          placeholder="Buscar por nome, WhatsApp ou e-mail..."
+          placeholder="Buscar por nome, WhatsApp, e-mail ou CPF..."
           style={{ ...inp, width: 320 }}
           value={busca}
           onChange={e => setBusca(e.target.value)}
@@ -335,10 +335,12 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
         ))}
         <span style={{ width: 1, height: 24, background: 'var(--avp-border)', alignSelf: 'center' }} />
         {([
-          { val: 'todos', label: 'Todos' },
-          { val: 'ativo', label: 'Ativos' },
-          { val: 'desligado', label: 'Inativos' },
-               ] as const).map(op => (
+          { val: 'todos',     label: 'Todos',   activeStyle: { background: 'var(--avp-blue)', color: '#fff', borderColor: 'var(--avp-blue)' } },
+          { val: 'ativo',     label: 'Ativos',  activeStyle: { background: '#02A15320', color: '#02A153', borderColor: '#02A15360' } },
+          { val: 'desligado', label: 'Inativos',activeStyle: { background: '#e6394620', color: '#e63946', borderColor: '#e6394660' } },
+          { val: 'concluido', label: 'Formados',activeStyle: { background: '#6366f120', color: '#6366f1', borderColor: '#6366f160' } },
+          { val: 'pausado',   label: 'Pausados',activeStyle: { background: '#f59e0b20', color: '#f59e0b', borderColor: '#f59e0b60' } },
+        ] as const).map(op => (
           <button
             key={op.val}
             onClick={() => setFiltroStatus(op.val)}
@@ -351,11 +353,7 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
               cursor: 'pointer',
               transition: 'all .15s',
               ...(filtroStatus === op.val
-                ? op.val === 'ativo'
-                  ? { background: '#02A15320', color: '#02A153', borderColor: '#02A15360' }
-                  : op.val === 'desligado'
-                  ? { background: '#e6394620', color: '#e63946', borderColor: '#e6394660' }
-                  : { background: 'var(--avp-blue)', color: '#fff', borderColor: 'var(--avp-blue)' }
+                ? op.activeStyle
                 : { background: 'transparent', color: 'var(--avp-text-dim)', borderColor: 'var(--avp-border)' }
               ),
             }}

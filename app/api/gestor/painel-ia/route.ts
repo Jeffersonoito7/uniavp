@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const admin = createServiceRoleClient()
-  const { data: gestor } = await admin.from('gestores')
+  const { data: gestor } = await (admin as any).from('gestores')
     .select('id, nome, painel_gestao')
     .eq('user_id', user.id)
     .eq('ativo', true)
@@ -39,13 +39,13 @@ export async function POST(req: NextRequest) {
   if (!mensagem?.trim()) return NextResponse.json({ error: 'Mensagem vazia' }, { status: 400 })
 
   // Busca historico recente (ultimas 20 mensagens)
-  const { data: historico } = await admin.from('gestor_chat_ia')
+  const { data: historico } = await (admin as any).from('gestor_chat_ia')
     .select('role, conteudo')
     .eq('gestor_id', gestor.id)
     .order('created_at', { ascending: false })
     .limit(20)
 
-  const mensagensAnteriores = (historico ?? []).reverse().map(m => ({
+  const mensagensAnteriores = (historico ?? []).reverse().map((m: { role: string; conteudo: string }) => ({
     role: m.role as 'user' | 'assistant',
     content: m.conteudo,
   }))
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
   const resposta = (response.content[0] as any).text as string
 
   // Salva no historico
-  await admin.from('gestor_chat_ia').insert([
+  await (admin as any).from('gestor_chat_ia').insert([
     { gestor_id: gestor.id, role: 'user', conteudo: mensagem },
     { gestor_id: gestor.id, role: 'assistant', conteudo: resposta },
   ])
@@ -80,7 +80,7 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
   const admin = createServiceRoleClient()
-  const { data: gestor } = await admin.from('gestores')
+  const { data: gestor } = await (admin as any).from('gestores')
     .select('id, painel_gestao')
     .eq('user_id', user.id)
     .eq('ativo', true)
@@ -88,7 +88,7 @@ export async function GET() {
 
   if (!gestor?.painel_gestao) return NextResponse.json({ error: 'Sem acesso' }, { status: 403 })
 
-  const { data } = await admin.from('gestor_chat_ia')
+  const { data } = await (admin as any).from('gestor_chat_ia')
     .select('id, role, conteudo, created_at')
     .eq('gestor_id', gestor.id)
     .order('created_at', { ascending: true })

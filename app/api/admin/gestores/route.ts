@@ -107,7 +107,7 @@ export async function PUT(request: NextRequest) {
   if (ctx.tenantId && !alvo.tenant_id) updates.tenant_id = ctx.tenantId
 
   // 3) UPDATE por id (escopo já validado acima)
-  const { data: gestor, error } = await adminClient.from('gestores')
+  const { data: gestor, error } = await (adminClient as any).from('gestores')
     .update(updates).eq('id', id).select('*').maybeSingle()
   if (error) return NextResponse.json({ error: traduzirErro(error) }, { status: 400 })
   if (!gestor) return NextResponse.json({ error: 'Falha ao salvar: gestor não encontrado' }, { status: 404 })
