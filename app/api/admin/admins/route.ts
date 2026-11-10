@@ -61,6 +61,10 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Você não pode excluir sua própria conta' }, { status: 400 })
 
     await adminClient.from('admins').delete().eq('id', id)
+    // Remove do auth.users para liberar o email
+    if (target?.user_id) {
+      await adminClient.auth.admin.deleteUser(target.user_id).catch(() => {})
+    }
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('admins DELETE:', err)

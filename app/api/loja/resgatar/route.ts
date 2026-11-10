@@ -36,6 +36,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Prêmio esgotado.' }, { status: 400 })
   }
 
+  // Decrementa estoque de forma atomica: so atualiza se ainda houver unidade disponivel.
+  // Isso elimina a race condition quando dois usuarios tentam o ultimo item simultaneamente.
+  if (premio.quantidade_disponivel !== null) {
+    const { data: atualizado } = await adminClient.from('premios')
+      .update({ quantidade_disponivel: premio.quantidade_disponivel - 1 })
+      .eq('id', premio_id)
+      .gt('quantidade_disponivel', 0)
+      .select('id')
+
+    if (!atualizado || atualizado.length === 0) {
+      return NextResponse.json({ error: 'Prêmio esgotado.' }, { status: 400 })
+    }
+  }
+
+  // Registra o resgate e debita os pontos
   const { data: resgate } = await adminClient.from('resgates')
     .insert({ aluno_id: aluno.id, premio_id, status: 'pendente' })
     .select('id')
@@ -46,12 +61,6 @@ export async function POST(req: NextRequest) {
     quantidade: -premio.custo_pontos,
     motivo: `Resgate prêmio ${premio_id}`,
   })
-
-  if (premio.quantidade_disponivel !== null) {
-    await adminClient.from('premios')
-      .update({ quantidade_disponivel: premio.quantidade_disponivel - 1 })
-      .eq('id', premio_id)
-  }
 
   const saldo_restante = saldo - premio.custo_pontos
 
