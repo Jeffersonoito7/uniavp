@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useState, useTransition, useEffect, useRef } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import PhoneInput from '@/app/components/PhoneInput'
 
 type Aluno = {
@@ -72,8 +73,18 @@ function BadgePlano({ plano }: { plano: 'PRO' | 'Free' }) {
 }
 
 export default function AlunosCliente({ alunos: alunosIniciais }: { alunos: Aluno[] }) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [, startTransition] = useTransition()
   const [alunos, setAlunos] = useState<Aluno[]>(alunosIniciais)
-  const [busca, setBusca] = useState('')
+  const busca = searchParams.get('q') ?? ''
+  const prevIniciais = useRef(alunosIniciais)
+  useEffect(() => {
+    if (prevIniciais.current !== alunosIniciais) {
+      prevIniciais.current = alunosIniciais
+      setAlunos(alunosIniciais)
+    }
+  }, [alunosIniciais])
   const [filtroPlano, setFiltroPlano] = useState<'todos' | 'PRO' | 'Free'>('todos')
     const [filtroStatus, setFiltroStatus] = useState<'todos' | 'ativo' | 'desligado' | 'concluido' | 'pausado'>('todos')
   const [editando, setEditando] = useState<Aluno | null>(null)
@@ -308,8 +319,15 @@ export default function AlunosCliente({ alunos: alunosIniciais }: { alunos: Alun
           <input
             placeholder="Buscar por nome, WhatsApp, e-mail ou CPF..."
             style={{ ...inp, paddingLeft: 36 }}
-            value={busca}
-            onChange={e => setBusca(e.target.value)}
+            defaultValue={busca}
+            onChange={e => {
+              const val = e.target.value
+              startTransition(() => {
+                const params = new URLSearchParams(window.location.search)
+                if (val) params.set('q', val); else params.delete('q')
+                router.replace(`/admin/alunos?${params.toString()}`, { scroll: false })
+              })
+            }}
           />
         </div>
         {busca && (

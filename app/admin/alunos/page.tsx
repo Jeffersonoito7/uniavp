@@ -1,9 +1,10 @@
 export const dynamic = 'force-dynamic'
+import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import AlunosCliente from './AlunosCliente'
 
-export default async function AlunosPage() {
+export default async function AlunosPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/entrar?p=adm')
@@ -60,15 +61,28 @@ export default async function AlunosPage() {
   const totalPro = alunos.filter(a => a.plano === 'PRO').length
   const totalFree = alunos.filter(a => a.plano === 'Free').length
 
+  const sp = await searchParams
+  const q = (sp?.q ?? '').toLowerCase().trim()
+  const filtrados = q
+    ? alunos.filter(a =>
+        a.nome.toLowerCase().includes(q) ||
+        a.whatsapp.includes(q) ||
+        a.email.toLowerCase().includes(q) ||
+        (a.cpf ?? '').replace(/\D/g, '').includes(q.replace(/\D/g, ''))
+      )
+    : alunos
+
   return (
     <>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--avp-text)' }}>Alunos</h1>
         <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>
-          {alunos.length} alunos: {totalPro} PRO / {totalFree} Free
+          {q ? `${filtrados.length} resultado(s) para "${sp?.q}"` : `${alunos.length} alunos: ${totalPro} PRO / ${totalFree} Free`}
         </p>
       </div>
-      <AlunosCliente alunos={alunos} />
+      <Suspense fallback={null}>
+        <AlunosCliente alunos={filtrados} />
+      </Suspense>
     </>
   )
 }
