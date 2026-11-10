@@ -92,7 +92,7 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
   }
 
   async function reativarInativos() {
-        const qtd = alunos.filter(a => a.status === 'desligado').length
+        const qtd = alunos.filter(a => a.status === 'desligado' || a.status === 'inativo').length
     if (qtd === 0) { flash('ok', 'Nenhum aluno inativo encontrado.'); return }
     if (!confirm(`Reativar ${qtd} aluno(s) inativo(s)? O status será alterado para "ativo".`)) return
     setReativando(true)
@@ -100,7 +100,7 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
       const res = await fetch('/api/admin/alunos/reativar-inativos', { method: 'POST' })
       const data = await res.json()
       if (data.ok) {
-        setAlunos(prev => prev.map(a => a.status === 'desligado' ? { ...a, status: 'ativo' } : a))
+        setAlunos(prev => prev.map(a => (a.status === 'desligado' || a.status === 'inativo') ? { ...a, status: 'ativo' } : a))
         flash('ok', `${data.reativados ?? qtd} aluno(s) reativado(s) com sucesso.`)
       } else {
         flash('err', data.error ?? 'Erro ao reativar.')
@@ -186,7 +186,8 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
       a.email.toLowerCase().includes(busca.toLowerCase()) ||
       (a.cpf ?? '').replace(/\D/g, '').includes(busca.replace(/\D/g, ''))
     const planoOk = filtroPlano === 'todos' || a.plano === filtroPlano
-    const statusOk = filtroStatus === 'todos' || a.status === filtroStatus
+    const statusOk = filtroStatus === 'todos' ||
+      (filtroStatus === 'desligado' ? (a.status === 'desligado' || a.status === 'inativo') : a.status === filtroStatus)
     return buscaOk && planoOk && statusOk
   })
 
@@ -361,13 +362,13 @@ export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '
             {op.label}
           </button>
         ))}
-        {alunos.some(a => a.status === 'desligado') && (
+        {alunos.some(a => a.status === 'desligado' || a.status === 'inativo') && (
           <button
             onClick={reativarInativos}
             disabled={reativando}
             style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid rgba(249,115,22,0.4)', background: 'rgba(249,115,22,0.08)', color: '#f97316', fontWeight: 700, fontSize: 12, cursor: reativando ? 'default' : 'pointer', opacity: reativando ? 0.6 : 1, whiteSpace: 'nowrap' }}
           >
-            {reativando ? 'Reativando...' : `Reativar inativos (${alunos.filter(a => a.status === 'desligado').length})`}
+            {reativando ? 'Reativando...' : `Reativar inativos (${alunos.filter(a => a.status === 'desligado' || a.status === 'inativo').length})`}
           </button>
         )}
       </div>
