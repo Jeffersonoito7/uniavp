@@ -10,9 +10,25 @@ export async function GET() {
 
   const admin = createServiceRoleClient()
 
-  // Busca os top 10 por pontos totais entre consultores ativos
+  // Descobre o tenant do usuario logado (aluno ou gestor)
+  const [{ data: alunoRow }, { data: gestorRow }] = await Promise.all([
+    admin.from('alunos').select('tenant_id').eq('user_id', user.id).maybeSingle(),
+    admin.from('gestores').select('tenant_id').eq('user_id', user.id).eq('ativo', true).maybeSingle(),
+  ])
+  const tenantId = (alunoRow as any)?.tenant_id ?? (gestorRow as any)?.tenant_id ?? null
+
+  // Busca IDs dos alunos do mesmo tenant para filtrar pontos
+  let alunoIdsQuery = admin.from('alunos').select('id')
+  if (tenantId) alunoIdsQuery = (alunoIdsQuery as any).eq('tenant_id', tenantId)
+  const { data: alunoIds } = await alunoIdsQuery
+  const idSet = new Set((alunoIds ?? []).map((a: any) => a.id as string))
+
+  if (!idSet.size) return NextResponse.json({ top: [] })
+
+  // Busca pontos apenas dos alunos do tenant
   const { data: pontos } = await admin.from('aluno_pontos')
     .select('aluno_id, quantidade')
+    .in('aluno_id', [...idSet])
     .order('quantidade', { ascending: false })
 
   if (!pontos?.length) return NextResponse.json({ top: [] })
@@ -23,7 +39,6 @@ export async function GET() {
     mapa[p.aluno_id] = (mapa[p.aluno_id] ?? 0) + p.quantidade
   }
 
-  // Pega os top 10 IDs com mais pontos
   const top10ids = Object.entries(mapa)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)
@@ -31,7 +46,6 @@ export async function GET() {
 
   if (!top10ids.length) return NextResponse.json({ top: [] })
 
-  // Busca dados dos alunos
   const { data: alunos } = await admin.from('alunos')
     .select('id, nome, status')
     .in('id', top10ids)
@@ -39,7 +53,6 @@ export async function GET() {
 
   if (!alunos?.length) return NextResponse.json({ top: [] })
 
-  // Monta o ranking com pontos
   const top = alunos
     .map((a: any) => ({ id: a.id, nome: a.nome, pontos: mapa[a.id] ?? 0 }))
     .sort((a: any, b: any) => b.pontos - a.pontos)
