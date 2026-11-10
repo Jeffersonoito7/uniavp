@@ -90,14 +90,14 @@ export default function AdminsCliente({ adminsIniciais, meuUserId }: { adminsIni
  <div>
  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
  <div>
- <h1 style={{ fontSize: 24, fontWeight: 800 }}>Gerentes / Admins</h1>
+ <h1 style={{ fontSize: 24, fontWeight: 800 }}>Administradores</h1>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginTop: 4 }}>
  Pessoas da empresa com acesso ao painel: {admins.length} cadastrado{admins.length !== 1 ? 's' : ''}
  </p>
  </div>
  <button onClick={() => setShowForm(s => !s)}
  style={{ background: showForm ? 'transparent' : 'var(--avp-green)', color: showForm ? 'var(--avp-text-dim)' : '#fff', border: showForm ? '1px solid var(--avp-border)' : 'none', borderRadius: 10, padding: '10px 22px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>
- {showForm ? 'Cancelar' : '+ Adicionar gerente'}
+ {showForm ? 'Cancelar' : '+ Adicionar administrador'}
  </button>
  </div>
 
@@ -107,7 +107,7 @@ export default function AdminsCliente({ adminsIniciais, meuUserId }: { adminsIni
  <div>
  <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 4, color: '#a5b4fc' }}>Quem deve ser cadastrado aqui?</p>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, lineHeight: 1.6 }}>
- Gerentes e colaboradores da <strong style={{ color: 'var(--avp-text)' }}>sua empresa</strong> que precisam logar no painel admin para cadastrar consultores, gestores, criar módulos e aulas, etc. Cada pessoa cadastrada aqui recebe login próprio e acesso completo ao painel.
+ Administradores e colaboradores da <strong style={{ color: 'var(--avp-text)' }}>sua empresa</strong> que precisam logar no painel admin para cadastrar consultores, gestores, criar módulos e aulas, etc. Cada pessoa cadastrada aqui recebe login próprio e acesso completo ao painel.
  </p>
  </div>
  </div>
@@ -121,16 +121,16 @@ export default function AdminsCliente({ adminsIniciais, meuUserId }: { adminsIni
  {/* ── Formulário de criação ── */}
  {showForm && (
  <div style={{ background: 'var(--avp-card)', border: '1px solid var(--avp-border)', borderRadius: 12, padding: 24, marginBottom: 24 }}>
- <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Adicionar gerente</h3>
+ <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Adicionar administrador</h3>
  <p style={{ color: 'var(--avp-text-dim)', fontSize: 13, marginBottom: 20 }}>Esta pessoa poderá logar em <strong style={{ color: 'var(--avp-text)' }}>{typeof window !== 'undefined' ? window.location.host : 'este painel'}</strong> e terá acesso completo ao painel.</p>
  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
  <div>
  <label style={lbl}>Nome completo *</label>
- <input style={inp} value={form.nome} onChange={e => setForm(p => ({ ...p, nome: e.target.value }))} placeholder="Ex: Maria Gerente" />
+ <input style={inp} value={form.nome} onChange={e => setForm(p => ({ ...p, nome: e.target.value }))} placeholder="Ex: Maria Silva" />
  </div>
  <div>
  <label style={lbl}>E-mail de acesso *</label>
- <input type="email" style={inp} value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="gerente@suaempresa.com.br" />
+ <input type="email" style={inp} value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="admin@suaempresa.com.br" />
  </div>
  <div style={{ gridColumn: '1 / -1' }}>
  <label style={lbl}>Senha inicial *</label>
@@ -151,7 +151,7 @@ export default function AdminsCliente({ adminsIniciais, meuUserId }: { adminsIni
  <button onClick={() => setShowForm(false)} style={{ background: 'none', border: '1px solid var(--avp-border)', color: 'var(--avp-text-dim)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
  <button onClick={criar} disabled={salvando}
  style={{ background: 'var(--avp-green)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 700, cursor: 'pointer', fontSize: 14, opacity: salvando ? 0.7 : 1 }}>
- {salvando ? 'Criando...' : 'Adicionar gerente'}
+ {salvando ? 'Criando...' : 'Adicionar administrador'}
  </button>
  </div>
  </div>
