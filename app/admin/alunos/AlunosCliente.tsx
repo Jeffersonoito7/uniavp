@@ -71,9 +71,9 @@ function BadgePlano({ plano }: { plano: 'PRO' | 'Free' }) {
   )
 }
 
-export default function AlunosCliente({ alunos: alunosIniciais, buscaInicial = '' }: { alunos: Aluno[]; buscaInicial?: string }) {
+export default function AlunosCliente({ alunos: alunosIniciais }: { alunos: Aluno[] }) {
   const [alunos, setAlunos] = useState<Aluno[]>(alunosIniciais)
-  const [busca, setBusca] = useState(buscaInicial)
+  const [busca, setBusca] = useState('')
   const [filtroPlano, setFiltroPlano] = useState<'todos' | 'PRO' | 'Free'>('todos')
     const [filtroStatus, setFiltroStatus] = useState<'todos' | 'ativo' | 'desligado' | 'concluido' | 'pausado'>('todos')
   const [editando, setEditando] = useState<Aluno | null>(null)

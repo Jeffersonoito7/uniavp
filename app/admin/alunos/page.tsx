@@ -3,11 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient, createServiceRoleClient } from '@/lib/supabase-server'
 import AlunosCliente from './AlunosCliente'
 
-export default async function AlunosPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>
-}) {
+export default async function AlunosPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/entrar?p=adm')
@@ -25,7 +21,7 @@ export default async function AlunosPage({
   const { data: alunosRaw } = await tq(
     adminClient.from('alunos')
       .select('id, nome, whatsapp, email, cpf, status, user_id, created_at, gestor_nome')
-      .order('created_at', { ascending: false }) as any
+      .order('nome', { ascending: true }) as any
   )
 
   // Buscar todos gestores ativos e fazer match por email em JS (case-insensitive)
@@ -61,16 +57,6 @@ export default async function AlunosPage({
     }
   })
 
-  const sp = await searchParams
-  const q = sp?.q?.toLowerCase() ?? ''
-  const filtrados = q
-    ? alunos.filter(a =>
-        a.nome.toLowerCase().includes(q) ||
-        a.whatsapp.includes(q) ||
-        a.email.toLowerCase().includes(q)
-      )
-    : alunos
-
   const totalPro = alunos.filter(a => a.plano === 'PRO').length
   const totalFree = alunos.filter(a => a.plano === 'Free').length
 
@@ -82,7 +68,7 @@ export default async function AlunosPage({
           {alunos.length} alunos: {totalPro} PRO / {totalFree} Free
         </p>
       </div>
-      <AlunosCliente alunos={filtrados} buscaInicial={q} />
+      <AlunosCliente alunos={alunos} />
     </>
   )
 }
