@@ -31,7 +31,8 @@ export default function PainelEquipePage() {
   const [editandoMeta, setEditandoMeta] = useState(false)
   const [metaTemp, setMetaTemp] = useState('')
   const [resultados, setResultados] = useState<Resultado[]>([])
-  const [novoConsultor, setNovoConsultor] = useState({ nome: '', whatsapp: '', indicacoes: 0, fechamentos: 0, observacao: '' })
+  const [novoConsultor, setNovoConsultor] = useState({ nome_consultor: '', whatsapp_consultor: '', indicacoes: 0, fechamentos: 0, observacao: '' })
+  const [erroForm, setErroForm] = useState<string | null>(null)
   const [adicionando, setAdicionando] = useState(false)
   const [editando, setEditando] = useState<string | null>(null)
   const [editTemp, setEditTemp] = useState<Partial<Resultado>>({})
@@ -51,17 +52,27 @@ export default function PainelEquipePage() {
 
   async function carregar() {
     setLoading(true)
-    const r = await fetch(`/api/gestor/painel-equipe?mes=${mes}`)
-    const d = await r.json()
-    setMeta(d.meta?.meta_indicacoes ?? 0)
-    setResultados(d.resultados ?? [])
-    setLoading(false)
+    try {
+      const r = await fetch(`/api/gestor/painel-equipe?mes=${mes}`)
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error ?? 'Erro ao carregar dados')
+      setMeta(d.meta?.meta_indicacoes ?? 0)
+      setResultados(d.resultados ?? [])
+    } catch (e: any) {
+      setErroForm(e.message ?? 'Erro ao carregar')
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function carregarChat() {
-    const r = await fetch('/api/gestor/painel-ia')
-    const d = await r.json()
-    setMsgs(d.mensagens ?? [])
+    try {
+      const r = await fetch('/api/gestor/painel-ia')
+      const d = await r.json()
+      if (r.ok) setMsgs(d.mensagens ?? [])
+    } catch {
+      // silencioso: chat começa vazio
+    }
   }
 
   useEffect(() => { carregar() }, [mes])
@@ -79,15 +90,21 @@ export default function PainelEquipePage() {
   }
 
   async function adicionarConsultor() {
-    if (!novoConsultor.nome.trim()) return
-    await fetch('/api/gestor/painel-equipe', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mes, ...novoConsultor }),
-    })
-    setNovoConsultor({ nome: '', whatsapp: '', indicacoes: 0, fechamentos: 0, observacao: '' })
-    setAdicionando(false)
-    carregar()
+    if (!novoConsultor.nome_consultor.trim()) return
+    try {
+      const r = await fetch('/api/gestor/painel-equipe', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mes, ...novoConsultor }),
+      })
+      const d = await r.json()
+      if (!r.ok) { setErroForm(d.error ?? 'Erro ao adicionar'); return }
+      setNovoConsultor({ nome_consultor: '', whatsapp_consultor: '', indicacoes: 0, fechamentos: 0, observacao: '' })
+      setAdicionando(false)
+      carregar()
+    } catch {
+      setErroForm('Erro de conexão')
+    }
   }
 
   async function salvarEdicao(id: string) {
@@ -123,7 +140,13 @@ export default function PainelEquipePage() {
         body: JSON.stringify({ mensagem: texto }),
       })
       const d = await r.json()
-      setMsgs(m => [...m, { role: 'assistant', conteudo: d.resposta }])
+      if (!r.ok || !d.resposta) {
+        setMsgs(m => [...m, { role: 'assistant', conteudo: d.error ?? 'Erro ao obter resposta. Tente novamente.' }])
+      } else {
+        setMsgs(m => [...m, { role: 'assistant', conteudo: d.resposta }])
+      }
+    } catch {
+      setMsgs(m => [...m, { role: 'assistant', conteudo: 'Erro de conexão. Tente novamente.' }])
     } finally {
       setEnviando(false)
     }
@@ -141,7 +164,13 @@ export default function PainelEquipePage() {
   return (
     <div style={{ padding: '24px 16px', maxWidth: 820, margin: '0 auto', fontFamily: 'Inter, sans-serif' }}>
       <h1 style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 4 }}>Painel de Equipe</h1>
-      <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: 24 }}>Gerencie sua equipe e consulte o Coach APV</p>
+      <p style={{ color: 'var(--avp-text-dim)', fontSize: 14, marginBottom: erroForm ? 8 : 24 }}>Gerencie sua equipe e consulte o Coach APV</p>
+      {erroForm && (
+        <div style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid #ef4444', borderRadius: 8, padding: '10px 16px', marginBottom: 16, color: '#ef4444', fontSize: 13, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>{erroForm}</span>
+          <button onClick={() => setErroForm(null)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 16 }}>×</button>
+        </div>
+      )}
 
       {/* Abas */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
@@ -218,10 +247,10 @@ export default function PainelEquipePage() {
 
             {adicionando && (
               <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 16, marginBottom: 16, display: 'grid', gap: 10 }}>
-                <input placeholder="Nome do consultor *" value={novoConsultor.nome}
-                  onChange={e => setNovoConsultor(p => ({ ...p, nome: e.target.value }))} style={inp} />
-                <input placeholder="WhatsApp (opcional)" value={novoConsultor.whatsapp}
-                  onChange={e => setNovoConsultor(p => ({ ...p, whatsapp: e.target.value }))} style={inp} />
+                <input placeholder="Nome do consultor *" value={novoConsultor.nome_consultor}
+                  onChange={e => setNovoConsultor(p => ({ ...p, nome_consultor: e.target.value }))} style={inp} />
+                <input placeholder="WhatsApp (opcional)" value={novoConsultor.whatsapp_consultor}
+                  onChange={e => setNovoConsultor(p => ({ ...p, whatsapp_consultor: e.target.value }))} style={inp} />
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   <input type="number" placeholder="Indicacoes" value={novoConsultor.indicacoes}
                     onChange={e => setNovoConsultor(p => ({ ...p, indicacoes: parseInt(e.target.value) || 0 }))} style={inp} />

@@ -23,7 +23,8 @@ export async function GET(req: NextRequest) {
   if (!ctx) return NextResponse.json({ error: 'Sem acesso' }, { status: 403 })
   const { gestor, admin } = ctx
 
-  const mes = req.nextUrl.searchParams.get('mes') ?? new Date().toISOString().slice(0, 7) + '-01'
+  const mesParam = req.nextUrl.searchParams.get('mes') ?? new Date().toISOString().slice(0, 7)
+  const mes = mesParam.length === 7 ? mesParam + '-01' : mesParam
 
   const [{ data: meta }, { data: resultados }] = await Promise.all([
     (admin as any).from('gestor_metas').select('*').eq('gestor_id', gestor.id).eq('mes', mes).maybeSingle(),
@@ -40,7 +41,8 @@ export async function POST(req: NextRequest) {
   const { gestor, admin } = ctx
 
   const body = await req.json()
-  const mes = body.mes ?? new Date().toISOString().slice(0, 7) + '-01'
+  const mesRaw = body.mes ?? new Date().toISOString().slice(0, 7)
+  const mes = mesRaw.length === 7 ? mesRaw + '-01' : mesRaw
   const meta_indicacoes = Number(body.meta_indicacoes ?? 0)
 
   const { data, error } = await (admin as any).from('gestor_metas')
