@@ -303,12 +303,20 @@ export default function AlunosCliente({ alunos: alunosIniciais }: { alunos: Alun
       )}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-        <input
-          placeholder="Buscar por nome, WhatsApp, e-mail ou CPF..."
-          style={{ ...inp, width: 320 }}
-          value={busca}
-          onChange={e => setBusca(e.target.value)}
-        />
+        <div style={{ position: 'relative', width: 320, flexShrink: 0 }}>
+          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--avp-text-dim)', pointerEvents: 'none', fontSize: 15 }}>🔍</span>
+          <input
+            placeholder="Buscar por nome, WhatsApp, e-mail ou CPF..."
+            style={{ ...inp, paddingLeft: 36 }}
+            value={busca}
+            onChange={e => setBusca(e.target.value)}
+          />
+        </div>
+        {busca && (
+          <span style={{ fontSize: 13, color: 'var(--avp-text-dim)' }}>
+            {filtrados.length} resultado{filtrados.length !== 1 ? 's' : ''}
+          </span>
+        )}
         {(['todos', 'PRO', 'Free'] as const).map(op => (
           <button
             key={op}
