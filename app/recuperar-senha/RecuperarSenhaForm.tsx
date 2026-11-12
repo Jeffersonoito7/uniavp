@@ -5,11 +5,9 @@ export default function RecuperarSenhaForm({ logoUrl, siteNome }: { logoUrl: str
  const [email, setEmail] = useState('')
  const [loading, setLoading] = useState(false)
  const [enviado, setEnviado] = useState(false)
- const [link, setLink] = useState<string | null>(null)
  const [enviadoEmail, setEnviadoEmail] = useState(false)
  const [enviadoWpp, setEnviadoWpp] = useState(false)
  const [whatsappMask, setWhatsappMask] = useState<string | null>(null)
- const [copiado, setCopiado] = useState(false)
  const [erro, setErro] = useState('')
  const [cooldown, setCooldown] = useState(0)
 
@@ -34,7 +32,6 @@ export default function RecuperarSenhaForm({ logoUrl, siteNome }: { logoUrl: str
  })
  const data = await res.json()
  setEnviado(true)
- setLink(data.link ?? null)
  setEnviadoEmail(data.enviadoEmail ?? false)
  setEnviadoWpp(data.enviadoWpp ?? false)
  setWhatsappMask(data.whatsappMask ?? null)
@@ -43,18 +40,6 @@ export default function RecuperarSenhaForm({ logoUrl, siteNome }: { logoUrl: str
  setErro('Erro de conexão. Verifique sua internet.')
  }
  setLoading(false)
- }
-
- useEffect(() => {
- if (!copiado) return
- const t = setTimeout(() => setCopiado(false), 3000)
- return () => clearTimeout(t)
- }, [copiado])
-
- function copiarLink() {
- if (!link) return
- navigator.clipboard.writeText(link)
- setCopiado(true)
  }
 
  const inp: React.CSSProperties = {
@@ -147,27 +132,15 @@ export default function RecuperarSenhaForm({ logoUrl, siteNome }: { logoUrl: str
  </div>
  )}
 
- {/* Fallback: link na tela (se WhatsApp não enviou) */}
- {link && (
- <div style={{ marginBottom: 16 }}>
- {!enviadoWpp && (
- <div style={{ background: '#02A15310', border: '1px solid #02A15340', borderRadius: 10, padding: '14px 16px', marginBottom: 10 }}>
- <p style={{ fontSize: 12, color: 'var(--avp-green)', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
- Copie e abra no navegador
+ {/* Fallback: nenhum canal funcionou */}
+ {!enviadoEmail && !enviadoWpp && (
+ <div style={{ background: '#f59e0b10', border: '1px solid #f59e0b40', borderRadius: 10, padding: '14px 16px', marginBottom: 16 }}>
+ <p style={{ fontSize: 14, color: '#f59e0b', fontWeight: 700, marginBottom: 4 }}>
+ Nao conseguimos enviar o link
  </p>
- <p style={{ fontSize: 11, color: 'var(--avp-text-dim)', lineHeight: 1.6, marginBottom: 10 }}>
- Copie o link abaixo e cole <strong>no mesmo navegador</strong> onde vai redefinir a senha.
+ <p style={{ fontSize: 13, color: 'var(--avp-text-dim)', lineHeight: 1.6 }}>
+ Nenhum canal de envio esta disponivel para este e-mail. Entre em contato com o suporte da plataforma.
  </p>
- <button onClick={copiarLink}
- style={{ width: '100%', background: copiado ? 'var(--avp-green)' : 'var(--avp-card)', border: `1px solid ${copiado ? 'var(--avp-green)' : 'var(--avp-border)'}`, borderRadius: 8, padding: '10px 14px', color: copiado ? '#fff' : 'var(--avp-text)', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'all 0.2s' }}>
- {copiado ? ' Link copiado!' : ' Copiar link de redefinição'}
- </button>
- </div>
- )}
- <button onClick={() => window.open(link!, '_self')}
- style={{ width: '100%', background: 'var(--avp-border)', color: 'var(--avp-text)', border: '1px solid var(--avp-border)', borderRadius: 8, padding: '10px 14px', textAlign: 'center', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
- {enviadoWpp ? 'Ou clique aqui para abrir direto' : 'Clique aqui para abrir'}
- </button>
  </div>
  )}
 
@@ -183,7 +156,7 @@ export default function RecuperarSenhaForm({ logoUrl, siteNome }: { logoUrl: str
  {cooldown> 0 ? ` Gerar novo link (${cooldown}s)` : ' Gerar novo link'}
  </button>
 
- <button onClick={() => { setEnviado(false); setLink(null); setCooldown(0) }}
+ <button onClick={() => { setEnviado(false); setCooldown(0) }}
  style={{ width: '100%', background: 'none', border: 'none', color: 'var(--avp-text-dim)', fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}>
  Usar outro e-mail
  </button>

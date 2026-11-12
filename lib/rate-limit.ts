@@ -92,4 +92,5 @@ export const LIMITS = {
   assinar:        { limit: 5,  windowSeconds: 60 },  // 5 tentativas de assinatura/min por token
   login:          { limit: 10, windowSeconds: 60 },  // 10 tentativas/min por IP
   otp:            { limit: 3,  windowSeconds: 300 }, // 3 OTPs por 5 min por usuario
+  recuperarSenha: { limit: 3,  windowSeconds: 300 }, // 3 tentativas por 5 min por IP
 }

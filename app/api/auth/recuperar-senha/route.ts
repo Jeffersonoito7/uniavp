@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase-server'
 import { enviarEmailRecuperacaoSenha } from '@/lib/email'
+import { rateLimit, LIMITS } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,6 +57,12 @@ async function enviarLinkWhatsApp(whatsapp: string, link: string, instancia: str
 }
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? req.headers.get('x-real-ip') ?? 'unknown'
+  const rl = await rateLimit(`recuperar-senha:${ip}`, LIMITS.recuperarSenha)
+  if (!rl.allowed) {
+    return NextResponse.json({ error: 'Muitas tentativas. Aguarde alguns minutos.' }, { status: 429 })
+  }
+
   const { email, redirectTo } = await req.json()
   if (!email) return NextResponse.json({ error: 'E-mail obrigatório' }, { status: 400 })
 
@@ -96,7 +103,6 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     ok: true,
-    link,
     enviadoEmail,
     enviadoWpp,
     whatsappMask: ctx?.whatsapp
