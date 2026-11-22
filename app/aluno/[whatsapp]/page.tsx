@@ -58,6 +58,11 @@ export default async function AlunoHomePage({ params, searchParams }: { params: 
  .eq(isAdminPreview ? 'whatsapp' : 'user_id', isAdminPreview ? params.whatsapp : user.id)
  .maybeSingle()
 
+ // Aluno desligado/inativo nao pode acessar (mesmo com sessao ativa)
+ if (!isAdminPreview && aluno && (aluno.status === 'desligado' || aluno.status === 'inativo')) {
+   redirect('/acesso-bloqueado')
+ }
+
  const tid = aluno?.tenant_id as string | null
  const tq = (q: any) => tid ? q.eq('tenant_id', tid) : q
 

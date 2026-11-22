@@ -99,7 +99,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/api/') ||
     pathname.startsWith('/verificar/') ||
     pathname.startsWith('/upgrade') ||
-    pathname.startsWith('/assinar-pro')
+    pathname.startsWith('/assinar-pro') ||
+    pathname.startsWith('/acesso-bloqueado')
 
   if (isPublic) return NextResponse.next()
 
